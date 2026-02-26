@@ -1367,12 +1367,25 @@
 
                     const newId = this.uuid();
 
+                    // Check if the PREVIOUS player left a note for the turn that just ended
+                    let prevTurn = this.state.turn;
+                    let prevPlayerId = this.state.inactivePlayer;
+
+                    // If we just ticked over to player 1's turn (activePlayer === 0), the previous turn number is turn - 1
+                    if (this.state.activePlayer === 0 && this.state.turn > 1) {
+                        prevTurn = this.state.turn - 1;
+                    }
+
+                    const commentKey = `${prevTurn}-${prevPlayerId}`;
+                    const customComment = this.state.turnComments[commentKey];
+                    const finalComment = customComment && customComment.trim() !== "" ? customComment : "Auto-saved at start of turn.";
+
                     this.bookmarks.push({
                         id: newId,
                         parentId: this.state.activeBookmarkId || null,
                         name: name,
                         stats: stats,
-                        comment: "Auto-saved at start of turn.",
+                        comment: finalComment,
                         color: bColor,
                         state: JSON.stringify(this.state),
                         timestamp: Date.now(),
