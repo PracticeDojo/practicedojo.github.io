@@ -87,7 +87,19 @@ As a player, I want the practice dojo to automatically save the game state every
 - The state save should be stored in the same way as the current saves.
 - The save should be named in a way that indicates the turn number and the player that was playing.
 
+# Refactor
 
+## Refactor 1: JSON format
+
+### User Story
+As a developer, I want the JSON game state to be way more optimized and organized.
+
+### Details
+- The JSON Structure is bloated and is not optimized. 
+- It contains a lot of redundant information.
+- It is not very organized.
+- It is not very efficient.
+ 
 # Progress
 
 - [x] Feature 1: Manual Lore Scoring

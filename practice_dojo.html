@@ -880,6 +880,89 @@
 
             bookmarks: [],
             autoSaves: [],
+            history: [],
+
+            // --- State Compression ---
+            compressCard(c) {
+                const compressed = { instanceId: c.instanceId, cardId: c.cardId };
+                if (c.exerted) compressed.exerted = true;
+                if (c.damage > 0) compressed.damage = c.damage;
+                if (c.faceUp) compressed.faceUp = true;
+                if (c.locationId) compressed.locationId = c.locationId;
+                if (c.drying) compressed.drying = true;
+                if (c.stackedCards && c.stackedCards.length > 0) compressed.stackedCards = c.stackedCards.map(sc => this.compressCard(sc));
+                return compressed;
+            },
+
+            decompressCard(c) {
+                return {
+                    instanceId: c.instanceId,
+                    cardId: c.cardId,
+                    exerted: c.exerted || false,
+                    damage: c.damage || 0,
+                    faceUp: c.faceUp || false,
+                    locationId: c.locationId || null,
+                    drying: c.drying || false,
+                    stackedCards: (c.stackedCards || []).map(sc => this.decompressCard(sc))
+                };
+            },
+
+            compressState(stateObj, includeLog = true) {
+                const compressed = {
+                    activeBookmarkId: stateObj.activeBookmarkId,
+                    turn: stateObj.turn,
+                    activePlayer: stateObj.activePlayer,
+                    inactivePlayer: stateObj.inactivePlayer,
+                    opponentHandRevealed: stateObj.opponentHandRevealed,
+                    activeTimelineColor: stateObj.activeTimelineColor,
+                    turnComments: stateObj.turnComments,
+                    players: stateObj.players.map(p => ({
+                        id: p.id,
+                        name: p.name,
+                        lore: p.lore,
+                        inkTotal: p.inkTotal,
+                        inkReady: p.inkReady,
+                        hasMulliganed: p.hasMulliganed,
+                        deck: p.deck.map(c => this.compressCard(c)),
+                        hand: p.hand.map(c => this.compressCard(c)),
+                        field: p.field.map(c => this.compressCard(c)),
+                        inkwell: p.inkwell.map(c => this.compressCard(c)),
+                        discard: p.discard.map(c => this.compressCard(c))
+                    }))
+                };
+                if (includeLog) {
+                    compressed.log = stateObj.log;
+                } else {
+                    compressed.logLength = stateObj.log ? stateObj.log.length : 0;
+                }
+                return compressed;
+            },
+
+            decompressState(compressed, currentLog = []) {
+                return {
+                    activeBookmarkId: compressed.activeBookmarkId || null,
+                    turn: compressed.turn,
+                    activePlayer: compressed.activePlayer,
+                    inactivePlayer: compressed.inactivePlayer,
+                    opponentHandRevealed: compressed.opponentHandRevealed || false,
+                    activeTimelineColor: compressed.activeTimelineColor || null,
+                    turnComments: compressed.turnComments || {},
+                    log: compressed.log !== undefined ? [...compressed.log] : currentLog.slice(0, compressed.logLength || 0),
+                    players: compressed.players.map(p => ({
+                        id: p.id,
+                        name: p.name,
+                        lore: p.lore || 0,
+                        inkTotal: p.inkTotal || 0,
+                        inkReady: p.inkReady || 0,
+                        hasMulliganed: p.hasMulliganed || false,
+                        deck: (p.deck || []).map(c => this.decompressCard(c)),
+                        hand: (p.hand || []).map(c => this.decompressCard(c)),
+                        field: (p.field || []).map(c => this.decompressCard(c)),
+                        inkwell: (p.inkwell || []).map(c => this.decompressCard(c)),
+                        discard: (p.discard || []).map(c => this.decompressCard(c))
+                    }))
+                };
+            },
 
             _inspectingPlayerIndex: null,
             _tempDeckOrder: null,
@@ -905,7 +988,6 @@
                     { id: 0, name: "Player 1", deck: [], hand: [], field: [], inkwell: [], discard: [], lore: 0, inkTotal: 0, inkReady: 0, hasMulliganed: false },
                     { id: 1, name: "Player 2", deck: [], hand: [], field: [], inkwell: [], discard: [], lore: 0, inkTotal: 0, inkReady: 0, hasMulliganed: false }
                 ],
-                history: [],
                 log: []
             },
 
@@ -913,9 +995,10 @@
             saveToLocalStorage() {
                 const exportData = {
                     version: 1,
-                    currentState: this.state,
+                    currentState: this.compressState(this.state, true),
                     bookmarks: this.bookmarks,
                     autoSaves: this.autoSaves,
+                    history: this.history,
                     deck1: document.getElementById('deck1-input').value,
                     deck2: document.getElementById('deck2-input').value
                 };
@@ -933,10 +1016,10 @@
 
                     const importedData = JSON.parse(saved);
                     if (importedData.currentState && importedData.bookmarks) {
-                        this.state = importedData.currentState;
-                        this.state.turnComments = this.state.turnComments || {};
+                        this.state = this.decompressState(importedData.currentState);
                         this.bookmarks = importedData.bookmarks;
                         this.autoSaves = importedData.autoSaves || [];
+                        this.history = importedData.history || importedData.currentState.history || [];
 
                         if (importedData.deck1) document.getElementById('deck1-input').value = importedData.deck1;
                         if (importedData.deck2) document.getElementById('deck2-input').value = importedData.deck2;
@@ -1210,19 +1293,9 @@
             },
 
             saveState() {
-                this.state.history.push(JSON.stringify({
-                    players: this.state.players,
-                    activePlayer: this.state.activePlayer,
-                    inactivePlayer: this.state.inactivePlayer,
-                    opponentHandRevealed: this.state.opponentHandRevealed,
-                    turn: this.state.turn,
-                    activeTimelineColor: this.state.activeTimelineColor,
-                    activeBookmarkId: this.state.activeBookmarkId,
-                    turnComments: this.state.turnComments,
-                    log: this.state.log
-                }));
+                this.history.push(JSON.stringify(this.compressState(this.state, false)));
                 // Keep last 250 states
-                if (this.state.history.length > 250) this.state.history.shift();
+                if (this.history.length > 250) this.history.shift();
 
                 // Debounce the local storage save slightly so we don't spam it on every single rapid millisecond click
                 clearTimeout(this._saveTimeout);
@@ -1232,15 +1305,9 @@
             },
 
             undo() {
-                if (this.state.history.length === 0) return;
-                const prev = JSON.parse(this.state.history.pop());
-                this.state.players = prev.players;
-                this.state.activePlayer = prev.activePlayer;
-                this.state.inactivePlayer = prev.inactivePlayer;
-                this.state.opponentHandRevealed = prev.opponentHandRevealed || false;
-                this.state.turn = prev.turn;
-                this.state.activeBookmarkId = prev.activeBookmarkId || null;
-                this.state.turnComments = prev.turnComments || {};
+                if (this.history.length === 0) return;
+                const prevCompressed = JSON.parse(this.history.pop());
+                this.state = this.decompressState(prevCompressed, this.state.log);
                 this.render();
             },
 
@@ -1264,9 +1331,10 @@
                 const d2Ids = this.parseDeck(deck2Str);
 
                 // Reset state
+                this.history = [];
                 this.state = {
                     activeBookmarkId: null,
-                    turn: 1, activePlayer: 0, inactivePlayer: 1, opponentHandRevealed: false, history: [], log: [], turnComments: {},
+                    turn: 1, activePlayer: 0, inactivePlayer: 1, opponentHandRevealed: false, log: [], turnComments: {},
                     activeTimelineColor: null,
                     players: [
                         { id: 0, name: "Player 1", deck: [], hand: [], field: [], inkwell: [], discard: [], lore: 0, inkTotal: 0, inkReady: 0, hasMulliganed: false },
@@ -1387,7 +1455,7 @@
                         stats: stats,
                         comment: finalComment,
                         color: bColor,
-                        state: JSON.stringify(this.state),
+                        state: JSON.stringify(this.compressState(this.state, true)),
                         timestamp: Date.now(),
                         isDeckEdit: false
                     });
@@ -1459,9 +1527,10 @@
             exportTimelines() {
                 const exportData = {
                     version: 1,
-                    currentState: this.state,
+                    currentState: this.compressState(this.state, true),
                     bookmarks: this.bookmarks,
                     autoSaves: this.autoSaves,
+                    history: this.history,
                     deck1: document.getElementById('deck1-input').value,
                     deck2: document.getElementById('deck2-input').value
                 };
@@ -1488,10 +1557,10 @@
                     try {
                         const importedData = JSON.parse(e.target.result);
                         if (importedData.currentState && importedData.bookmarks) {
-                            this.state = importedData.currentState;
-                            this.state.turnComments = this.state.turnComments || {};
+                            this.state = this.decompressState(importedData.currentState);
                             this.bookmarks = importedData.bookmarks;
                             this.autoSaves = importedData.autoSaves || [];
+                            this.history = importedData.history || importedData.currentState.history || [];
 
                             if (importedData.deck1) document.getElementById('deck1-input').value = importedData.deck1;
                             if (importedData.deck2) document.getElementById('deck2-input').value = importedData.deck2;
@@ -1536,10 +1605,10 @@
                     const importedData = await response.json();
 
                     if (importedData.currentState && importedData.bookmarks) {
-                        this.state = importedData.currentState;
-                        this.state.turnComments = this.state.turnComments || {};
+                        this.state = this.decompressState(importedData.currentState);
                         this.bookmarks = importedData.bookmarks;
                         this.autoSaves = importedData.autoSaves || [];
+                        this.history = importedData.history || importedData.currentState.history || [];
 
                         if (importedData.deck1) document.getElementById('deck1-input').value = importedData.deck1;
                         if (importedData.deck2) document.getElementById('deck2-input').value = importedData.deck2;
@@ -1590,7 +1659,7 @@
                     stats: stats,
                     comment: commentInput,
                     color: bColor,
-                    state: JSON.stringify(this.state),
+                    state: JSON.stringify(this.compressState(this.state, true)),
                     timestamp: Date.now(),
                     isDeckEdit: false
                 });
@@ -1617,7 +1686,7 @@
                     id: this.uuid(),
                     name: name,
                     stats: stats,
-                    state: JSON.stringify(this.state),
+                    state: JSON.stringify(this.compressState(this.state, true)),
                     timestamp: now.getTime()
                 });
 
@@ -1638,8 +1707,8 @@
                 if (!bookmark) return;
 
                 // Restore State
-                this.state = JSON.parse(bookmark.state);
-                this.state.turnComments = this.state.turnComments || {};
+                this.state = this.decompressState(JSON.parse(bookmark.state));
+                this.history = []; // Reset micro-undo history on branch jump to prevent temporal anomalies
 
                 // CRUCIAL: If it's a manual tree node, we must explicitly tell the state we are now physically located AT this node.
                 if (!isAuto) {
