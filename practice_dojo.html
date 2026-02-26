@@ -661,8 +661,21 @@
                 class="flex-1 relative p-4 flex flex-col justify-between overflow-hidden transition-colors duration-500">
 
                 <!-- Bottom Player Stats Overlay -->
+                <!-- Turn Comment Box for Active Field -->
+                <div class="absolute top-4 left-4 z-0 group flex flex-col pointer-events-auto">
+                    <div class="flex items-center gap-2 text-white/50 mb-1 pointer-events-none">
+                        <i class="fa-solid fa-book-open"></i>
+                        <span class="text-xs font-bold uppercase tracking-wider">Turn <span
+                                id="turn-comment-header-num">1</span> Notes</span>
+                    </div>
+                    <textarea id="active-turn-comment"
+                        class="w-48 h-24 bg-black/30 border border-gray-600/50 rounded p-2 text-xs text-white focus:bg-black/80 focus:border-purple-500 focus:w-64 focus:h-40 focus:z-50 focus:shadow-2xl outline-none transition-all duration-200 resize-none hover:bg-black/50 hover:border-gray-500"
+                        placeholder="Add comments for this turn... (Saves on click away)"
+                        onblur="App.updateTurnComment(App.state.turn, this.value)"></textarea>
+                </div>
+
                 <div
-                    class="absolute bottom-4 right-4 bg-black bg-opacity-60 border border-gray-600 rounded-lg p-3 flex flex-col items-center min-w-[60px] shadow-lg">
+                    class="absolute bottom-4 right-4 bg-black bg-opacity-60 border border-gray-600 rounded-lg p-3 flex flex-col items-center min-w-[60px] shadow-lg z-30">
                     <span class="text-xs text-gray-400 font-bold">LORE</span>
                     <span id="bottom-lore" class="text-3xl font-black text-white">0</span>
                 </div>
@@ -779,12 +792,22 @@
                 activePlayer: 0,
                 inactivePlayer: 1,
                 opponentHandRevealed: false,
+                turnComments: {},
                 players: [
                     { id: 0, name: "Player 1", deck: [], hand: [], field: [], inkwell: [], discard: [], lore: 0, inkTotal: 0, inkReady: 0, hasMulliganed: false },
                     { id: 1, name: "Player 2", deck: [], hand: [], field: [], inkwell: [], discard: [], lore: 0, inkTotal: 0, inkReady: 0, hasMulliganed: false }
                 ],
                 history: [],
                 log: []
+            },
+
+            updateTurnComment(turnNum, text) {
+                // To avoid flooding the timeline stack on every keystroke, this should mainly be called onblur
+                // but we also need to capture current state before mutating
+                if (this.state.turnComments[turnNum] === text) return;
+                this.saveState();
+                this.state.turnComments[turnNum] = text;
+                this.render();
             },
 
             uuid() {
@@ -984,8 +1007,8 @@
                 this.state.inactivePlayer = prev.inactivePlayer;
                 this.state.opponentHandRevealed = prev.opponentHandRevealed || false;
                 this.state.turn = prev.turn;
-                this.state.activeTimelineColor = prev.activeTimelineColor || null;
-                this.state.log = prev.log;
+                this.state.activeBookmarkId = prev.activeBookmarkId || null;
+                this.state.turnComments = prev.turnComments || {};
                 this.render();
             },
 
@@ -1011,7 +1034,7 @@
                 // Reset state
                 this.state = {
                     activeBookmarkId: null,
-                    turn: 1, activePlayer: 0, inactivePlayer: 1, opponentHandRevealed: false, history: [], log: [],
+                    turn: 1, activePlayer: 0, inactivePlayer: 1, opponentHandRevealed: false, history: [], log: [], turnComments: {},
                     activeTimelineColor: null,
                     players: [
                         { id: 0, name: "Player 1", deck: [], hand: [], field: [], inkwell: [], discard: [], lore: 0, inkTotal: 0, inkReady: 0, hasMulliganed: false },
@@ -1188,6 +1211,7 @@
                         const importedData = JSON.parse(e.target.result);
                         if (importedData.currentState && importedData.bookmarks) {
                             this.state = importedData.currentState;
+                            this.state.turnComments = this.state.turnComments || {};
                             this.bookmarks = importedData.bookmarks;
                             this.autoSaves = importedData.autoSaves || [];
 
@@ -1287,6 +1311,7 @@
 
                 // Restore State
                 this.state = JSON.parse(bookmark.state);
+                this.state.turnComments = this.state.turnComments || {};
 
                 // CRUCIAL: If it's a manual tree node, we must explicitly tell the state we are now physically located AT this node.
                 if (!isAuto) {
@@ -2532,12 +2557,45 @@
             updateLog() {
                 const logEl = document.getElementById('game-log');
                 logEl.innerHTML = '';
+
+                // Helper to render a comment block
+                const renderCommentBlock = (turnNum) => {
+                    const comment = this.state.turnComments[turnNum];
+                    if (!comment || comment.trim() === '') return;
+                    const cNode = document.createElement('div');
+                    cNode.className = 'text-xs mt-1 mb-2 p-2 bg-black/40 border border-gray-700/50 rounded-lg shadow-inner flex flex-col gap-1 w-11/12 ml-auto';
+                    cNode.innerHTML = `
+                        <div class="flex items-center gap-1.5 text-white/40 text-[10px] uppercase font-bold tracking-wider">
+                            <i class="fa-solid fa-book-open"></i> Turn ${turnNum} Notes
+                        </div>
+                        <div class="text-white/80 whitespace-pre-wrap leading-relaxed">${comment}</div>
+                    `;
+                    logEl.appendChild(cNode);
+                };
+
                 this.state.log.slice(-30).forEach(entry => {
                     const d = document.createElement('div');
                     d.className = `text-xs mb-1 ${entry.isSystem ? 'text-gray-500 font-bold' : (entry.player === 0 ? 'text-teal-400' : 'text-orange-400')}`;
                     d.innerText = entry.text;
                     logEl.appendChild(d);
+
+                    // If this is a Turn Begins marker, inject the comment for that turn right after it
+                    const turnMatch = entry.text.match(/^--- Turn (\d+) Begins ---$/);
+                    if (turnMatch && entry.isSystem) {
+                        const turnNum = parseInt(turnMatch[1]);
+                        renderCommentBlock(turnNum);
+                    }
                 });
+
+                // Always ensure the *current* turn's comment is visible at the very bottom 
+                // if it wasn't already drawn by the loop (e.g. if the Turn Begins log scrolled off the 30-item slice)
+                // We do a quick check to see if the last 30 didn't already contain the marker for the current turn
+                const sliceText = this.state.log.slice(-30).map(e => e.text).join('\n');
+                if (!sliceText.includes(`--- Turn ${this.state.turn} Begins ---`)) {
+                    // Try to render it, since it wasn't rendered inline
+                    renderCommentBlock(this.state.turn);
+                }
+
                 logEl.scrollTop = logEl.scrollHeight;
             },
 
@@ -2848,6 +2906,15 @@
                 document.getElementById('bottom-lore').innerText = ap.lore;
                 document.getElementById('bottom-ink').innerText = `${ap.inkReady}/${ap.inkTotal}`;
                 document.getElementById('bottom-deck-count').innerText = ap.deck.length;
+
+                // Turn Comment Box Update
+                document.getElementById('turn-comment-header-num').innerText = this.state.turn;
+                const commentBox = document.getElementById('active-turn-comment');
+                // Only update value if it's not currently focused to prevent overriding what the user is typing 
+                // if a render happens in the background (e.g. they typed something then dragged a card without blurring)
+                if (document.activeElement !== commentBox) {
+                    commentBox.value = this.state.turnComments[this.state.turn] || '';
+                }
 
                 // Bottom Hand (Visible)
                 const bh = document.getElementById('bottom-hand');
