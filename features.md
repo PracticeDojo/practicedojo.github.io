@@ -27,6 +27,6 @@ As a player, I want to be able to load example sessions so that I can practice w
 
 # Progress
 
-- [] Feature 1: Manual Lore Scoring
+- [x] Feature 1: Manual Lore Scoring
 - [] Feature 2: Text on the Nodes should respect new lines
 - [] Feature 3: Loading Example Sessions
