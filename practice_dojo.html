@@ -221,61 +221,96 @@
     </div>
 
     <!-- Deck Setup Modal -->
-    <div id="setup-modal" class="absolute inset-0 z-40 bg-black bg-opacity-80 flex items-center justify-center hidden">
-        <div class="bg-gray-800 p-6 rounded-lg shadow-2xl w-[800px] max-w-full flex flex-col">
-            <h2 class="text-2xl font-bold mb-4 border-b border-gray-700 pb-2">Setup Practice Decks</h2>
-            <div class="flex gap-4 flex-1">
-                <div class="flex-1 flex flex-col">
-                    <label class="font-semibold text-purple-400 mb-1">Player 1 Decklist</label>
+    <div id="setup-modal"
+        class="absolute inset-0 z-40 bg-black/80 backdrop-blur-sm flex items-center justify-center hidden">
+        <div
+            class="bg-gray-800 p-8 rounded-2xl shadow-2xl w-[900px] max-w-[95vw] flex flex-col border border-gray-700/50">
+            <!-- Header -->
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-3xl font-black text-white tracking-wide flex items-center gap-3">
+                    <i class="fa-solid fa-khanda text-purple-500"></i> Setup Practice Decks
+                </h2>
+            </div>
+
+            <!-- Main Decks Area -->
+            <div class="flex gap-6 mb-6">
+                <!-- Player 1 -->
+                <div
+                    class="flex-1 flex flex-col bg-gray-900/80 p-5 rounded-xl border border-purple-500/30 shadow-inner relative overflow-hidden group">
+                    <div
+                        class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-purple-500 to-transparent opacity-50">
+                    </div>
+                    <label class="font-bold text-lg text-purple-400 mb-3 flex items-center gap-2">
+                        <i class="fa-solid fa-user"></i> Player 1 Decklist
+                    </label>
                     <select id="p1-deck-select"
-                        class="w-full bg-gray-900 text-sm p-2 mb-2 rounded border border-gray-700 text-gray-300 focus:border-purple-500 focus:outline-none"
+                        class="w-full bg-black text-sm p-2.5 mb-3 rounded border border-gray-700 text-gray-300 focus:border-purple-500 focus:ring-1 focus:ring-purple-500 focus:outline-none transition group-hover:border-purple-500/50 cursor-pointer"
                         onchange="App.onDeckSelect(1, this.value)">
                         <option value="">-- Load from Database --</option>
                     </select>
                     <textarea id="deck1-input"
-                        class="w-full flex-1 bg-gray-900 text-sm p-3 rounded border border-gray-700 focus:border-purple-500 focus:outline-none"
-                        placeholder="Paste decklist here (e.g. 4 Tinker Bell - Giant Fairy)"></textarea>
+                        class="w-full h-[140px] bg-black text-sm p-3 rounded border border-gray-700 focus:border-purple-500 focus:ring-1 focus:ring-purple-500 focus:outline-none transition resize-none"
+                        placeholder="Paste decklist here&#10;(e.g. 4 Tinker Bell - Giant Fairy)"></textarea>
                 </div>
-                <div class="flex-1 flex flex-col">
-                    <label class="font-semibold text-orange-400 mb-1">Player 2 Decklist</label>
+                <!-- Player 2 -->
+                <div
+                    class="flex-1 flex flex-col bg-gray-900/80 p-5 rounded-xl border border-orange-500/30 shadow-inner relative overflow-hidden group">
+                    <div
+                        class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-orange-500 to-transparent opacity-50">
+                    </div>
+                    <label class="font-bold text-lg text-orange-400 mb-3 flex items-center gap-2">
+                        <i class="fa-solid fa-user-ninja"></i> Player 2 Decklist
+                    </label>
                     <select id="p2-deck-select"
-                        class="w-full bg-gray-900 text-sm p-2 mb-2 rounded border border-gray-700 text-gray-300 focus:border-orange-500 focus:outline-none"
+                        class="w-full bg-black text-sm p-2.5 mb-3 rounded border border-gray-700 text-gray-300 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 focus:outline-none transition group-hover:border-orange-500/50 cursor-pointer"
                         onchange="App.onDeckSelect(2, this.value)">
                         <option value="">-- Load from Database --</option>
                     </select>
                     <textarea id="deck2-input"
-                        class="w-full flex-1 bg-gray-900 text-sm p-3 rounded border border-gray-700 focus:border-orange-500 focus:outline-none"
-                        placeholder="Paste decklist here (e.g. 4 Maui - Hero to All)"></textarea>
+                        class="w-full h-[140px] bg-black text-sm p-3 rounded border border-gray-700 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 focus:outline-none transition resize-none"
+                        placeholder="Paste decklist here&#10;(e.g. 4 Maui - Hero to All)"></textarea>
                 </div>
             </div>
-            <div class="mt-4 flex justify-between items-center border-t border-gray-700 pt-4">
-                <div class="flex items-center gap-4 flex-1">
-                    <label class="text-xs text-gray-400 font-semibold whitespace-nowrap">Load Example Session:</label>
+
+            <!-- Session Actions Area -->
+            <div
+                class="bg-gray-900/50 p-4 rounded-xl border border-gray-700 flex flex-wrap gap-4 items-center justify-between mb-6">
+                <!-- Example Session -->
+                <div class="flex items-center gap-3">
                     <select id="example-session-select"
-                        class="bg-gray-900 text-sm p-1.5 rounded border border-gray-700 text-gray-300 focus:border-blue-500 focus:outline-none max-w-xs cursor-pointer">
-                        <option value="">-- Select an Example --</option>
+                        class="bg-black text-sm p-2.5 rounded border border-gray-700 text-gray-300 focus:border-blue-500 focus:outline-none w-48 cursor-pointer">
+                        <option value="">-- Example Session --</option>
                         <option value="multiverse_session_example_01.json">Session Example 01</option>
                     </select>
                     <button onclick="App.loadExampleSession()"
-                        class="bg-blue-800 hover:bg-blue-600 border border-blue-500 text-white font-bold py-1.5 px-3 rounded transition flex items-center text-sm shadow-md disabled:opacity-50"
+                        class="bg-gray-800 hover:bg-gray-700 text-blue-400 border border-blue-500/50 hover:border-blue-400 font-bold py-2.5 px-4 rounded transition flex items-center text-sm disabled:opacity-50 shadow-md"
                         id="btn-load-example">
-                        <i class="fa-solid fa-cloud-arrow-down mr-2"></i> Load
+                        <i class="fa-solid fa-cloud-arrow-down mr-2"></i> Load Demo
                     </button>
                 </div>
-            </div>
-            <div class="mt-4 flex justify-between items-center border-t border-gray-700 pt-4">
-                <div class="flex items-center gap-4">
+
+                <div class="w-px h-8 bg-gray-700 block"></div>
+
+                <!-- Session Import -->
+                <div class="flex items-center gap-3" id="session-restore-container">
                     <input type="file" id="setup-import-file" class="hidden" accept=".json"
                         onchange="App.importTimelines(event)">
                     <button onclick="document.getElementById('setup-import-file').click()"
-                        class="bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded transition flex items-center text-sm shadow-md">
-                        <i class="fa-solid fa-file-import mr-2"></i> Resume Session
+                        class="bg-gray-800 hover:bg-gray-700 text-white border border-gray-600 font-bold py-2.5 px-4 rounded transition flex items-center text-sm shadow-md">
+                        <i class="fa-solid fa-file-import mr-2"></i> Upload File
                     </button>
-                    <p class="text-xs text-gray-400 hidden sm:block">or leave blank to use pre-generated demo decks.</p>
+                    <!-- Local Storage Button injected here -->
                 </div>
+            </div>
+
+            <!-- Footer / Primary Action -->
+            <div class="flex justify-between items-center">
+                <p class="text-sm text-gray-500 italic"><i class="fa-solid fa-circle-info mr-1"></i> Hint: Leave
+                    decklists blank to use random dummy decks.</p>
                 <button onclick="App.startGame()"
-                    class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded transition shadow-lg">Start
-                    Match</button>
+                    class="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold py-3 px-8 rounded-lg transition-transform hover:scale-105 active:scale-95 shadow-[0_0_20px_rgba(79,70,229,0.3)] text-lg flex items-center gap-2">
+                    Start Match <i class="fa-solid fa-arrow-right"></i>
+                </button>
             </div>
         </div>
     </div>
@@ -874,6 +909,55 @@
                 log: []
             },
 
+            // --- Local Storage Persistence ---
+            saveToLocalStorage() {
+                const exportData = {
+                    version: 1,
+                    currentState: this.state,
+                    bookmarks: this.bookmarks,
+                    autoSaves: this.autoSaves,
+                    deck1: document.getElementById('deck1-input').value,
+                    deck2: document.getElementById('deck2-input').value
+                };
+                try {
+                    localStorage.setItem('lorcana_dojo_session', JSON.stringify(exportData));
+                } catch (e) {
+                    console.warn("Failed to save session to local storage:", e);
+                }
+            },
+
+            loadFromLocalStorage() {
+                try {
+                    const saved = localStorage.getItem('lorcana_dojo_session');
+                    if (!saved) return false;
+
+                    const importedData = JSON.parse(saved);
+                    if (importedData.currentState && importedData.bookmarks) {
+                        this.state = importedData.currentState;
+                        this.state.turnComments = this.state.turnComments || {};
+                        this.bookmarks = importedData.bookmarks;
+                        this.autoSaves = importedData.autoSaves || [];
+
+                        if (importedData.deck1) document.getElementById('deck1-input').value = importedData.deck1;
+                        if (importedData.deck2) document.getElementById('deck2-input').value = importedData.deck2;
+
+                        // Ensure user is booted into the app
+                        document.getElementById('setup-modal').classList.add('hidden');
+                        document.getElementById('app').classList.remove('hidden');
+
+                        document.getElementById('timeline-drawer').classList.add('-translate-x-full');
+                        this.renderAutoSaves();
+                        this.renderTree();
+                        this.render();
+                        this.showToast("Restored previous session!");
+                        return true;
+                    }
+                } catch (e) {
+                    console.warn("Failed to load session from local storage:", e);
+                }
+                return false;
+            },
+
             updateTurnComment(turnNum, playerId, text) {
                 // To avoid flooding the timeline stack on every keystroke, this should mainly be called onblur
                 // but we also need to capture current state before mutating
@@ -1001,6 +1085,22 @@
                     this.initTreePan();
 
                     document.getElementById('loading-screen').classList.add('hidden');
+
+                    // Check local storage before showing setup
+                    const hasSavedSession = localStorage.getItem('lorcana_dojo_session');
+                    if (hasSavedSession) {
+                        // We show the setup screen but add a distinct "Resume Last Auto-Save" option
+                        const resumeBtnHtml = `
+                            <button id="btn-resume-storage" onclick="App.loadFromLocalStorage()" class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold py-2.5 px-6 rounded transition-transform hover:scale-[1.02] active:scale-95 flex items-center text-sm shadow-[0_0_15px_rgba(16,185,129,0.4)]">
+                                <i class="fa-solid fa-clock-rotate-left mr-2"></i> Restore Auto-Save
+                            </button>
+                        `;
+                        const setupActionsNode = document.getElementById('session-restore-container');
+                        if (setupActionsNode && !document.getElementById('btn-resume-storage')) {
+                            setupActionsNode.insertAdjacentHTML('beforeend', resumeBtnHtml);
+                        }
+                    }
+
                     this.showSetup();
 
                 } catch (e) {
@@ -1123,6 +1223,12 @@
                 }));
                 // Keep last 250 states
                 if (this.state.history.length > 250) this.state.history.shift();
+
+                // Debounce the local storage save slightly so we don't spam it on every single rapid millisecond click
+                clearTimeout(this._saveTimeout);
+                this._saveTimeout = setTimeout(() => {
+                    this.saveToLocalStorage();
+                }, 500);
             },
 
             undo() {
@@ -1189,6 +1295,7 @@
 
                 this.logAction(`--- Turn 1 Begins ---`, true);
                 this.render();
+                this.saveToLocalStorage();
             },
 
             _internalDraw(playerIndex) {
@@ -1481,6 +1588,7 @@
                 document.getElementById('bookmark-name').value = '';
                 document.getElementById('bookmark-comment').value = '';
                 this.showToast("Timeline node created.");
+                this.saveToLocalStorage();
             },
 
             autoSaveTimeline() {
@@ -1505,6 +1613,7 @@
                 if (this.autoSaves.length > 5) this.autoSaves.length = 5;
 
                 this.renderAutoSaves();
+                this.saveToLocalStorage();
             },
 
             restoreTimeline(id, isAuto = false) {
@@ -1531,6 +1640,7 @@
                 this.render();
                 this.showToast(`Timeline Restored: ${bookmark.name}`);
                 this.triggerTimeFlash();
+                this.saveToLocalStorage();
             },
 
             deleteTimeline(id, isAuto = false) {
@@ -1550,6 +1660,7 @@
                         this.renderTree(); // Re-draw the canvas
                     }
                 }
+                this.saveToLocalStorage();
             },
 
             // --- Multiverse Canvas Drawing (Tree View) ---
