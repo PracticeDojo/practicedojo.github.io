@@ -41,6 +41,23 @@ As a player, I want to be able to return cards from the discard pile to the deck
 ### Details
 - Use the same way that you can return cards from the deck to the hand in the main game. Using the right click context menu. 
 
+
+## Feature 5: Zoom control in the tree view
+
+### User Story
+As a player, I want to be able to zoom in and out of the tree view so that I can better see the nodes.
+
+### Acceptance Criteria
+- The tree view should be zoomable using the mouse wheel.
+- The zoom should be smooth and responsive.
+- The zoom should be tied to the mouse wheel.
+- The zoom should be able to be reset to default.
+
+
+### Details
+- Add a zoom control in the tree view tied to the mouse wheel.
+
+
 # Progress
 
 - [x] Feature 1: Manual Lore Scoring
@@ -48,4 +65,5 @@ As a player, I want to be able to return cards from the discard pile to the deck
 - [x] Feature 3: Loading Example Sessions
 - [x] Feature 4: Inspect Discard Piles
 - [x] Feature 4.1: Allow to return cards from discard to deck and/or hand
+- [x] Feature 5: Zoom control in the tree view
 

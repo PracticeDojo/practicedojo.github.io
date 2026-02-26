@@ -352,11 +352,16 @@
             <div class="flex items-center gap-3">
                 <i class="fa-solid fa-network-wired text-purple-500 text-xl"></i>
                 <h2 class="text-2xl font-bold text-white tracking-wide">Multiverse Timelines</h2>
-                <span class="text-xs text-gray-500 ml-4 hidden sm:block">Click and drag canvas to pan. Click a node to
+                <span class="text-xs text-gray-500 ml-4 hidden sm:block">Click and drag canvas to pan. Scroll wheel to
+                    zoom. Click a node to
                     restore that timeline.</span>
             </div>
-            <button onclick="App.closeTreeModal()" class="text-gray-400 hover:text-white transition"><i
-                    class="fa-solid fa-times text-2xl"></i></button>
+            <div class="flex items-center gap-4">
+                <button onclick="App.resetTreeZoom()" class="text-gray-400 hover:text-white transition tooltip"
+                    title="Reset Zoom"><i class="fa-solid fa-compress text-xl"></i></button>
+                <button onclick="App.closeTreeModal()" class="text-gray-400 hover:text-white transition"><i
+                        class="fa-solid fa-times text-2xl"></i></button>
+            </div>
         </div>
 
         <!-- Draggable Canvas Area -->
@@ -836,8 +841,9 @@
                 isDragging: false,
                 startX: 0,
                 startY: 0,
-                translateX: 50,
-                translateY: 50
+                translateX: 100,
+                translateY: 100,
+                zoom: 1
             },
 
             state: {
@@ -1005,13 +1011,49 @@
                     if (!this.treePan.isDragging) return;
                     this.treePan.translateX = e.clientX - this.treePan.startX;
                     this.treePan.translateY = e.clientY - this.treePan.startY;
-                    canvas.style.transform = `translate(${this.treePan.translateX}px, ${this.treePan.translateY}px)`;
+                    canvas.style.transform = `translate(${this.treePan.translateX}px, ${this.treePan.translateY}px) scale(${this.treePan.zoom})`;
                 });
 
                 window.addEventListener('mouseup', () => {
                     this.treePan.isDragging = false;
                     viewport.style.cursor = 'grab';
                 });
+
+                // Add scroll wheel zoom logic centered on pointer
+                viewport.addEventListener('wheel', (e) => {
+                    e.preventDefault();
+
+                    const zoomIntensity = 0.1;
+                    const delta = e.deltaY > 0 ? -zoomIntensity : zoomIntensity;
+                    const newZoom = Math.min(Math.max(0.1, this.treePan.zoom + delta), 3.0);
+
+                    if (newZoom !== this.treePan.zoom) {
+                        // Pointer's relative coordinate inside the container
+                        const rect = viewport.getBoundingClientRect();
+                        const clientX = e.clientX - rect.left;
+                        const clientY = e.clientY - rect.top;
+
+                        // Calculate how far the mouse is from the current translate origin
+                        const offsetX = clientX - this.treePan.translateX;
+                        const offsetY = clientY - this.treePan.translateY;
+
+                        // Calculate translation shift necessary to keep the point under the mouse uniform
+                        const ratio = newZoom / this.treePan.zoom;
+                        this.treePan.translateX -= offsetX * (ratio - 1);
+                        this.treePan.translateY -= offsetY * (ratio - 1);
+
+                        this.treePan.zoom = newZoom;
+
+                        canvas.style.transform = `translate(${this.treePan.translateX}px, ${this.treePan.translateY}px) scale(${this.treePan.zoom})`;
+                    }
+                }, { passive: false });
+            },
+
+            resetTreeZoom() {
+                this.treePan.zoom = 1;
+                this.treePan.translateX = 100;
+                this.treePan.translateY = 100;
+                document.getElementById('tree-canvas').style.transform = `translate(${this.treePan.translateX}px, ${this.treePan.translateY}px) scale(${this.treePan.zoom})`;
             },
 
             showSetup() {
@@ -1469,10 +1511,10 @@
                 document.getElementById('tree-modal').classList.remove('hidden');
                 document.getElementById('tree-modal').classList.add('flex');
 
-                // Center the camera
+                // Center the camera (maintain current zoom from treePan but recalculate matrix)
                 this.treePan.translateX = 100;
                 this.treePan.translateY = 100;
-                document.getElementById('tree-canvas').style.transform = `translate(${this.treePan.translateX}px, ${this.treePan.translateY}px)`;
+                document.getElementById('tree-canvas').style.transform = `translate(${this.treePan.translateX}px, ${this.treePan.translateY}px) scale(${this.treePan.zoom})`;
 
                 this.renderTree();
             },
