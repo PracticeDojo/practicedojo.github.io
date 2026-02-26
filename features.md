@@ -47,5 +47,5 @@ As a player, I want to be able to return cards from the discard pile to the deck
 - [x] Feature 2: Text on the Nodes should respect new lines
 - [] Feature 3: Loading Example Sessions
 - [x] Feature 4: Inspect Discard Piles
-- [] Feature 4.1: Allow to return cards from discard to deck and/or hand
+- [x] Feature 4.1: Allow to return cards from discard to deck and/or hand
 

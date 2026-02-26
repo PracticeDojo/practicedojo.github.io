@@ -1815,6 +1815,21 @@
                 // Remove from old location
                 found.player[found.loc].splice(found.idx, 1);
 
+                // Add explicit tracking for discard recoveries
+                if (found.loc === 'discard') {
+                    const destinationName = targetZone === 'deck'
+                        ? (deckPlacement === 'bottom' ? 'the bottom of the deck' : 'the top of the deck')
+                        : `the ${targetZone}`;
+                    this.logAction(`Moved ${dbCard.name} from the discard pile to ${destinationName}.`);
+                }
+
+                // Auto-refresh discard modal if moving a card out of it
+                if (found.loc === 'discard' && !document.getElementById('inspect-discard-modal').classList.contains('hidden')) {
+                    if (this._inspectingDiscardPlayerIndex !== null) {
+                        this.renderInspectDiscardGrid(this._inspectingDiscardPlayerIndex);
+                    }
+                }
+
                 // Reset card status when moving zones
                 if (found.loc !== targetZone || found.player.id !== targetPlayer.id) {
                     found.card.exerted = false;
@@ -1921,6 +1936,13 @@
 
                 found.player[found.loc].splice(found.idx, 1);
 
+                // Auto-refresh discard modal if playing a card out of it
+                if (found.loc === 'discard' && !document.getElementById('inspect-discard-modal').classList.contains('hidden')) {
+                    if (this._inspectingDiscardPlayerIndex !== null) {
+                        this.renderInspectDiscardGrid(this._inspectingDiscardPlayerIndex);
+                    }
+                }
+
                 // Locations enter play automatically exerted
                 found.card.exerted = (dbCard.type === 'Location');
                 found.card.locationId = null;
@@ -1928,7 +1950,11 @@
 
                 found.player.field.push(found.card);
 
-                this.logAction(`You played ${dbCard.name} (cost ${dbCard.cost}).`);
+                if (found.loc === 'discard') {
+                    this.logAction(`You played ${dbCard.name} from the discard pile (cost ${dbCard.cost}).`);
+                } else {
+                    this.logAction(`You played ${dbCard.name} (cost ${dbCard.cost}).`);
+                }
                 this.render();
             },
 
@@ -2039,6 +2065,13 @@
 
                 found.player[found.loc].splice(found.idx, 1);
 
+                // Auto-refresh discard modal if returning a card out of it
+                if (found.loc === 'discard' && !document.getElementById('inspect-discard-modal').classList.contains('hidden')) {
+                    if (this._inspectingDiscardPlayerIndex !== null) {
+                        this.renderInspectDiscardGrid(this._inspectingDiscardPlayerIndex);
+                    }
+                }
+
                 const cardsToMove = this._unpackStack(found.card);
                 cardsToMove.forEach(c => {
                     c.damage = 0;
@@ -2047,6 +2080,10 @@
                     c.locationId = null;
                     found.player.hand.push(c);
                 });
+
+                if (found.loc === 'discard') {
+                    this.logAction(`Returned ${dbCard.name} from the discard pile to the hand.`);
+                }
 
                 this.render();
             },
@@ -2589,6 +2626,7 @@
             },
 
             inspectDiscard(playerIndex) {
+                this._inspectingDiscardPlayerIndex = playerIndex;
                 const p = this.state.players[playerIndex];
                 document.getElementById('inspect-discard-title').innerText = `Inspecting ${p.name}'s Discard Pile (${p.discard.length} Cards)`;
                 this.renderInspectDiscardGrid(playerIndex);
@@ -2613,6 +2651,12 @@
 
                     // Show sidebar preview when hovered
                     el.addEventListener('mouseenter', () => this.showPreview(dbCard));
+
+                    // Context menu for pulling cards out of discard
+                    el.addEventListener('contextmenu', (e) => {
+                        e.preventDefault();
+                        this.showContextMenu(e, c.instanceId);
+                    });
 
                     container.appendChild(el);
                 });
