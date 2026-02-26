@@ -33,8 +33,19 @@ As a player, I want to be able to inspect the discard piles of both players so t
 ### Details
 - Use the same way that you can inspect the deck in the main game. Using the right click context menu. But No need to allow reordering of the discard pile. or reshuffling the discard pile.
 
+### Feature 4.1: Allow to return cards from discard to deck and/or hand
+
+### User Story
+As a player, I want to be able to return cards from the discard pile to the deck and/or hand so that I can practice with different scenarios.
+
+### Details
+- Use the same way that you can return cards from the deck to the hand in the main game. Using the right click context menu. 
+
 # Progress
 
 - [x] Feature 1: Manual Lore Scoring
 - [x] Feature 2: Text on the Nodes should respect new lines
 - [] Feature 3: Loading Example Sessions
+- [x] Feature 4: Inspect Discard Piles
+- [] Feature 4.1: Allow to return cards from discard to deck and/or hand
+
