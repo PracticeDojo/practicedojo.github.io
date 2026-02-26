@@ -77,6 +77,17 @@ As a player, I want the turn comments to be for each player so that I can keep t
 - At the moment the comments for the turn appear for both players. I want them to be for each player separately.
 - when the change of turn happens, the comments should be updated for each player separately.
 
+## Feature 8: Allow a mode that Creates a Save every turn
+
+### User Story
+As a player, I want the practice dojo to automatically save the game state every turn so that I can easily resume the game later.
+
+### Details
+- There should be a custom tickbox that allows the practice dojo to automatically save the game state every turn.
+- The state save should be stored in the same way as the current saves.
+- The save should be named in a way that indicates the turn number and the player that was playing.
+
+
 # Progress
 
 - [x] Feature 1: Manual Lore Scoring
@@ -87,4 +98,4 @@ As a player, I want the turn comments to be for each player so that I can keep t
 - [x] Feature 5: Zoom control in the tree view
 - [x] Feature 6: Fix the "Orphan Nodes" issue
 - [x] Feature 7: Turn Comments should be for each player
-
+- [x] Feature 8: Allow a mode that Creates a Save every turn

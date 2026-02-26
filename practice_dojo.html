@@ -508,6 +508,19 @@
             </div>
 
             <div class="p-4 border-t border-gray-800 bg-[#151518] flex flex-col gap-2 shrink-0 z-30 relative">
+                <!-- Auto-Save Toggle -->
+                <div class="flex items-center justify-between pb-2 border-b border-gray-800 mb-1 px-1">
+                    <span class="text-[10px] font-bold uppercase tracking-wider text-gray-400"
+                        title="Automatically save the game state to the Multiverse Tree before ending each turn">Save
+                        state every turn</span>
+                    <label class="relative inline-flex items-center cursor-pointer"
+                        title="Automatically save the game state to the Multiverse Tree before ending each turn">
+                        <input type="checkbox" id="auto-save-turn" class="sr-only peer">
+                        <div
+                            class="w-9 h-5 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-gray-300 after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-purple-600">
+                        </div>
+                    </label>
+                </div>
                 <div class="flex gap-2">
                     <button onclick="App.questWithAll()"
                         class="flex-1 py-2 bg-gray-800 hover:bg-gray-700 text-sm font-semibold rounded text-gray-300 transition"
@@ -1230,6 +1243,38 @@
 
                 this.logAction(`Draw step`, true);
                 this._internalDraw(this.state.activePlayer);
+
+                // Feature 8: Auto-save timeline on turn start
+                const autoSaveCheckbox = document.getElementById('auto-save-turn');
+                if (autoSaveCheckbox && autoSaveCheckbox.checked) {
+                    // Save AFTER the state has fully resolved to the start of the new turn
+                    // The save should be named in a way that indicates the turn number and the player that is playing.
+                    const name = `Turn ${this.state.turn} - ${p.name} Active`;
+
+                    const p1 = this.state.players[0];
+                    const p2 = this.state.players[1];
+                    const stats = `Turn ${this.state.turn} | P1: ${p1.lore} - P2: ${p2.lore}`;
+
+                    const timelineColors = ['#ef4444', '#f97316', '#eab308', '#22c54e', '#06b6d4', '#3b82f6', '#8b5cf6', '#d946ef', '#f43f5e'];
+                    const bColor = timelineColors[this.bookmarks.length % timelineColors.length];
+
+                    const newId = this.uuid();
+
+                    this.bookmarks.push({
+                        id: newId,
+                        parentId: this.state.activeBookmarkId || null,
+                        name: name,
+                        stats: stats,
+                        comment: "Auto-saved at start of turn.",
+                        color: bColor,
+                        state: JSON.stringify(this.state),
+                        timestamp: Date.now(),
+                        isDeckEdit: false
+                    });
+
+                    this.state.activeBookmarkId = newId;
+                    this.showToast("Auto-Saved Timeline");
+                }
 
                 this.render();
             },
