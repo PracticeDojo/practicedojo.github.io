@@ -58,6 +58,25 @@ As a player, I want to be able to zoom in and out of the tree view so that I can
 - Add a zoom control in the tree view tied to the mouse wheel.
 
 
+## Feature 6: Fix the "Orphan Nodes" issue
+
+### User Story
+As a player, I want the tree view to be a true representation of the game history, without any "orphan nodes" (nodes that are not connected to the main tree), so that I can trust the visualization and easily navigate through the game history.
+
+### Details
+- When loading a session, ensure that all nodes are properly connected to the tree.
+- Fix the issue where some nodes appear disconnected from the main tree.
+- Ensure that the tree view accurately reflects the game history, with proper parent-child relationships between nodes.
+
+## Feature 7: Turn Comments should be for each player
+
+### User Story
+As a player, I want the turn comments to be for each player so that I can keep track of the game state. 
+
+### Details
+- At the moment the comments for the turn appear for both players. I want them to be for each player separately.
+- when the change of turn happens, the comments should be updated for each player separately.
+
 # Progress
 
 - [x] Feature 1: Manual Lore Scoring
@@ -66,4 +85,6 @@ As a player, I want to be able to zoom in and out of the tree view so that I can
 - [x] Feature 4: Inspect Discard Piles
 - [x] Feature 4.1: Allow to return cards from discard to deck and/or hand
 - [x] Feature 5: Zoom control in the tree view
+- [x] Feature 6: Fix the "Orphan Nodes" issue
+- [x] Feature 7: Turn Comments should be for each player
 

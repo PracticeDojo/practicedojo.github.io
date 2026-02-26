@@ -721,7 +721,7 @@
                     <textarea id="active-turn-comment"
                         class="w-48 h-24 bg-black/30 border border-gray-600/50 rounded p-2 text-xs text-white focus:bg-black/80 focus:border-purple-500 focus:w-64 focus:h-40 focus:z-50 focus:shadow-2xl outline-none transition-all duration-200 resize-none hover:bg-black/50 hover:border-gray-500"
                         placeholder="Add comments for this turn... (Saves on click away)"
-                        onblur="App.updateTurnComment(App.state.turn, this.value)"></textarea>
+                        onblur="App.updateTurnComment(App.state.turn, App.state.activePlayer, this.value)"></textarea>
                 </div>
 
                 <div
@@ -861,12 +861,13 @@
                 log: []
             },
 
-            updateTurnComment(turnNum, text) {
+            updateTurnComment(turnNum, playerId, text) {
                 // To avoid flooding the timeline stack on every keystroke, this should mainly be called onblur
                 // but we also need to capture current state before mutating
-                if (this.state.turnComments[turnNum] === text) return;
+                const key = `${turnNum}-${playerId}`;
+                if (this.state.turnComments[key] === text) return;
                 this.saveState();
-                this.state.turnComments[turnNum] = text;
+                this.state.turnComments[key] = text;
                 this.render();
             },
 
@@ -1208,7 +1209,7 @@
 
                 const p = this.state.players[this.state.activePlayer];
 
-                this.logAction(`--- Turn ${this.state.turn} ---`, true);
+                this.logAction(`--- Turn ${this.state.turn} Begins ---`, true);
                 this.logAction(`Ready step: characters and items readied`, true);
 
                 // Ready Characters and Items (Not Locations)
@@ -2830,14 +2831,20 @@
                 logEl.innerHTML = '';
 
                 // Helper to render a comment block
-                const renderCommentBlock = (turnNum) => {
-                    const comment = this.state.turnComments[turnNum];
+                const renderCommentBlock = (turnNum, playerId) => {
+                    let comment = this.state.turnComments[`${turnNum}-${playerId}`];
+                    // Fallback to old format
+                    if (comment === undefined) {
+                        comment = this.state.turnComments[turnNum];
+                    }
                     if (!comment || comment.trim() === '') return;
+
+                    const pName = this.state.players[playerId] ? this.state.players[playerId].name : 'Player';
                     const cNode = document.createElement('div');
                     cNode.className = 'text-xs mt-1 mb-2 p-2 bg-black/40 border border-gray-700/50 rounded-lg shadow-inner flex flex-col gap-1 w-11/12 ml-auto';
                     cNode.innerHTML = `
                         <div class="flex items-center gap-1.5 text-white/40 text-[10px] uppercase font-bold tracking-wider">
-                            <i class="fa-solid fa-book-open"></i> Turn ${turnNum} Notes
+                            <i class="fa-solid fa-book-open"></i> Turn ${turnNum} Notes (${pName})
                         </div>
                         <div class="text-white/80 whitespace-pre-wrap leading-relaxed">${comment}</div>
                     `;
@@ -2854,7 +2861,7 @@
                     const turnMatch = entry.text.match(/^--- Turn (\d+) Begins ---$/);
                     if (turnMatch && entry.isSystem) {
                         const turnNum = parseInt(turnMatch[1]);
-                        renderCommentBlock(turnNum);
+                        renderCommentBlock(turnNum, entry.player);
                     }
                 });
 
@@ -2864,7 +2871,7 @@
                 const sliceText = this.state.log.slice(-30).map(e => e.text).join('\n');
                 if (!sliceText.includes(`--- Turn ${this.state.turn} Begins ---`)) {
                     // Try to render it, since it wasn't rendered inline
-                    renderCommentBlock(this.state.turn);
+                    renderCommentBlock(this.state.turn, this.state.activePlayer);
                 }
 
                 logEl.scrollTop = logEl.scrollHeight;
@@ -3184,7 +3191,11 @@
                 // Only update value if it's not currently focused to prevent overriding what the user is typing 
                 // if a render happens in the background (e.g. they typed something then dragged a card without blurring)
                 if (document.activeElement !== commentBox) {
-                    commentBox.value = this.state.turnComments[this.state.turn] || '';
+                    let comment = this.state.turnComments[`${this.state.turn}-${ap.id}`];
+                    if (comment === undefined) {
+                        comment = this.state.turnComments[this.state.turn]; // fallback
+                    }
+                    commentBox.value = comment || '';
                 }
 
                 // Bottom Hand (Visible)
