@@ -25,8 +25,16 @@ As a player, I want to be able to load example sessions so that I can practice w
 - Add a dropdown to select the example session. In the main Intro Screen.
 - Add a button to load the example session. In the main Intro Screen.
 
+## Feature 4: Inspect Discard Piles
+
+### User Story
+As a player, I want to be able to inspect the discard piles of both players so that I can keep track of the game state.
+
+### Details
+- Use the same way that you can inspect the deck in the main game. Using the right click context menu. But No need to allow reordering of the discard pile. or reshuffling the discard pile.
+
 # Progress
 
 - [x] Feature 1: Manual Lore Scoring
-- [] Feature 2: Text on the Nodes should respect new lines
+- [x] Feature 2: Text on the Nodes should respect new lines
 - [] Feature 3: Loading Example Sessions
