@@ -249,6 +249,21 @@
                 </div>
             </div>
             <div class="mt-4 flex justify-between items-center border-t border-gray-700 pt-4">
+                <div class="flex items-center gap-4 flex-1">
+                    <label class="text-xs text-gray-400 font-semibold whitespace-nowrap">Load Example Session:</label>
+                    <select id="example-session-select"
+                        class="bg-gray-900 text-sm p-1.5 rounded border border-gray-700 text-gray-300 focus:border-blue-500 focus:outline-none max-w-xs cursor-pointer">
+                        <option value="">-- Select an Example --</option>
+                        <option value="multiverse_session_example_01.json">Session Example 01</option>
+                    </select>
+                    <button onclick="App.loadExampleSession()"
+                        class="bg-blue-800 hover:bg-blue-600 border border-blue-500 text-white font-bold py-1.5 px-3 rounded transition flex items-center text-sm shadow-md disabled:opacity-50"
+                        id="btn-load-example">
+                        <i class="fa-solid fa-cloud-arrow-down mr-2"></i> Load
+                    </button>
+                </div>
+            </div>
+            <div class="mt-4 flex justify-between items-center border-t border-gray-700 pt-4">
                 <div class="flex items-center gap-4">
                     <input type="file" id="setup-import-file" class="hidden" accept=".json"
                         onchange="App.importTimelines(event)">
@@ -1292,6 +1307,54 @@
                     event.target.value = '';
                 };
                 reader.readAsText(file);
+            },
+
+            async loadExampleSession() {
+                const selectElement = document.getElementById('example-session-select');
+                const filename = selectElement.value;
+                if (!filename) return;
+
+                const btn = document.getElementById('btn-load-example');
+                const originalText = btn.innerHTML;
+                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Loading...';
+                btn.disabled = true;
+
+                try {
+                    const response = await fetch(`./multiverse_examples/${filename}`);
+                    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+
+                    const importedData = await response.json();
+
+                    if (importedData.currentState && importedData.bookmarks) {
+                        this.state = importedData.currentState;
+                        this.state.turnComments = this.state.turnComments || {};
+                        this.bookmarks = importedData.bookmarks;
+                        this.autoSaves = importedData.autoSaves || [];
+
+                        if (importedData.deck1) document.getElementById('deck1-input').value = importedData.deck1;
+                        if (importedData.deck2) document.getElementById('deck2-input').value = importedData.deck2;
+
+                        // Ensure user is booted into the app if they imported from setup modal
+                        document.getElementById('setup-modal').classList.add('hidden');
+                        document.getElementById('app').classList.remove('hidden');
+
+                        // Close Drawer if open, render new state
+                        document.getElementById('timeline-drawer').classList.add('-translate-x-full');
+                        this.renderAutoSaves();
+                        this.renderTree(); // Ensure tree is ready if they open it
+                        this.render();
+                        this.showToast(`Loaded ${filename} successfully!`);
+                    } else {
+                        alert("Invalid example session payload.");
+                    }
+                } catch (err) {
+                    console.error("Failed to fetch example session", err);
+                    alert("Failed to fetch the example session. If running directly from file:// you may need to use a local web server.");
+                } finally {
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                    selectElement.value = '';
+                }
             },
 
             saveTimeline() {
