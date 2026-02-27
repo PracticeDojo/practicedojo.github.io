@@ -87,6 +87,15 @@ As a player, I want the practice dojo to automatically save the game state every
 - The state save should be stored in the same way as the current saves.
 - The save should be named in a way that indicates the turn number and the player that was playing.
 
+## Feature 9: Cloud Session Saving/Loading
+
+### User Story
+As a player, I want to be able to save and load practice sessions to/from a Supabase database so that I can easily share scenarios or move between devices.
+
+### Details
+- Replace the static Example Sessions dropdown with a dynamic list pulled from a `dojo_sessions` table in Supabase.
+- Add a "Save to Cloud" button in the Timelines Drawer to instantly push the current serialized state up to the database.
+
 # Refactor
 
 ## Refactor 1: JSON format
@@ -111,3 +120,4 @@ As a developer, I want the JSON game state to be way more optimized and organize
 - [x] Feature 6: Fix the "Orphan Nodes" issue
 - [x] Feature 7: Turn Comments should be for each player
 - [x] Feature 8: Allow a mode that Creates a Save every turn
+- [x] Feature 9: Cloud Session Saving/Loading

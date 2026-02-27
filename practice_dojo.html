@@ -279,8 +279,7 @@
                 <div class="flex items-center gap-3">
                     <select id="example-session-select"
                         class="bg-black text-sm p-2.5 rounded border border-gray-700 text-gray-300 focus:border-blue-500 focus:outline-none w-48 cursor-pointer">
-                        <option value="">-- Example Session --</option>
-                        <option value="multiverse_session_example_01.json">Session Example 01</option>
+                        <option value="">-- Load from Database --</option>
                     </select>
                     <button onclick="App.loadExampleSession()"
                         class="bg-gray-800 hover:bg-gray-700 text-blue-400 border border-blue-500/50 hover:border-blue-400 font-bold py-2.5 px-4 rounded transition flex items-center text-sm disabled:opacity-50 shadow-md"
@@ -603,11 +602,15 @@
                         onchange="App.importTimelines(event)">
                     <button onclick="document.getElementById('import-file').click()"
                         class="flex-1 py-2 text-xs font-bold text-gray-400 hover:text-white hover:bg-gray-800 transition border-r border-gray-800">
-                        <i class="fa-solid fa-file-import mr-1"></i> Import Session
+                        <i class="fa-solid fa-file-import mr-1"></i> Import
                     </button>
                     <button onclick="App.exportTimelines()"
-                        class="flex-1 py-2 text-xs font-bold text-gray-400 hover:text-white hover:bg-gray-800 transition">
-                        <i class="fa-solid fa-file-export mr-1"></i> Export Session
+                        class="flex-1 py-2 text-xs font-bold text-gray-400 hover:text-white hover:bg-gray-800 transition border-r border-gray-800">
+                        <i class="fa-solid fa-file-export mr-1"></i> Export
+                    </button>
+                    <button onclick="App.promptSaveSessionToCloud()"
+                        class="flex-1 py-2 text-xs font-bold text-blue-400 hover:text-blue-300 hover:bg-gray-800 transition">
+                        <i class="fa-solid fa-cloud-arrow-up mr-1"></i> Save to Cloud
                     </button>
                 </div>
 
@@ -871,6 +874,7 @@
 
         let allDecks = [];
         let deckFuse = null;
+        let allSessions = [];
 
         const App = {
             cardDB: {},
@@ -1137,6 +1141,7 @@
                 try {
                     // Fetch Supabase Decks asynchronously in the background
                     this.fetchDecksFromDatabase();
+                    this.fetchSessionsFromDatabase();
 
                     // 1. Fetch Cards
                     const res = await fetch('https://cdn.jsdelivr.net/gh/heavenideas/similcana@main/database/allCards.json');
@@ -1588,10 +1593,37 @@
                 reader.readAsText(file);
             },
 
+            async fetchSessionsFromDatabase() {
+                try {
+                    // Only select id, name, and created_at to save bandwidth. session_data is heavy.
+                    const { data, error } = await supabaseClient.from('dojo_sessions').select('id, name, created_at').order('created_at', { ascending: false });
+                    if (error) {
+                        console.error('Error fetching sessions:', error);
+                        allSessions = [];
+                    } else {
+                        allSessions = data;
+                    }
+                    this.populateSessionDropdown();
+                } catch (err) {
+                    console.error("Failed to fetch sessions from Supabase:", err);
+                }
+            },
+
+            populateSessionDropdown() {
+                const selectElement = document.getElementById('example-session-select');
+                if (!selectElement) return;
+
+                let optionsHtml = '<option value="">-- Load from Database --</option>';
+                allSessions.forEach(session => {
+                    optionsHtml += `<option value="${session.id}">${session.name}</option>`;
+                });
+                selectElement.innerHTML = optionsHtml;
+            },
+
             async loadExampleSession() {
                 const selectElement = document.getElementById('example-session-select');
-                const filename = selectElement.value;
-                if (!filename) return;
+                const sessionId = selectElement.value;
+                if (!sessionId) return;
 
                 const btn = document.getElementById('btn-load-example');
                 const originalText = btn.innerHTML;
@@ -1599,10 +1631,10 @@
                 btn.disabled = true;
 
                 try {
-                    const response = await fetch(`./multiverse_examples/${filename}`);
-                    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                    const { data, error } = await supabaseClient.from('dojo_sessions').select('session_data').eq('id', sessionId).single();
+                    if (error) throw error;
 
-                    const importedData = await response.json();
+                    const importedData = data.session_data;
 
                     if (importedData.currentState && importedData.bookmarks) {
                         this.state = this.decompressState(importedData.currentState);
@@ -1622,17 +1654,53 @@
                         this.renderAutoSaves();
                         this.renderTree(); // Ensure tree is ready if they open it
                         this.render();
-                        this.showToast(`Loaded ${filename} successfully!`);
+                        this.showToast(`Loaded session successfully!`);
                     } else {
-                        alert("Invalid example session payload.");
+                        alert("Invalid session payload from Database.");
                     }
                 } catch (err) {
                     console.error("Failed to fetch example session", err);
-                    alert("Failed to fetch the example session. If running directly from file:// you may need to use a local web server.");
+                    alert("Failed to fetch the session from Supabase.");
                 } finally {
                     btn.innerHTML = originalText;
                     btn.disabled = false;
                     selectElement.value = '';
+                }
+            },
+
+            promptSaveSessionToCloud() {
+                const sessionName = prompt("Enter a name for this session to save to the cloud:");
+                if (sessionName && sessionName.trim() !== "") {
+                    this.saveSessionToCloud(sessionName.trim());
+                }
+            },
+
+            async saveSessionToCloud(sessionName) {
+                const exportData = {
+                    version: 1,
+                    currentState: this.compressState(this.state, true),
+                    bookmarks: this.bookmarks,
+                    autoSaves: this.autoSaves,
+                    history: this.history,
+                    deck1: document.getElementById('deck1-input').value,
+                    deck2: document.getElementById('deck2-input').value
+                };
+
+                this.showToast("Uploading session to cloud...");
+
+                try {
+                    const { data, error } = await supabaseClient.from('dojo_sessions').insert([
+                        { name: sessionName, session_data: exportData }
+                    ]);
+
+                    if (error) throw error;
+
+                    this.showToast("Session saved to Cloud successfully!");
+                    // Refresh the dropdown to include the newly saved session
+                    this.fetchSessionsFromDatabase();
+                } catch (err) {
+                    console.error("Failed to save session to cloud:", err);
+                    alert("Failed to save session to Supabase.");
                 }
             },
 
