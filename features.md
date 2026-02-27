@@ -96,6 +96,34 @@ As a player, I want to be able to save and load practice sessions to/from a Supa
 - Replace the static Example Sessions dropdown with a dynamic list pulled from a `dojo_sessions` table in Supabase.
 - Add a "Save to Cloud" button in the Timelines Drawer to instantly push the current serialized state up to the database.
 
+## Feature 10: Replace cards in deck
+
+### User Story
+As a player, I want to be able to Replace cards in the deck so that I can practice with different scenarios.
+
+### Details
+- When we inspect the deck we should add an option to Replace the cards in the deck.
+- The option should be to "replace" a card in the deck with another card. 
+- You right click on a card in the deck and select "replace" from the context menu.
+- This will open a fuzzy search that allows you to search for cards and add them to the deck and remove the other card that was there before.
+- The search should be filtering for the 2 legal colors of your deck.
+- Once you've replaced as many cards as you want, only when you click on the existing "Save Custom Order" button, it will save the deck like normal and create the corresponding bookmark like we do now.
+
+
+## Feature 10.1: Replace all copies of a card in the deck
+
+### User Story
+As a player, I want to be able to replace all copies of a card in the deck so that I can practice with different scenarios.
+
+### Details
+- When we inspect the deck we should add an option to replace all copies of a card in the deck.
+- The option should be to "replace all copies of" a card in the deck with another card. 
+- You right click on a card in the deck and select "replace all copies of" from the context menu.
+- This will open a fuzzy search that allows you to search for cards and add them to the deck and remove all copies of the other card that was there before.
+- The search should be filtering for the 2 legal colors of your deck.
+- Once you've replaced all copies of the card you want, only when you click on the existing "Save Custom Order" button, it will save the deck like normal and create the corresponding bookmark like we do now.
+
+
 # Refactor
 
 ## Refactor 1: JSON format

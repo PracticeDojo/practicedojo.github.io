@@ -380,6 +380,32 @@
         </div>
     </div>
 
+    <!-- Card Search Modal -->
+    <div id="card-search-modal"
+        class="absolute inset-0 z-50 bg-black bg-opacity-90 flex items-center justify-center hidden">
+        <div class="bg-gray-800 p-6 rounded-lg shadow-2xl w-[90vw] h-[90vh] max-w-7xl flex flex-col">
+            <h2
+                class="text-2xl font-bold mb-4 border-b border-gray-700 pb-2 text-white flex justify-between items-center">
+                <span id="card-search-title">Search Replacement Card</span>
+                <button onclick="App.closeCardSearch()" class="text-gray-400 hover:text-white transition"><i
+                        class="fa-solid fa-times"></i></button>
+            </h2>
+            <div class="mb-4">
+                <input type="text" id="card-search-input" onkeyup="App.executeCardSearch(this.value)"
+                    class="w-full bg-black text-white p-3 rounded border border-gray-700 focus:border-blue-500 focus:outline-none text-lg transition"
+                    placeholder="Type a card name to search...">
+            </div>
+            <div id="card-search-results"
+                class="flex-1 overflow-y-auto grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-4 p-2 content-start">
+                <!-- Search results injected here -->
+            </div>
+            <div class="mt-4 flex justify-end gap-4 border-t border-gray-700 pt-4">
+                <button onclick="App.closeCardSearch()"
+                    class="px-6 py-2 bg-gray-600 hover:bg-gray-500 text-white font-bold rounded transition">Cancel</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Multiverse Tree Modal -->
     <div id="tree-modal" class="absolute inset-0 z-50 bg-black/95 backdrop-blur-md hidden flex-col overflow-hidden">
         <div class="p-4 bg-gray-900 border-b border-gray-800 flex justify-between items-center z-10 shadow-2xl">
@@ -874,6 +900,7 @@
 
         let allDecks = [];
         let deckFuse = null;
+        let cardFuse = null;
         let allSessions = [];
 
         const App = {
@@ -1161,6 +1188,8 @@
                         if (c.name && !this.cardDB[c.name.toLowerCase()]) this.cardDB[c.name.toLowerCase()] = c;
                         if (c.simpleName && !this.cardDB[c.simpleName]) this.cardDB[c.simpleName] = c;
                     });
+
+                    cardFuse = new Fuse(this.allCards, { keys: ['name', 'simpleName'], threshold: 0.3 });
 
                     // 2. Fetch Abilities Config (for Win Probability Library)
                     try {
@@ -2973,6 +3002,12 @@
                     el.ondragover = (e) => this.allowDrop(e);
                     el.ondrop = (e) => this.inspectDrop(e, index);
 
+                    // Context Menu for Replacements
+                    el.addEventListener('contextmenu', (e) => {
+                        e.preventDefault();
+                        this.showInspectDeckContextMenu(e, index, c.cardId);
+                    });
+
                     container.appendChild(el);
                 });
             },
@@ -3002,6 +3037,103 @@
                 document.getElementById('inspect-deck-modal').classList.add('hidden');
                 this._tempDeckOrder = null;
                 this._inspectingPlayerIndex = null;
+            },
+
+            // --- Deck Card Replacement Logic ---
+            showInspectDeckContextMenu(e, targetIndex, targetCardId) {
+                e.preventDefault();
+                e.stopPropagation();
+
+                const menu = document.getElementById('context-menu');
+                menu.innerHTML = '';
+
+                const addOption = (text, onClick) => {
+                    const item = document.createElement('div');
+                    item.className = 'context-item flex items-center gap-2';
+                    item.innerHTML = text;
+                    item.onclick = (evt) => {
+                        evt.stopPropagation();
+                        menu.style.display = 'none';
+                        onClick();
+                    };
+                    menu.appendChild(item);
+                };
+
+                addOption('<i class="fa-solid fa-right-left text-blue-400"></i> Replace this card', () => this.openCardSearch(targetIndex, false));
+                addOption('<i class="fa-solid fa-layer-group text-purple-400"></i> Replace all copies', () => this.openCardSearch(targetCardId, true));
+
+                if (menu.children.length > 0) {
+                    menu.style.display = 'block';
+                    const rect = menu.getBoundingClientRect();
+                    let left = e.clientX;
+                    let top = e.clientY;
+                    if (left + rect.width > window.innerWidth) left = window.innerWidth - rect.width - 10;
+                    if (top + rect.height > window.innerHeight) top = window.innerHeight - rect.height - 10;
+                    menu.style.left = left + 'px';
+                    menu.style.top = top + 'px';
+                }
+            },
+
+            openCardSearch(target, isReplaceAll) {
+                this._replacementTarget = target;
+                this._isReplaceAll = isReplaceAll;
+
+                document.getElementById('card-search-input').value = '';
+                document.getElementById('card-search-results').innerHTML = '';
+                document.getElementById('card-search-modal').classList.remove('hidden');
+                setTimeout(() => document.getElementById('card-search-input').focus(), 100);
+            },
+
+            closeCardSearch() {
+                document.getElementById('card-search-modal').classList.add('hidden');
+                this._replacementTarget = null;
+                this._isReplaceAll = false;
+            },
+
+            executeCardSearch(query) {
+                const container = document.getElementById('card-search-results');
+                if (!query || query.length < 2) {
+                    container.innerHTML = '';
+                    return;
+                }
+
+                if (!cardFuse) return;
+
+                const results = cardFuse.search(query).slice(0, 18); // Limiting to top 18 for grid aesthetics
+                container.innerHTML = '';
+
+                results.forEach(res => {
+                    const dbCard = res.item;
+                    const el = document.createElement('div');
+                    el.className = `relative rounded-md bg-cover bg-center shadow-md border border-gray-600 hover:border-blue-400 hover:scale-105 hover:z-10 transition-transform cursor-pointer`;
+                    el.style.width = '100%';
+                    el.style.aspectRatio = '2.5 / 3.5';
+                    el.style.backgroundImage = `url('${this.getCardImage(dbCard)}')`;
+
+                    el.onclick = () => this.selectReplacementCard(dbCard);
+                    container.appendChild(el);
+                });
+            },
+
+            selectReplacementCard(dbCard) {
+                if (!this._tempDeckOrder) return;
+
+                if (this._isReplaceAll) {
+                    // target is cardId
+                    for (let i = 0; i < this._tempDeckOrder.length; i++) {
+                        if (this._tempDeckOrder[i].cardId === this._replacementTarget) {
+                            this._tempDeckOrder[i] = { instanceId: this.uuid(), cardId: dbCard.id };
+                        }
+                    }
+                    this.showToast(`Replaced all copies with ${dbCard.name}`);
+                } else {
+                    // target is index
+                    this._tempDeckOrder[this._replacementTarget] = { instanceId: this.uuid(), cardId: dbCard.id };
+                    this.showToast(`Replaced card with ${dbCard.name}`);
+                }
+
+                this.closeCardSearch();
+                this.renderInspectGrid();
             },
 
             showDiscardContextMenu(e, playerIndex) {
