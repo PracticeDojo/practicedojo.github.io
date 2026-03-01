@@ -124,6 +124,19 @@ As a player, I want to be able to replace all copies of a card in the deck so th
 - Once you've replaced all copies of the card you want, only when you click on the existing "Save Custom Order" button, it will save the deck like normal and create the corresponding bookmark like we do now.
 
 
+## Feature 11: Transparent BG in the Timelines Modal GUI
+
+### User Story
+As a player, I want the timelines modal GUI to have a transparent background so that I can see the game state behind it.
+
+### Details
+- The timelines modal GUI should have a transparent background so that I can see the game state behind it.
+- The background should be semi-transparent so that I can see the game state behind it.
+- The BG should be slightly blurred so that I can see the game state behind it.
+
+
+
+
 # Refactor
 
 ## Refactor 1: JSON format
@@ -149,3 +162,6 @@ As a developer, I want the JSON game state to be way more optimized and organize
 - [x] Feature 7: Turn Comments should be for each player
 - [x] Feature 8: Allow a mode that Creates a Save every turn
 - [x] Feature 9: Cloud Session Saving/Loading
+- [x] Feature 10: Replace cards in deck
+- [x] Feature 10.1: Replace all copies of a card in the deck    
+- [x] Feature 11: Transparent BG in the Timelines Modal GUI
