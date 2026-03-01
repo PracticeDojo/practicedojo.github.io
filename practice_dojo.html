@@ -913,6 +913,7 @@
             bookmarks: [],
             autoSaves: [],
             history: [],
+            treeNavActiveId: null,
 
             // --- State Compression ---
             compressCard(c) {
@@ -1870,6 +1871,17 @@
                 }
 
                 if (targetPos) {
+                    // Initialize keyboard nav state
+                    if (this.state && this.state.activeBookmarkId && this.nodePositions[this.state.activeBookmarkId] === targetPos) {
+                        this.treeNavActiveId = this.state.activeBookmarkId;
+                    } else {
+                        // finding the latest node again (quick find)
+                        const latestNode = this.bookmarks.reduce((prev, current) =>
+                            (prev.timestamp > current.timestamp) ? prev : current
+                        );
+                        this.treeNavActiveId = latestNode.id;
+                    }
+
                     // Center the camera on the target node
                     const viewport = document.getElementById('tree-viewport');
                     const vWidth = viewport.clientWidth;
@@ -1976,16 +1988,17 @@
                     if (!pos) return;
 
                     const isActive = this.state.activeBookmarkId === b.id;
+                    const isNavActive = this.treeNavActiveId === b.id;
                     const d = new Date(b.timestamp);
                     const timeStr = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
                     const icon = b.isDeckEdit ? '<i class="fa-solid fa-layer-group text-blue-400"></i>' : '<i class="fa-solid fa-bookmark text-purple-400"></i>';
 
                     const el = document.createElement('div');
-                    el.className = `tree-node absolute w-[220px] h-[150px] bg-[#1a1a1e] rounded-lg border-2 shadow-lg flex flex-col overflow-hidden transition-transform hover:scale-105 hover:z-20 ${isActive ? 'tree-node-active' : ''}`;
+                    el.className = `tree-node absolute w-[220px] h-[150px] bg-[#1a1a1e] rounded-lg border-2 shadow-lg flex flex-col overflow-hidden transition-transform hover:scale-105 hover:z-20 ${isActive ? 'tree-node-active' : ''} ${isNavActive ? 'ring-4 ring-white shadow-[0_0_20px_rgba(255,255,255,0.5)] z-30' : ''}`;
                     el.style.left = `${pos.x}px`;
                     el.style.top = `${pos.y}px`;
-                    el.style.borderColor = b.color || '#4b5563';
+                    el.style.borderColor = isNavActive ? '#ffffff' : (b.color || '#4b5563');
 
                     const isEditing = this.state.editingNodeId === b.id;
 
@@ -3707,6 +3720,68 @@
         // Close context menu on external click
         document.addEventListener('click', () => {
             document.getElementById('context-menu').style.display = 'none';
+        });
+
+        // Multiverse Tree Keyboard Navigation Support
+        document.addEventListener('keydown', (e) => {
+            if (document.getElementById('tree-modal').classList.contains('hidden')) return;
+            // Disable navigation if we're actively typing in a text input or textarea
+            if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') return;
+
+            if (e.key === 'ArrowUp' || e.key === 'ArrowDown' || e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+                e.preventDefault();
+                if (!App.treeNavActiveId || !App.nodePositions || !App.nodePositions[App.treeNavActiveId]) return;
+
+                const currentPos = App.nodePositions[App.treeNavActiveId];
+                let nextId = null;
+
+                if (e.key === 'ArrowLeft') {
+                    // Go to parent
+                    const activeNode = App.bookmarks.find(b => b.id === App.treeNavActiveId);
+                    if (activeNode && activeNode.parentId) {
+                        nextId = activeNode.parentId;
+                    }
+                } else if (e.key === 'ArrowRight') {
+                    // Go to earliest child
+                    const children = App.bookmarks.filter(b => b.parentId === App.treeNavActiveId).sort((a, b) => a.timestamp - b.timestamp);
+                    if (children.length > 0) {
+                        nextId = children[0].id;
+                    }
+                } else if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+                    // Find sibling (nodes with same parent)
+                    const activeNode = App.bookmarks.find(b => b.id === App.treeNavActiveId);
+                    if (activeNode) {
+                        const siblings = App.bookmarks.filter(b => b.parentId === activeNode.parentId).sort((a, b) => App.nodePositions[a.id].y - App.nodePositions[b.id].y);
+                        const currentIndex = siblings.findIndex(s => s.id === App.treeNavActiveId);
+                        if (e.key === 'ArrowUp' && currentIndex > 0) {
+                            nextId = siblings[currentIndex - 1].id;
+                        } else if (e.key === 'ArrowDown' && currentIndex < siblings.length - 1) {
+                            nextId = siblings[currentIndex + 1].id;
+                        }
+                    }
+                }
+
+                if (nextId) {
+                    App.treeNavActiveId = nextId;
+                    App.renderTree();
+
+                    // Center viewport on new target
+                    const targetPos = App.nodePositions[nextId];
+                    const viewport = document.getElementById('tree-viewport');
+                    const vWidth = viewport.clientWidth;
+                    const vHeight = viewport.clientHeight;
+                    const nodeCenterX = targetPos.x + (220 / 2);
+                    const nodeCenterY = targetPos.y + (150 / 2);
+                    App.treePan.translateX = (vWidth / 2) - (nodeCenterX * App.treePan.zoom);
+                    App.treePan.translateY = (vHeight / 2) - (nodeCenterY * App.treePan.zoom);
+                    document.getElementById('tree-canvas').style.transform = `translate(${App.treePan.translateX}px, ${App.treePan.translateY}px) scale(${App.treePan.zoom})`;
+                }
+            } else if (e.key === 'Enter') {
+                e.preventDefault();
+                if (App.treeNavActiveId) {
+                    App.restoreTimeline(App.treeNavActiveId, false);
+                }
+            }
         });
 
         // Init App on load

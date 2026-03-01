@@ -137,6 +137,15 @@ As a player, I want the timelines modal GUI to have a transparent background so 
 
 
 
+## Feature 12: Keyboard Navigation in Multiverse Tree
+
+### User Story
+As a player, I want to be able to navigate the node graph using the keyboard arrows and hit enter to load the state, so that I can quickly explore timelines without using the mouse.
+
+### Details
+- Allow the user to navigate the node graph using the keyboard arrows.
+- When you hit enter, load that state.
+
 # Refactor
 
 ## Refactor 1: JSON format
@@ -165,3 +174,4 @@ As a developer, I want the JSON game state to be way more optimized and organize
 - [x] Feature 10: Replace cards in deck
 - [x] Feature 10.1: Replace all copies of a card in the deck    
 - [x] Feature 11: Transparent BG in the Timelines Modal GUI
+- [ ] Feature 12: Keyboard Navigation in Multiverse Tree
