@@ -576,7 +576,7 @@
                         state every turn</span>
                     <label class="relative inline-flex items-center cursor-pointer"
                         title="Automatically save the game state to the Multiverse Tree before ending each turn">
-                        <input type="checkbox" id="auto-save-turn" class="sr-only peer">
+                        <input type="checkbox" id="auto-save-turn" class="sr-only peer" checked>
                         <div
                             class="w-9 h-5 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-gray-300 after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-purple-600">
                         </div>
@@ -3722,11 +3722,37 @@
             document.getElementById('context-menu').style.display = 'none';
         });
 
-        // Multiverse Tree Keyboard Navigation Support
+        // Global Keyboard Hotkeys & Multiverse Tree Navigation Support
         document.addEventListener('keydown', (e) => {
-            if (document.getElementById('tree-modal').classList.contains('hidden')) return;
-            // Disable navigation if we're actively typing in a text input or textarea
+            // Disable all hotkeys if we're actively typing in a text input or textarea
             if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') return;
+
+            // --- Global Hotkeys ---
+            const keyStr = e.key.toLowerCase();
+            if (keyStr === 'm') {
+                if (document.getElementById('tree-modal').classList.contains('hidden')) {
+                    App.openTreeModal();
+                } else {
+                    App.closeTreeModal();
+                }
+                return;
+            }
+            if (keyStr === 't') {
+                App.toggleTimelines();
+                return;
+            }
+            if (keyStr === 'q') {
+                App.questWithAll();
+                return;
+            }
+            if (e.key === ' ' || e.code === 'Space') {
+                e.preventDefault(); // prevent page scrolling
+                App.endTurn();
+                return;
+            }
+
+            // --- Multiverse Tree Keyboard Navigation Support ---
+            if (document.getElementById('tree-modal').classList.contains('hidden')) return;
 
             if (e.key === 'ArrowUp' || e.key === 'ArrowDown' || e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
                 e.preventDefault();
