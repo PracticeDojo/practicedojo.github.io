@@ -449,12 +449,42 @@
     <div id="app" class="flex-1 flex overflow-hidden hidden">
 
         <!-- Sidebar Game Log -->
-        <div class="w-72 bg-[#1a1a1e] border-r border-gray-800 flex flex-col shadow-xl z-20 relative overflow-hidden">
+        <div class="w-72 bg-[#1a1a1e] border-r border-gray-800 flex flex-col shadow-xl z-20 relative">
             <div class="p-4 border-b border-gray-800 flex items-center justify-between">
                 <h1 class="font-bold text-lg tracking-wide"><i class="fa-solid fa-khanda text-purple-500 mr-2"></i>
                     Practice Dojo</h1>
-                <button onclick="App.showSetup()" class="text-gray-500 hover:text-white" title="Reset/Change Decks"><i
-                        class="fa-solid fa-rotate-right"></i></button>
+                <div class="flex items-center gap-3">
+                    <div class="group relative cursor-help">
+                        <i
+                            class="fa-solid fa-keyboard text-gray-500 hover:text-white transition group-hover:text-blue-400"></i>
+                        <!-- Hotkeys Tooltip -->
+                        <div
+                            class="absolute left-0 top-full mt-2 w-64 p-3 bg-black/95 backdrop-blur-md text-gray-300 text-[11px] leading-relaxed rounded-lg border border-gray-700 shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 pointer-events-none transform group-hover:translate-y-0 -translate-y-1">
+                            <div
+                                class="text-white font-bold text-xs uppercase tracking-wider mb-2 border-b border-gray-700 pb-1">
+                                <i class="fa-solid fa-keyboard mr-1"></i> Global Hotkeys
+                            </div>
+                            <div class="flex justify-between mb-1"><span
+                                    class="bg-gray-800 px-1.5 py-0.5 rounded text-white font-mono">M</span> <span>Toggle
+                                    Multiverse Tree</span></div>
+                            <div class="flex justify-between mb-1"><span
+                                    class="bg-gray-800 px-1.5 py-0.5 rounded text-white font-mono">T</span> <span>Toggle
+                                    Timelines Drawer</span></div>
+                            <div class="flex justify-between mb-1"><span
+                                    class="bg-gray-800 px-1.5 py-0.5 rounded text-white font-mono">Q</span> <span>Quest
+                                    with All Ready</span></div>
+                            <div class="flex justify-between mb-1"><span
+                                    class="bg-gray-800 px-1.5 py-0.5 rounded text-white font-mono">Space</span>
+                                <span>End Turn</span>
+                            </div>
+                            <div
+                                class="mt-2 text-gray-500 border-t border-gray-800 pt-1 leading-tight text-[9px] italic">
+                                Navigating the tree view can be done via Arrow Keys + Enter.</div>
+                        </div>
+                    </div>
+                    <button onclick="App.showSetup()" class="text-gray-500 hover:text-white transition"
+                        title="Reset/Change Decks"><i class="fa-solid fa-rotate-right"></i></button>
+                </div>
             </div>
 
             <div class="p-4 border-b border-gray-800 bg-[#151518]">
