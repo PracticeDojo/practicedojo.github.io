@@ -1850,12 +1850,44 @@
                 document.getElementById('tree-modal').classList.remove('hidden');
                 document.getElementById('tree-modal').classList.add('flex');
 
-                // Center the camera (maintain current zoom from treePan but recalculate matrix)
-                this.treePan.translateX = 100;
-                this.treePan.translateY = 100;
-                document.getElementById('tree-canvas').style.transform = `translate(${this.treePan.translateX}px, ${this.treePan.translateY}px) scale(${this.treePan.zoom})`;
-
+                // Render tree first to calculate node positions
                 this.renderTree();
+
+                // Find target node to center on
+                let targetPos = null;
+                if (this.bookmarks && this.bookmarks.length > 0) {
+                    if (this.state && this.state.activeBookmarkId && this.nodePositions[this.state.activeBookmarkId]) {
+                        targetPos = this.nodePositions[this.state.activeBookmarkId];
+                    } else {
+                        // Find the node with the highest timestamp (end of chain)
+                        const latestNode = this.bookmarks.reduce((prev, current) =>
+                            (prev.timestamp > current.timestamp) ? prev : current
+                        );
+                        if (this.nodePositions[latestNode.id]) {
+                            targetPos = this.nodePositions[latestNode.id];
+                        }
+                    }
+                }
+
+                if (targetPos) {
+                    // Center the camera on the target node
+                    const viewport = document.getElementById('tree-viewport');
+                    const vWidth = viewport.clientWidth;
+                    const vHeight = viewport.clientHeight;
+
+                    // CARD_W = 220, CARD_H = 150 used in renderTree
+                    const nodeCenterX = targetPos.x + (220 / 2);
+                    const nodeCenterY = targetPos.y + (150 / 2);
+
+                    this.treePan.translateX = (vWidth / 2) - (nodeCenterX * this.treePan.zoom);
+                    this.treePan.translateY = (vHeight / 2) - (nodeCenterY * this.treePan.zoom);
+                } else {
+                    // Fallback
+                    this.treePan.translateX = 100;
+                    this.treePan.translateY = 100;
+                }
+
+                document.getElementById('tree-canvas').style.transform = `translate(${this.treePan.translateX}px, ${this.treePan.translateY}px) scale(${this.treePan.zoom})`;
             },
 
             closeTreeModal() {
@@ -1918,6 +1950,7 @@
                 };
 
                 roots.forEach(root => assignCoords(root, 0));
+                this.nodePositions = nodePositions; // Save for viewport centering in openTreeModal
 
                 // 1. Render SVG Curved Paths
                 let svgHtml = '';
