@@ -274,7 +274,7 @@
     <div id="loading-screen" class="absolute inset-0 z-50 bg-gray-900 flex flex-col items-center justify-center">
         <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-purple-500 mb-4"></div>
         <h2 class="text-2xl font-bold text-white mb-2">Lorcana Practice Dojo <span class="text-sm text-gray-400 ml-2"
-                id="app-version-loading">v1.14.0</span></h2>
+                id="app-version-loading"></span></h2>
         <p id="loading-text" class="text-gray-400">Fetching Card Database (This may take a moment)...</p>
     </div>
 
@@ -290,7 +290,6 @@
                 </h2>
                 <div class="text-sm font-mono text-gray-500 bg-black/50 px-3 py-1 rounded-full border border-gray-700/50"
                     id="app-version-setup">
-                    v1.14.0
                 </div>
             </div>
 
@@ -516,8 +515,7 @@
                 <h1 class="font-bold text-lg tracking-wide flex items-baseline gap-2">
                     <i class="fa-solid fa-khanda text-purple-500 mr-1"></i>
                     Practice Dojo
-                    <span class="text-xs text-gray-500 font-mono tracking-normal"
-                        id="app-version-sidebar">v1.14.0</span>
+                    <span class="text-xs text-gray-500 font-mono tracking-normal" id="app-version-sidebar"></span>
                 </h1>
                 <div class="flex items-center gap-3">
                     <div class="group relative cursor-help">
@@ -999,6 +997,17 @@
         let deckFuse = null;
         let cardFuse = null;
         let allSessions = [];
+
+        const APP_VERSION = "v1.14.0"; // Centralized version string
+
+        window.addEventListener('DOMContentLoaded', () => {
+            const loadingVer = document.getElementById('app-version-loading');
+            const setupVer = document.getElementById('app-version-setup');
+            const sidebarVer = document.getElementById('app-version-sidebar');
+            if (loadingVer) loadingVer.innerText = APP_VERSION;
+            if (setupVer) setupVer.innerText = APP_VERSION;
+            if (sidebarVer) sidebarVer.innerText = APP_VERSION;
+        });
 
         const App = {
             cardDB: {},
@@ -1989,9 +1998,9 @@
                     const vWidth = viewport.clientWidth;
                     const vHeight = viewport.clientHeight;
 
-                    // CARD_W = 220, CARD_H = 150 used in renderTree
+                    // CARD_W = 220, CARD_H = 220 used in renderTree
                     const nodeCenterX = targetPos.x + (220 / 2);
-                    const nodeCenterY = targetPos.y + (150 / 2);
+                    const nodeCenterY = targetPos.y + (220 / 2);
 
                     this.treePan.translateX = (vWidth / 2) - (nodeCenterX * this.treePan.zoom);
                     this.treePan.translateY = (vHeight / 2) - (nodeCenterY * this.treePan.zoom);
@@ -2044,9 +2053,9 @@
                 let currentY = 0;
                 const nodePositions = {}; // id -> {x, y}
                 const CARD_W = 220;
-                const CARD_H = 150;
+                const CARD_H = 220;
                 const X_SPACING = 300; // 220 card + 80 gap
-                const Y_SPACING = 190; // 150 card + 40 gap
+                const Y_SPACING = 260; // 220 card + 40 gap
 
                 const assignCoords = (node, depth) => {
                     const children = childrenMap[node.id] || [];
@@ -2097,7 +2106,7 @@
                     const icon = b.isDeckEdit ? '<i class="fa-solid fa-layer-group text-blue-400"></i>' : '<i class="fa-solid fa-bookmark text-purple-400"></i>';
 
                     const el = document.createElement('div');
-                    el.className = `tree-node absolute w-[220px] h-[150px] bg-[#1a1a1e] rounded-lg border-2 shadow-lg flex flex-col overflow-hidden transition-transform hover:scale-105 hover:z-20 ${isActive ? 'tree-node-active' : ''} ${isNavActive ? 'ring-4 ring-white shadow-[0_0_20px_rgba(255,255,255,0.5)] z-30' : ''}`;
+                    el.className = `tree-node absolute w-[220px] h-[220px] bg-[#1a1a1e] rounded-lg border-2 shadow-lg flex flex-col overflow-hidden transition-transform hover:scale-105 hover:z-20 ${isActive ? 'tree-node-active' : ''} ${isNavActive ? 'ring-4 ring-white shadow-[0_0_20px_rgba(255,255,255,0.5)] z-30' : ''}`;
                     el.style.left = `${pos.x}px`;
                     el.style.top = `${pos.y}px`;
                     el.style.borderColor = isNavActive ? '#ffffff' : (b.color || '#4b5563');
@@ -2139,7 +2148,7 @@
                              ${b.cardsPlayedData && b.cardsPlayedData.length > 0 ? `
                              <div class="bg-[#1a1a1e] border-t border-gray-700 shrink-0">
                                  <div class="text-[9px] text-white text-center font-bold uppercase tracking-wider bg-gray-600/50 py-0.5" style="text-shadow: 1px 1px 0 #000,-1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000;">Cards Played:</div>
-                                 <div class="flex flex-wrap justify-center gap-1 p-1 max-h-[60px] overflow-y-auto custom-scrollbar">
+                                 <div class="flex flex-wrap justify-center gap-1 p-1 max-h-[180px] overflow-y-auto custom-scrollbar">
                                      ${b.cardsPlayedData.map(cid => {
                             const dbCard = this.cardDB[cid];
                             return dbCard ? `<div class="w-[35px] h-[50px] bg-cover bg-center rounded drop-shadow" style="background-image: url('${this.getCardImage(dbCard)}')"></div>` : '';
