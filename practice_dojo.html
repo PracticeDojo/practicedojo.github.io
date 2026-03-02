@@ -274,7 +274,7 @@
     <div id="loading-screen" class="absolute inset-0 z-50 bg-gray-900 flex flex-col items-center justify-center">
         <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-purple-500 mb-4"></div>
         <h2 class="text-2xl font-bold text-white mb-2">Lorcana Practice Dojo <span class="text-sm text-gray-400 ml-2"
-                id="app-version-loading">v1.12.1</span></h2>
+                id="app-version-loading">v1.14.0</span></h2>
         <p id="loading-text" class="text-gray-400">Fetching Card Database (This may take a moment)...</p>
     </div>
 
@@ -290,7 +290,7 @@
                 </h2>
                 <div class="text-sm font-mono text-gray-500 bg-black/50 px-3 py-1 rounded-full border border-gray-700/50"
                     id="app-version-setup">
-                    v1.12.1
+                    v1.14.0
                 </div>
             </div>
 
@@ -517,7 +517,7 @@
                     <i class="fa-solid fa-khanda text-purple-500 mr-1"></i>
                     Practice Dojo
                     <span class="text-xs text-gray-500 font-mono tracking-normal"
-                        id="app-version-sidebar">v1.12.1</span>
+                        id="app-version-sidebar">v1.14.0</span>
                 </h1>
                 <div class="flex items-center gap-3">
                     <div class="group relative cursor-help">
@@ -1467,6 +1467,7 @@
                 this.state = {
                     activeBookmarkId: null,
                     turn: 1, activePlayer: 0, inactivePlayer: 1, opponentHandRevealed: false, log: [], turnComments: {},
+                    cardsPlayedThisTurn: [],
                     activeTimelineColor: null,
                     players: [
                         { id: 0, name: "Player 1", deck: [], hand: [], field: [], inkwell: [], discard: [], lore: 0, inkTotal: 0, inkReady: 0, hasMulliganed: false },
@@ -1587,10 +1588,14 @@
                         stats: stats,
                         comment: finalComment,
                         color: bColor,
+                        cardsPlayedData: [...(this.state.cardsPlayedThisTurn || [])],
                         state: JSON.stringify(this.compressState(this.state, true)),
                         timestamp: Date.now(),
                         isDeckEdit: false
                     });
+
+                    // Clear the buffer now that the previous turn's played cards are saved
+                    this.state.cardsPlayedThisTurn = [];
 
                     this.state.activeBookmarkId = newId;
                     this.showToast("Auto-Saved Timeline");
@@ -1881,6 +1886,7 @@
                     id: this.uuid(),
                     name: name,
                     stats: stats,
+                    cardsPlayedData: [...(this.state.cardsPlayedThisTurn || [])],
                     state: JSON.stringify(this.compressState(this.state, true)),
                     timestamp: now.getTime()
                 });
@@ -2130,6 +2136,18 @@
                                  <div class="text-[11px] text-gray-300 mt-1.5 break-words overflow-y-auto pr-1 flex-1 min-h-0 custom-scrollbar pb-1 markdown-comment">${b.comment ? marked.parse(b.comment) : ''}</div>
                              </div>
                              
+                             ${b.cardsPlayedData && b.cardsPlayedData.length > 0 ? `
+                             <div class="bg-[#1a1a1e] border-t border-gray-700 shrink-0">
+                                 <div class="text-[9px] text-white text-center font-bold uppercase tracking-wider bg-gray-600/50 py-0.5" style="text-shadow: 1px 1px 0 #000,-1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000;">Cards Played:</div>
+                                 <div class="flex flex-wrap justify-center gap-1 p-1 max-h-[60px] overflow-y-auto custom-scrollbar">
+                                     ${b.cardsPlayedData.map(cid => {
+                            const dbCard = this.cardDB[cid];
+                            return dbCard ? `<div class="w-[35px] h-[50px] bg-cover bg-center rounded drop-shadow" style="background-image: url('${this.getCardImage(dbCard)}')"></div>` : '';
+                        }).join('')}
+                                 </div>
+                             </div>
+                             ` : ''}
+                             
                              <!-- Edit Button -->
                              <button onclick="App.toggleEditNode('${b.id}')" 
                                  class="absolute top-1.5 right-8 w-6 h-6 flex items-center justify-center bg-gray-800 hover:bg-blue-600 text-gray-400 hover:text-white rounded-md text-[10px] transition z-20" 
@@ -2163,6 +2181,15 @@
                                <div class="text-[9px] text-gray-500 font-mono tracking-wider flex justify-between items-center">
                                    <span>${b.stats}</span>
                                </div>
+                               ${b.cardsPlayedData && b.cardsPlayedData.length > 0 ? `
+                               <div class="flex gap-0.5 mt-1 overflow-x-hidden opacity-60 group-hover:opacity-100 transition-opacity">
+                                   ${b.cardsPlayedData.slice(0, 5).map(cid => {
+                            const dbCard = this.cardDB[cid];
+                            return dbCard ? `<div class="w-[18px] h-[25px] bg-cover bg-center rounded-sm shrink-0" style="background-image: url('${this.getCardImage(dbCard)}')"></div>` : '';
+                        }).join('')}
+                                   ${b.cardsPlayedData.length > 5 ? `<div class="text-[8px] text-gray-400 flex items-center ml-1">+${b.cardsPlayedData.length - 5}</div>` : ''}
+                               </div>
+                               ` : ''}
                                <div class="absolute inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10">
                                    <span class="text-xs font-bold text-white">Restore Auto-Save</span>
                                </div>
@@ -2396,6 +2423,9 @@
                             }
                         }
                     }
+                    // Feature 14: Track played cards for visual rendering in auto-saves
+                    if (!this.state.cardsPlayedThisTurn) this.state.cardsPlayedThisTurn = [];
+                    this.state.cardsPlayedThisTurn.push(found.card.cardId);
                 }
 
                 // Remove from old location
@@ -2485,6 +2515,10 @@
 
                 const dbCard = this.cardDB[found.card.cardId];
                 found.player[found.loc].splice(found.idx, 1);
+
+                // Feature 14: Track card played to inkwell
+                if (!this.state.cardsPlayedThisTurn) this.state.cardsPlayedThisTurn = [];
+                this.state.cardsPlayedThisTurn.push(found.card.cardId);
 
                 const cardsToMove = this._unpackStack(found.card);
                 cardsToMove.forEach(c => {

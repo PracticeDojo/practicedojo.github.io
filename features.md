@@ -146,6 +146,34 @@ As a player, I want to be able to navigate the node graph using the keyboard arr
 - Allow the user to navigate the node graph using the keyboard arrows.
 - When you hit enter, load that state.
 
+
+
+## Feature 13: Allow markdown for comments on nodes
+
+### User Story
+As a player, I want to be able to use markdown in the comments on nodes so that I can format them nicely.
+
+### Details
+- Allow the user to use markdown in the comments on nodes.
+- The markdown should be rendered in the tree view.
+- The markdown should be rendered in the node details panel.
+
+
+## Feature 14: Save cards played that turn when autosaving
+
+### User Story
+As a player, I want the practice dojo to save the cards and represent the cards played that turn when autosaving so that I can easily see what cards were played that turn.
+
+### Details
+- When the practice dojo autosaves, it should also save the cards played that turn as a visual representation in the node.
+- We should reuse the information that we already have in the game state for the cards played that turn.
+- We shouldn't duplicate the data in the JSON. This is only a visual representation.
+
+
+
+
+---
+
 # Refactor
 
 ## Refactor 1: JSON format
@@ -174,4 +202,7 @@ As a developer, I want the JSON game state to be way more optimized and organize
 - [x] Feature 10: Replace cards in deck
 - [x] Feature 10.1: Replace all copies of a card in the deck    
 - [x] Feature 11: Transparent BG in the Timelines Modal GUI
-- [ ] Feature 12: Keyboard Navigation in Multiverse Tree
+- [x] Feature 12: Keyboard Navigation in Multiverse Tree
+- [x] Feature 13: Allow markdown for comments on nodes
+- [x] Feature 14: Save cards played that turn when autosaving
+
