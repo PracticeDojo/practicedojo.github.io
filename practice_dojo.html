@@ -11,6 +11,7 @@
     <!-- Supabase & Fuse Libraries -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.6.2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
     <!-- Unified Win Probability Utilities Library -->
     <script
@@ -208,6 +209,62 @@
             border-color: #a855f7 !important;
             background-color: #2e1065 !important;
         }
+
+        /* Markdown Styles for Node Comments */
+        .markdown-comment p {
+            margin-bottom: 0.5em;
+        }
+
+        .markdown-comment p:last-child {
+            margin-bottom: 0;
+        }
+
+        .markdown-comment ul {
+            list-style-type: disc;
+            padding-left: 1.25em;
+            margin-bottom: 0.5em;
+        }
+
+        .markdown-comment ol {
+            list-style-type: decimal;
+            padding-left: 1.25em;
+            margin-bottom: 0.5em;
+        }
+
+        .markdown-comment strong {
+            color: #f3f4f6;
+            /* text-gray-100 */
+        }
+
+        .markdown-comment em {
+            color: #d1d5db;
+            /* text-gray-300 */
+        }
+
+        .markdown-comment a {
+            color: #60a5fa;
+            /* text-blue-400 */
+            text-decoration: underline;
+        }
+
+        .markdown-comment code {
+            background-color: #374151;
+            /* bg-gray-700 */
+            padding: 0.1em 0.3em;
+            border-radius: 0.2em;
+            font-family: monospace;
+            font-size: 0.9em;
+        }
+
+        .markdown-comment blockquote {
+            border-left: 2px solid #6b7280;
+            /* border-gray-500 */
+            padding-left: 0.5em;
+            margin-left: 0;
+            color: #9ca3af;
+            /* text-gray-400 */
+            font-style: italic;
+        }
     </style>
 </head>
 
@@ -217,7 +274,7 @@
     <div id="loading-screen" class="absolute inset-0 z-50 bg-gray-900 flex flex-col items-center justify-center">
         <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-purple-500 mb-4"></div>
         <h2 class="text-2xl font-bold text-white mb-2">Lorcana Practice Dojo <span class="text-sm text-gray-400 ml-2"
-                id="app-version-loading">v1.12.0</span></h2>
+                id="app-version-loading">v1.12.1</span></h2>
         <p id="loading-text" class="text-gray-400">Fetching Card Database (This may take a moment)...</p>
     </div>
 
@@ -233,7 +290,7 @@
                 </h2>
                 <div class="text-sm font-mono text-gray-500 bg-black/50 px-3 py-1 rounded-full border border-gray-700/50"
                     id="app-version-setup">
-                    v1.12.0
+                    v1.12.1
                 </div>
             </div>
 
@@ -460,7 +517,7 @@
                     <i class="fa-solid fa-khanda text-purple-500 mr-1"></i>
                     Practice Dojo
                     <span class="text-xs text-gray-500 font-mono tracking-normal"
-                        id="app-version-sidebar">v1.12.0</span>
+                        id="app-version-sidebar">v1.12.1</span>
                 </h1>
                 <div class="flex items-center gap-3">
                     <div class="group relative cursor-help">
@@ -2070,7 +2127,7 @@
                                  </div>
                                  
                                  <!-- Scrollable Comment Area -->
-                                 <div class="text-[11px] text-gray-300 mt-1.5 whitespace-pre-wrap break-words overflow-y-auto pr-1 flex-1 min-h-0 custom-scrollbar pb-1">${b.comment || ''}</div>
+                                 <div class="text-[11px] text-gray-300 mt-1.5 break-words overflow-y-auto pr-1 flex-1 min-h-0 custom-scrollbar pb-1 markdown-comment">${b.comment ? marked.parse(b.comment) : ''}</div>
                              </div>
                              
                              <!-- Edit Button -->
