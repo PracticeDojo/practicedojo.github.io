@@ -216,7 +216,8 @@
     <!-- Loading Screen -->
     <div id="loading-screen" class="absolute inset-0 z-50 bg-gray-900 flex flex-col items-center justify-center">
         <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-purple-500 mb-4"></div>
-        <h2 class="text-2xl font-bold text-white mb-2">Lorcana Practice Dojo</h2>
+        <h2 class="text-2xl font-bold text-white mb-2">Lorcana Practice Dojo <span class="text-sm text-gray-400 ml-2"
+                id="app-version-loading">v1.12.0</span></h2>
         <p id="loading-text" class="text-gray-400">Fetching Card Database (This may take a moment)...</p>
     </div>
 
@@ -230,6 +231,10 @@
                 <h2 class="text-3xl font-black text-white tracking-wide flex items-center gap-3">
                     <i class="fa-solid fa-khanda text-purple-500"></i> Setup Practice Decks
                 </h2>
+                <div class="text-sm font-mono text-gray-500 bg-black/50 px-3 py-1 rounded-full border border-gray-700/50"
+                    id="app-version-setup">
+                    v1.12.0
+                </div>
             </div>
 
             <!-- Main Decks Area -->
@@ -451,8 +456,12 @@
         <!-- Sidebar Game Log -->
         <div class="w-72 bg-[#1a1a1e] border-r border-gray-800 flex flex-col shadow-xl z-20 relative">
             <div class="p-4 border-b border-gray-800 flex items-center justify-between">
-                <h1 class="font-bold text-lg tracking-wide"><i class="fa-solid fa-khanda text-purple-500 mr-2"></i>
-                    Practice Dojo</h1>
+                <h1 class="font-bold text-lg tracking-wide flex items-baseline gap-2">
+                    <i class="fa-solid fa-khanda text-purple-500 mr-1"></i>
+                    Practice Dojo
+                    <span class="text-xs text-gray-500 font-mono tracking-normal"
+                        id="app-version-sidebar">v1.12.0</span>
+                </h1>
                 <div class="flex items-center gap-3">
                     <div class="group relative cursor-help">
                         <i
