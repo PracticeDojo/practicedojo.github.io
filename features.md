@@ -187,6 +187,15 @@ As a developer, I want the JSON game state to be way more optimized and organize
 - It is not very organized.
 - It is not very efficient.
  
+## Feature 15: Color timeline nodes based on active player
+### User Story
+As a player, I want the timeline nodes in the Multiverse Tree to be colored based on the active player so that I can easily visually distinguish which player's turn the saved state belongs to.
+
+### Details
+- The nodes in the Multiverse Tree should be colored using the active player's HUD border color.
+- Player 1's color is Orange (#a86b32) and Player 2's color is Purple (#3f2e70).
+- When a node is automatically or manually saved, it should receive the correct active player color.
+
 # Progress
 
 - [x] Feature 1: Manual Lore Scoring
@@ -205,4 +214,5 @@ As a developer, I want the JSON game state to be way more optimized and organize
 - [x] Feature 12: Keyboard Navigation in Multiverse Tree
 - [x] Feature 13: Allow markdown for comments on nodes
 - [x] Feature 14: Save cards played that turn when autosaving
+- [x] Feature 15: Color timeline nodes based on active player's color
 

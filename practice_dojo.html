@@ -998,7 +998,7 @@
         let cardFuse = null;
         let allSessions = [];
 
-        const APP_VERSION = "v1.14.0"; // Centralized version string
+        const APP_VERSION = "v1.15.0"; // Centralized version string
 
         window.addEventListener('DOMContentLoaded', () => {
             const loadingVer = document.getElementById('app-version-loading');
@@ -1572,8 +1572,7 @@
                     const p2 = this.state.players[1];
                     const stats = `Turn ${this.state.turn} | P1: ${p1.lore} - P2: ${p2.lore}`;
 
-                    const timelineColors = ['#ef4444', '#f97316', '#eab308', '#22c54e', '#06b6d4', '#3b82f6', '#8b5cf6', '#d946ef', '#f43f5e'];
-                    const bColor = timelineColors[this.bookmarks.length % timelineColors.length];
+                    const bColor = this.state.activePlayer === 0 ? '#a86b32' : '#3f2e70';
 
                     const newId = this.uuid();
 
@@ -1856,8 +1855,7 @@
                 const p2 = this.state.players[1];
                 const stats = `Turn ${this.state.turn} | P1: ${p1.lore} - P2: ${p2.lore}`;
 
-                const timelineColors = ['#ef4444', '#f97316', '#eab308', '#22c54e', '#06b6d4', '#3b82f6', '#8b5cf6', '#d946ef', '#f43f5e'];
-                const bColor = timelineColors[this.bookmarks.length % timelineColors.length];
+                const bColor = this.state.activePlayer === 0 ? '#a86b32' : '#3f2e70';
 
                 const newId = this.uuid();
 
@@ -3411,8 +3409,8 @@
 
                 this.logAction(`Saved a custom deck order for ${p.id === this.state.activePlayer ? 'your' : "the opponent's"} deck.`);
 
-                // Keep the color of the current active timeline if there is one
-                const bColor = this.state.activeTimelineColor || '#3b82f6';
+                // Use the active player's color
+                const bColor = this.state.activePlayer === 0 ? '#a86b32' : '#3f2e70';
                 const p1 = this.state.players[0];
                 const p2 = this.state.players[1];
                 const ap = this.state.players[this.state.activePlayer];
