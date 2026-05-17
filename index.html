@@ -1,0 +1,1417 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Practice Dojo — Theorycraft Lorcana in the Multiverse</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap"
+    rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0a0a0c;
+      --panel: #151518;
+      --panel-2: #1a1a1e;
+      --line: #26262d;
+      --line-2: #34343c;
+      --ink: #e7e7ea;
+      --ink-dim: #8a8a93;
+      --ink-faint: #5a5a63;
+      --purple: #8b5cf6;
+      --purple-soft: #a855f7;
+      --purple-deep: #6d28d9;
+      --orange: #f97316;
+      --orange-soft: #fb923c;
+      --blue: #60a5fa;
+      --yellow: #facc15;
+      --green: #4ade80;
+    }
+
+    html,
+    body {
+      background: var(--bg);
+      color: var(--ink);
+      font-family: 'Inter', system-ui, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .font-display {
+      font-family: 'Space Grotesk', 'Inter', sans-serif;
+      letter-spacing: -0.02em;
+    }
+
+    .font-mono {
+      font-family: 'JetBrains Mono', ui-monospace, monospace;
+    }
+
+    .tag {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--ink-dim);
+    }
+
+    .grain::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-image: radial-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+      background-size: 32px 32px;
+      pointer-events: none;
+      opacity: 0.7;
+    }
+
+    .glow-purple {
+      background: radial-gradient(ellipse at center, rgba(139, 92, 246, 0.25), transparent 60%);
+    }
+
+    .glow-orange {
+      background: radial-gradient(ellipse at center, rgba(249, 115, 22, 0.18), transparent 60%);
+    }
+
+    .hairline {
+      border-color: var(--line);
+    }
+
+    .hairline-2 {
+      border-color: var(--line-2);
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+    }
+
+    .panel-2 {
+      background: var(--panel-2);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: rgba(139, 92, 246, 0.08);
+      border: 1px solid rgba(139, 92, 246, 0.25);
+      color: #c4b5fd;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .btn-primary {
+      background: linear-gradient(180deg, #7c3aed 0%, #5b21b6 100%);
+      border: 1px solid rgba(168, 85, 247, 0.6);
+      box-shadow: 0 0 0 1px rgba(139, 92, 246, 0.15), 0 10px 30px -10px rgba(139, 92, 246, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+      transition: transform 0.15s, box-shadow 0.2s;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 0 0 1px rgba(139, 92, 246, 0.3), 0 14px 40px -10px rgba(139, 92, 246, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.18);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--line-2);
+      transition: background 0.2s, border-color 0.2s;
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.06);
+      border-color: #4b4b54;
+    }
+
+    /* ---- Hero multiverse tree ---- */
+    .tree-stage {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      max-width: 560px;
+      margin: 0 auto;
+    }
+
+    .tree-svg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      overflow: visible;
+    }
+
+    .tree-svg path {
+      fill: none;
+      stroke-width: 1.5;
+      stroke-linecap: round;
+    }
+
+    .tree-node {
+      position: absolute;
+      width: 56px;
+      height: 78px;
+      transform: translate(-50%, -50%);
+      border-radius: 6px;
+      background: linear-gradient(180deg, #1f1f25 0%, #14141a 100%);
+      border: 1px solid var(--line-2);
+      box-shadow: 0 8px 18px -6px rgba(0, 0, 0, 0.8);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      cursor: pointer;
+      transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .tree-node:hover {
+      transform: translate(-50%, -50%) scale(1.06);
+      border-color: var(--purple-soft);
+    }
+
+    .tree-node .strip {
+      height: 6px;
+      background: var(--purple-deep);
+    }
+
+    .tree-node .body {
+      flex: 1;
+      padding: 4px 5px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .tree-node .turn {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 8px;
+      color: var(--ink-dim);
+      letter-spacing: 0.1em;
+    }
+
+    .tree-node .lore {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px;
+    }
+
+    .tree-node .dot-o {
+      width: 6px;
+      height: 6px;
+      border-radius: 999px;
+      background: var(--orange);
+      box-shadow: 0 0 6px rgba(249, 115, 22, 0.7);
+    }
+
+    .tree-node .dot-p {
+      width: 6px;
+      height: 6px;
+      border-radius: 999px;
+      background: var(--purple-soft);
+      box-shadow: 0 0 6px rgba(168, 85, 247, 0.7);
+    }
+
+    .tree-node.active {
+      border-color: var(--purple-soft);
+      background: linear-gradient(180deg, #2e1065 0%, #1a103c 100%);
+      box-shadow: 0 0 0 2px rgba(168, 85, 247, 0.35), 0 12px 28px -8px rgba(139, 92, 246, 0.55);
+    }
+
+    .tree-node.active .strip {
+      background: linear-gradient(90deg, #a855f7, #f472b6);
+    }
+
+    .tree-node.dim {
+      opacity: 0.55;
+    }
+
+    @keyframes pulseRing {
+      0% {
+        box-shadow: 0 0 0 0 rgba(168, 85, 247, 0.6), 0 12px 28px -8px rgba(139, 92, 246, 0.55);
+      }
+
+      70% {
+        box-shadow: 0 0 0 12px rgba(168, 85, 247, 0), 0 12px 28px -8px rgba(139, 92, 246, 0.55);
+      }
+
+      100% {
+        box-shadow: 0 0 0 0 rgba(168, 85, 247, 0), 0 12px 28px -8px rgba(139, 92, 246, 0.55);
+      }
+    }
+
+    .tree-node.pulse {
+      animation: pulseRing 2.4s infinite;
+    }
+
+    @keyframes dashFlow {
+      to {
+        stroke-dashoffset: -40;
+      }
+    }
+
+    .branch-active {
+      stroke: url(#branchGrad);
+      stroke-dasharray: 6 4;
+      animation: dashFlow 1.8s linear infinite;
+    }
+
+    .branch-dim {
+      stroke: #2a2a32;
+    }
+
+    .label-flag {
+      position: absolute;
+      transform: translate(-50%, -50%);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--ink-dim);
+      background: rgba(10, 10, 12, 0.85);
+      border: 1px solid var(--line);
+      padding: 3px 7px;
+      border-radius: 4px;
+      white-space: nowrap;
+      backdrop-filter: blur(4px);
+    }
+
+    .label-flag.active {
+      color: #ddd6fe;
+      border-color: rgba(168, 85, 247, 0.5);
+    }
+
+    /* card placeholder used in mockups */
+    .card-ph {
+      width: 64px;
+      height: 90px;
+      border-radius: 6px;
+      background:
+        linear-gradient(135deg, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0) 60%),
+        linear-gradient(180deg, var(--c1, #3b2a6b) 0%, var(--c2, #1a1238) 100%);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: 0 4px 10px -4px rgba(0, 0, 0, 0.7);
+      position: relative;
+      flex-shrink: 0;
+    }
+
+    .card-ph::after {
+      content: "";
+      position: absolute;
+      inset: 6px;
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      border-radius: 4px;
+    }
+
+    .card-ph .ink {
+      position: absolute;
+      top: 4px;
+      left: 4px;
+      width: 14px;
+      height: 14px;
+    }
+
+    .card-ph.amber {
+      --c1: #6b4a1f;
+      --c2: #3a2510;
+    }
+
+    .card-ph.amethyst {
+      --c1: #5a2e7a;
+      --c2: #2a0f44;
+    }
+
+    .card-ph.steel {
+      --c1: #3a4452;
+      --c2: #1a2028;
+    }
+
+    .card-ph.ruby {
+      --c1: #7a2230;
+      --c2: #3a0e16;
+    }
+
+    .card-ph.sapphire {
+      --c1: #1f4a7a;
+      --c2: #0f2440;
+    }
+
+    .card-ph.emerald {
+      --c1: #1f6b3a;
+      --c2: #0c2e1a;
+    }
+
+    .card-ph.exerted {
+      transform: rotate(90deg) scale(0.85);
+      margin: 0 8px;
+    }
+
+    .meter-track {
+      background: #2a2a32;
+      height: 6px;
+      border-radius: 999px;
+      overflow: hidden;
+      display: flex;
+    }
+
+    /* Section divider */
+    .divider {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--line-2), transparent);
+    }
+
+    /* feature card hover */
+    .feature {
+      transition: transform 0.2s, border-color 0.2s, background 0.2s;
+    }
+
+    .feature:hover {
+      transform: translateY(-2px);
+      border-color: var(--line-2);
+      background: #18181d;
+    }
+
+    /* keystroke key */
+    .kbd {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 22px;
+      height: 22px;
+      padding: 0 6px;
+      background: #1f1f25;
+      border: 1px solid var(--line-2);
+      border-bottom-width: 2px;
+      border-radius: 4px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: #e7e7ea;
+    }
+
+    /* CTA glow */
+    .cta-glow {
+      background: radial-gradient(ellipse at 50% 0%, rgba(139, 92, 246, 0.25), transparent 65%);
+    }
+
+    /* Scrollable demo scrubber dot */
+    .scrubber-dot {
+      width: 14px;
+      height: 14px;
+      border-radius: 999px;
+      background: var(--purple-soft);
+      box-shadow: 0 0 0 4px rgba(168, 85, 247, 0.18), 0 0 16px rgba(168, 85, 247, 0.6);
+    }
+
+    /* tiny shine */
+    @keyframes shimmer {
+      0% {
+        transform: translateX(-100%);
+      }
+
+      100% {
+        transform: translateX(220%);
+      }
+    }
+
+    .shine {
+      position: relative;
+      overflow: hidden;
+    }
+
+    .shine::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 100%;
+      width: 40%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.06), transparent);
+      animation: shimmer 4s ease-in-out infinite;
+    }
+
+    .ring-pulse {
+      box-shadow: 0 0 0 0 rgba(168, 85, 247, 0.7);
+      animation: pulseRing 2s infinite;
+    }
+
+    /* responsive tree label scaling */
+    @media (max-width: 768px) {
+      .tree-node {
+        width: 42px;
+        height: 58px;
+      }
+
+      .label-flag {
+        font-size: 8px;
+        padding: 2px 5px;
+      }
+    }
+  </style>
+</head>
+
+<body class="min-h-screen">
+
+  <!-- ============ NAV ============ -->
+  <header class="sticky top-0 z-40 backdrop-blur-md bg-[rgba(10,10,12,0.75)] border-b hairline">
+    <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-8 h-8 rounded-md flex items-center justify-center"
+          style="background: linear-gradient(135deg, #7c3aed, #4c1d95); box-shadow: 0 0 14px rgba(124,58,237,0.45);">
+          <i class="fa-solid fa-khanda text-white text-sm"></i>
+        </div>
+        <div class="font-display font-semibold text-[15px] tracking-tight">Practice Dojo</div>
+        <span class="tag hidden sm:inline-block ml-2">v1.0 · sandbox build</span>
+      </div>
+      <nav class="hidden md:flex items-center gap-7 text-sm text-[var(--ink-dim)]">
+        <a href="#multiverse" class="hover:text-white transition">Multiverse</a>
+        <a href="#features" class="hover:text-white transition">Features</a>
+        <a href="#how" class="hover:text-white transition">How it works</a>
+        <a href="#metrics" class="hover:text-white transition">Metrics</a>
+      </nav>
+      <div class="flex items-center gap-3">
+        <a href="#"
+          class="btn-secondary px-4 py-2 rounded-lg text-sm font-medium hidden sm:inline-flex items-center gap-2">
+          <i class="fa-brands fa-github text-[var(--ink-dim)]"></i> Source
+        </a>
+        <a href="#cta" class="btn-primary px-4 py-2 rounded-lg text-sm font-semibold inline-flex items-center gap-2">
+          Launch the Dojo <i class="fa-solid fa-arrow-right text-[11px]"></i>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- ============ HERO ============ -->
+  <section class="relative overflow-hidden">
+    <div class="absolute -top-40 -left-40 w-[600px] h-[600px] glow-purple pointer-events-none"></div>
+    <div class="absolute -top-32 -right-40 w-[500px] h-[500px] glow-orange pointer-events-none"></div>
+
+    <div class="max-w-7xl mx-auto px-6 pt-20 pb-24 relative grid lg:grid-cols-12 gap-16 items-center">
+      <div class="lg:col-span-6">
+        <div class="chip mb-8">
+          <span class="w-1.5 h-1.5 rounded-full bg-purple-400 ring-pulse"></span>
+          Multiverse Theorycraft
+        </div>
+        <h1 class="font-display text-5xl md:text-6xl lg:text-[68px] font-bold leading-[1.02] text-white">
+          Play every line.<br />
+          <span
+            style="background: linear-gradient(90deg, #c4b5fd 0%, #f0abfc 60%, #fdba74 100%); -webkit-background-clip: text; background-clip: text; color: transparent;">Branch
+            every turn.</span>
+        </h1>
+        <p class="mt-6 text-lg text-[var(--ink-dim)] max-w-xl leading-relaxed">
+          A theorycrafting sandbox for the Lorcana TCG. Run a match between two decks turn-by-turn — then rewind to any
+          moment, branch a new timeline, reshuffle, or hot-swap cards to see exactly how the line plays out.
+        </p>
+        <p class="mt-4 text-[15px] text-[var(--ink-faint)] max-w-lg">
+          Stop grinding random matches to surface one matchup. Map the whole multiverse instead.
+        </p>
+
+        <div class="mt-10 flex flex-wrap items-center gap-3">
+          <a href="#cta"
+            class="btn-primary px-6 py-3.5 rounded-lg text-[15px] font-semibold inline-flex items-center gap-2">
+            <i class="fa-solid fa-play text-[12px]"></i> Open the Dojo
+          </a>
+          <a href="#multiverse"
+            class="btn-secondary px-6 py-3.5 rounded-lg text-[15px] font-medium inline-flex items-center gap-2 text-[var(--ink)]">
+            <i class="fa-solid fa-network-wired text-[var(--purple-soft)]"></i> See the multiverse
+          </a>
+        </div>
+
+        <div class="mt-10 flex items-center gap-8 text-xs">
+          <div class="flex items-center gap-2 text-[var(--ink-dim)]">
+            <span class="w-2 h-2 rounded-full bg-orange-500"></span> Manual sandbox
+          </div>
+          <div class="flex items-center gap-2 text-[var(--ink-dim)]">
+            <span class="w-2 h-2 rounded-full bg-purple-500"></span> Time-travel built-in
+          </div>
+          <div class="flex items-center gap-2 text-[var(--ink-dim)]">
+            <span class="w-2 h-2 rounded-full bg-blue-400"></span> Win-prob engine
+          </div>
+        </div>
+      </div>
+
+      <!-- HERO TREE -->
+      <div class="lg:col-span-6 relative">
+        <div class="absolute inset-0 -m-10 glow-purple opacity-60 pointer-events-none"></div>
+        <div class="tree-stage" id="hero-tree">
+          <svg class="tree-svg" viewBox="0 0 560 560" preserveAspectRatio="none">
+            <defs>
+              <linearGradient id="branchGrad" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="#a855f7" stop-opacity="0.9" />
+                <stop offset="100%" stop-color="#f472b6" stop-opacity="0.9" />
+              </linearGradient>
+              <radialGradient id="nodeGlow" cx="50%" cy="50%">
+                <stop offset="0%" stop-color="#a855f7" stop-opacity="0.35" />
+                <stop offset="100%" stop-color="#a855f7" stop-opacity="0" />
+              </radialGradient>
+            </defs>
+
+            <!-- background grid dots -->
+            <g opacity="0.5">
+              <circle cx="280" cy="280" r="220" fill="url(#nodeGlow)" />
+            </g>
+
+            <!-- Main spine T1 -> T2 -> T3 -->
+            <path class="branch-active" d="M 80,80 C 160,140 200,200 280,260" />
+            <!-- T3 active branch up-right (current) -->
+            <path class="branch-active" d="M 280,260 C 360,300 400,340 470,400" />
+            <!-- T3 alt branch down-right (dim) -->
+            <path class="branch-dim" d="M 280,260 C 340,330 360,400 410,490" stroke-dasharray="3 4" />
+            <!-- T2 alt branch top-right (dim) -->
+            <path class="branch-dim" d="M 200,180 C 280,160 360,140 450,110" stroke-dasharray="3 4" />
+            <!-- T1 alt branch down-left (dim) -->
+            <path class="branch-dim" d="M 80,80 C 60,180 80,280 120,400" stroke-dasharray="3 4" />
+
+            <!-- Tiny terminal lines off dim branches -->
+            <path class="branch-dim" d="M 410,490 C 440,500 470,495 500,485" />
+            <path class="branch-dim" d="M 450,110 C 480,100 510,120 530,150" />
+            <path class="branch-dim" d="M 120,400 C 100,440 120,480 150,510" />
+          </svg>
+
+          <!-- Nodes -->
+          <!-- T1 root -->
+          <div class="tree-node" style="left:14%; top:14%;">
+            <div class="strip"></div>
+            <div class="body">
+              <div class="turn">T1 · P1</div>
+              <div class="lore"><span class="dot-o"></span><span style="color:var(--orange-soft)">0</span></div>
+            </div>
+          </div>
+          <div class="label-flag" style="left:14%; top:6%;">Opening</div>
+
+          <!-- T2 -->
+          <div class="tree-node" style="left:36%; top:32%;">
+            <div class="strip"></div>
+            <div class="body">
+              <div class="turn">T2 · P2</div>
+              <div class="lore"><span class="dot-p"></span><span style="color:#ddd6fe">1</span></div>
+            </div>
+          </div>
+
+          <!-- T2 alt (dim) -->
+          <div class="tree-node dim" style="left:80%; top:20%;">
+            <div class="strip" style="background:#3a2a6b"></div>
+            <div class="body">
+              <div class="turn">T2'</div>
+              <div class="lore"><span class="dot-p"></span><span>1</span></div>
+            </div>
+          </div>
+          <div class="label-flag" style="left:80%; top:9%;">Alt opener</div>
+
+          <!-- T3 active (current) -->
+          <div class="tree-node active pulse" style="left:50%; top:46%;">
+            <div class="strip"></div>
+            <div class="body">
+              <div class="turn">T3 · P1</div>
+              <div class="lore"><span class="dot-o"></span><span style="color:var(--orange-soft)">3</span></div>
+            </div>
+          </div>
+          <div class="label-flag active" style="left:50%; top:36%;"><i class="fa-solid fa-location-crosshairs mr-1"></i>
+            You are here</div>
+
+          <!-- T4 leaf (active branch) -->
+          <div class="tree-node" style="left:84%; top:72%;">
+            <div class="strip"></div>
+            <div class="body">
+              <div class="turn">T4</div>
+              <div class="lore"><span class="dot-o"></span><span style="color:var(--orange-soft)">5</span></div>
+            </div>
+          </div>
+          <div class="label-flag" style="left:84%; top:62%;">Aggro line</div>
+
+          <!-- T4 alt leaf (dim) -->
+          <div class="tree-node dim" style="left:73%; top:88%;">
+            <div class="strip" style="background:#3a2a6b"></div>
+            <div class="body">
+              <div class="turn">T4'</div>
+              <div class="lore"><span class="dot-p"></span><span>4</span></div>
+            </div>
+          </div>
+          <div class="label-flag" style="left:73%; top:98%;">Defensive</div>
+
+          <!-- T1 alt -->
+          <div class="tree-node dim" style="left:22%; top:72%;">
+            <div class="strip" style="background:#3a2a6b"></div>
+            <div class="body">
+              <div class="turn">T1'</div>
+              <div class="lore"><span class="dot-o"></span><span>0</span></div>
+            </div>
+          </div>
+          <div class="label-flag" style="left:22%; top:82%;">Mulligan</div>
+        </div>
+
+        <!-- caption strip -->
+        <div class="mt-6 panel-2 px-4 py-3 flex items-center justify-between text-xs">
+          <div class="flex items-center gap-2 text-[var(--ink-dim)]">
+            <i class="fa-solid fa-network-wired text-[var(--purple-soft)]"></i>
+            <span class="font-mono">multiverse.tree</span>
+          </div>
+          <div class="flex items-center gap-4 text-[var(--ink-faint)]">
+            <span class="flex items-center gap-1.5"><span
+                class="w-1.5 h-1.5 rounded-full bg-[var(--purple-soft)]"></span> 6 bookmarks</span>
+            <span class="flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-[var(--ink-faint)]"></span>
+              3 branches</span>
+            <span class="flex items-center gap-1.5 text-[var(--purple-soft)]"><i
+                class="fa-solid fa-bolt text-[10px]"></i> live</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ STAT STRIP / PROBLEM ============ -->
+  <section class="relative border-y hairline" style="background: #08080a;">
+    <div class="max-w-7xl mx-auto px-6 py-14 grid md:grid-cols-3 gap-10">
+      <div>
+        <div class="tag mb-3">The problem</div>
+        <h3 class="font-display text-2xl text-white leading-snug">One matchup. A thousand possible lines.</h3>
+        <p class="mt-3 text-[var(--ink-dim)] text-[15px] leading-relaxed">
+          Playing matches at random surfaces maybe two or three of them. The rest live in your head as “what if I had
+          drawn it on turn three.”
+        </p>
+      </div>
+      <div class="md:col-span-2 grid grid-cols-3 gap-px bg-[var(--line)] rounded-xl overflow-hidden border hairline">
+        <div class="bg-[var(--panel)] p-6">
+          <div class="font-mono text-[10px] text-[var(--ink-faint)] tracking-widest uppercase">Random matches</div>
+          <div class="mt-2 font-display text-4xl text-white">~40</div>
+          <div class="mt-1 text-xs text-[var(--ink-dim)]">to surface one realistic line variation</div>
+        </div>
+        <div class="bg-[var(--panel)] p-6">
+          <div class="font-mono text-[10px] text-[var(--ink-faint)] tracking-widest uppercase">In the dojo</div>
+          <div class="mt-2 font-display text-4xl" style="color:#c4b5fd;">~3</div>
+          <div class="mt-1 text-xs text-[var(--ink-dim)]">branches off a single bookmarked turn</div>
+        </div>
+        <div class="bg-[var(--panel)] p-6">
+          <div class="font-mono text-[10px] text-[var(--ink-faint)] tracking-widest uppercase">Cost to rewind</div>
+          <div class="mt-2 font-display text-4xl" style="color:#fdba74;">0&nbsp;ms</div>
+          <div class="mt-1 text-xs text-[var(--ink-dim)]">Full-state snapshots rewind instantly.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ MULTIVERSE SECTION ============ -->
+  <section id="multiverse" class="relative overflow-hidden">
+    <div class="absolute -top-40 right-0 w-[700px] h-[700px] glow-purple pointer-events-none opacity-60"></div>
+    <div class="max-w-7xl mx-auto px-6 py-28 relative">
+      <div class="max-w-3xl">
+        <div class="chip mb-6">
+          <i class="fa-solid fa-network-wired text-purple-400 text-[11px]"></i>
+          Core feature · Multiverse navigation
+        </div>
+        <h2 class="font-display text-4xl md:text-5xl text-white font-bold leading-[1.05]">
+          Every turn is a save point.<br />Every save point is a branch.
+        </h2>
+        <p class="mt-5 text-[var(--ink-dim)] text-lg leading-relaxed max-w-2xl">
+          The dojo silently snapshots state at the start of every turn. Rewind to turn 4, replay your hand differently,
+          and the original line stays alive next to it. Both lines live in one tree you can zoom, pan, and jump through.
+        </p>
+      </div>
+
+      <!-- Big demo panel -->
+      <div class="mt-14 panel relative overflow-hidden">
+        <!-- chrome bar -->
+        <div class="flex items-center justify-between px-5 py-3 border-b hairline bg-[var(--panel-2)]">
+          <div class="flex items-center gap-3">
+            <i class="fa-solid fa-network-wired text-[var(--purple-soft)]"></i>
+            <span class="font-display font-semibold text-white text-sm">Multiverse Timelines</span>
+            <span class="tag ml-3 hidden sm:inline">drag · zoom · click to restore</span>
+          </div>
+          <div class="flex items-center gap-3 text-[var(--ink-faint)]">
+            <i class="fa-solid fa-compress"></i>
+            <i class="fa-solid fa-xmark"></i>
+          </div>
+        </div>
+
+        <!-- viewport -->
+        <div class="relative"
+          style="background-image: radial-gradient(rgba(255,255,255,0.04) 1px, transparent 1px); background-size: 32px 32px; background-color:#0c0c10;">
+          <div class="grid lg:grid-cols-12">
+            <!-- TREE -->
+            <div class="lg:col-span-8 relative" style="height: 520px;">
+              <svg viewBox="0 0 800 520" class="absolute inset-0 w-full h-full overflow-visible">
+                <defs>
+                  <linearGradient id="b2" x1="0" y1="0" x2="1" y2="0">
+                    <stop offset="0%" stop-color="#a855f7" />
+                    <stop offset="100%" stop-color="#f472b6" />
+                  </linearGradient>
+                </defs>
+                <!-- Main spine -->
+                <path d="M 80,260 C 160,260 180,200 260,200" stroke="url(#b2)" stroke-width="2" fill="none"
+                  stroke-linecap="round" stroke-dasharray="6 4" style="animation: dashFlow 1.6s linear infinite;" />
+                <path d="M 260,200 C 340,200 360,140 440,140" stroke="url(#b2)" stroke-width="2" fill="none"
+                  stroke-linecap="round" stroke-dasharray="6 4" style="animation: dashFlow 1.6s linear infinite;" />
+                <path d="M 440,140 C 520,140 540,200 620,200" stroke="url(#b2)" stroke-width="2" fill="none"
+                  stroke-linecap="round" stroke-dasharray="6 4" style="animation: dashFlow 1.6s linear infinite;" />
+                <path d="M 620,200 C 700,200 720,180 760,160" stroke="url(#b2)" stroke-width="2" fill="none"
+                  stroke-linecap="round" />
+
+                <!-- Branches off T3 -->
+                <path d="M 260,200 C 340,240 360,300 440,320" stroke="#2a2a32" stroke-width="1.5" fill="none"
+                  stroke-linecap="round" stroke-dasharray="3 4" />
+                <path d="M 440,320 C 520,330 540,360 620,380" stroke="#2a2a32" stroke-width="1.5" fill="none"
+                  stroke-linecap="round" stroke-dasharray="3 4" />
+                <path d="M 260,200 C 320,260 320,360 360,440" stroke="#2a2a32" stroke-width="1.5" fill="none"
+                  stroke-linecap="round" stroke-dasharray="3 4" />
+                <!-- Sub branch off T5 active -->
+                <path d="M 620,200 C 660,220 680,260 700,300" stroke="#2a2a32" stroke-width="1.5" fill="none"
+                  stroke-linecap="round" stroke-dasharray="3 4" />
+                <!-- branch labels -->
+                <text x="320" y="280" fill="#5a5a63" font-family="JetBrains Mono" font-size="10"
+                  letter-spacing="1">branch · inkwell skip</text>
+                <text x="285" y="380" fill="#5a5a63" font-family="JetBrains Mono" font-size="10"
+                  letter-spacing="1">branch · mulligan retry</text>
+                <text x="640" y="265" fill="#5a5a63" font-family="JetBrains Mono" font-size="10"
+                  letter-spacing="1">branch · alt finisher</text>
+              </svg>
+
+              <!-- Nodes -->
+              <div class="absolute" style="left:80px; top:260px;">
+                <div class="tree-node" style="position:relative; left:0; top:0; transform:translate(-50%,-50%);">
+                  <div class="strip"></div>
+                  <div class="body">
+                    <div class="turn">T1 · P1</div>
+                    <div class="lore"><span class="dot-o"></span><span style="color:var(--orange-soft)">0</span></div>
+                  </div>
+                </div>
+                <div class="label-flag" style="position:absolute; left:0; top:-50px;">Match start</div>
+              </div>
+              <div class="absolute" style="left:260px; top:200px;">
+                <div class="tree-node" style="position:relative; left:0; top:0; transform:translate(-50%,-50%);">
+                  <div class="strip"></div>
+                  <div class="body">
+                    <div class="turn">T3</div>
+                    <div class="lore"><span class="dot-o"></span><span style="color:var(--orange-soft)">2</span></div>
+                  </div>
+                </div>
+                <div class="label-flag" style="position:absolute; left:0; top:-50px;">Branch point</div>
+              </div>
+              <div class="absolute" style="left:440px; top:140px;">
+                <div class="tree-node" style="position:relative; left:0; top:0; transform:translate(-50%,-50%);">
+                  <div class="strip"></div>
+                  <div class="body">
+                    <div class="turn">T4</div>
+                    <div class="lore"><span class="dot-p"></span><span style="color:#ddd6fe">3</span></div>
+                  </div>
+                </div>
+              </div>
+              <div class="absolute" style="left:620px; top:200px;">
+                <div class="tree-node active pulse"
+                  style="position:relative; left:0; top:0; transform:translate(-50%,-50%);">
+                  <div class="strip"></div>
+                  <div class="body">
+                    <div class="turn">T5 · P1</div>
+                    <div class="lore"><span class="dot-o"></span><span style="color:var(--orange-soft)">6</span></div>
+                  </div>
+                </div>
+                <div class="label-flag active" style="position:absolute; left:0; top:-50px;"><i
+                    class="fa-solid fa-location-crosshairs mr-1"></i>Active</div>
+              </div>
+
+              <!-- Branch nodes (dim) -->
+              <div class="absolute" style="left:440px; top:320px;">
+                <div class="tree-node dim" style="position:relative; left:0; top:0; transform:translate(-50%,-50%);">
+                  <div class="strip" style="background:#3a2a6b"></div>
+                  <div class="body">
+                    <div class="turn">T4'</div>
+                    <div class="lore"><span class="dot-p"></span><span>2</span></div>
+                  </div>
+                </div>
+              </div>
+              <div class="absolute" style="left:620px; top:380px;">
+                <div class="tree-node dim" style="position:relative; left:0; top:0; transform:translate(-50%,-50%);">
+                  <div class="strip" style="background:#3a2a6b"></div>
+                  <div class="body">
+                    <div class="turn">T5'</div>
+                    <div class="lore"><span class="dot-o"></span><span>5</span></div>
+                  </div>
+                </div>
+              </div>
+              <div class="absolute" style="left:360px; top:440px;">
+                <div class="tree-node dim" style="position:relative; left:0; top:0; transform:translate(-50%,-50%);">
+                  <div class="strip" style="background:#3a2a6b"></div>
+                  <div class="body">
+                    <div class="turn">T2'</div>
+                    <div class="lore"><span class="dot-o"></span><span>1</span></div>
+                  </div>
+                </div>
+              </div>
+              <div class="absolute" style="left:700px; top:300px;">
+                <div class="tree-node dim" style="position:relative; left:0; top:0; transform:translate(-50%,-50%);">
+                  <div class="strip" style="background:#3a2a6b"></div>
+                  <div class="body">
+                    <div class="turn">T5″</div>
+                    <div class="lore"><span class="dot-p"></span><span>4</span></div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- legend -->
+              <div
+                class="absolute bottom-4 left-4 panel-2 px-3 py-2 flex items-center gap-4 text-[11px] text-[var(--ink-dim)]">
+                <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded bg-[var(--purple-soft)]"></span>
+                  Active line</span>
+                <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded bg-[#3a2a6b]"></span> Saved
+                  branch</span>
+                <span class="flex items-center gap-1.5"><i
+                    class="fa-solid fa-arrows-up-down-left-right text-[10px]"></i> drag · scroll · zoom</span>
+              </div>
+            </div>
+
+            <!-- SIDE PANEL: Bookmark detail -->
+            <div class="lg:col-span-4 border-l hairline bg-[var(--panel)] p-5 flex flex-col gap-4">
+              <div>
+                <div class="tag mb-1">Selected bookmark</div>
+                <div class="font-display text-xl text-white">Turn 5 · Ramp into Maui line</div>
+                <div class="text-xs text-[var(--ink-faint)] mt-1 font-mono">id #b-7a2c · parent T3</div>
+              </div>
+
+              <div class="grid grid-cols-4 gap-2">
+                <div class="panel-2 px-2 py-2 text-center">
+                  <div class="text-[9px] tracking-widest uppercase text-[var(--ink-faint)]">CTL</div>
+                  <div class="text-sm font-mono text-white mt-0.5">8.2</div>
+                </div>
+                <div class="panel-2 px-2 py-2 text-center">
+                  <div class="text-[9px] tracking-widest uppercase text-[var(--ink-faint)]">BCR</div>
+                  <div class="text-sm font-mono text-blue-400 mt-0.5">14.6</div>
+                </div>
+                <div class="panel-2 px-2 py-2 text-center">
+                  <div class="text-[9px] tracking-widest uppercase text-[var(--ink-faint)]">RDS</div>
+                  <div class="text-sm font-mono text-green-400 mt-0.5">3.1</div>
+                </div>
+                <div class="panel-2 px-2 py-2 text-center">
+                  <div class="text-[9px] tracking-widest uppercase text-[var(--ink-faint)]">LVI</div>
+                  <div class="text-sm font-mono text-yellow-400 mt-0.5">11.4</div>
+                </div>
+              </div>
+
+              <div>
+                <div class="tag mb-2">Tug-of-war · Board control</div>
+                <div class="meter-track">
+                  <div style="background: var(--orange); width: 64%;"></div>
+                  <div style="background: var(--purple); width: 36%;"></div>
+                </div>
+                <div class="flex justify-between text-[11px] font-mono mt-1.5">
+                  <span class="text-orange-400">P1 · 64%</span>
+                  <span class="text-purple-400">36% · P2</span>
+                </div>
+              </div>
+
+              <div class="panel-2 p-3 text-xs text-[var(--ink-dim)] leading-relaxed">
+                <i class="fa-solid fa-quote-left text-[10px] text-[var(--ink-faint)] mr-1"></i>
+                Ramp on T2, hold ink on T3, drop Maui T4. If they don't have removal in topdeck, this line closes by T7.
+              </div>
+
+              <div class="flex gap-2">
+                <button
+                  class="btn-secondary px-3 py-2 rounded-md text-xs font-medium flex-1 flex items-center justify-center gap-2 text-white">
+                  <i class="fa-solid fa-code-branch text-[var(--purple-soft)]"></i> Branch here
+                </button>
+                <button
+                  class="btn-secondary px-3 py-2 rounded-md text-xs font-medium flex-1 flex items-center justify-center gap-2 text-white">
+                  <i class="fa-solid fa-clock-rotate-left text-[var(--ink-dim)]"></i> Restore
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3-callout strip under the demo -->
+      <div class="mt-10 grid md:grid-cols-3 gap-5">
+        <div class="panel-2 p-5">
+          <div class="flex items-center gap-2 mb-3">
+            <i class="fa-solid fa-clock-rotate-left text-[var(--purple-soft)]"></i>
+            <span class="font-display font-semibold text-white">Rewind, instantly</span>
+          </div>
+          <p class="text-sm text-[var(--ink-dim)] leading-relaxed">Every node is a full game state snapshot. Jump to
+            turn 2 of game 1 from turn 9 of game 4 with no replay step.</p>
+        </div>
+        <div class="panel-2 p-5">
+          <div class="flex items-center gap-2 mb-3">
+            <i class="fa-solid fa-code-branch text-[var(--purple-soft)]"></i>
+            <span class="font-display font-semibold text-white">Branch without losing</span>
+          </div>
+          <p class="text-sm text-[var(--ink-dim)] leading-relaxed">When you jump back, the line you abandoned auto-saves
+            to a side branch. Compare both outcomes side-by-side.</p>
+        </div>
+        <div class="panel-2 p-5">
+          <div class="flex items-center gap-2 mb-3">
+            <i class="fa-solid fa-shuffle text-[var(--purple-soft)]"></i>
+            <span class="font-display font-semibold text-white">Reshuffle &amp; redraw</span>
+          </div>
+          <p class="text-sm text-[var(--ink-dim)] leading-relaxed">Don't like the hand? Reshuffle from any node to see
+            what a different opening draw does to the same matchup.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ============ FEATURES GRID ============ -->
+  <section id="features" class="relative">
+    <div class="max-w-7xl mx-auto px-6 py-28">
+      <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-14">
+        <div class="max-w-2xl">
+          <div class="tag mb-3">What's in the box</div>
+          <h2 class="font-display text-4xl md:text-5xl text-white font-bold leading-[1.05]">
+            A real sandbox, not a referee.
+          </h2>
+          <p class="mt-4 text-[var(--ink-dim)] text-lg leading-relaxed">
+            The dojo never blocks you. Play an illegal move if it surfaces a line worth checking. The point is
+            theorycraft, not enforcement.
+          </p>
+        </div>
+        <div class="text-xs text-[var(--ink-faint)] font-mono max-w-xs">
+          <span class="text-[var(--ink-dim)]">// directive</span><br />
+          do not hard-block actions.<br />
+          the user is the referee.
+        </div>
+      </div>
+
+      <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
+        <!-- Feature: Multiverse -->
+        <div class="feature panel-2 p-6">
+          <div class="flex items-center justify-between mb-5">
+            <div class="w-10 h-10 rounded-lg flex items-center justify-center"
+              style="background: rgba(139,92,246,0.12); border: 1px solid rgba(139,92,246,0.3);">
+              <i class="fa-solid fa-network-wired text-[var(--purple-soft)]"></i>
+            </div>
+            <span class="tag">USP</span>
+          </div>
+          <h3 class="font-display text-lg text-white font-semibold">Multiverse tree</h3>
+          <p class="mt-2 text-sm text-[var(--ink-dim)] leading-relaxed">Zoomable, draggable, keyboard-navigable canvas
+            of every branch you've explored. Click a node, you're there.</p>
+        </div>
+
+        <!-- Feature: Bookmarks -->
+        <div class="feature panel-2 p-6">
+          <div class="flex items-center justify-between mb-5">
+            <div class="w-10 h-10 rounded-lg flex items-center justify-center"
+              style="background: rgba(168,85,247,0.12); border: 1px solid rgba(168,85,247,0.3);">
+              <i class="fa-solid fa-bookmark text-[var(--purple-soft)]"></i>
+            </div>
+            <span class="tag">Save</span>
+          </div>
+          <h3 class="font-display text-lg text-white font-semibold">Auto-save every turn</h3>
+          <p class="mt-2 text-sm text-[var(--ink-dim)] leading-relaxed">Toggle on and the dojo bookmarks the start of
+            every turn for you. Name them, comment them in Markdown, color-code them.</p>
+        </div>
+
+        <!-- Feature: Deck surgery -->
+        <div class="feature panel-2 p-6">
+          <div class="flex items-center justify-between mb-5">
+            <div class="w-10 h-10 rounded-lg flex items-center justify-center"
+              style="background: rgba(249,115,22,0.12); border: 1px solid rgba(249,115,22,0.3);">
+              <i class="fa-solid fa-scissors text-[var(--orange-soft)]"></i>
+            </div>
+            <span class="tag">Manual</span>
+          </div>
+          <h3 class="font-display text-lg text-white font-semibold">Hot-swap any card</h3>
+          <p class="mt-2 text-sm text-[var(--ink-dim)] leading-relaxed">Drag cards between hand, field, ink, and
+            discard. Substitute a card mid-line. Add a card that isn't in your deck to test it.</p>
+        </div>
+
+        <!-- Feature: Reshuffle -->
+        <div class="feature panel-2 p-6">
+          <div class="flex items-center justify-between mb-5">
+            <div class="w-10 h-10 rounded-lg flex items-center justify-center"
+              style="background: rgba(96,165,250,0.12); border: 1px solid rgba(96,165,250,0.3);">
+              <i class="fa-solid fa-shuffle text-[var(--blue)]"></i>
+            </div>
+            <span class="tag">Variance</span>
+          </div>
+          <h3 class="font-display text-lg text-white font-semibold">Reshuffle the unknown</h3>
+          <p class="mt-2 text-sm text-[var(--ink-dim)] leading-relaxed">Lock the board state, reshuffle the deck,
+            redraw. Test the same position against a fresh top of deck without losing the line.</p>
+        </div>
+
+        <!-- Feature: Win prob -->
+        <div class="feature panel-2 p-6">
+          <div class="flex items-center justify-between mb-5">
+            <div class="w-10 h-10 rounded-lg flex items-center justify-center"
+              style="background: rgba(250,204,21,0.12); border: 1px solid rgba(250,204,21,0.3);">
+              <i class="fa-solid fa-scale-balanced text-[var(--yellow)]"></i>
+            </div>
+            <span class="tag">Engine</span>
+          </div>
+          <h3 class="font-display text-lg text-white font-semibold">Live win-prob meters</h3>
+          <p class="mt-2 text-sm text-[var(--ink-dim)] leading-relaxed">BCR, LVI, RDS, CTL update in real time.
+            Tug-of-war bars show the matchup shifting turn by turn.</p>
+        </div>
+
+        <!-- Feature: Decklist DB -->
+        <div class="feature panel-2 p-6">
+          <div class="flex items-center justify-between mb-5">
+            <div class="w-10 h-10 rounded-lg flex items-center justify-center"
+              style="background: rgba(74,222,128,0.12); border: 1px solid rgba(74,222,128,0.3);">
+              <i class="fa-solid fa-database text-[var(--green)]"></i>
+            </div>
+            <span class="tag">Library</span>
+          </div>
+          <h3 class="font-display text-lg text-white font-semibold">Decklist database</h3>
+          <p class="mt-2 text-sm text-[var(--ink-dim)] leading-relaxed">Pull decks from the shared library or paste a
+            list. Fuzzy search across thousands of community lists.</p>
+        </div>
+      </div>
+
+      <!-- HOTKEYS strip -->
+      <div class="mt-14 panel-2 px-6 py-5 flex flex-wrap items-center gap-6 justify-between">
+        <div class="flex items-center gap-3 text-[var(--ink-dim)] text-sm">
+          <i class="fa-solid fa-keyboard text-[var(--ink-faint)]"></i>
+          <span>Built for keyboard:</span>
+        </div>
+        <div class="flex flex-wrap items-center gap-5 text-sm text-[var(--ink-dim)]">
+          <span class="flex items-center gap-2"><span class="kbd">M</span> Multiverse tree</span>
+          <span class="flex items-center gap-2"><span class="kbd">T</span> Timeline drawer</span>
+          <span class="flex items-center gap-2"><span class="kbd">Q</span> Quest all ready</span>
+          <span class="flex items-center gap-2"><span class="kbd">Space</span> End turn</span>
+          <span class="flex items-center gap-2"><span class="kbd">←</span> <span class="kbd">→</span> Tree nav</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ============ HOW IT WORKS ============ -->
+  <section id="how" class="relative">
+    <div
+      class="absolute top-20 left-1/2 -translate-x-1/2 w-[700px] h-[400px] glow-purple opacity-40 pointer-events-none">
+    </div>
+    <div class="max-w-7xl mx-auto px-6 py-28 relative">
+      <div class="max-w-3xl mb-16">
+        <div class="tag mb-3">Flow</div>
+        <h2 class="font-display text-4xl md:text-5xl text-white font-bold leading-[1.05]">From two decklists to mapped
+          multiverse in five minutes.</h2>
+      </div>
+
+      <div class="grid lg:grid-cols-3 gap-8">
+        <!-- Step 1 -->
+        <div class="relative">
+          <div class="flex items-center gap-3 mb-5">
+            <div class="font-mono text-xs text-[var(--ink-faint)] tracking-widest">STEP 01</div>
+            <div class="flex-1 h-px bg-[var(--line)]"></div>
+          </div>
+          <h3 class="font-display text-2xl text-white font-semibold mb-2">Load two decks</h3>
+          <p class="text-[var(--ink-dim)] text-sm leading-relaxed mb-5">Paste a decklist, pick from the database, or
+            start with random dummy decks. Both players ready in seconds.</p>
+
+          <!-- mock: setup -->
+          <div class="panel-2 p-4">
+            <div class="flex items-center justify-between mb-3">
+              <div class="flex items-center gap-2 text-xs text-purple-300 font-semibold"><i
+                  class="fa-solid fa-user"></i> Player 1 Decklist</div>
+              <div class="text-[10px] text-[var(--ink-faint)] font-mono">60 cards</div>
+            </div>
+            <div
+              class="bg-black/60 border hairline rounded-md p-3 text-[11px] font-mono leading-relaxed text-[var(--ink-dim)]">
+              <div>4 <span class="text-orange-300">Tinker Bell</span> – Giant Fairy</div>
+              <div>3 <span class="text-orange-300">Maui</span> – Hero to All</div>
+              <div>4 <span class="text-orange-300">Pawpsicle</span></div>
+              <div class="text-[var(--ink-faint)]">… 49 more</div>
+            </div>
+            <div class="mt-3 flex items-center justify-between">
+              <div class="flex items-center gap-2 text-xs text-orange-400"><i class="fa-solid fa-user-ninja"></i> Player
+                2</div>
+              <button class="text-[11px] btn-primary px-3 py-1.5 rounded-md font-semibold">Start match <i
+                  class="fa-solid fa-arrow-right text-[10px] ml-0.5"></i></button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 2 -->
+        <div class="relative">
+          <div class="flex items-center gap-3 mb-5">
+            <div class="font-mono text-xs text-[var(--ink-faint)] tracking-widest">STEP 02</div>
+            <div class="flex-1 h-px bg-[var(--line)]"></div>
+          </div>
+          <h3 class="font-display text-2xl text-white font-semibold mb-2">Play turn by turn</h3>
+          <p class="text-[var(--ink-dim)] text-sm leading-relaxed mb-5">Drag cards. Quest. Challenge. Ink. The dojo logs
+            everything and tracks win-prob meters as the board shifts.</p>
+
+          <!-- mock: board -->
+          <div class="panel-2 p-4 relative overflow-hidden">
+            <!-- player top strip -->
+            <div class="rounded-md mb-3" style="background:#3f2e70; padding: 8px;">
+              <div
+                class="flex items-center justify-between text-[10px] uppercase tracking-widest text-purple-200 mb-2 font-mono">
+                <span><i class="fa-solid fa-user-ninja mr-1"></i> Player 2</span>
+                <span>Lore <span class="text-yellow-200">4</span> / 20</span>
+              </div>
+              <div class="flex gap-1.5">
+                <div class="card-ph amethyst exerted" style="width:30px; height:42px;"></div>
+                <div class="card-ph amethyst" style="width:30px; height:42px;"></div>
+                <div class="card-ph ruby" style="width:30px; height:42px;"></div>
+              </div>
+            </div>
+            <!-- BCR bar -->
+            <div class="mb-2">
+              <div
+                class="text-[9px] uppercase tracking-widest text-[var(--ink-faint)] font-mono mb-1 flex justify-between">
+                <span>Board control (BCR)</span><span>tug-of-war</span></div>
+              <div class="meter-track">
+                <div style="background: var(--orange); width: 58%;"></div>
+                <div style="background: var(--purple); width: 42%;"></div>
+              </div>
+            </div>
+            <!-- player bottom strip -->
+            <div class="rounded-md mt-3" style="background:#a86b32; padding: 8px;">
+              <div
+                class="flex items-center justify-between text-[10px] uppercase tracking-widest text-orange-100 mb-2 font-mono">
+                <span><i class="fa-solid fa-user mr-1"></i> Player 1 · you</span>
+                <span>Lore <span class="text-yellow-100">7</span> / 20</span>
+              </div>
+              <div class="flex gap-1.5">
+                <div class="card-ph amber" style="width:30px; height:42px;"></div>
+                <div class="card-ph amber exerted" style="width:30px; height:42px;"></div>
+                <div class="card-ph sapphire" style="width:30px; height:42px;"></div>
+                <div class="card-ph amber" style="width:30px; height:42px;"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 3 -->
+        <div class="relative">
+          <div class="flex items-center gap-3 mb-5">
+            <div class="font-mono text-xs text-[var(--ink-faint)] tracking-widest">STEP 03</div>
+            <div class="flex-1 h-px bg-[var(--line)]"></div>
+          </div>
+          <h3 class="font-display text-2xl text-white font-semibold mb-2">Branch the multiverse</h3>
+          <p class="text-[var(--ink-dim)] text-sm leading-relaxed mb-5">Hit <span class="kbd">M</span>. Click any prior
+            turn. Branch. Play a different line. Compare outcomes side-by-side.</p>
+
+          <!-- mock: mini tree -->
+          <div class="panel-2 p-4 relative" style="min-height: 174px;">
+            <svg viewBox="0 0 300 140" class="w-full h-32">
+              <defs>
+                <linearGradient id="mg" x1="0" y1="0" x2="1" y2="0">
+                  <stop offset="0%" stop-color="#a855f7" />
+                  <stop offset="100%" stop-color="#f472b6" />
+                </linearGradient>
+              </defs>
+              <path d="M 30,70 C 70,70 90,40 130,40" stroke="url(#mg)" stroke-width="2" fill="none"
+                stroke-dasharray="4 3" />
+              <path d="M 130,40 C 170,40 190,40 230,30" stroke="url(#mg)" stroke-width="2" fill="none"
+                stroke-dasharray="4 3" />
+              <path d="M 130,40 C 170,70 190,90 230,100" stroke="#3a3a44" stroke-width="1.5" fill="none"
+                stroke-dasharray="3 3" />
+              <circle cx="30" cy="70" r="8" fill="#1a1a1e" stroke="#5a5a63" stroke-width="1.5" />
+              <circle cx="130" cy="40" r="8" fill="#1a1a1e" stroke="#5a5a63" stroke-width="1.5" />
+              <circle cx="230" cy="30" r="10" fill="#2e1065" stroke="#a855f7" stroke-width="2" />
+              <circle cx="230" cy="100" r="8" fill="#1a1a1e" stroke="#3a2a6b" stroke-width="1.5" />
+              <text x="44" y="88" fill="#5a5a63" font-family="JetBrains Mono" font-size="8">T1</text>
+              <text x="144" y="58" fill="#5a5a63" font-family="JetBrains Mono" font-size="8">T3 · branch</text>
+              <text x="200" y="20" fill="#c4b5fd" font-family="JetBrains Mono" font-size="8">T5 · here</text>
+              <text x="200" y="120" fill="#5a5a63" font-family="JetBrains Mono" font-size="8">T5' · alt</text>
+            </svg>
+            <div
+              class="absolute bottom-3 left-4 right-4 flex items-center justify-between text-[10px] font-mono text-[var(--ink-faint)]">
+              <span><i class="fa-solid fa-bookmark text-purple-400 mr-1"></i> 4 bookmarks</span>
+              <span>2 branches · 1 active</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ METRICS DEEP-DIVE ============ -->
+  <section id="metrics" class="relative border-y hairline" style="background: #08080a;">
+    <div class="max-w-7xl mx-auto px-6 py-24 grid lg:grid-cols-12 gap-12 items-center">
+      <div class="lg:col-span-5">
+        <div class="tag mb-3">Win-probability engine</div>
+        <h2 class="font-display text-4xl text-white font-bold leading-[1.1]">Numbers on the board, not vibes in your
+          head.</h2>
+        <p class="mt-5 text-[var(--ink-dim)] leading-relaxed">
+          Every card in every zone is run through the Unified Win Probability library. Four metrics — BCR, LVI, RDS, CTL
+          — update on every action so you can see which branch is actually winning, not which one feels stronger.
+        </p>
+
+        <div class="mt-8 grid grid-cols-2 gap-3">
+          <div class="panel-2 p-4">
+            <div class="text-[10px] tracking-widest uppercase text-[var(--ink-faint)] font-mono">BCR</div>
+            <div class="mt-1 text-sm text-white font-display font-semibold">Board Control Rating</div>
+            <p class="text-xs text-[var(--ink-dim)] mt-2 leading-relaxed">Who actually owns the table right now.</p>
+          </div>
+          <div class="panel-2 p-4">
+            <div class="text-[10px] tracking-widest uppercase text-[var(--ink-faint)] font-mono">LVI</div>
+            <div class="mt-1 text-sm text-white font-display font-semibold">Lore Velocity Index</div>
+            <p class="text-xs text-[var(--ink-dim)] mt-2 leading-relaxed">How fast you're trending toward 20.</p>
+          </div>
+          <div class="panel-2 p-4">
+            <div class="text-[10px] tracking-widest uppercase text-[var(--ink-faint)] font-mono">RDS</div>
+            <div class="mt-1 text-sm text-white font-display font-semibold">Resource Development Score</div>
+            <p class="text-xs text-[var(--ink-dim)] mt-2 leading-relaxed">How many resources can you develop (draw,
+              ramp, etc)</p>
+          </div>
+          <div class="panel-2 p-4">
+            <div class="text-[10px] tracking-widest uppercase text-[var(--ink-faint)] font-mono">CTL</div>
+            <div class="mt-1 text-sm text-white font-display font-semibold">Card Threat Level</div>
+            <p class="text-xs text-[var(--ink-dim)] mt-2 leading-relaxed">BCR + LVI + RDS combined as a single metric.
+              How much of a threat is an individual card.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Metrics mockup -->
+      <div class="lg:col-span-7">
+        <div class="panel relative overflow-hidden">
+          <div class="px-5 py-3 border-b hairline bg-[var(--panel-2)] flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <div class="w-2 h-2 rounded-full bg-red-500/70"></div>
+              <div class="w-2 h-2 rounded-full bg-yellow-500/70"></div>
+              <div class="w-2 h-2 rounded-full bg-green-500/70"></div>
+              <span class="ml-3 font-mono text-[11px] text-[var(--ink-faint)]">dojo · win-prob meters</span>
+            </div>
+            <span class="font-mono text-[11px] text-[var(--ink-faint)]">turn 5 · P1 active</span>
+          </div>
+          <div class="p-6 grid md:grid-cols-2 gap-5">
+            <!-- BCR -->
+            <div>
+              <div class="flex justify-between items-baseline mb-2">
+                <span class="text-[10px] uppercase tracking-widest text-[var(--ink-dim)] font-mono">Board Control ·
+                  BCR</span>
+                <i class="fa-solid fa-khanda text-blue-400 text-xs"></i>
+              </div>
+              <div class="meter-track">
+                <div style="background: var(--orange); width: 64%;" class="shine"></div>
+                <div style="background: var(--purple); width: 36%;"></div>
+              </div>
+              <div class="flex justify-between text-[11px] font-mono mt-1.5">
+                <span class="text-orange-400">14.6</span>
+                <span class="text-purple-400">8.2</span>
+              </div>
+            </div>
+            <!-- LVI -->
+            <div>
+              <div class="flex justify-between items-baseline mb-2">
+                <span class="text-[10px] uppercase tracking-widest text-[var(--ink-dim)] font-mono">Lore Velocity ·
+                  LVI</span>
+                <i class="fa-solid fa-gem text-yellow-400 text-xs"></i>
+              </div>
+              <div class="meter-track">
+                <div style="background: var(--orange); width: 52%;" class="shine"></div>
+                <div style="background: var(--purple); width: 48%;"></div>
+              </div>
+              <div class="flex justify-between text-[11px] font-mono mt-1.5">
+                <span class="text-orange-400">11.4</span>
+                <span class="text-purple-400">10.5</span>
+              </div>
+            </div>
+
+            <!-- Card preview metrics -->
+            <div class="md:col-span-2 mt-2 panel-2 p-4 flex items-center gap-5">
+              <div class="card-ph amber" style="width: 76px; height: 106px;">
+                <svg class="ink" viewBox="0 0 100 100"
+                  style="width:18px;height:18px;position:absolute;top:6px;left:6px;">
+                  <polygon points="50,5 95,25 95,75 50,95 5,75 5,25" fill="#3a2510" stroke="#d4af37" stroke-width="6" />
+                </svg>
+              </div>
+              <div class="flex-1 grid grid-cols-4 gap-3 font-mono">
+                <div class="text-center">
+                  <div class="text-[9px] tracking-widest uppercase text-[var(--ink-faint)]">CTL</div>
+                  <div class="text-base text-white font-bold mt-1">8.20</div>
+                </div>
+                <div class="text-center">
+                  <div class="text-[9px] tracking-widest uppercase text-[var(--ink-faint)]">BCR</div>
+                  <div class="text-base text-blue-400 font-bold mt-1">3.40</div>
+                </div>
+                <div class="text-center">
+                  <div class="text-[9px] tracking-widest uppercase text-[var(--ink-faint)]">RDS</div>
+                  <div class="text-base text-green-400 font-bold mt-1">1.10</div>
+                </div>
+                <div class="text-center">
+                  <div class="text-[9px] tracking-widest uppercase text-[var(--ink-faint)]">LVI</div>
+                  <div class="text-base text-yellow-400 font-bold mt-1">2.80</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ CTA ============ -->
+  <section id="cta" class="relative overflow-hidden">
+    <div class="absolute inset-0 cta-glow pointer-events-none"></div>
+    <div class="max-w-5xl mx-auto px-6 py-28 relative text-center">
+      <div class="chip mb-8 mx-auto">
+        <i class="fa-solid fa-khanda text-purple-400 text-[11px]"></i>
+        Single-file · client-side · no install
+      </div>
+      <h2 class="font-display text-5xl md:text-6xl text-white font-bold leading-[1.05]">
+        Map the multiverse<br />
+        <span
+          style="background: linear-gradient(90deg, #c4b5fd, #f0abfc); -webkit-background-clip: text; background-clip: text; color: transparent;">before
+          your next tournament.</span>
+      </h2>
+      <p class="mt-6 text-[var(--ink-dim)] text-lg max-w-2xl mx-auto leading-relaxed">
+        One HTML file. Open it. Paste two decklists. Play. Rewind. Branch. Repeat.
+      </p>
+      <div class="mt-10 flex flex-wrap items-center justify-center gap-3">
+        <a href="practice_dojo.html"
+          class="btn-primary px-7 py-4 rounded-lg text-base font-semibold inline-flex items-center gap-2.5">
+          <i class="fa-solid fa-play text-[12px]"></i> Open Practice Dojo
+        </a>
+        <a href="#"
+          class="btn-secondary px-7 py-4 rounded-lg text-base font-medium inline-flex items-center gap-2.5 text-white">
+          <i class="fa-brands fa-github"></i> View source
+        </a>
+      </div>
+      <div class="mt-8 text-xs text-[var(--ink-faint)] font-mono">
+        v1.0 · sandbox build · works offline · saves to localStorage
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ FOOTER ============ -->
+  <footer class="border-t hairline">
+    <div class="max-w-7xl mx-auto px-6 py-10 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+      <div class="flex items-center gap-3">
+        <div class="w-7 h-7 rounded-md flex items-center justify-center"
+          style="background: linear-gradient(135deg, #7c3aed, #4c1d95);">
+          <i class="fa-solid fa-khanda text-white text-xs"></i>
+        </div>
+        <div class="text-sm text-[var(--ink-dim)]">Practice Dojo · a theorycrafting sandbox</div>
+      </div>
+      <div class="text-[11px] text-[var(--ink-faint)] font-mono leading-relaxed max-w-xl">
+        An independent fan-made theorycrafting tool. Not affiliated with or endorsed by the publisher of the Lorcana
+        TCG. All trademarks belong to their respective owners.
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // Optional: subtle parallax on hero tree nodes
+    const stage = document.getElementById('hero-tree');
+    if (stage) {
+      stage.addEventListener('mousemove', (e) => {
+        const r = stage.getBoundingClientRect();
+        const x = (e.clientX - r.left) / r.width - 0.5;
+        const y = (e.clientY - r.top) / r.height - 0.5;
+        stage.querySelectorAll('.tree-node').forEach((n, i) => {
+          const d = (i % 3 + 1) * 4;
+          n.style.translate = `${x * d}px ${y * d}px`;
+        });
+      });
+      stage.addEventListener('mouseleave', () => {
+        stage.querySelectorAll('.tree-node').forEach(n => n.style.translate = '');
+      });
+    }
+  </script>
+
+</body>
+
+</html>
