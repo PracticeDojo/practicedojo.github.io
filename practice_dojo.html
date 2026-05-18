@@ -366,9 +366,7 @@
 
                 <!-- Duels.ink Log Import -->
                 <div class="flex items-center gap-3">
-                    <input type="file" id="import-log-file-setup" class="hidden" accept=".md,.txt"
-                        onchange="App.importDojoLog(event)">
-                    <button onclick="document.getElementById('import-log-file-setup').click()"
+                    <button onclick="App.openImportLogModal()"
                         class="bg-gray-800 hover:bg-gray-700 text-green-400 border border-green-500/50 hover:border-green-400 font-bold py-2.5 px-4 rounded transition flex items-center text-sm shadow-md">
                         <i class="fa-solid fa-file-lines mr-2"></i> Import Duels.ink Log
                     </button>
@@ -449,6 +447,69 @@
             <div class="mt-4 flex justify-end gap-4 border-t border-gray-700 pt-4">
                 <button onclick="App.closeInspectDiscard()"
                     class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded transition">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Import Duels.ink Log Modal -->
+    <div id="import-log-modal"
+        class="absolute inset-0 z-50 bg-black bg-opacity-90 flex items-center justify-center hidden">
+        <div class="bg-gray-900 border border-gray-700 rounded-xl shadow-2xl w-full max-w-2xl flex flex-col mx-4" style="max-height: 90vh;">
+            <!-- Header -->
+            <div class="flex items-center justify-between p-5 border-b border-gray-700 shrink-0">
+                <h2 class="text-lg font-bold text-white flex items-center gap-2">
+                    <i class="fa-solid fa-file-lines text-green-400"></i> Import Duels.ink Log
+                </h2>
+                <button onclick="App.closeImportLogModal()" class="text-gray-400 hover:text-white transition text-xl leading-none">&times;</button>
+            </div>
+
+            <!-- Body -->
+            <div class="flex flex-col gap-4 p-5 flex-1 min-h-0 overflow-y-auto">
+                <!-- Paste area -->
+                <div>
+                    <label class="block text-sm font-semibold text-gray-300 mb-1.5">Paste log content</label>
+                    <textarea id="import-log-textarea"
+                        class="w-full bg-black border border-gray-700 focus:border-green-500 focus:ring-1 focus:ring-green-500 rounded-lg text-xs text-gray-300 p-3 resize-none outline-none custom-scrollbar font-mono transition"
+                        rows="12"
+                        placeholder="Paste your Duels.ink match log here..."
+                        oninput="App.onLogPasteInput()"></textarea>
+                </div>
+
+                <!-- Validation badge -->
+                <div id="import-log-validation" class="hidden rounded-lg px-3 py-2 text-sm flex items-start gap-2">
+                    <i id="import-log-validation-icon" class="mt-0.5 shrink-0"></i>
+                    <span id="import-log-validation-msg"></span>
+                </div>
+
+                <!-- Divider -->
+                <div class="flex items-center gap-3 text-gray-600 text-xs">
+                    <div class="flex-1 h-px bg-gray-700"></div>
+                    <span>or</span>
+                    <div class="flex-1 h-px bg-gray-700"></div>
+                </div>
+
+                <!-- File import -->
+                <div>
+                    <label class="block text-sm font-semibold text-gray-300 mb-1.5">Import from file</label>
+                    <input type="file" id="import-log-file-modal" class="hidden" accept=".md,.txt"
+                        onchange="App.onImportLogFileSelected(event)">
+                    <button onclick="document.getElementById('import-log-file-modal').click()"
+                        class="bg-gray-800 hover:bg-gray-700 text-gray-300 border border-gray-600 hover:border-gray-400 font-semibold py-2 px-4 rounded-lg transition flex items-center gap-2 text-sm">
+                        <i class="fa-solid fa-folder-open text-yellow-400"></i> Choose .md or .txt file
+                    </button>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="flex justify-end gap-3 p-5 border-t border-gray-700 shrink-0">
+                <button onclick="App.closeImportLogModal()"
+                    class="px-5 py-2 bg-gray-700 hover:bg-gray-600 text-white font-semibold rounded-lg transition text-sm">
+                    Cancel
+                </button>
+                <button id="import-log-confirm-btn" onclick="App.importLogFromModal()" disabled
+                    class="px-5 py-2 bg-green-700 hover:bg-green-600 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold rounded-lg transition text-sm flex items-center gap-2">
+                    <i class="fa-solid fa-file-import"></i> Import
+                </button>
             </div>
         </div>
     </div>
@@ -745,9 +806,7 @@
                         class="flex-1 py-2 text-xs font-bold text-blue-400 hover:text-blue-300 hover:bg-gray-800 transition border-r border-gray-800">
                         <i class="fa-solid fa-cloud-arrow-up mr-1"></i> Save to Cloud
                     </button>
-                    <input type="file" id="import-log-file-drawer" class="hidden" accept=".md,.txt"
-                        onchange="App.importDojoLog(event)">
-                    <button onclick="document.getElementById('import-log-file-drawer').click()"
+                    <button onclick="App.openImportLogModal()"
                         class="flex-1 py-2 text-xs font-bold text-green-400 hover:text-green-300 hover:bg-gray-800 transition">
                         <i class="fa-solid fa-file-lines mr-1"></i> Import Log
                     </button>
@@ -2246,42 +2305,117 @@
                 };
             },
 
-            importDojoLog(event) {
+            // Core import logic shared by paste and file import
+            _applyDojoLog(logText) {
+                const parsed = this.parseDojoLog(logText);
+                if (!parsed.turns || parsed.turns.length === 0) {
+                    throw new Error("No turns found in this log. Make sure it is a valid Duels.ink log.");
+                }
+                const session = this.buildSessionFromLog(parsed);
+                this.state = this.decompressState(session.currentState);
+                this.bookmarks = session.bookmarks;
+                this.autoSaves = [];
+                this.history = [];
+
+                if (session.deck1) document.getElementById('deck1-input').value = session.deck1;
+                if (session.deck2) document.getElementById('deck2-input').value = session.deck2;
+
+                document.getElementById('setup-modal').classList.add('hidden');
+                document.getElementById('app').classList.remove('hidden');
+                document.getElementById('timeline-drawer').classList.add('-translate-x-full');
+                this.renderAutoSaves();
+                this.renderTree();
+                this.render();
+                this.showToast(`Log Imported: ${parsed.turns.length} turns loaded!`);
+                return parsed;
+            },
+
+            validateDojoLog(text) {
+                if (!text || !text.trim()) {
+                    return { valid: false, level: 'empty', message: 'Paste your log above to validate it.' };
+                }
+                const hasTurns = /^---\s*Turn \d+\s*---/m.test(text);
+                const hasOpeningHand = /^Player \d+'s starting hand:/m.test(text);
+                const turnCount = (text.match(/^---\s*Turn \d+\s*---/mg) || []).length;
+
+                if (hasTurns && hasOpeningHand) {
+                    return { valid: true, level: 'ok', message: `Valid Duels.ink log detected — ${turnCount} turn${turnCount !== 1 ? 's' : ''} found.` };
+                }
+                if (hasTurns && !hasOpeningHand) {
+                    return { valid: true, level: 'warn', message: `${turnCount} turn${turnCount !== 1 ? 's' : ''} found, but no opening hand lines detected. Deck reconstruction will be limited.` };
+                }
+                return { valid: false, level: 'error', message: 'This does not look like a valid Duels.ink log. Expected "--- Turn N ---" markers.' };
+            },
+
+            openImportLogModal() {
+                document.getElementById('import-log-textarea').value = '';
+                document.getElementById('import-log-validation').classList.add('hidden');
+                document.getElementById('import-log-confirm-btn').disabled = true;
+                document.getElementById('import-log-modal').classList.remove('hidden');
+                setTimeout(() => document.getElementById('import-log-textarea').focus(), 50);
+            },
+
+            closeImportLogModal() {
+                document.getElementById('import-log-modal').classList.add('hidden');
+                document.getElementById('import-log-file-modal').value = '';
+            },
+
+            onLogPasteInput() {
+                const text = document.getElementById('import-log-textarea').value;
+                const result = this.validateDojoLog(text);
+
+                const badge = document.getElementById('import-log-validation');
+                const icon = document.getElementById('import-log-validation-icon');
+                const msg = document.getElementById('import-log-validation-msg');
+                const btn = document.getElementById('import-log-confirm-btn');
+
+                if (result.level === 'empty') {
+                    badge.classList.add('hidden');
+                    btn.disabled = true;
+                    return;
+                }
+
+                badge.classList.remove('hidden', 'bg-green-900/50', 'border-green-700', 'text-green-300',
+                                                'bg-yellow-900/50', 'border-yellow-700', 'text-yellow-300',
+                                                'bg-red-900/50', 'border-red-700', 'text-red-300');
+                icon.className = 'mt-0.5 shrink-0 fa-solid';
+
+                if (result.level === 'ok') {
+                    badge.classList.add('bg-green-900/50', 'border', 'border-green-700', 'text-green-300');
+                    icon.classList.add('fa-circle-check', 'text-green-400');
+                } else if (result.level === 'warn') {
+                    badge.classList.add('bg-yellow-900/50', 'border', 'border-yellow-700', 'text-yellow-300');
+                    icon.classList.add('fa-triangle-exclamation', 'text-yellow-400');
+                } else {
+                    badge.classList.add('bg-red-900/50', 'border', 'border-red-700', 'text-red-300');
+                    icon.classList.add('fa-circle-xmark', 'text-red-400');
+                }
+
+                msg.textContent = result.message;
+                btn.disabled = !result.valid;
+            },
+
+            onImportLogFileSelected(event) {
                 const file = event.target.files[0];
                 if (!file) return;
-
                 const reader = new FileReader();
                 reader.onload = (e) => {
-                    try {
-                        const logText = e.target.result;
-                        const parsed = this.parseDojoLog(logText);
-                        if (!parsed.turns || parsed.turns.length === 0) {
-                            alert("No turns found in this log file. Make sure it is a valid Duels.ink log.");
-                            return;
-                        }
-                        const session = this.buildSessionFromLog(parsed);
-                        this.state = this.decompressState(session.currentState);
-                        this.bookmarks = session.bookmarks;
-                        this.autoSaves = [];
-                        this.history = [];
-
-                        if (session.deck1) document.getElementById('deck1-input').value = session.deck1;
-                        if (session.deck2) document.getElementById('deck2-input').value = session.deck2;
-
-                        document.getElementById('setup-modal').classList.add('hidden');
-                        document.getElementById('app').classList.remove('hidden');
-                        document.getElementById('timeline-drawer').classList.add('-translate-x-full');
-                        this.renderAutoSaves();
-                        this.renderTree();
-                        this.render();
-                        this.showToast(`Log Imported: ${parsed.turns.length} turns loaded!`);
-                    } catch (err) {
-                        console.error("Failed to import Duels.ink log", err);
-                        alert("Failed to parse the log file. Check the browser console for details.");
-                    }
-                    event.target.value = '';
+                    document.getElementById('import-log-textarea').value = e.target.result;
+                    this.onLogPasteInput();
                 };
                 reader.readAsText(file);
+                event.target.value = '';
+            },
+
+            importLogFromModal() {
+                const text = document.getElementById('import-log-textarea').value;
+                try {
+                    this._applyDojoLog(text);
+                    this.closeImportLogModal();
+                } catch (err) {
+                    console.error("Failed to import Duels.ink log", err);
+                    alert(err.message || "Failed to parse the log. Check the browser console for details.");
+                }
             },
 
             async fetchSessionsFromDatabase() {
