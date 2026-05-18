@@ -1200,11 +1200,93 @@
                     const sign = diff > 0 ? '+' : '';
                     this.logAction(`${p.id === this.state.activePlayer ? 'You' : 'Opponent'} manually adjusted lore by ${sign}${diff}.`);
                     this.render();
+                    this.checkBranchOver();
                 }
             },
 
             uuid() {
                 return Math.random().toString(36).substr(2, 9);
+            },
+
+            getDeckColors(playerId) {
+                const p = this.state.players[playerId];
+                const colors = new Set();
+                const allCards = [
+                    ...p.deck, 
+                    ...p.hand, 
+                    ...p.field.map(c => c.cardId), 
+                    ...p.discard, 
+                    ...p.inkwell
+                ];
+                allCards.forEach(cid => {
+                    const card = this.cardDB[cid];
+                    if (card && card.color) colors.add(card.color.toLowerCase());
+                });
+                return Array.from(colors);
+            },
+
+            getDeckGradient(colors) {
+                const colorMap = {
+                    'amber': '#f59e0b',
+                    'amethyst': '#a855f7',
+                    'emerald': '#10b981',
+                    'ruby': '#ef4444',
+                    'sapphire': '#3b82f6',
+                    'steel': '#6b7280'
+                };
+                
+                const hexColors = colors.map(c => colorMap[c] || '#4b5563');
+                
+                if (hexColors.length === 1) {
+                    return hexColors[0];
+                } else if (hexColors.length >= 2) {
+                    return `linear-gradient(135deg, ${hexColors[0]}, ${hexColors[1]})`;
+                }
+                return '#4b5563'; // fallback
+            },
+
+            checkBranchOver() {
+                const p1 = this.state.players[0];
+                const p2 = this.state.players[1];
+                
+                if (p1.lore >= 20 || p2.lore >= 20) {
+                    if (this.state.branchOverFlag) return;
+                    this.state.branchOverFlag = true;
+                    
+                    const winnerId = p1.lore >= 20 ? 0 : 1;
+                    const winner = this.state.players[winnerId];
+                    const deckColors = this.getDeckColors(winnerId);
+                    const bColor = this.getDeckGradient(deckColors);
+                    
+                    const name = `Game Over - ${winner.name} Wins!`;
+                    const stats = `Turn ${this.state.turn} | P1: ${p1.lore} - P2: ${p2.lore}`;
+                    const newId = this.uuid();
+
+                    this.bookmarks.push({
+                        id: newId,
+                        parentId: this.state.activeBookmarkId || null,
+                        name: name,
+                        stats: stats,
+                        comment: `Branch over. ${winner.name} reached 20 lore.`,
+                        color: typeof bColor === 'string' && !bColor.includes('gradient') ? bColor : '#ffffff', // default border if gradient
+                        gradient: bColor.includes('gradient') ? bColor : null,
+                        state: JSON.stringify(this.compressState(this.state, true)),
+                        timestamp: Date.now(),
+                        isDeckEdit: false
+                    });
+
+                    this.state.activeBookmarkId = newId;
+                    this.saveToLocalStorage();
+                    
+                    // Show a message on the main screen and dialog to go to multiverse
+                    setTimeout(() => {
+                        if (confirm(`Game Over! ${winner.name} won the branch with ${winner.lore} lore. Would you like to go to the Multiverse View to see other timelines?`)) {
+                            this.treePan.zoom = 0.8; // Zoom out
+                            this.openTreeModal();
+                            // Zoom out and center on current node logic will be in openTreeModal
+                        }
+                    }, 500);
+                }
             },
 
             async fetchDecksFromDatabase() {
@@ -2109,6 +2191,15 @@
                     el.style.top = `${pos.y}px`;
                     el.style.borderColor = isNavActive ? '#ffffff' : (b.color || '#4b5563');
 
+                    // If we have a gradient (like from game over), apply it to the border or a background overlay
+                    if (b.gradient && !isNavActive) {
+                        el.style.borderImage = `${b.gradient} 1`;
+                        el.style.borderWidth = '3px';
+                        el.style.borderStyle = 'solid';
+                    } else if (!b.gradient) {
+                        el.style.borderImage = 'none';
+                    }
+
                     const isEditing = this.state.editingNodeId === b.id;
 
                     if (isEditing) {
@@ -2614,6 +2705,7 @@
 
                 this.logAction(`You quested with ${dbCard.name} for ${loreVal} lore.`);
                 this.render();
+                this.checkBranchOver();
             },
 
             questWithAll() {
@@ -2635,6 +2727,7 @@
                     p.lore += totalLore;
                     this.logAction(`You quested with ${count} characters for ${totalLore} lore.`);
                     this.render();
+                    this.checkBranchOver();
                 }
             },
 

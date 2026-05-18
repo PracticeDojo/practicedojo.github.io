@@ -170,7 +170,18 @@ As a player, I want the practice dojo to save the cards and represent the cards 
 - We shouldn't duplicate the data in the JSON. This is only a visual representation.
 
 
+## Feature 15: Detect when the Branch is over
 
+### User Story
+As a player, I want the practice dojo to know when a branch is over and the game has been won or lost so that it can visually represent that in the node.
+
+### Details
+- When a player reaches 20 lore or more, the branch is over. 
+- The same applies if the other player reaches 20 lore or more.
+- The game ends, and the branch is over, save that state.
+- Display a message on the main screen. And have a dialog window that asks if they want to go to the multiverse view to see other timelines.
+- If they choose to go to the multiverse view, the tree should automatically center on the current node and zoom out so that the current node is fully visible.
+- Make sure to color the node in the colors of the players deck colors, ie if they are playing ruby/amethyst then color the node with the red/purple colors.
 
 ---
 
@@ -187,7 +198,7 @@ As a developer, I want the JSON game state to be way more optimized and organize
 - It is not very organized.
 - It is not very efficient.
  
-## Feature 15: Color timeline nodes based on active player
+## Feature 16: Color timeline nodes based on active player
 ### User Story
 As a player, I want the timeline nodes in the Multiverse Tree to be colored based on the active player so that I can easily visually distinguish which player's turn the saved state belongs to.
 
@@ -214,5 +225,6 @@ As a player, I want the timeline nodes in the Multiverse Tree to be colored base
 - [x] Feature 12: Keyboard Navigation in Multiverse Tree
 - [x] Feature 13: Allow markdown for comments on nodes
 - [x] Feature 14: Save cards played that turn when autosaving
-- [x] Feature 15: Color timeline nodes based on active player's color
-
+- [x] Feature 15: Detect when the Branch is over
+- [x] Feature 16: Color timeline nodes based on active player's color
+tyu
