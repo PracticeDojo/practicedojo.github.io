@@ -355,6 +355,25 @@
       margin: 0 8px;
     }
 
+    /* Real card thumbnails used in the "Play turn by turn" mock */
+    .mock-card {
+      width: 44px;
+      height: 62px;
+      border-radius: 4px;
+      object-fit: cover;
+      object-position: center top;
+      background: #14141a;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      box-shadow: 0 4px 8px -2px rgba(0, 0, 0, 0.7);
+      flex-shrink: 0;
+      display: block;
+    }
+
+    .mock-card-exerted {
+      transform: rotate(90deg) scale(0.88);
+      margin: 0 6px;
+    }
+
     .meter-track {
       background: #2a2a32;
       height: 6px;
@@ -472,6 +491,7 @@
         <span class="tag hidden sm:inline-block ml-2">v1.0 · sandbox build</span>
       </div>
       <nav class="hidden md:flex items-center gap-7 text-sm text-[var(--ink-dim)]">
+        <a href="#screenshot" class="hover:text-white transition">See it</a>
         <a href="#multiverse" class="hover:text-white transition">Multiverse</a>
         <a href="#features" class="hover:text-white transition">Features</a>
         <a href="#how" class="hover:text-white transition">How it works</a>
@@ -500,18 +520,19 @@
           <span class="w-1.5 h-1.5 rounded-full bg-purple-400 ring-pulse"></span>
           Multiverse Theorycraft
         </div>
-        <h1 class="font-display text-5xl md:text-6xl lg:text-[68px] font-bold leading-[1.02] text-white">
-          Play every line.<br />
+        <h1 class="font-display text-5xl md:text-6xl lg:text-[68px] font-bold leading-[1.02] text-white">Try every line.
           <span
             style="background: linear-gradient(90deg, #c4b5fd 0%, #f0abfc 60%, #fdba74 100%); -webkit-background-clip: text; background-clip: text; color: transparent;">Branch
-            every turn.</span>
+            any turn.</span>
         </h1>
         <p class="mt-6 text-lg text-[var(--ink-dim)] max-w-xl leading-relaxed">
-          A theorycrafting sandbox for the Lorcana TCG. Run a match between two decks turn-by-turn — then rewind to any
-          moment, branch a new timeline, reshuffle, or hot-swap cards to see exactly how the line plays out.
+          A theorycrafting sandbox for the Lorcana TCG. Replay any match between two decks turn-by-turn — then rewind to
+          any moment, branch a new timeline, reshuffle, or hot-swap cards to see how a different line would have played
+          out.
         </p>
         <p class="mt-4 text-[15px] text-[var(--ink-faint)] max-w-lg">
-          Stop grinding random matches to surface one matchup. Map the whole multiverse instead.
+          A companion to your favorite simulator. Take the matches you've already played and explore every line you wish
+          you'd tried.
         </p>
 
         <div class="mt-10 flex flex-wrap items-center gap-3">
@@ -530,10 +551,10 @@
             <span class="w-2 h-2 rounded-full bg-orange-500"></span> Manual sandbox
           </div>
           <div class="flex items-center gap-2 text-[var(--ink-dim)]">
-            <span class="w-2 h-2 rounded-full bg-purple-500"></span> Time-travel built-in
+            <span class="w-2 h-2 rounded-full bg-purple-500"></span> Rewind &amp; branch
           </div>
           <div class="flex items-center gap-2 text-[var(--ink-dim)]">
-            <span class="w-2 h-2 rounded-full bg-blue-400"></span> Win-prob engine
+            <span class="w-2 h-2 rounded-full bg-blue-400"></span> Win-prob meters
           </div>
         </div>
       </div>
@@ -667,32 +688,136 @@
     </div>
   </section>
 
+  <!-- ============ SCREENSHOT / SEE IT IN ACTION ============ -->
+  <section id="screenshot" class="relative overflow-hidden" style="background: #08080a;">
+    <div class="absolute -top-32 left-1/4 w-[700px] h-[700px] glow-purple opacity-40 pointer-events-none"></div>
+    <div class="max-w-7xl mx-auto px-6 py-24 relative">
+      <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-10">
+        <div class="max-w-2xl">
+          <div class="tag mb-3">Live in the dojo</div>
+          <h2 class="font-display text-4xl md:text-5xl text-white font-bold leading-[1.05]">
+            A real match, mid-turn.
+          </h2>
+          <p class="mt-4 text-[var(--ink-dim)] text-lg leading-relaxed">Two decks loaded, turn-by-turn log, and the
+            multiverse of possible turns one keystroke away.</p>
+        </div>
+        <div class="flex flex-wrap gap-2 text-[11px] font-mono text-[var(--ink-dim)]">
+          <span class="px-3 py-1.5 rounded-full border hairline"><span
+              class="w-1.5 h-1.5 inline-block rounded-full bg-purple-500 mr-1.5 align-middle"></span> Turn 8 · P2
+            active</span>
+          <span class="px-3 py-1.5 rounded-full border hairline"><span
+              class="w-1.5 h-1.5 inline-block rounded-full bg-orange-500 mr-1.5 align-middle"></span> P1 lore 17 / P2
+            lore 0</span>
+          <span class="px-3 py-1.5 rounded-full border hairline"><span
+              class="w-1.5 h-1.5 inline-block rounded-full bg-yellow-400 mr-1.5 align-middle"></span> Auto-save
+            on</span>
+        </div>
+      </div>
+
+      <div class="relative panel overflow-hidden" style="background: #0c0c10;">
+        <!-- window chrome -->
+        <div class="flex items-center justify-between px-4 py-2.5 border-b hairline bg-[var(--panel-2)]">
+          <div class="flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-red-500/70"></span>
+            <span class="w-2.5 h-2.5 rounded-full bg-yellow-500/70"></span>
+            <span class="w-2.5 h-2.5 rounded-full bg-green-500/70"></span>
+            <span class="ml-4 font-mono text-[11px] text-[var(--ink-faint)]">practice_dojo.html · v1.15.0</span>
+          </div>
+          <div class="font-mono text-[11px] text-[var(--ink-faint)] hidden sm:block">offline · saved to localStorage
+          </div>
+        </div>
+        <div class="relative">
+          <img src="img/dojo_gui.png"
+            alt="Practice Dojo showing a live Lorcana match between two decks with the win-probability meters, game log, and player boards visible"
+            class="block w-full h-auto" />
+          <!-- subtle annotation overlays -->
+          <div class="hidden lg:block absolute" style="top: 18%; left: 0.5%;">
+            <div class="panel-2 px-3 py-2 text-[11px] font-mono text-[var(--ink-dim)] flex items-center gap-2 shadow-xl"
+              style="background: rgba(20,20,24,0.92);">
+              <span class="w-1.5 h-1.5 rounded-full" style="background: var(--blue);"></span> Live win-prob meters
+            </div>
+          </div>
+          <div class="hidden lg:block absolute" style="top: 60%; left: 0.5%;">
+            <div class="panel-2 px-3 py-2 text-[11px] font-mono text-[var(--ink-dim)] flex items-center gap-2 shadow-xl"
+              style="background: rgba(20,20,24,0.92);">
+              <span class="w-1.5 h-1.5 rounded-full" style="background: var(--orange-soft);"></span> Turn-by-turn log
+            </div>
+          </div>
+          <div class="hidden lg:block absolute" style="top: 30%; right: 0.5%;">
+            <div class="panel-2 px-3 py-2 text-[11px] font-mono text-[var(--ink-dim)] flex items-center gap-2 shadow-xl"
+              style="background: rgba(20,20,24,0.92);">
+              <span class="w-1.5 h-1.5 rounded-full" style="background: var(--purple-soft);"></span> Card preview on
+              hover
+            </div>
+          </div>
+          <div class="hidden lg:block absolute" style="top: 86%; left: 12%;">
+            <div class="panel-2 px-3 py-2 text-[11px] font-mono text-[var(--ink-dim)] flex items-center gap-2 shadow-xl"
+              style="background: rgba(20,20,24,0.92);">
+              <span class="w-1.5 h-1.5 rounded-full" style="background: var(--yellow);"></span> Per-turn notes
+              (Markdown)
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3 small captions under the screenshot -->
+      <div class="mt-8 grid md:grid-cols-3 gap-4 text-sm">
+        <div class="flex items-start gap-3">
+          <i class="fa-solid fa-scale-balanced text-[var(--blue)] mt-0.5"></i>
+          <div>
+            <div class="font-display font-semibold text-white">Tug-of-war meters</div>
+            <div class="text-[var(--ink-dim)] text-[13px] leading-relaxed">BCR &amp; LVI bars show who actually owns the
+              board, updated on every action.</div>
+          </div>
+        </div>
+        <div class="flex items-start gap-3">
+          <i class="fa-solid fa-arrows-up-down-left-right text-[var(--orange-soft)] mt-0.5"></i>
+          <div>
+            <div class="font-display font-semibold text-white">Drag &amp; drop anywhere</div>
+            <div class="text-[var(--ink-dim)] text-[13px] leading-relaxed">Move cards between hand, field, ink, and
+              discard. Nothing blocks you.</div>
+          </div>
+        </div>
+        <div class="flex items-start gap-3">
+          <i class="fa-solid fa-clock-rotate-left text-[var(--purple-soft)] mt-0.5"></i>
+          <div>
+            <div class="font-display font-semibold text-white">Turn-by-turn time travel</div>
+            <div class="text-[var(--ink-dim)] text-[13px] leading-relaxed">Press <span class="kbd"
+                style="min-width:18px;height:18px;font-size:10px;padding:0 4px;">M</span> to open the multiverse and
+              jump to any turn you played.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <!-- ============ STAT STRIP / PROBLEM ============ -->
   <section class="relative border-y hairline" style="background: #08080a;">
     <div class="max-w-7xl mx-auto px-6 py-14 grid md:grid-cols-3 gap-10">
       <div>
-        <div class="tag mb-3">The problem</div>
-        <h3 class="font-display text-2xl text-white leading-snug">One matchup. A thousand possible lines.</h3>
-        <p class="mt-3 text-[var(--ink-dim)] text-[15px] leading-relaxed">
-          Playing matches at random surfaces maybe two or three of them. The rest live in your head as “what if I had
-          drawn it on turn three.”
-        </p>
+        <div class="tag mb-3">The idea</div>
+        <h3 class="font-display text-2xl text-white leading-snug">One match. A thousand lines you didn't get to play.
+        </h3>
+        <p class="mt-3 text-[var(--ink-dim)] text-[15px] leading-relaxed">Every match leaves “what if I had quested with
+          Maui instead” sitting in your head. The dojo is where you go to actually find out — without having to replay
+          the whole game again.</p>
       </div>
       <div class="md:col-span-2 grid grid-cols-3 gap-px bg-[var(--line)] rounded-xl overflow-hidden border hairline">
         <div class="bg-[var(--panel)] p-6">
-          <div class="font-mono text-[10px] text-[var(--ink-faint)] tracking-widest uppercase">Random matches</div>
-          <div class="mt-2 font-display text-4xl text-white">~40</div>
-          <div class="mt-1 text-xs text-[var(--ink-dim)]">to surface one realistic line variation</div>
+          <div class="font-mono text-[10px] text-[var(--ink-faint)] tracking-widest uppercase">Replay any turn</div>
+          <div class="mt-2 font-display text-4xl text-white">∞</div>
+          <div class="mt-1 text-xs text-[var(--ink-dim)]">Jump back to any point in the match</div>
         </div>
         <div class="bg-[var(--panel)] p-6">
-          <div class="font-mono text-[10px] text-[var(--ink-faint)] tracking-widest uppercase">In the dojo</div>
-          <div class="mt-2 font-display text-4xl" style="color:#c4b5fd;">~3</div>
-          <div class="mt-1 text-xs text-[var(--ink-dim)]">branches off a single bookmarked turn</div>
+          <div class="font-mono text-[10px] text-[var(--ink-faint)] tracking-widest uppercase">Branches per bookmark
+          </div>
+          <div class="mt-2 font-display text-4xl" style="color:#c4b5fd;">∞</div>
+          <div class="mt-1 text-xs text-[var(--ink-dim)]">Explore as many lines as you like</div>
         </div>
         <div class="bg-[var(--panel)] p-6">
-          <div class="font-mono text-[10px] text-[var(--ink-faint)] tracking-widest uppercase">Cost to rewind</div>
-          <div class="mt-2 font-display text-4xl" style="color:#fdba74;">0&nbsp;ms</div>
-          <div class="mt-1 text-xs text-[var(--ink-dim)]">Full-state snapshots rewind instantly.</div>
+          <div class="font-mono text-[10px] text-[var(--ink-faint)] tracking-widest uppercase">Time to rewind</div>
+          <div class="mt-2 font-display text-4xl" style="color:#fdba74;">instant</div>
+          <div class="mt-1 text-xs text-[var(--ink-dim)]">No replays, no setup, just jump back</div>
         </div>
       </div>
     </div>
@@ -711,8 +836,9 @@
           Every turn is a save point.<br />Every save point is a branch.
         </h2>
         <p class="mt-5 text-[var(--ink-dim)] text-lg leading-relaxed max-w-2xl">
-          The dojo silently snapshots state at the start of every turn. Rewind to turn 4, replay your hand differently,
-          and the original line stays alive next to it. Both lines live in one tree you can zoom, pan, and jump through.
+          The dojo silently snapshots state at the start of every turn. Pick a match you've already played, rewind to
+          turn 4, replay your hand differently, and the original line stays alive next to it. Both lines live in one
+          tree you can zoom, pan, and jump through.
         </p>
       </div>
 
@@ -932,8 +1058,8 @@
             <i class="fa-solid fa-clock-rotate-left text-[var(--purple-soft)]"></i>
             <span class="font-display font-semibold text-white">Rewind, instantly</span>
           </div>
-          <p class="text-sm text-[var(--ink-dim)] leading-relaxed">Every node is a full game state snapshot. Jump to
-            turn 2 of game 1 from turn 9 of game 4 with no replay step.</p>
+          <p class="text-sm text-[var(--ink-dim)] leading-relaxed">Every saved turn is a complete snapshot of the game.
+            Jump back to turn 2 from turn 9 — hands, ink, board, log all restored exactly.</p>
         </div>
         <div class="panel-2 p-5">
           <div class="flex items-center gap-2 mb-3">
@@ -1116,8 +1242,8 @@
             <div
               class="bg-black/60 border hairline rounded-md p-3 text-[11px] font-mono leading-relaxed text-[var(--ink-dim)]">
               <div>4 <span class="text-orange-300">Tinker Bell</span> – Giant Fairy</div>
-              <div>3 <span class="text-orange-300">Maui</span> – Hero to All</div>
-              <div>4 <span class="text-orange-300">Pawpsicle</span></div>
+              <div>3 Hades – Infernal Scheamer</div>
+              <div>4 <span class="text-orange-300">Sail The Azurite Sea</span></div>
               <div class="text-[var(--ink-faint)]">… 49 more</div>
             </div>
             <div class="mt-3 flex items-center justify-between">
@@ -1148,10 +1274,16 @@
                 <span><i class="fa-solid fa-user-ninja mr-1"></i> Player 2</span>
                 <span>Lore <span class="text-yellow-200">4</span> / 20</span>
               </div>
-              <div class="flex gap-1.5">
-                <div class="card-ph amethyst exerted" style="width:30px; height:42px;"></div>
-                <div class="card-ph amethyst" style="width:30px; height:42px;"></div>
-                <div class="card-ph ruby" style="width:30px; height:42px;"></div>
+              <div class="flex gap-1.5 items-center">
+                <img
+                  src="https://api.lorcana.ravensburger.com/images/en/set12/3_5529517d0ab317be7d53d5d3b88d4adf4f386c65.jpg"
+                  alt="" loading="lazy" class="mock-card mock-card-exerted" />
+                <img
+                  src="https://api.lorcana.ravensburger.com/images/en/set12/77_a035676fa654b7a6140995687d8c0dcdae62e8f9.jpg"
+                  alt="" loading="lazy" class="mock-card" />
+                <img
+                  src="https://api.lorcana.ravensburger.com/images/en/set12/20_fd7315e215a10d7e80219ccd28b6adc40f7722ae.jpg"
+                  alt="" loading="lazy" class="mock-card" />
               </div>
             </div>
             <!-- BCR bar -->
@@ -1171,11 +1303,19 @@
                 <span><i class="fa-solid fa-user mr-1"></i> Player 1 · you</span>
                 <span>Lore <span class="text-yellow-100">7</span> / 20</span>
               </div>
-              <div class="flex gap-1.5">
-                <div class="card-ph amber" style="width:30px; height:42px;"></div>
-                <div class="card-ph amber exerted" style="width:30px; height:42px;"></div>
-                <div class="card-ph sapphire" style="width:30px; height:42px;"></div>
-                <div class="card-ph amber" style="width:30px; height:42px;"></div>
+              <div class="flex gap-1.5 items-center">
+                <img
+                  src="https://api.lorcana.ravensburger.com/images/en/set10/56_f953ad3207f4a7f3bb549511d48ddf33d3f8ea8f.jpg"
+                  alt="" loading="lazy" class="mock-card" />
+                <img
+                  src="https://api.lorcana.ravensburger.com/images/en/set4/113_6be8988cbfe6e28ec9f85c69df25e19759eb1ee8.jpg"
+                  alt="" loading="lazy" class="mock-card mock-card-exerted" />
+                <img
+                  src="https://api.lorcana.ravensburger.com/images/en/set11/111_3b70b2d1d364c929ea542a35188fa9fbf1cbb31d.jpg"
+                  alt="" loading="lazy" class="mock-card" />
+                <img
+                  src="https://api.lorcana.ravensburger.com/images/en/set4/116_0b4d44d7353e7c96f2d82c5cf745a867ce12402a.jpg"
+                  alt="" loading="lazy" class="mock-card" />
               </div>
             </div>
           </div>
@@ -1252,14 +1392,14 @@
           <div class="panel-2 p-4">
             <div class="text-[10px] tracking-widest uppercase text-[var(--ink-faint)] font-mono">RDS</div>
             <div class="mt-1 text-sm text-white font-display font-semibold">Resource Development Score</div>
-            <p class="text-xs text-[var(--ink-dim)] mt-2 leading-relaxed">How many resources can you develop (draw,
-              ramp, etc)</p>
+            <p class="text-xs text-[var(--ink-dim)] mt-2 leading-relaxed">How many resources can you generate: Draw
+              cards, Ramp, Cheat Ink, etc.</p>
           </div>
           <div class="panel-2 p-4">
             <div class="text-[10px] tracking-widest uppercase text-[var(--ink-faint)] font-mono">CTL</div>
             <div class="mt-1 text-sm text-white font-display font-semibold">Card Threat Level</div>
-            <p class="text-xs text-[var(--ink-dim)] mt-2 leading-relaxed">BCR + LVI + RDS combined as a single metric.
-              How much of a threat is an individual card.</p>
+            <p class="text-xs text-[var(--ink-dim)] mt-2 leading-relaxed">All those previous metrics combined in to a
+              single Threat Level Value.</p>
           </div>
         </div>
       </div>
@@ -1352,13 +1492,13 @@
         Single-file · client-side · no install
       </div>
       <h2 class="font-display text-5xl md:text-6xl text-white font-bold leading-[1.05]">
-        Map the multiverse<br />
+        Revisit your matches.<br />
         <span
-          style="background: linear-gradient(90deg, #c4b5fd, #f0abfc); -webkit-background-clip: text; background-clip: text; color: transparent;">before
-          your next tournament.</span>
+          style="background: linear-gradient(90deg, #c4b5fd, #f0abfc); -webkit-background-clip: text; background-clip: text; color: transparent;">Explore
+          every line.</span>
       </h2>
       <p class="mt-6 text-[var(--ink-dim)] text-lg max-w-2xl mx-auto leading-relaxed">
-        One HTML file. Open it. Paste two decklists. Play. Rewind. Branch. Repeat.
+        A companion to your favorite Lorcana simulator. Open the file. Load two decks. Play. Rewind. Branch. Repeat.
       </p>
       <div class="mt-10 flex flex-wrap items-center justify-center gap-3">
         <a href="practice_dojo.html"

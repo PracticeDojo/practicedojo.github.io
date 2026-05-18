@@ -183,6 +183,34 @@ As a player, I want the practice dojo to know when a branch is over and the game
 - If they choose to go to the multiverse view, the tree should automatically center on the current node and zoom out so that the current node is fully visible.
 - Make sure to color the node in the colors of the players deck colors, ie if they are playing ruby/amethyst then color the node with the red/purple colors.
 
+## Feature 16: Color timeline nodes based on active player
+### User Story
+As a player, I want the timeline nodes in the Multiverse Tree to be colored based on the active player so that I can easily visually distinguish which player's turn the saved state belongs to.
+
+### Details
+- The nodes in the Multiverse Tree should be colored using the active player's HUD border color.
+- Player 1's color is Orange (#a86b32) and Player 2's color is Purple (#3f2e70).
+- When a node is automatically or manually saved, it should receive the correct active player color.
+
+## Feature 17: Importing Logs from Duels ink
+
+### User Story
+As a player, I want to be able to import logs from Duels.ink into the practice dojo so that I can easily see the game state and continue from any turn that I want.
+
+### Preparation
+- I have a log under `/practice_dojo/logs/log_example_v01.md`
+- Consume it and extract how the came states are represented in the md file.
+- Create a game state converter for each turn in the log that is compatible with the current game state format. So that the state is the same as the actual game state.
+- at the beginning there are opening hands and mulligans that show cards from both players. assume that you won't know all the cards of the deck, but you can infer them from the cards that are played during the game. As well as these first hands and mulligans.
+- Keep track of all the cards and try to rebuild the order of the deck. you can create "unknown cards" placeholders for the rest of the deck that you don't know.
+- Make sure that these place holders are able to be swapped out for other cards if needed (using the current card swapping system).
+- If the user doesn't like the rebuilt deck, they can always edit the deck manually using the current card editing system. 
+
+### Details
+- When a player imports a log from Duels.ink, it should be saved to the practice dojo as a new node.
+- The node should be colored in the colors of the players deck colors, ie if they are playing ruby/amethyst then color the node with the red/purple colors.
+
+
 ---
 
 # Refactor
@@ -198,14 +226,7 @@ As a developer, I want the JSON game state to be way more optimized and organize
 - It is not very organized.
 - It is not very efficient.
  
-## Feature 16: Color timeline nodes based on active player
-### User Story
-As a player, I want the timeline nodes in the Multiverse Tree to be colored based on the active player so that I can easily visually distinguish which player's turn the saved state belongs to.
 
-### Details
-- The nodes in the Multiverse Tree should be colored using the active player's HUD border color.
-- Player 1's color is Orange (#a86b32) and Player 2's color is Purple (#3f2e70).
-- When a node is automatically or manually saved, it should receive the correct active player color.
 
 # Progress
 
