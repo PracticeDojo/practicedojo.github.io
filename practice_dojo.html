@@ -1075,7 +1075,7 @@
         let cardFuse = null;
         let allSessions = [];
 
-        const APP_VERSION = "v1.16.0"; // Centralized version string
+        const APP_VERSION = "v1.17.0"; // Centralized version string
 
         window.addEventListener('DOMContentLoaded', () => {
             const loadingVer = document.getElementById('app-version-loading');
@@ -3767,6 +3767,8 @@
                         if (dbCard.inkwell) addOption(`Add to Inkwell`, () => this.playToInkwell(instanceId));
                         addDivider();
                     }
+                    addOption('Swap Card', () => this.openHandCardSearch(instanceId));
+                    addDivider();
                     addOption('Discard Card', () => this.banish(instanceId));
                     addOption('Put on Top of Deck', () => this.moveCard(instanceId, 'deck', isActivePlayerOwned ? 'bottom' : 'top', 'top'));
                     addOption('Put on Bottom of Deck', () => this.moveCard(instanceId, 'deck', isActivePlayerOwned ? 'bottom' : 'top', 'bottom'));
@@ -3988,6 +3990,38 @@
                 document.getElementById('card-search-modal').classList.add('hidden');
                 this._replacementTarget = null;
                 this._isReplaceAll = false;
+                this._searchMode = 'deck';
+                this._handReplaceInstanceId = null;
+            },
+
+            openHandCardSearch(instanceId) {
+                this._searchMode = 'hand';
+                this._handReplaceInstanceId = instanceId;
+                document.getElementById('card-search-input').value = '';
+                document.getElementById('card-search-results').innerHTML = '';
+                document.getElementById('card-search-modal').classList.remove('hidden');
+                setTimeout(() => document.getElementById('card-search-input').focus(), 100);
+            },
+
+            selectHandReplacementCard(dbCard) {
+                const found = this.findCard(this._handReplaceInstanceId);
+                if (!found || found.loc !== 'hand') return;
+
+                this.saveState();
+                const newCard = {
+                    instanceId: this.uuid(),
+                    cardId: dbCard.id,
+                    exerted: false,
+                    damage: 0,
+                    faceUp: false,
+                    locationId: null,
+                    drying: false
+                };
+                found.player.hand.splice(found.idx, 1, newCard);
+                this.logAction(`${found.player.name} swapped a hand card for ${dbCard.name}`);
+                this.showToast(`Swapped card for ${dbCard.name}`);
+                this.closeCardSearch();
+                this.render();
             },
 
             executeCardSearch(query) {
@@ -4010,7 +4044,7 @@
                     el.style.aspectRatio = '2.5 / 3.5';
                     el.style.backgroundImage = `url('${this.getCardImage(dbCard)}')`;
 
-                    el.onclick = () => this.selectReplacementCard(dbCard);
+                    el.onclick = () => this._searchMode === 'hand' ? this.selectHandReplacementCard(dbCard) : this.selectReplacementCard(dbCard);
                     container.appendChild(el);
                 });
             },

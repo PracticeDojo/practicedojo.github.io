@@ -211,6 +211,22 @@ As a player, I want to be able to import logs from Duels.ink into the practice d
 - The node should be colored in the colors of the players deck colors, ie if they are playing ruby/amethyst then color the node with the red/purple colors.
 
 
+## Feature 18: Swapping cards in your hand
+
+### User Story
+
+- I want to be able to swap cards that I have in my hand for other cards in the same way that we have for the deck. 
+
+
+### Details
+- When right clicking a card should add the option to swap the card. 
+- It should use the same exact modal as swapping cards in the deck.
+- When the modal closes, it should update the hand in the current game state.
+- The search should be filtering for the 2 legal colors of your deck.
+- If one or more cards were swapped, when I save a bookmark, both manually or autosave, the new state should display the correct hand, not the original hand. And it should branch into a different branch.
+
+
+
 ---
 
 # Refactor
@@ -249,3 +265,4 @@ As a developer, I want the JSON game state to be way more optimized and organize
 - [x] Feature 15: Detect when the Branch is over
 - [x] Feature 16: Color timeline nodes based on active player's color
 - [x] Feature 17: Importing Logs from Duels.ink
+- [x] Feature 18: Swapping cards in your hand
