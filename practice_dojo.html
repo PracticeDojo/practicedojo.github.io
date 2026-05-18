@@ -1859,7 +1859,7 @@
             },
 
             parseDojoLog(logText) {
-                const lines = logText.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+                const lines = logText.split('\n').map(l => l.trim());
 
                 const players = [
                     { openingHand: [], mulliganedCards: [], drawnAfterMulligan: [], finalHand: [] },
@@ -1876,6 +1876,8 @@
                 const playerIdx = (n) => parseInt(n, 10) - 1;
 
                 for (const line of lines) {
+                    if (!line.length) continue;
+
                     // Opening hand
                     let m = line.match(/^Player (\d+)'s starting hand:\s*(.+)$/);
                     if (m) {
@@ -1908,12 +1910,16 @@
                             quested: [],
                             banished: [],
                             challenged: [],
-                            lore: [...currentLore]
+                            lore: [...currentLore],
+                            rawLines: [line]  // include the "--- Turn N ---" header
                         };
                         continue;
                     }
 
                     if (!currentTurn) continue;
+
+                    // Always capture every line that belongs to this turn
+                    currentTurn.rawLines.push(line);
 
                     // Active player
                     m = line.match(/^Player (\d+)'s turn begins$/);
@@ -2108,17 +2114,43 @@
                     const stats = `Turn ${t.turnNumber} | P1: ${lore[0]} - P2: ${lore[1]}`;
                     const nodeName = `Turn ${t.turnNumber} – ${p === 0 ? 'P1' : 'P2'} Active`;
 
+                    // Build cardsPlayedData: resolve played card names → cardIds
+                    const cardsPlayedData = t.played.map(name => {
+                        const dbCard = this.resolveCardName(name);
+                        return dbCard ? dbCard.id : null;
+                    }).filter(id => id !== null);
+
+                    // Filter rawLines down to meaningful actions only
+                    const SKIP_PATTERNS = [
+                        /^---\s*Turn \d+\s*---$/,
+                        /^Player \d+'s turn begins$/,
+                        /^Player \d+'s timer started/,
+                        /^Ready step/,
+                        /^Set step$/,
+                        /^Draw step$/,
+                        /^Player \d+ gained \d+ seconds/,
+                        /^Player \d+ ended Player \d+'s turn$/,
+                        /^Game started!$/,
+                        /^Player \d+ requested an undo$/,
+                        /^Player \d+ took back their action/,
+                    ];
+                    const turnComment = (t.rawLines || [])
+                        .filter(l => !SKIP_PATTERNS.some(re => re.test(l)))
+                        .map(l => l.replace(/^Player \d+ /, ''))
+                        .join('\n');
+
                     bookmarks.push({
                         id: nodeId,
                         parentId: previousNodeId,
                         name: nodeName,
                         stats,
-                        comment: '',
+                        comment: turnComment,
                         color,
                         gradient: null,
                         state: JSON.stringify(this.compressState(snapshot, true)),
                         timestamp: Date.now(),
-                        isDeckEdit: false
+                        isDeckEdit: false,
+                        cardsPlayedData
                     });
                     previousNodeId = nodeId;
 
@@ -2140,11 +2172,17 @@
                         knownCards[p].push(cardName);
                     }
 
-                    // Plays
+                    // Plays — actions/songs go straight to discard, characters/locations go to field
                     for (const cardName of t.played) {
                         removeFirst(hands[p], cardName);
-                        fields[p].push({ name: cardName, exerted: false });
                         knownCards[p].push(cardName);
+                        const dbCard = this.resolveCardName(cardName);
+                        const isAction = dbCard && (dbCard.type === 'Action' || dbCard.type === 'Song');
+                        if (isAction) {
+                            discards[p].push(cardName);
+                        } else {
+                            fields[p].push({ name: cardName, exerted: false });
+                        }
                     }
 
                     // Quests → exert the card
