@@ -2607,6 +2607,15 @@
                 if (!isAuto) {
                     this.state.activeBookmarkId = id;
                     this.state.activeTimelineColor = bookmark.color || '#3b82f6';
+
+                    // Seed the turn comment textarea with the bookmark's comment if the state
+                    // has nothing for this turn yet (covers log-imported nodes and manual bookmark comments).
+                    if (bookmark.comment) {
+                        const commentKey = `${this.state.turn}-${this.state.activePlayer}`;
+                        if (!this.state.turnComments[commentKey] && !this.state.turnComments[this.state.turn]) {
+                            this.state.turnComments[commentKey] = bookmark.comment;
+                        }
+                    }
                 }
 
                 // Close Drawer and Modal, Render, and Flash
