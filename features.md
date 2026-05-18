@@ -248,4 +248,4 @@ As a developer, I want the JSON game state to be way more optimized and organize
 - [x] Feature 14: Save cards played that turn when autosaving
 - [x] Feature 15: Detect when the Branch is over
 - [x] Feature 16: Color timeline nodes based on active player's color
-tyu
+- [x] Feature 17: Importing Logs from Duels.ink

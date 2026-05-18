@@ -361,6 +361,18 @@
                     </button>
                     <!-- Local Storage Button injected here -->
                 </div>
+
+                <div class="w-px h-8 bg-gray-700 block"></div>
+
+                <!-- Duels.ink Log Import -->
+                <div class="flex items-center gap-3">
+                    <input type="file" id="import-log-file-setup" class="hidden" accept=".md,.txt"
+                        onchange="App.importDojoLog(event)">
+                    <button onclick="document.getElementById('import-log-file-setup').click()"
+                        class="bg-gray-800 hover:bg-gray-700 text-green-400 border border-green-500/50 hover:border-green-400 font-bold py-2.5 px-4 rounded transition flex items-center text-sm shadow-md">
+                        <i class="fa-solid fa-file-lines mr-2"></i> Import Duels.ink Log
+                    </button>
+                </div>
             </div>
 
             <!-- Footer / Primary Action -->
@@ -730,8 +742,14 @@
                         <i class="fa-solid fa-file-export mr-1"></i> Export
                     </button>
                     <button onclick="App.promptSaveSessionToCloud()"
-                        class="flex-1 py-2 text-xs font-bold text-blue-400 hover:text-blue-300 hover:bg-gray-800 transition">
+                        class="flex-1 py-2 text-xs font-bold text-blue-400 hover:text-blue-300 hover:bg-gray-800 transition border-r border-gray-800">
                         <i class="fa-solid fa-cloud-arrow-up mr-1"></i> Save to Cloud
+                    </button>
+                    <input type="file" id="import-log-file-drawer" class="hidden" accept=".md,.txt"
+                        onchange="App.importDojoLog(event)">
+                    <button onclick="document.getElementById('import-log-file-drawer').click()"
+                        class="flex-1 py-2 text-xs font-bold text-green-400 hover:text-green-300 hover:bg-gray-800 transition">
+                        <i class="fa-solid fa-file-lines mr-1"></i> Import Log
                     </button>
                 </div>
 
@@ -998,7 +1016,7 @@
         let cardFuse = null;
         let allSessions = [];
 
-        const APP_VERSION = "v1.15.0"; // Centralized version string
+        const APP_VERSION = "v1.16.0"; // Centralized version string
 
         window.addEventListener('DOMContentLoaded', () => {
             const loadingVer = document.getElementById('app-version-loading');
@@ -1810,6 +1828,419 @@
                         alert("Failed to read the file. Ensure it is a valid JSON exported from the Dojo.");
                     }
                     // Reset file input so the same file can be imported again if needed
+                    event.target.value = '';
+                };
+                reader.readAsText(file);
+            },
+
+            // --- Duels.ink Log Import ---
+
+            resolveCardName(name) {
+                if (!name) return null;
+                const lower = name.toLowerCase().trim();
+                if (this.cardDB[lower]) return this.cardDB[lower];
+                const byFullName = this.allCards.find(c => c.fullName && c.fullName.toLowerCase() === lower);
+                if (byFullName) return byFullName;
+                const bySimpleName = this.allCards.find(c => c.simpleName && c.simpleName.toLowerCase() === lower);
+                if (bySimpleName) return bySimpleName;
+                if (cardFuse) {
+                    const results = cardFuse.search(name);
+                    if (results.length > 0) return results[0].item;
+                }
+                return null;
+            },
+
+            makeCardInstance(cardId) {
+                return { instanceId: this.uuid(), cardId: cardId, exerted: false, damage: 0, faceUp: false, locationId: null, drying: false, stackedCards: [] };
+            },
+
+            makeUnknownCardInstance() {
+                return this.makeCardInstance(-999);
+            },
+
+            parseDojoLog(logText) {
+                const lines = logText.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+
+                const players = [
+                    { openingHand: [], mulliganedCards: [], drawnAfterMulligan: [], finalHand: [] },
+                    { openingHand: [], mulliganedCards: [], drawnAfterMulligan: [], finalHand: [] }
+                ];
+                const turns = [];
+                let currentTurn = null;
+                const currentLore = [0, 0];
+
+                // Helper: split a comma-separated card list string
+                const splitCards = (str) => str.split(',').map(s => s.trim()).filter(s => s.length > 0);
+
+                // Helper: detect "Player N" → index 0 or 1
+                const playerIdx = (n) => parseInt(n, 10) - 1;
+
+                for (const line of lines) {
+                    // Opening hand
+                    let m = line.match(/^Player (\d+)'s starting hand:\s*(.+)$/);
+                    if (m) {
+                        const idx = playerIdx(m[1]);
+                        if (idx >= 0 && idx <= 1) players[idx].openingHand = splitCards(m[2]);
+                        continue;
+                    }
+
+                    // Mulligan
+                    m = line.match(/^Player (\d+) mulliganed \d+ cards?:\s*(.+)\.\s*Drew:\s*(.+)$/);
+                    if (m) {
+                        const idx = playerIdx(m[1]);
+                        if (idx >= 0 && idx <= 1) {
+                            players[idx].mulliganedCards = splitCards(m[2]);
+                            players[idx].drawnAfterMulligan = splitCards(m[3]);
+                        }
+                        continue;
+                    }
+
+                    // Turn delimiter
+                    m = line.match(/^---\s*Turn (\d+)\s*---$/);
+                    if (m) {
+                        if (currentTurn) turns.push(currentTurn);
+                        currentTurn = {
+                            turnNumber: parseInt(m[1], 10),
+                            activePlayerIndex: -1,
+                            draws: [],
+                            inked: [],
+                            played: [],
+                            quested: [],
+                            banished: [],
+                            challenged: [],
+                            lore: [...currentLore]
+                        };
+                        continue;
+                    }
+
+                    if (!currentTurn) continue;
+
+                    // Active player
+                    m = line.match(/^Player (\d+)'s turn begins$/);
+                    if (m) { currentTurn.activePlayerIndex = playerIdx(m[1]); continue; }
+
+                    // Draw: single card
+                    m = line.match(/^Player (\d+) drew ([^:]+)$(?!\s*:)/);
+                    if (m && !m[2].match(/^\d+$/)) {
+                        const pIdx = playerIdx(m[1]);
+                        if (pIdx === currentTurn.activePlayerIndex) currentTurn.draws.push(m[2].trim());
+                        continue;
+                    }
+
+                    // Draw: multiple cards "Player N drew K cards: A, B, C"
+                    m = line.match(/^Player (\d+) drew \d+ cards?:\s*(.+)$/);
+                    if (m) {
+                        const pIdx = playerIdx(m[1]);
+                        if (pIdx === currentTurn.activePlayerIndex) {
+                            splitCards(m[2]).forEach(c => currentTurn.draws.push(c));
+                        }
+                        continue;
+                    }
+
+                    // Draw: single card variant (catches "Player N drew CardName" even with dashes)
+                    m = line.match(/^Player (\d+) drew (.+)$/);
+                    if (m && !m[2].match(/^\d+ cards?:/)) {
+                        const pIdx = playerIdx(m[1]);
+                        if (pIdx === currentTurn.activePlayerIndex) currentTurn.draws.push(m[2].trim());
+                        continue;
+                    }
+
+                    // Ink
+                    m = line.match(/^Player (\d+) added (.+) to ink$/);
+                    if (m) {
+                        const pIdx = playerIdx(m[1]);
+                        if (pIdx === currentTurn.activePlayerIndex) currentTurn.inked.push(m[2].trim());
+                        continue;
+                    }
+
+                    // Play
+                    m = line.match(/^Player (\d+) played (.+?) \(cost \d+\)$/);
+                    if (m) {
+                        const pIdx = playerIdx(m[1]);
+                        if (pIdx === currentTurn.activePlayerIndex) currentTurn.played.push(m[2].trim());
+                        continue;
+                    }
+
+                    // Quest: "Player N quested with X (+N [LORE], old -> new)"
+                    m = line.match(/^Player (\d+) quested with (.+?) \(\+\d+.*?,\s*(\d+)\s*->\s*(\d+)\)$/);
+                    if (m) {
+                        const pIdx = playerIdx(m[1]);
+                        const loreBefore = parseInt(m[3], 10);
+                        const loreAfter = parseInt(m[4], 10);
+                        currentLore[pIdx] = loreAfter;
+                        currentTurn.lore = [...currentLore];
+                        currentTurn.quested.push({ name: m[2].trim(), loreBefore, loreAfter, playerIdx: pIdx });
+                        continue;
+                    }
+
+                    // Banish
+                    m = line.match(/^(.+) was banished$/);
+                    if (m) { currentTurn.banished.push(m[1].trim()); continue; }
+
+                    // Challenge
+                    m = line.match(/^Player (\d+) challenged (.+?) with (.+?)(?:\s*\|.*)?$/);
+                    if (m) {
+                        currentTurn.challenged.push({ attacker: m[3].trim(), target: m[2].trim(), playerIdx: playerIdx(m[1]) });
+                        continue;
+                    }
+                }
+
+                if (currentTurn) turns.push(currentTurn);
+
+                // Build final hands post-mulligan
+                for (let p = 0; p < 2; p++) {
+                    const mulliSet = [...players[p].mulliganedCards];
+                    const kept = [];
+                    for (const c of players[p].openingHand) {
+                        const idx = mulliSet.indexOf(c);
+                        if (idx !== -1) mulliSet.splice(idx, 1);
+                        else kept.push(c);
+                    }
+                    players[p].finalHand = [...kept, ...players[p].drawnAfterMulligan];
+                }
+
+                return { players, turns };
+            },
+
+            buildSessionFromLog(parsedLog) {
+                const { players, turns } = parsedLog;
+
+                // Pre-collect all draws per player across all turns (to know future draws at any snapshot)
+                const allDraws = [[], []];
+                for (const t of turns) {
+                    const p = t.activePlayerIndex;
+                    if (p >= 0 && p <= 1) allDraws[p].push(...t.draws);
+                }
+
+                // Mutable state per player: store as arrays of name strings for simplicity
+                const hands = [
+                    players[0].finalHand.slice(),
+                    players[1].finalHand.slice()
+                ];
+                // Field stores objects {name, exerted}
+                const fields = [[], []];
+                const inkwells = [[], []];
+                const discards = [[], []];
+                const lore = [0, 0];
+                const drawnPointers = [0, 0]; // how many from allDraws[p] have been consumed
+
+                // Track all known card names per player for deck string
+                const knownCards = [
+                    [...players[0].openingHand, ...players[0].mulliganedCards, ...players[0].drawnAfterMulligan],
+                    [...players[1].openingHand, ...players[1].mulliganedCards, ...players[1].drawnAfterMulligan]
+                ];
+
+                const bookmarks = [];
+                let previousNodeId = null;
+
+                const buildDeckForSnapshot = (p) => {
+                    const handLen = hands[p].length;
+                    const fieldLen = fields[p].length;
+                    const inkLen = inkwells[p].length;
+                    const discLen = discards[p].length;
+                    const deckSize = Math.max(0, 60 - handLen - fieldLen - inkLen - discLen);
+                    const futureDraws = allDraws[p].slice(drawnPointers[p]);
+                    const deck = [];
+                    for (let i = 0; i < deckSize; i++) {
+                        if (i < futureDraws.length) {
+                            const dbCard = this.resolveCardName(futureDraws[i]);
+                            deck.push(this.makeCardInstance(dbCard ? dbCard.id : -999));
+                        } else {
+                            deck.push(this.makeUnknownCardInstance());
+                        }
+                    }
+                    return deck;
+                };
+
+                const buildPlayerState = (p) => ({
+                    id: p,
+                    name: `Player ${p + 1}`,
+                    lore: lore[p],
+                    inkTotal: inkwells[p].length,
+                    inkReady: inkwells[p].length,
+                    hasMulliganed: true,
+                    deck: buildDeckForSnapshot(p),
+                    hand: hands[p].map(name => {
+                        const dbCard = this.resolveCardName(name);
+                        return this.makeCardInstance(dbCard ? dbCard.id : -999);
+                    }),
+                    field: fields[p].map(fc => {
+                        const dbCard = this.resolveCardName(fc.name);
+                        const card = this.makeCardInstance(dbCard ? dbCard.id : -999);
+                        card.exerted = fc.exerted;
+                        return card;
+                    }),
+                    inkwell: inkwells[p].map(name => {
+                        const dbCard = this.resolveCardName(name);
+                        return this.makeCardInstance(dbCard ? dbCard.id : -999);
+                    }),
+                    discard: discards[p].map(name => {
+                        const dbCard = this.resolveCardName(name);
+                        return this.makeCardInstance(dbCard ? dbCard.id : -999);
+                    })
+                });
+
+                // Helper: remove first occurrence of a card name from an array of name strings
+                const removeFirst = (arr, name) => {
+                    const idx = arr.indexOf(name);
+                    if (idx !== -1) arr.splice(idx, 1);
+                };
+
+                for (const t of turns) {
+                    const p = t.activePlayerIndex;
+                    if (p < 0 || p > 1) continue;
+
+                    // SNAPSHOT before this turn's actions
+                    const nodeId = this.uuid();
+                    const snapshot = {
+                        activeBookmarkId: nodeId,
+                        turn: t.turnNumber,
+                        activePlayer: p,
+                        inactivePlayer: 1 - p,
+                        opponentHandRevealed: false,
+                        activeTimelineColor: null,
+                        turnComments: {},
+                        log: [],
+                        players: [buildPlayerState(0), buildPlayerState(1)]
+                    };
+
+                    const color = p === 0 ? '#a86b32' : '#3f2e70';
+                    const stats = `Turn ${t.turnNumber} | P1: ${lore[0]} - P2: ${lore[1]}`;
+                    const nodeName = `Turn ${t.turnNumber} – ${p === 0 ? 'P1' : 'P2'} Active`;
+
+                    bookmarks.push({
+                        id: nodeId,
+                        parentId: previousNodeId,
+                        name: nodeName,
+                        stats,
+                        comment: '',
+                        color,
+                        gradient: null,
+                        state: JSON.stringify(this.compressState(snapshot, true)),
+                        timestamp: Date.now(),
+                        isDeckEdit: false
+                    });
+                    previousNodeId = nodeId;
+
+                    // PROCESS events for this turn
+                    // Ready step: uneexert field cards for this player
+                    for (const fc of fields[p]) fc.exerted = false;
+
+                    // Draws
+                    for (const cardName of t.draws) {
+                        hands[p].push(cardName);
+                        drawnPointers[p]++;
+                        knownCards[p].push(cardName);
+                    }
+
+                    // Inks
+                    for (const cardName of t.inked) {
+                        removeFirst(hands[p], cardName);
+                        inkwells[p].push(cardName);
+                        knownCards[p].push(cardName);
+                    }
+
+                    // Plays
+                    for (const cardName of t.played) {
+                        removeFirst(hands[p], cardName);
+                        fields[p].push({ name: cardName, exerted: false });
+                        knownCards[p].push(cardName);
+                    }
+
+                    // Quests → exert the card
+                    for (const q of t.quested) {
+                        lore[q.playerIdx] = q.loreAfter;
+                        const fc = fields[q.playerIdx].find(f => f.name === q.name);
+                        if (fc) fc.exerted = true;
+                    }
+
+                    // Challenges → exert attacker
+                    for (const ch of t.challenged) {
+                        const fc = fields[ch.playerIdx].find(f => f.name === ch.attacker);
+                        if (fc) fc.exerted = true;
+                    }
+
+                    // Banishments → find which player owns it, move to discard
+                    for (const cardName of t.banished) {
+                        let owner = -1;
+                        for (let pi = 0; pi < 2; pi++) {
+                            const fi = fields[pi].findIndex(f => f.name === cardName);
+                            if (fi !== -1) { owner = pi; fields[pi].splice(fi, 1); break; }
+                        }
+                        if (owner >= 0) discards[owner].push(cardName);
+                    }
+                }
+
+                // Final state = last turn's snapshot re-built after all processing
+                const finalNodeId = this.uuid();
+                const finalState = {
+                    activeBookmarkId: finalNodeId,
+                    turn: turns.length > 0 ? turns[turns.length - 1].turnNumber : 1,
+                    activePlayer: turns.length > 0 ? (1 - turns[turns.length - 1].activePlayerIndex) : 0,
+                    inactivePlayer: turns.length > 0 ? turns[turns.length - 1].activePlayerIndex : 1,
+                    opponentHandRevealed: false,
+                    activeTimelineColor: null,
+                    turnComments: {},
+                    log: [],
+                    players: [buildPlayerState(0), buildPlayerState(1)]
+                };
+
+                // Build deck text strings from all known cards per player
+                const buildDeckString = (known) => {
+                    const counts = {};
+                    for (const name of known) {
+                        const dbCard = this.resolveCardName(name);
+                        if (!dbCard) continue;
+                        const key = dbCard.fullName || dbCard.name;
+                        counts[key] = (counts[key] || 0) + 1;
+                    }
+                    return Object.entries(counts).map(([name, cnt]) => `${cnt} ${name}`).join('\n');
+                };
+
+                return {
+                    version: 1,
+                    currentState: this.compressState(finalState, true),
+                    bookmarks,
+                    autoSaves: [],
+                    history: [],
+                    deck1: buildDeckString(knownCards[0]),
+                    deck2: buildDeckString(knownCards[1])
+                };
+            },
+
+            importDojoLog(event) {
+                const file = event.target.files[0];
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        const logText = e.target.result;
+                        const parsed = this.parseDojoLog(logText);
+                        if (!parsed.turns || parsed.turns.length === 0) {
+                            alert("No turns found in this log file. Make sure it is a valid Duels.ink log.");
+                            return;
+                        }
+                        const session = this.buildSessionFromLog(parsed);
+                        this.state = this.decompressState(session.currentState);
+                        this.bookmarks = session.bookmarks;
+                        this.autoSaves = [];
+                        this.history = [];
+
+                        if (session.deck1) document.getElementById('deck1-input').value = session.deck1;
+                        if (session.deck2) document.getElementById('deck2-input').value = session.deck2;
+
+                        document.getElementById('setup-modal').classList.add('hidden');
+                        document.getElementById('app').classList.remove('hidden');
+                        document.getElementById('timeline-drawer').classList.add('-translate-x-full');
+                        this.renderAutoSaves();
+                        this.renderTree();
+                        this.render();
+                        this.showToast(`Log Imported: ${parsed.turns.length} turns loaded!`);
+                    } catch (err) {
+                        console.error("Failed to import Duels.ink log", err);
+                        alert("Failed to parse the log file. Check the browser console for details.");
+                    }
                     event.target.value = '';
                 };
                 reader.readAsText(file);
@@ -2996,6 +3427,7 @@
             // --- UI Rendering ---
 
             getCardImage(dbCard) {
+                if (!dbCard) return 'https://deckbuilder.lorcanajson.org/images/card-back.png';
                 if (dbCard.images && dbCard.images.thumbnail) return dbCard.images.thumbnail;
                 if (dbCard.images && dbCard.images.full) return dbCard.images.full;
                 return 'https://deckbuilder.lorcanajson.org/images/card-back.png';
@@ -3261,8 +3693,7 @@
                 container.innerHTML = '';
 
                 this._tempDeckOrder.forEach((c, index) => {
-                    const dbCard = this.cardDB[c.cardId];
-                    if (!dbCard) return;
+                    const dbCard = this.cardDB[c.cardId]; // null for unknown cards (cardId -999)
 
                     const el = document.createElement('div');
                     el.className = `relative rounded-md bg-cover bg-center shadow-md border border-white/10 hover:scale-110 hover:z-10 transition-transform cursor-grab`;
@@ -3270,8 +3701,19 @@
                     el.style.aspectRatio = '2.5 / 3.5';
                     el.style.backgroundImage = `url('${this.getCardImage(dbCard)}')`;
 
+                    if (!dbCard) {
+                        // Unknown card placeholder: show label over card back
+                        el.style.display = 'flex';
+                        el.style.alignItems = 'flex-end';
+                        el.style.justifyContent = 'center';
+                        const lbl = document.createElement('span');
+                        lbl.textContent = '(Unknown)';
+                        lbl.className = 'text-xs text-gray-300 bg-black/70 px-1 rounded mb-1 truncate';
+                        el.appendChild(lbl);
+                    }
+
                     // Show sidebar preview when hovered
-                    el.addEventListener('mouseenter', () => this.showPreview(dbCard));
+                    el.addEventListener('mouseenter', () => { if (dbCard) this.showPreview(dbCard); });
 
                     // Drag and drop for reordering
                     el.draggable = true;
