@@ -492,6 +492,7 @@
       </div>
       <nav class="hidden md:flex items-center gap-7 text-sm text-[var(--ink-dim)]">
         <a href="#screenshot" class="hover:text-white transition">See it</a>
+        <a href="#import" class="hover:text-white transition">Import logs</a>
         <a href="#multiverse" class="hover:text-white transition">Multiverse</a>
         <a href="#features" class="hover:text-white transition">Features</a>
         <a href="#how" class="hover:text-white transition">How it works</a>
@@ -523,16 +524,16 @@
         <h1 class="font-display text-5xl md:text-6xl lg:text-[68px] font-bold leading-[1.02] text-white">Try every line.
           <span
             style="background: linear-gradient(90deg, #c4b5fd 0%, #f0abfc 60%, #fdba74 100%); -webkit-background-clip: text; background-clip: text; color: transparent;">Branch
-            any turn.</span>
-        </h1>
+            any turn.</span></h1>
         <p class="mt-6 text-lg text-[var(--ink-dim)] max-w-xl leading-relaxed">
           A theorycrafting sandbox for the Lorcana TCG. Replay any match between two decks turn-by-turn — then rewind to
           any moment, branch a new timeline, reshuffle, or hot-swap cards to see how a different line would have played
           out.
         </p>
         <p class="mt-4 text-[15px] text-[var(--ink-faint)] max-w-lg">
-          A companion to your favorite simulator. Take the matches you've already played and explore every line you wish
-          you'd tried.
+          A companion to your favorite simulator. Import a match log straight from <span
+            class="text-[var(--green)] font-medium">duels.ink</span> and the whole game shows up as a multiverse tree,
+          ready to explore.
         </p>
 
         <div class="mt-10 flex flex-wrap items-center gap-3">
@@ -820,6 +821,228 @@
           <div class="mt-1 text-xs text-[var(--ink-dim)]">No replays, no setup, just jump back</div>
         </div>
       </div>
+    </div>
+  </section>
+
+  <!-- ============ IMPORT FROM DUELS.INK ============ -->
+  <section id="import" class="relative overflow-hidden">
+    <div class="absolute -top-32 right-0 w-[700px] h-[700px] pointer-events-none"
+      style="background: radial-gradient(ellipse at center, rgba(74,222,128,0.15), transparent 60%);"></div>
+    <div class="absolute -top-20 left-0 w-[500px] h-[500px] glow-purple opacity-40 pointer-events-none"></div>
+    <div class="max-w-7xl mx-auto px-6 py-28 relative">
+
+      <div class="max-w-3xl mb-14">
+        <div class="chip mb-6"
+          style="background: rgba(74,222,128,0.08); border-color: rgba(74,222,128,0.25); color: #86efac;">
+          <i class="fa-solid fa-file-lines text-[11px]"></i>
+          New · v1.16 · Match log import
+        </div>
+        <h2 class="font-display text-4xl md:text-5xl text-white font-bold leading-[1.05]">
+          Paste a <span style="color:#86efac;">duels.ink</span> log.<br />
+          Get the whole match back.
+        </h2>
+        <p class="mt-5 text-[var(--ink-dim)] text-lg leading-relaxed max-w-2xl">
+          Export the match log from your duels.ink game and drop it into the dojo. Every turn becomes a bookmark in the
+          multiverse tree — with hands, ink, board, and cards-played all reconstructed for you.
+        </p>
+      </div>
+
+      <!-- Flow: log -> arrow -> tree -->
+      <div class="grid lg:grid-cols-12 gap-6 items-stretch">
+        <!-- LEFT: import modal mock -->
+        <div class="lg:col-span-5 panel relative overflow-hidden flex flex-col">
+          <div class="px-5 py-3 border-b hairline bg-[var(--panel-2)] flex items-center justify-between">
+            <div class="flex items-center gap-2.5">
+              <i class="fa-solid fa-file-lines text-[var(--green)]"></i>
+              <span class="font-display font-semibold text-white text-sm">Import Duels.ink Log</span>
+            </div>
+            <span class="text-[var(--ink-faint)] text-lg leading-none">×</span>
+          </div>
+          <div class="p-5 flex flex-col gap-3 flex-1">
+            <div>
+              <label class="block text-[11px] font-semibold text-[var(--ink-dim)] mb-2 uppercase tracking-wider">Paste
+                log content</label>
+              <div
+                class="bg-black border hairline rounded-md p-3 font-mono text-[11px] leading-relaxed text-[var(--ink-dim)] h-[260px] overflow-hidden"
+                style="border-color: rgba(74,222,128,0.35);">
+                <div class="text-[var(--ink-faint)]"># Match · 2026-05-18</div>
+                <div class="text-[var(--ink-faint)]">## Setup</div>
+                <div>Player 1 deck: Amber/Steel Songs</div>
+                <div>Player 2 deck: Ruby/Amethyst Aggro</div>
+                <div class="text-[var(--ink-faint)] mt-1">## Turn 1</div>
+                <div>Player 1 drew <span class="text-orange-300">Hamm - Piggy Bank</span></div>
+                <div>Player 1 inked <span class="text-orange-300">Hamm - Piggy Bank</span></div>
+                <div class="text-[var(--ink-faint)] mt-1">## Turn 2</div>
+                <div>Player 2 drew <span class="text-purple-300">Lumiere - Fiery Friend</span></div>
+                <div>Player 2 played <span class="text-purple-300">Lumiere - Fiery Friend</span></div>
+                <div class="text-[var(--ink-faint)] mt-1">## Turn 3</div>
+                <div>Player 1 played <span class="text-orange-300">Grandmother Willow</span></div>
+                <div>Player 1 quested with <span class="text-orange-300">Jessie</span> for 3 lore</div>
+                <div class="text-[var(--ink-faint)] mt-1">## Turn 4</div>
+                <div class="text-[var(--ink-faint)] italic">…</div>
+              </div>
+            </div>
+            <!-- Validation badge -->
+            <div class="rounded-md px-3 py-2.5 flex items-start gap-2.5 text-sm"
+              style="background: rgba(74,222,128,0.08); border: 1px solid rgba(74,222,128,0.3);">
+              <i class="fa-solid fa-circle-check mt-0.5 text-[var(--green)] text-[12px]"></i>
+              <div>
+                <div class="text-[var(--green)] font-semibold text-[13px]">Valid log · 8 turns detected</div>
+                <div class="text-[var(--ink-dim)] text-[12px] mt-0.5">Opening hands and turn boundaries parsed cleanly.
+                  Ready to import.</div>
+              </div>
+            </div>
+            <div class="flex justify-end gap-2 mt-1">
+              <button class="btn-secondary px-4 py-2 rounded-md text-xs font-medium">Cancel</button>
+              <button class="px-4 py-2 rounded-md text-xs font-bold text-white inline-flex items-center gap-2"
+                style="background: linear-gradient(180deg, #16a34a, #15803d); box-shadow: 0 8px 20px -8px rgba(34,197,94,0.4);">
+                <i class="fa-solid fa-file-import"></i> Import
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- MIDDLE: connector -->
+        <div class="lg:col-span-1 flex lg:flex-col items-center justify-center gap-3 py-4 lg:py-0">
+          <div
+            class="hidden lg:block w-px flex-1 bg-gradient-to-b from-transparent via-[var(--green)] to-transparent opacity-40">
+          </div>
+          <div class="w-12 h-12 rounded-full flex items-center justify-center"
+            style="background: rgba(74,222,128,0.12); border: 1px solid rgba(74,222,128,0.4); box-shadow: 0 0 20px rgba(74,222,128,0.25);">
+            <i class="fa-solid fa-arrow-right-long text-[var(--green)] lg:hidden"></i>
+            <i class="fa-solid fa-arrow-down-long text-[var(--green)] hidden lg:inline"></i>
+          </div>
+          <div
+            class="hidden lg:block w-px flex-1 bg-gradient-to-b from-[var(--green)] via-transparent to-transparent opacity-40">
+          </div>
+        </div>
+
+        <!-- RIGHT: resulting tree -->
+        <div class="lg:col-span-6 panel relative overflow-hidden">
+          <div class="px-5 py-3 border-b hairline bg-[var(--panel-2)] flex items-center justify-between">
+            <div class="flex items-center gap-2.5">
+              <i class="fa-solid fa-network-wired text-[var(--purple-soft)]"></i>
+              <span class="font-display font-semibold text-white text-sm">Multiverse Timelines</span>
+              <span class="tag ml-2 hidden md:inline">imported · 8 turn nodes</span>
+            </div>
+            <span class="font-mono text-[11px] text-[var(--green)] flex items-center gap-1.5"><i
+                class="fa-solid fa-circle text-[6px]"></i> live</span>
+          </div>
+          <div class="relative"
+            style="background-image: radial-gradient(rgba(255,255,255,0.04) 1px, transparent 1px); background-size: 28px 28px; background-color:#0c0c10; height: 460px;">
+            <svg viewBox="0 0 700 460" class="absolute inset-0 w-full h-full">
+              <defs>
+                <linearGradient id="importSpine" x1="0" y1="0" x2="1" y2="0">
+                  <stop offset="0%" stop-color="#86efac" />
+                  <stop offset="50%" stop-color="#a855f7" />
+                  <stop offset="100%" stop-color="#f472b6" />
+                </linearGradient>
+              </defs>
+              <!-- Spine through all 8 turns -->
+              <path
+                d="M 50,230 C 110,230 110,150 170,150 C 230,150 230,290 290,290 C 350,290 350,170 410,170 C 470,170 470,260 530,260 C 590,260 590,210 650,210"
+                stroke="url(#importSpine)" stroke-width="2.5" fill="none" stroke-dasharray="6 5"
+                style="animation: dashFlow 2s linear infinite;" />
+            </svg>
+
+            <!-- 8 turn nodes -->
+            <div class="absolute" style="left: 50px; top: 230px; transform: translate(-50%,-50%);">
+              <div class="tree-node" style="position:relative; left:0; top:0; transform:none;">
+                <div class="strip" style="background: #16a34a;"></div>
+                <div class="body">
+                  <div class="turn">T1 · P1</div>
+                  <div class="lore"><span class="dot-o"></span><span style="color:var(--orange-soft)">0</span></div>
+                </div>
+              </div>
+            </div>
+            <div class="absolute" style="left: 170px; top: 150px; transform: translate(-50%,-50%);">
+              <div class="tree-node" style="position:relative; left:0; top:0; transform:none;">
+                <div class="strip" style="background: #16a34a;"></div>
+                <div class="body">
+                  <div class="turn">T2 · P2</div>
+                  <div class="lore"><span class="dot-p"></span><span style="color:#ddd6fe">0</span></div>
+                </div>
+              </div>
+            </div>
+            <div class="absolute" style="left: 290px; top: 290px; transform: translate(-50%,-50%);">
+              <div class="tree-node" style="position:relative; left:0; top:0; transform:none;">
+                <div class="strip" style="background: #16a34a;"></div>
+                <div class="body">
+                  <div class="turn">T3 · P1</div>
+                  <div class="lore"><span class="dot-o"></span><span style="color:var(--orange-soft)">3</span></div>
+                </div>
+              </div>
+            </div>
+            <div class="absolute" style="left: 410px; top: 170px; transform: translate(-50%,-50%);">
+              <div class="tree-node" style="position:relative; left:0; top:0; transform:none;">
+                <div class="strip" style="background: #16a34a;"></div>
+                <div class="body">
+                  <div class="turn">T4 · P2</div>
+                  <div class="lore"><span class="dot-p"></span><span style="color:#ddd6fe">1</span></div>
+                </div>
+              </div>
+            </div>
+            <div class="absolute" style="left: 530px; top: 260px; transform: translate(-50%,-50%);">
+              <div class="tree-node" style="position:relative; left:0; top:0; transform:none;">
+                <div class="strip" style="background: #16a34a;"></div>
+                <div class="body">
+                  <div class="turn">T5 · P1</div>
+                  <div class="lore"><span class="dot-o"></span><span style="color:var(--orange-soft)">7</span></div>
+                </div>
+              </div>
+            </div>
+            <div class="absolute" style="left: 650px; top: 210px; transform: translate(-50%,-50%);">
+              <div class="tree-node active pulse" style="position:relative; left:0; top:0; transform:none;">
+                <div class="strip"></div>
+                <div class="body">
+                  <div class="turn">T8 · P2</div>
+                  <div class="lore"><span class="dot-p"></span><span style="color:#ddd6fe">14</span></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- caption -->
+            <div
+              class="absolute bottom-3 left-3 panel-2 px-3 py-2 flex items-center gap-3 text-[11px] text-[var(--ink-dim)]">
+              <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded" style="background:#16a34a;"></span>
+                imported turn</span>
+              <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded bg-[var(--purple-soft)]"></span>
+                branch from here</span>
+            </div>
+            <div class="absolute bottom-3 right-3 font-mono text-[11px] text-[var(--ink-faint)]">click any node → branch
+              a what-if</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- callouts under the flow -->
+      <div class="mt-10 grid md:grid-cols-3 gap-5">
+        <div class="panel-2 p-5">
+          <div class="flex items-center gap-2 mb-3">
+            <i class="fa-solid fa-wand-magic-sparkles text-[var(--green)]"></i>
+            <span class="font-display font-semibold text-white">Cards are auto-resolved</span>
+          </div>
+          <p class="text-sm text-[var(--ink-dim)] leading-relaxed">Card names from the log are matched against the
+            database — fuzzy search handles typos. Unknown cards drop in as a card-back placeholder you can swap.</p>
+        </div>
+        <div class="panel-2 p-5">
+          <div class="flex items-center gap-2 mb-3">
+            <i class="fa-solid fa-circle-check text-[var(--green)]"></i>
+            <span class="font-display font-semibold text-white">Live validation</span>
+          </div>
+          <p class="text-sm text-[var(--ink-dim)] leading-relaxed">A green / yellow / red badge updates as you paste, so
+            you know the log parses before you import. No silent failures.</p>
+        </div>
+        <div class="panel-2 p-5">
+          <div class="flex items-center gap-2 mb-3">
+            <i class="fa-solid fa-code-branch text-[var(--green)]"></i>
+            <span class="font-display font-semibold text-white">Branch from any turn</span>
+          </div>
+          <p class="text-sm text-[var(--ink-dim)] leading-relaxed">Once imported, every turn is a save point. Jump back
+            to T3 and try the line you wish you'd played — the original game stays intact.</p>
+        </div>
+      </div>
+
     </div>
   </section>
 
@@ -1180,13 +1403,13 @@
           <div class="flex items-center justify-between mb-5">
             <div class="w-10 h-10 rounded-lg flex items-center justify-center"
               style="background: rgba(74,222,128,0.12); border: 1px solid rgba(74,222,128,0.3);">
-              <i class="fa-solid fa-database text-[var(--green)]"></i>
+              <i class="fa-solid fa-file-lines text-[var(--green)]"></i>
             </div>
-            <span class="tag">Library</span>
+            <span class="tag" style="color:#86efac;">New</span>
           </div>
-          <h3 class="font-display text-lg text-white font-semibold">Decklist database</h3>
-          <p class="mt-2 text-sm text-[var(--ink-dim)] leading-relaxed">Pull decks from the shared library or paste a
-            list. Fuzzy search across thousands of community lists.</p>
+          <h3 class="font-display text-lg text-white font-semibold">Import duels.ink logs</h3>
+          <p class="mt-2 text-sm text-[var(--ink-dim)] leading-relaxed">Paste a match log from duels.ink and the whole
+            game lands in the multiverse — one bookmark per turn, ready to explore.</p>
         </div>
       </div>
 

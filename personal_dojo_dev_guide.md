@@ -106,3 +106,63 @@ The app uses the native HTML5 Drag and Drop API.
 3. **Respect the Color Palette:** Use Tailwind classes. Main backgrounds: bg-gray-900. Sidebar: bg-\[\#1a1a1e\], \#151518. Player boards: \#3f2e70 (Top), \#a86b32 (Bottom). Accent colors: Purple (System/P2), Orange (P1), Blue (BCR), Yellow (LVI/Lore).  
 4. **DOM Manipulations:** Do not use jQuery or complex manual DOM tracking. App.render() clears innerHTML of containers and rebuilds card elements from scratch based on state. Only mutate state, then call render.  
 5. **Drying Mechanic:** If writing logic that plays a Character to the field, ensure found.card.drying \= true is applied, and ensure quest() logic checks \!c.drying.
+
+---
+
+## **6\. Feature 17: Duels.ink Log Import (v1.16.0)**
+
+### **6.1 Overview**
+
+Players can import match logs exported from Duels.ink (`.md` format) into the Practice Dojo. The importer parses the log, reconstructs game state at each turn boundary, and loads the result as a full multiverse tree — one bookmark node per turn.
+
+Entry points: "Import Duels.ink Log" button on the setup screen and "Import Log" in the in-game Timelines drawer. Both open the **Import Log Modal** (`#import-log-modal`).
+
+### **6.2 Import Log Modal**
+
+* Textarea for pasting log content directly.  
+* "Choose file" button reads a `.md`/`.txt` file into the textarea (same validation path).  
+* **Live validation** runs on every `oninput` event via `validateDojoLog(text)`:
+  * **Green** — valid log, turn count shown, Import button enabled.  
+  * **Yellow** — turns found but no opening hand lines; Import enabled with warning.  
+  * **Red** — no turn markers found; Import button stays disabled.  
+* Import button calls `importLogFromModal()` → `_applyDojoLog(text)`.
+
+### **6.3 Core Functions**
+
+| Function | Purpose |
+|---|---|
+| `parseDojoLog(logText)` | Parses the raw markdown into `{ players, turns }`. Each turn has `draws`, `inked`, `played`, `quested`, `banished`, `challenged`, `lore`, and `rawLines` (every verbatim log line for that turn). |
+| `buildSessionFromLog(parsedLog)` | Replays turns in order. Saves a full game-state snapshot **before** each turn's actions as a bookmark node. Returns a session object compatible with `importTimelines`. |
+| `_applyDojoLog(logText)` | Shared core: calls parse → build → loads the session into the app (replaces state, bookmarks, autoSaves, history). |
+| `validateDojoLog(text)` | Returns `{ valid, level, message }`. Levels: `'ok'`, `'warn'`, `'error'`, `'empty'`. |
+| `resolveCardName(name)` | Resolves a log card name string to a cardDB entry. Tries: exact key → fullName → simpleName → Fuse.js fuzzy. Returns `null` if unknown. |
+| `makeCardInstance(cardId)` | Creates a full CardInstance object with a new UUID. |
+| `makeUnknownCardInstance()` | Creates a CardInstance with `cardId: -999` (unknown card sentinel). |
+
+### **6.4 Deck Reconstruction Strategy**
+
+* The deck is shuffled once after the mulligan — its order is initially unknown.  
+* Every `Player N drew X` event reveals the next card from the top of that player's deck in sequence.  
+* At each turn snapshot, `buildDeck()` constructs the deck array as:  
+  `[resolved future draw cards in order] + [unknown placeholders to fill to 60]`  
+* Because the full log is parsed upfront, future draws are known when building earlier snapshots.
+
+### **6.5 Unknown Card Placeholder (`cardId: -999`)**
+
+* Used whenever a card name from the log cannot be resolved to a `cardDB` entry.  
+* `getCardImage(dbCard)` guards against `null`/`undefined` and returns the card-back URL — covers all call sites.  
+* `renderInspectGrid()` renders unknown cards as a card-back tile with an `(Unknown)` label. They are fully replaceable via the existing right-click card replacement UI (Feature 10).
+
+### **6.6 Bookmark Node Content**
+
+Each imported turn node carries:
+
+* **`comment`** — filtered, human-readable turn summary. Boilerplate lines (ready/set/draw steps, timers, turn-end lines) are stripped. Remaining lines have the `Player N` prefix removed and are prefixed with `- ` for markdown list rendering.  
+* **`cardsPlayedData`** — array of resolved cardIds for cards played that turn. Renders as the "Cards Played:" thumbnail strip at the bottom of the node (same as autosave nodes).  
+* **`color`** — active player's HUD color: P1 orange (`#a86b32`), P2 purple (`#3f2e70`).
+
+### **6.7 Action/Song Cards**
+
+When replaying plays from the log, `buildSessionFromLog` checks `dbCard.type`. If the type is `'Action'` or `'Song'`, the card goes directly to the **discard pile** instead of the field (matching Lorcana rules). Characters and Locations go to the field as normal.
+
+
