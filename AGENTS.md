@@ -17,3 +17,7 @@ This project uses Semantic Versioning (`MAJOR.MINOR.PATCH`) to track progress, a
 ## Key Files
 
 - **`features.md`**: Located in the same folder as this file (`./practice_dojo/features.md`). This document is the single source of truth for current and planned features, user stories, and progress. Always refer to this file when working on a feature, and ensure its progress checkboxes are updated when a feature is completed.
+- **`personal_dojo_dev_guide.md`**: Located in the same folder as this file (`./practice_dojo/personal_dojo_dev_guide.md`). This document is a dev guide that you should read to understand how the tool works.
+
+## Keeping a dev guide
+- whenever the user asks to `update the dev guide`, you need to update a concise destilation of the session into a dev guide section in the `personal_dojo_dev_guide.md` file.

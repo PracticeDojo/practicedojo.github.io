@@ -286,7 +286,7 @@
             <!-- Header -->
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-3xl font-black text-white tracking-wide flex items-center gap-3">
-                    <i class="fa-solid fa-khanda text-purple-500"></i> Setup Practice Decks
+                    <i class="fa-solid fa-khanda text-purple-500"></i> Practice Dojo
                 </h2>
                 <div class="text-sm font-mono text-gray-500 bg-black/50 px-3 py-1 rounded-full border border-gray-700/50"
                     id="app-version-setup">
@@ -454,13 +454,15 @@
     <!-- Import Duels.ink Log Modal -->
     <div id="import-log-modal"
         class="absolute inset-0 z-50 bg-black bg-opacity-90 flex items-center justify-center hidden">
-        <div class="bg-gray-900 border border-gray-700 rounded-xl shadow-2xl w-full max-w-2xl flex flex-col mx-4" style="max-height: 90vh;">
+        <div class="bg-gray-900 border border-gray-700 rounded-xl shadow-2xl w-full max-w-2xl flex flex-col mx-4"
+            style="max-height: 90vh;">
             <!-- Header -->
             <div class="flex items-center justify-between p-5 border-b border-gray-700 shrink-0">
                 <h2 class="text-lg font-bold text-white flex items-center gap-2">
                     <i class="fa-solid fa-file-lines text-green-400"></i> Import Duels.ink Log
                 </h2>
-                <button onclick="App.closeImportLogModal()" class="text-gray-400 hover:text-white transition text-xl leading-none">&times;</button>
+                <button onclick="App.closeImportLogModal()"
+                    class="text-gray-400 hover:text-white transition text-xl leading-none">&times;</button>
             </div>
 
             <!-- Body -->
@@ -470,8 +472,7 @@
                     <label class="block text-sm font-semibold text-gray-300 mb-1.5">Paste log content</label>
                     <textarea id="import-log-textarea"
                         class="w-full bg-black border border-gray-700 focus:border-green-500 focus:ring-1 focus:ring-green-500 rounded-lg text-xs text-gray-300 p-3 resize-none outline-none custom-scrollbar font-mono transition"
-                        rows="12"
-                        placeholder="Paste your Duels.ink match log here..."
+                        rows="12" placeholder="Paste your Duels.ink match log here..."
                         oninput="App.onLogPasteInput()"></textarea>
                 </div>
 
@@ -1075,7 +1076,7 @@
         let cardFuse = null;
         let allSessions = [];
 
-        const APP_VERSION = "v1.17.0"; // Centralized version string
+        const APP_VERSION = "v1.18.0"; // Centralized version string
 
         window.addEventListener('DOMContentLoaded', () => {
             const loadingVer = document.getElementById('app-version-loading');
@@ -1289,10 +1290,10 @@
                 const p = this.state.players[playerId];
                 const colors = new Set();
                 const allCards = [
-                    ...p.deck, 
-                    ...p.hand, 
-                    ...p.field.map(c => c.cardId), 
-                    ...p.discard, 
+                    ...p.deck,
+                    ...p.hand,
+                    ...p.field.map(c => c.cardId),
+                    ...p.discard,
                     ...p.inkwell
                 ];
                 allCards.forEach(cid => {
@@ -1311,9 +1312,9 @@
                     'sapphire': '#3b82f6',
                     'steel': '#6b7280'
                 };
-                
+
                 const hexColors = colors.map(c => colorMap[c] || '#4b5563');
-                
+
                 if (hexColors.length === 1) {
                     return hexColors[0];
                 } else if (hexColors.length >= 2) {
@@ -1325,16 +1326,16 @@
             checkBranchOver() {
                 const p1 = this.state.players[0];
                 const p2 = this.state.players[1];
-                
+
                 if (p1.lore >= 20 || p2.lore >= 20) {
                     if (this.state.branchOverFlag) return;
                     this.state.branchOverFlag = true;
-                    
+
                     const winnerId = p1.lore >= 20 ? 0 : 1;
                     const winner = this.state.players[winnerId];
                     const deckColors = this.getDeckColors(winnerId);
                     const bColor = this.getDeckGradient(deckColors);
-                    
+
                     const name = `Game Over - ${winner.name} Wins!`;
                     const stats = `Turn ${this.state.turn} | P1: ${p1.lore} - P2: ${p2.lore}`;
                     const newId = this.uuid();
@@ -1354,7 +1355,7 @@
 
                     this.state.activeBookmarkId = newId;
                     this.saveToLocalStorage();
-                    
+
                     // Show a message on the main screen and dialog to go to multiverse
                     setTimeout(() => {
                         if (confirm(`Game Over! ${winner.name} won the branch with ${winner.lore} lore. Would you like to go to the Multiverse View to see other timelines?`)) {
@@ -2376,8 +2377,8 @@
                 }
 
                 badge.classList.remove('hidden', 'bg-green-900/50', 'border-green-700', 'text-green-300',
-                                                'bg-yellow-900/50', 'border-yellow-700', 'text-yellow-300',
-                                                'bg-red-900/50', 'border-red-700', 'text-red-300');
+                    'bg-yellow-900/50', 'border-yellow-700', 'text-yellow-300',
+                    'bg-red-900/50', 'border-red-700', 'text-red-300');
                 icon.className = 'mt-0.5 shrink-0 fa-solid';
 
                 if (result.level === 'ok') {
