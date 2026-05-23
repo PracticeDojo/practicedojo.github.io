@@ -265,10 +265,41 @@
             /* text-gray-400 */
             font-style: italic;
         }
+
+        /* Feature 19: Challenge drop target */
+        .drop-target-challenge {
+            box-shadow: 0 0 0 4px #ef4444 !important;
+            background-color: rgba(239, 68, 68, 0.2) !important;
+        }
+
+        /* Feature 19: Challenge arrow SVG overlay */
+        #challenge-arrow-svg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: 9999;
+        }
+
+        @keyframes challengeArrowFade {
+            0%   { opacity: 0; }
+            25%  { opacity: 1; }
+            75%  { opacity: 1; }
+            100% { opacity: 0; }
+        }
+
+        .challenge-line {
+            animation: challengeArrowFade 1s ease-in-out forwards;
+        }
     </style>
 </head>
 
 <body class="bg-gray-900 text-gray-200 h-screen w-screen flex flex-col font-sans select-none">
+
+    <!-- Feature 19: Challenge Arrow Overlay -->
+    <svg id="challenge-arrow-svg" xmlns="http://www.w3.org/2000/svg"></svg>
 
     <!-- Loading Screen -->
     <div id="loading-screen" class="absolute inset-0 z-50 bg-gray-900 flex flex-col items-center justify-center">
@@ -1076,7 +1107,7 @@
         let cardFuse = null;
         let allSessions = [];
 
-        const APP_VERSION = "v1.18.0"; // Centralized version string
+        const APP_VERSION = "v1.19.0"; // Centralized version string
 
         window.addEventListener('DOMContentLoaded', () => {
             const loadingVer = document.getElementById('app-version-loading');
@@ -3083,6 +3114,7 @@
             dragStart(ev, instanceId) {
                 ev.dataTransfer.setData("text/plain", instanceId);
                 ev.dataTransfer.effectAllowed = "move";
+                this._draggingEl = ev.target;
             },
 
             dragStartTopCard(ev, position) {
@@ -3382,6 +3414,97 @@
                 this.render();
             },
 
+            // Feature 19: Returns numeric value of a keyword like "Challenger +2" or "Resist +1" from card abilities
+            getKeywordBonus(dbCard, keyword) {
+                if (!dbCard) return 0;
+                const text = JSON.stringify(dbCard);
+                const re = new RegExp(keyword + '\\s*\\+\\s*(\\d+)', 'i');
+                const m = text.match(re);
+                return m ? parseInt(m[1]) : 0;
+            },
+
+            // Feature 19: Draws a temporary SVG arrow from challenger rect to defender rect
+            showChallengeArrow(startRect, endRect) {
+                const svg = document.getElementById('challenge-arrow-svg');
+                if (!svg || !startRect || !endRect) return;
+                const x1 = startRect.left + startRect.width / 2;
+                const y1 = startRect.top + startRect.height / 2;
+                const x2 = endRect.left + endRect.width / 2;
+                const y2 = endRect.top + endRect.height / 2;
+                svg.innerHTML = `<defs>
+                    <marker id="chal-arrow" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                        <polygon points="0 0, 10 3.5, 0 7" fill="#ef4444"/>
+                    </marker>
+                </defs>
+                <line class="challenge-line" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"
+                    stroke="#ef4444" stroke-width="4" stroke-linecap="round" marker-end="url(#chal-arrow)"/>
+                <circle class="challenge-line" cx="${x1}" cy="${y1}" r="6" fill="#ef4444"/>`;
+                setTimeout(() => { svg.innerHTML = ''; }, 1000);
+            },
+
+            // Feature 19: Resolves a challenge between two field cards
+            performChallenge(challengerInstanceId, defenderInstanceId) {
+                const cf = this.findCard(challengerInstanceId);
+                const df = this.findCard(defenderInstanceId);
+                if (!cf || !df) return;
+                if (cf.loc !== 'field' || df.loc !== 'field') return;
+
+                const cDb = this.cardDB[cf.card.cardId];
+                const dDb = this.cardDB[df.card.cardId];
+                if (!cDb || !dDb) return;
+
+                const cStr = (cDb.strength || 0) + this.getKeywordBonus(cDb, 'Challenger');
+                const dStr = dDb.strength || 0;
+                const cResist = this.getKeywordBonus(cDb, 'Resist');
+                const dResist = this.getKeywordBonus(dDb, 'Resist');
+
+                const dmgToDefender  = Math.max(0, cStr - dResist);
+                const dmgToChallenger = Math.max(0, dStr - cResist);
+
+                this.saveState();
+
+                cf.card.damage = (cf.card.damage || 0) + dmgToChallenger;
+                df.card.damage = (df.card.damage || 0) + dmgToDefender;
+                cf.card.exerted = true;
+
+                const cWp = cDb.willpower || 0;
+                const dWp = dDb.willpower || 0;
+
+                const logParts = [
+                    `${cDb.name} challenged ${dDb.name}!`,
+                    `Dealt ${dmgToDefender} dmg to ${dDb.name} (${df.card.damage}/${dWp}).`,
+                    `Took ${dmgToChallenger} dmg back (${cf.card.damage}/${cWp}).`
+                ];
+
+                // Banish defender if damage >= willpower
+                if (dWp > 0 && df.card.damage >= dWp) {
+                    const idx = df.player.field.findIndex(c => c.instanceId === defenderInstanceId);
+                    if (idx !== -1) {
+                        const cards = this._unpackStack(df.card);
+                        df.player.field.splice(idx, 1);
+                        cards.forEach(c => { c.damage = 0; c.exerted = false; c.drying = false; c.locationId = null; df.player.discard.push(c); });
+                        logParts.push(`${dDb.name} was banished!`);
+                    }
+                }
+
+                // Banish challenger if damage >= willpower (re-find after possible splice above)
+                if (cWp > 0 && cf.card.damage >= cWp) {
+                    const cf2 = this.findCard(challengerInstanceId);
+                    if (cf2 && cf2.loc === 'field') {
+                        const idx = cf2.player.field.findIndex(c => c.instanceId === challengerInstanceId);
+                        if (idx !== -1) {
+                            const cards = this._unpackStack(cf2.card);
+                            cf2.player.field.splice(idx, 1);
+                            cards.forEach(c => { c.damage = 0; c.exerted = false; c.drying = false; c.locationId = null; cf2.player.discard.push(c); });
+                            logParts.push(`${cDb.name} was banished!`);
+                        }
+                    }
+                }
+
+                this.logAction(logParts.join(' '));
+                this.render();
+            },
+
             returnToHand(instanceId) {
                 this.saveState();
                 let found = this.findCard(instanceId);
@@ -3474,9 +3597,24 @@
 
             dropToStack(ev, targetInstanceId) {
                 ev.preventDefault();
-                ev.stopPropagation(); // Stop normal field drop logic
+                ev.stopPropagation();
                 const draggedInstanceId = ev.dataTransfer.getData("text/plain");
-                if (draggedInstanceId && draggedInstanceId !== targetInstanceId) {
+                if (!draggedInstanceId || draggedInstanceId === targetInstanceId) return;
+
+                const draggedFound = this.findCard(draggedInstanceId);
+                const targetFound  = this.findCard(targetInstanceId);
+
+                // Feature 19: If active player drags their field card onto opponent's field card → challenge
+                if (draggedFound && targetFound
+                    && draggedFound.loc === 'field'
+                    && targetFound.loc === 'field'
+                    && draggedFound.player.id === this.state.activePlayer
+                    && targetFound.player.id === this.state.inactivePlayer) {
+                    const startRect = this._draggingEl ? this._draggingEl.getBoundingClientRect() : null;
+                    const endRect   = ev.currentTarget ? ev.currentTarget.getBoundingClientRect() : null;
+                    this.showChallengeArrow(startRect, endRect);
+                    this.performChallenge(draggedInstanceId, targetInstanceId);
+                } else {
                     this.shiftOnto(draggedInstanceId, targetInstanceId);
                 }
             },
@@ -4370,7 +4508,7 @@
                 document.getElementById('top-hand-lvi').innerText = ipHand.lvi.toFixed(1);
             },
 
-            buildField(player, container) {
+            buildField(player, container, isOpponent = false) {
                 container.innerHTML = '';
                 const locations = player.field.filter(c => this.cardDB[c.cardId].type === 'Location');
                 const charactersAtLocations = player.field.filter(c => c.locationId);
@@ -4381,12 +4519,14 @@
                     const group = document.createElement('div');
                     group.className = 'relative inline-block m-1 group transition-all drop-zone rounded';
 
-                    group.ondragover = (e) => { e.preventDefault(); e.stopPropagation(); group.classList.add('drop-target-active'); };
-                    group.ondragleave = (e) => { e.preventDefault(); e.stopPropagation(); group.classList.remove('drop-target-active'); };
+                    // Feature 19: opponent cards get a red challenge highlight; own cards get the default purple
+                    const highlightClass = isOpponent ? 'drop-target-challenge' : 'drop-target-active';
+                    group.ondragover  = (e) => { e.preventDefault(); e.stopPropagation(); group.classList.add(highlightClass); };
+                    group.ondragleave = (e) => { e.preventDefault(); e.stopPropagation(); group.classList.remove(highlightClass); };
                     group.ondrop = (e) => {
                         e.preventDefault();
                         e.stopPropagation();
-                        group.classList.remove('drop-target-active');
+                        group.classList.remove(highlightClass);
                         this.dropToStack(e, c.instanceId);
                     };
 
@@ -4525,9 +4665,9 @@
                 }
                 ip.hand.forEach(c => th.appendChild(this.createCardElement(c, !this.state.opponentHandRevealed)));
 
-                // Top Field
+                // Top Field (opponent — Feature 19: isOpponent=true for challenge targeting)
                 const tf = document.getElementById('top-field');
-                this.buildField(ip, tf);
+                this.buildField(ip, tf, true);
 
                 // Top Inkwell
                 const ti = document.getElementById('top-inkwell-cards');

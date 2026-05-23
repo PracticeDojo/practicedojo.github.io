@@ -226,6 +226,23 @@ As a player, I want to be able to import logs from Duels.ink into the practice d
 - If one or more cards were swapped, when I save a bookmark, both manually or autosave, the new state should display the correct hand, not the original hand. And it should branch into a different branch.
 
 
+## Feature 19: Drag card to opponents card to perform Challenge
+
+### User Story
+As a player, I want to be able to drag a card from my board to an opponent's card so that I can perform a challenge.
+An Arrow should appear linking the two cards.
+
+### Details
+- When a player drags a card from their board to an opponent's card, it should perform a challenge.
+- An arrow should appear linking the two cards.
+- The challenge should be resolved in the same way as the actual game:
+  - Add damage equal to the challenger's strength + modifiers from card effects like "challenger". 
+  - And substract any damage counters depending on the defender's ability like "resist".
+  - Do the oppossite for the challenger. Add damage counters based on the defender's strength + modifiers like challenger.
+  - And substract any damage counters depending on the challenger's ability like "resist".
+  - If the defending character has 0 strength or less, it should be sent to the discard.
+  - If the challenger character has 0 strength or less, it should be sent to the discard.
+- The game state should be updated accordingly.
 
 ---
 
@@ -266,3 +283,4 @@ As a developer, I want the JSON game state to be way more optimized and organize
 - [x] Feature 16: Color timeline nodes based on active player's color
 - [x] Feature 17: Importing Logs from Duels.ink
 - [x] Feature 18: Swapping cards in your hand
+- [x] Feature 19: Drag card to opponents card to perform Challenge
