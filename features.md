@@ -313,4 +313,4 @@ As a developer, I want the JSON game state to be way more optimized and organize
 - [x] Feature 17: Importing Logs from Duels.ink
 - [x] Feature 18: Swapping cards in your hand
 - [x] Feature 19: Drag card to opponents card to perform Challenge
-- [x] Feature 21: Import Duels.ink Replays (JSON / .replay)
+- [ ] Feature 20: Add button to fill in all unknown cards in a deck
