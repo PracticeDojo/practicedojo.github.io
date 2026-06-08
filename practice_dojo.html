@@ -503,7 +503,7 @@
                     <label class="block text-sm font-semibold text-gray-300 mb-1.5">Paste log content</label>
                     <textarea id="import-log-textarea"
                         class="w-full bg-black border border-gray-700 focus:border-green-500 focus:ring-1 focus:ring-green-500 rounded-lg text-xs text-gray-300 p-3 resize-none outline-none custom-scrollbar font-mono transition"
-                        rows="12" placeholder="Paste your Duels.ink match log here..."
+                        rows="12" placeholder="Paste a Duels.ink match log (.md) or replay (.json / .replay) here..."
                         oninput="App.onLogPasteInput()"></textarea>
                 </div>
 
@@ -523,11 +523,11 @@
                 <!-- File import -->
                 <div>
                     <label class="block text-sm font-semibold text-gray-300 mb-1.5">Import from file</label>
-                    <input type="file" id="import-log-file-modal" class="hidden" accept=".md,.txt"
+                    <input type="file" id="import-log-file-modal" class="hidden" accept=".md,.txt,.json,.replay"
                         onchange="App.onImportLogFileSelected(event)">
                     <button onclick="document.getElementById('import-log-file-modal').click()"
                         class="bg-gray-800 hover:bg-gray-700 text-gray-300 border border-gray-600 hover:border-gray-400 font-semibold py-2 px-4 rounded-lg transition flex items-center gap-2 text-sm">
-                        <i class="fa-solid fa-folder-open text-yellow-400"></i> Choose .md or .txt file
+                        <i class="fa-solid fa-folder-open text-yellow-400"></i> Choose .md, .txt, .json or .replay file
                     </button>
                 </div>
             </div>
@@ -1107,7 +1107,7 @@
         let cardFuse = null;
         let allSessions = [];
 
-        const APP_VERSION = "v1.19.0"; // Centralized version string
+        const APP_VERSION = "v1.20.0"; // Centralized version string
 
         window.addEventListener('DOMContentLoaded', () => {
             const loadingVer = document.getElementById('app-version-loading');
@@ -1120,6 +1120,7 @@
 
         const App = {
             cardDB: {},
+            setNumberIndex: {}, // Maps duels.ink "setCode-number" ids (e.g. "10-57") -> cardDB entry
             allCards: [],
             abilitiesConfigLoaded: false,
             mulliganSelection: [],
@@ -1485,6 +1486,11 @@
                         if (c.fullName && !this.cardDB[c.fullName.toLowerCase()]) this.cardDB[c.fullName.toLowerCase()] = c;
                         if (c.name && !this.cardDB[c.name.toLowerCase()]) this.cardDB[c.name.toLowerCase()] = c;
                         if (c.simpleName && !this.cardDB[c.simpleName]) this.cardDB[c.simpleName] = c;
+                        // Index by duels.ink "setCode-number" format (e.g. "10-57") for replay imports
+                        if (c.setCode != null && c.number != null) {
+                            const snKey = `${c.setCode}-${c.number}`;
+                            if (!this.setNumberIndex[snKey]) this.setNumberIndex[snKey] = c;
+                        }
                     });
 
                     cardFuse = new Fuse(this.allCards, { keys: ['name', 'simpleName'], threshold: 0.3 });
@@ -1928,6 +1934,10 @@
 
             resolveCardName(name) {
                 if (!name) return null;
+                // duels.ink "setCode-number" format (e.g. "10-57") — resolve via the set/number index
+                if (typeof name === 'string' && /^\w+-\d+$/.test(name) && this.setNumberIndex[name]) {
+                    return this.setNumberIndex[name];
+                }
                 const lower = name.toLowerCase().trim();
                 if (this.cardDB[lower]) return this.cardDB[lower];
                 const byFullName = this.allCards.find(c => c.fullName && c.fullName.toLowerCase() === lower);
@@ -2337,13 +2347,373 @@
                 };
             },
 
+            // ===== Duels.ink Replay (JSON / .replay) Import =====
+
+            // Detect whether the pasted/loaded text is a JSON replay or a markdown log.
+            detectLogFormat(text) {
+                const trimmed = (text || '').trim();
+                if (trimmed.startsWith('{')) {
+                    try {
+                        const data = JSON.parse(trimmed);
+                        if (data && data.format === 'duels-replay-v1') return { type: 'replay', data };
+                    } catch (e) { /* not valid JSON — fall through to markdown */ }
+                }
+                return { type: 'markdown' };
+            },
+
+            // Apply an array of RFC 6902 JSON Patch ops (add/remove/replace) to a document in place.
+            applyJsonPatch(doc, ops) {
+                const unescape = (s) => s.replace(/~1/g, '/').replace(/~0/g, '~');
+                for (const op of ops) {
+                    const keys = op.path.split('/').slice(1).map(unescape);
+                    let parent = doc;
+                    let ok = true;
+                    for (let i = 0; i < keys.length - 1; i++) {
+                        const k = Array.isArray(parent) ? parseInt(keys[i], 10) : keys[i];
+                        parent = parent[k];
+                        if (parent === undefined || parent === null) { ok = false; break; }
+                    }
+                    if (!ok) continue;
+                    const last = keys[keys.length - 1];
+                    if (op.op === 'remove') {
+                        if (Array.isArray(parent)) parent.splice(parseInt(last, 10), 1);
+                        else delete parent[last];
+                    } else if (op.op === 'add') {
+                        if (Array.isArray(parent)) {
+                            if (last === '-') parent.push(op.value);
+                            else parent.splice(parseInt(last, 10), 0, op.value);
+                        } else parent[last] = op.value;
+                    } else if (op.op === 'replace') {
+                        if (Array.isArray(parent)) parent[parseInt(last, 10)] = op.value;
+                        else parent[last] = op.value;
+                    }
+                }
+                return doc;
+            },
+
+            // Replay the patch stream, snapshotting one bookmark node per player-turn (END_TURN).
+            // Returns a session object compatible with the loader (same shape as buildSessionFromLog).
+            buildSessionFromReplay(replay) {
+                const persp = replay.perspective || 1;   // duels player number of the log owner (1 or 2)
+                const myIdx = persp - 1;                  // dojo index of the perspective player
+                const oppIdx = 1 - myIdx;                 // dojo index of the opponent
+                const oppDuels = oppIdx + 1;              // duels player number of the opponent
+
+                // Virtual engine state — mutated by applying each frame's patch.
+                let virtual = JSON.parse(JSON.stringify(replay.baseSnapshot));
+
+                // Inkwell card identities get stripped at end of turn, so track inked cardIds (in order)
+                // from the semantic ADD_TO_INK actions. Indexed by dojo player index.
+                const inkIds = [[], []];
+
+                // --- Pre-scan: collect every opponent card revealed across the whole replay ---
+                // The opponent's draws are hidden, but every card they play/ink/quest/challenge is
+                // revealed. We record each (instanceId -> {cardId, seq}) at its FIRST reveal so we can
+                // back-fill these known cards into the opponent's hidden hand/deck in earlier snapshots.
+                const oppRevealSeq = new Map(); // instanceId -> { cardId, seq }
+                const noteReveal = (instanceId, cardId, seq) => {
+                    if (!instanceId || !cardId) return;
+                    if (!oppRevealSeq.has(instanceId)) oppRevealSeq.set(instanceId, { cardId, seq });
+                };
+                // Recursively find { instanceId, id } card objects inside a patch value.
+                const scanValueForCards = (val, seq) => {
+                    if (!val || typeof val !== 'object') return;
+                    if (Array.isArray(val)) { val.forEach(v => scanValueForCards(v, seq)); return; }
+                    if (typeof val.instanceId === 'string' && typeof val.id === 'string' && /^\w+-\d+$/.test(val.id)) {
+                        noteReveal(val.instanceId, val.id, seq);
+                    }
+                    for (const k in val) { if (k !== 'instanceId' && k !== 'id') scanValueForCards(val[k], seq); }
+                };
+                for (const frame of (replay.frames || [])) {
+                    const seq = frame.seq || 0;
+                    const ta = frame.takenAction;
+                    if (ta && ta.player === oppDuels) {
+                        noteReveal(ta.cardInstanceId, ta.cardId, seq);
+                        noteReveal(ta.attackerInstanceId, ta.attackerCardId, seq);
+                    }
+                    for (const p of (frame.patch || [])) {
+                        if (typeof p.path === 'string' && p.path.startsWith('/opponent') && (p.op === 'add' || p.op === 'replace')) {
+                            scanValueForCards(p.value, seq);
+                        }
+                    }
+                }
+
+                let currentSeq = 0; // seq of the most recently applied frame (for snapshot inference)
+
+                // Map a full duels card object -> Dojo CardInstance.
+                const mapCard = (duelsCard, faceUp) => {
+                    const db = duelsCard && duelsCard.id ? this.resolveCardName(duelsCard.id) : null;
+                    const stacked = (duelsCard && Array.isArray(duelsCard.cardsUnder) ? duelsCard.cardsUnder : [])
+                        .map(sc => {
+                            const scDb = sc && sc.id ? this.resolveCardName(sc.id) : null;
+                            return {
+                                instanceId: (sc && sc.instanceId) || this.uuid(),
+                                cardId: scDb ? scDb.id : -999,
+                                exerted: false, damage: 0, faceUp: false, locationId: null, drying: false, stackedCards: []
+                            };
+                        });
+                    return {
+                        instanceId: (duelsCard && duelsCard.instanceId) || this.uuid(),
+                        cardId: db ? db.id : -999,
+                        exerted: !!(duelsCard && duelsCard.exerted),
+                        damage: (duelsCard && duelsCard.damage) || 0,
+                        faceUp: !!faceUp,
+                        locationId: null,
+                        drying: !!(duelsCard && duelsCard.justPlayed),
+                        stackedCards: stacked
+                    };
+                };
+
+                // Map one inkwell array, recovering stripped identities from the tracked ink order.
+                const mapInkwell = (arr, dojoIdx) => (arr || []).map((entry, i) => {
+                    if (entry && entry.card) {
+                        return mapCard(entry.card, !entry.hidden);
+                    }
+                    const idStr = inkIds[dojoIdx][i];
+                    const db = idStr ? this.resolveCardName(idStr) : null;
+                    const inst = this.makeCardInstance(db ? db.id : -999);
+                    inst.faceUp = entry ? !entry.hidden : false;
+                    return inst;
+                });
+
+                const buildMyPlayer = () => {
+                    const mp = virtual.myPlayer;
+                    // deckOrder holds duels cardIds; the deck TOP is the LAST element.
+                    // The Dojo draws from index 0, so reverse to put the next card first.
+                    const deck = (mp.deckOrder || []).slice().reverse().map(idStr => {
+                        const db = this.resolveCardName(idStr);
+                        return this.makeCardInstance(db ? db.id : -999);
+                    });
+                    const inkwell = mapInkwell(mp.inkwell, myIdx);
+                    return {
+                        id: myIdx,
+                        name: (replay.playerNames && replay.playerNames[String(persp)]) || `Player ${myIdx + 1}`,
+                        lore: mp.lore || 0,
+                        inkTotal: inkwell.length,
+                        inkReady: inkwell.filter(c => !c.exerted).length,
+                        hasMulliganed: true,
+                        deck,
+                        hand: (mp.hand || []).map(c => mapCard(c, false)),
+                        field: (mp.field || []).map(c => mapCard(c, false)),
+                        inkwell,
+                        discard: (mp.discard || []).map(c => mapCard(c, false))
+                    };
+                };
+
+                const buildOppPlayer = () => {
+                    const op = virtual.opponent;
+                    const inkwell = mapInkwell(op.inkwell, oppIdx);
+                    const handCount = op.handCount || 0;
+                    const deckCount = op.deckCount || 0;
+
+                    // Cards already visible on the opponent's board right now (don't re-infer these).
+                    const visibleNow = new Set();
+                    (op.field || []).forEach(c => { if (c && c.instanceId) visibleNow.add(c.instanceId); });
+                    (op.discard || []).forEach(c => { if (c && c.instanceId) visibleNow.add(c.instanceId); });
+                    (op.inkwell || []).forEach(e => { if (e && e.card && e.card.instanceId) visibleNow.add(e.card.instanceId); });
+
+                    // Known-but-hidden cards: revealed LATER in the replay, so currently in hand/deck.
+                    // Soonest-revealed first — surface the imminent ones in hand, the rest in deck.
+                    const hiddenKnown = [];
+                    for (const [iid, info] of oppRevealSeq) {
+                        if (visibleNow.has(iid)) continue;
+                        if (info.seq <= currentSeq) continue;
+                        hiddenKnown.push(info);
+                    }
+                    hiddenKnown.sort((a, b) => a.seq - b.seq);
+
+                    let k = 0;
+                    const takeNext = () => {
+                        if (k < hiddenKnown.length) {
+                            const db = this.resolveCardName(hiddenKnown[k++].cardId);
+                            return this.makeCardInstance(db ? db.id : -999);
+                        }
+                        return this.makeUnknownCardInstance();
+                    };
+                    const hand = Array.from({ length: handCount }, takeNext);
+                    const deck = Array.from({ length: deckCount }, takeNext);
+
+                    return {
+                        id: oppIdx,
+                        name: (replay.playerNames && replay.playerNames[String(oppDuels)]) || `Player ${oppIdx + 1}`,
+                        lore: op.lore || 0,
+                        inkTotal: inkwell.length,
+                        inkReady: inkwell.filter(c => !c.exerted).length,
+                        hasMulliganed: true,
+                        deck,
+                        hand,
+                        field: (op.field || []).map(c => mapCard(c, false)),
+                        inkwell,
+                        discard: (op.discard || []).map(c => mapCard(c, false))
+                    };
+                };
+
+                const buildSnapshot = () => {
+                    const players = [null, null];
+                    players[myIdx] = buildMyPlayer();
+                    players[oppIdx] = buildOppPlayer();
+                    const activeIdx = (virtual.currentPlayer || 1) - 1;
+                    return {
+                        activeBookmarkId: null,
+                        turn: virtual.turnNumber || 1,
+                        activePlayer: activeIdx,
+                        inactivePlayer: 1 - activeIdx,
+                        opponentHandRevealed: false,
+                        activeTimelineColor: null,
+                        turnComments: {},
+                        log: [],
+                        players
+                    };
+                };
+
+                // Human-readable comment line for a semantic action.
+                const formatAction = (ta, segDuelsPlayer) => {
+                    if (!ta) return null;
+                    const foreign = (ta.player && ta.player !== segDuelsPlayer) ? '(Opponent) ' : '';
+                    switch (ta.type) {
+                        case 'ADD_TO_INK': return `- ${foreign}Inked ${ta.cardName}`;
+                        case 'PLAY_CARD': return `- ${foreign}Played ${ta.cardName}`;
+                        case 'QUEST': return `- ${foreign}Quested with ${ta.cardName} (+${ta.loreGained} lore → ${ta.newLoreTotal})`;
+                        case 'CHALLENGE':
+                        case 'ATTACK': {
+                            const banished = ta.defenderBanished ? ' (banished)' : '';
+                            return `- ${foreign}Challenged ${ta.defenderName} with ${ta.attackerName}${banished}`;
+                        }
+                        case 'ACTIVATE_ABILITY':
+                            return `- ${foreign}Activated ${ta.cardName}${ta.abilityName ? ' — ' + ta.abilityName : ''}`;
+                        default: return null;
+                    }
+                };
+
+                const bookmarks = [];
+                let previousNodeId = null;
+                let playerTurnSeq = 0;
+
+                // Segment = one player-turn. Snapshot at its start; comment = actions during it.
+                let segSnapshot = null, segTurn = 0, segActiveIdx = 0, segActions = [], segPlayed = [];
+
+                const openSegment = () => {
+                    playerTurnSeq++;
+                    segSnapshot = buildSnapshot();
+                    segTurn = playerTurnSeq;
+                    segActiveIdx = (virtual.currentPlayer || 1) - 1;
+                    segActions = [];
+                    segPlayed = [];
+                };
+
+                const closeSegment = () => {
+                    if (!segSnapshot) return;
+                    const nodeId = this.uuid();
+                    segSnapshot.activeBookmarkId = nodeId;
+                    segSnapshot.turn = segTurn; // label nodes by sequential player-turn (matches .md import)
+                    const lore0 = segSnapshot.players[0].lore;
+                    const lore1 = segSnapshot.players[1].lore;
+                    const color = segActiveIdx === 0 ? '#a86b32' : '#3f2e70';
+                    const stats = `Turn ${segTurn} | P1: ${lore0} - P2: ${lore1}`;
+                    const nodeName = `Turn ${segTurn} – ${segActiveIdx === 0 ? 'P1' : 'P2'} Active`;
+                    const segDuelsPlayer = segActiveIdx + 1;
+                    const comment = segActions
+                        .map(ta => formatAction(ta, segDuelsPlayer))
+                        .filter(Boolean)
+                        .join('\n');
+                    bookmarks.push({
+                        id: nodeId,
+                        parentId: previousNodeId,
+                        name: nodeName,
+                        stats,
+                        comment,
+                        color,
+                        gradient: null,
+                        state: JSON.stringify(this.compressState(segSnapshot, true)),
+                        timestamp: Date.now(),
+                        isDeckEdit: false,
+                        cardsPlayedData: segPlayed.slice()
+                    });
+                    previousNodeId = nodeId;
+                    segSnapshot = null;
+                };
+
+                let firstSegmentOpened = false;
+                for (const frame of (replay.frames || [])) {
+                    const type = frame.actionType;
+                    // Track ink identities from semantic actions (works even after card data is stripped).
+                    if (frame.takenAction && frame.takenAction.type === 'ADD_TO_INK' && frame.takenAction.cardId) {
+                        const di = (frame.takenAction.player || 1) - 1;
+                        if (di === 0 || di === 1) inkIds[di].push(frame.takenAction.cardId);
+                    }
+
+                    if (type === 'CHOOSE_STARTING_PLAYER' || type === 'MULLIGAN') {
+                        if (frame.patch) this.applyJsonPatch(virtual, frame.patch);
+                        currentSeq = frame.seq || currentSeq;
+                        continue;
+                    }
+
+                    if (!firstSegmentOpened) { openSegment(); firstSegmentOpened = true; }
+
+                    if (type === 'END_TURN') {
+                        closeSegment();                                  // node for the turn that just ended
+                        if (frame.patch) this.applyJsonPatch(virtual, frame.patch); // ready + draw next turn
+                        currentSeq = frame.seq || currentSeq;
+                        openSegment();                                   // start of next player-turn
+                        continue;
+                    }
+
+                    if (frame.takenAction) segActions.push(frame.takenAction);
+                    if (type === 'PLAY_CARD' && frame.takenAction && frame.takenAction.cardId) {
+                        const db = this.resolveCardName(frame.takenAction.cardId);
+                        if (db) segPlayed.push(db.id);
+                    }
+                    if (frame.patch) this.applyJsonPatch(virtual, frame.patch);
+                    currentSeq = frame.seq || currentSeq;
+                }
+                closeSegment(); // final segment (last player-turn / game finish)
+
+                // True final board state for the live view.
+                const finalSnapshot = buildSnapshot();
+                finalSnapshot.activeBookmarkId = previousNodeId;
+                finalSnapshot.turn = playerTurnSeq;
+
+                // Deck strings: perspective player from the embedded exact decklist; opponent inferred.
+                const buildDeckStringFromIds = (idList) => {
+                    const counts = {};
+                    for (const idStr of (idList || [])) {
+                        const db = this.resolveCardName(idStr);
+                        if (!db) continue;
+                        const key = db.fullName || db.name;
+                        counts[key] = (counts[key] || 0) + 1;
+                    }
+                    return Object.entries(counts).map(([name, cnt]) => `${cnt} ${name}`).join('\n');
+                };
+                const myDeckStr = buildDeckStringFromIds(replay.decklist || []);
+                const oppDeckStr = buildDeckStringFromIds([...oppRevealSeq.values()].map(info => info.cardId));
+
+                return {
+                    version: 1,
+                    currentState: this.compressState(finalSnapshot, true),
+                    bookmarks,
+                    autoSaves: [],
+                    history: [],
+                    deck1: myIdx === 0 ? myDeckStr : oppDeckStr,
+                    deck2: myIdx === 0 ? oppDeckStr : myDeckStr,
+                    _turnCount: bookmarks.length
+                };
+            },
+
             // Core import logic shared by paste and file import
             _applyDojoLog(logText) {
-                const parsed = this.parseDojoLog(logText);
-                if (!parsed.turns || parsed.turns.length === 0) {
-                    throw new Error("No turns found in this log. Make sure it is a valid Duels.ink log.");
+                const fmt = this.detectLogFormat(logText);
+                let session, turnCount;
+                if (fmt.type === 'replay') {
+                    session = this.buildSessionFromReplay(fmt.data);
+                    turnCount = session._turnCount;
+                } else {
+                    const parsed = this.parseDojoLog(logText);
+                    if (!parsed.turns || parsed.turns.length === 0) {
+                        throw new Error("No turns found in this log. Make sure it is a valid Duels.ink log.");
+                    }
+                    session = this.buildSessionFromLog(parsed);
+                    turnCount = parsed.turns.length;
                 }
-                const session = this.buildSessionFromLog(parsed);
                 this.state = this.decompressState(session.currentState);
                 this.bookmarks = session.bookmarks;
                 this.autoSaves = [];
@@ -2358,13 +2728,25 @@
                 this.renderAutoSaves();
                 this.renderTree();
                 this.render();
-                this.showToast(`Log Imported: ${parsed.turns.length} turns loaded!`);
-                return parsed;
+                this.showToast(`Log Imported: ${turnCount} turns loaded!`);
+                return { turnCount };
             },
 
             validateDojoLog(text) {
                 if (!text || !text.trim()) {
                     return { valid: false, level: 'empty', message: 'Paste your log above to validate it.' };
+                }
+                // JSON replay (.json / .replay) detection
+                const fmt = this.detectLogFormat(text);
+                if (fmt.type === 'replay') {
+                    const j = fmt.data;
+                    const turns = (j.frames || []).filter(f => f.actionType === 'END_TURN').length;
+                    const names = j.playerNames ? `${j.playerNames['1']} vs ${j.playerNames['2']} — ` : '';
+                    return { valid: true, level: 'ok', message: `Valid Duels.ink replay detected — ${names}${turns} turn${turns !== 1 ? 's' : ''}.` };
+                }
+                // If it looks like JSON but isn't a recognized replay, flag it.
+                if (text.trim().startsWith('{')) {
+                    return { valid: false, level: 'error', message: 'This JSON is not a recognized Duels.ink replay (expected "format": "duels-replay-v1").' };
                 }
                 const hasTurns = /^---\s*Turn \d+\s*---/m.test(text);
                 const hasOpeningHand = /^Player \d+'s starting hand:/m.test(text);

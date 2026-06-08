@@ -165,4 +165,78 @@ Each imported turn node carries:
 
 When replaying plays from the log, `buildSessionFromLog` checks `dbCard.type`. If the type is `'Action'` or `'Song'`, the card goes directly to the **discard pile** instead of the field (matching Lorcana rules). Characters and Locations go to the field as normal.
 
+---
+
+## **7\. Feature 21: Duels.ink Replay (JSON / .replay) Import (v1.20.0)**
+
+### **7.1 Overview**
+
+In addition to the text `.md` logs (Feature 17), the Dojo imports Duels.ink **replay** exports — files with `"format": "duels-replay-v1"`, delivered as `.json` or `.replay` (identical content, different extension). Unlike the `.md` parser (which reconstructs state by parsing text lines and inferring card locations), the replay is a **deterministic state machine**: a full `baseSnapshot` plus a `frames[]` array of RFC 6902 JSON Patch operations. Replaying the patches reproduces the engine's exact state at every step, so reconstruction is robust and needs no regex parsing.
+
+Both importers share the **same modal and the same loader tail** (`_applyDojoLog`). The format is auto-detected, and the `.md` path is completely unchanged and backward compatible.
+
+### **7.2 Replay File Anatomy**
+
+| Field | Meaning |
+|---|---|
+| `format` | Always `"duels-replay-v1"` — the detection key. |
+| `perspective` | Duels player number (1 or 2) of the **log owner**. Their info is fully visible; the opponent's private info is hidden. |
+| `baseSnapshot` | Complete initial state. `myPlayer` = the perspective player (full card objects), `opponent` = the other player (counts + only public zones). |
+| `frames[]` | Ordered actions. Each has `seq`, `actionType`, `player`, `turnNumber`, a `patch` (RFC 6902 ops), and an optional semantic `takenAction`. |
+| `decklist` | The perspective player's **exact 60-card list** (duels `"setCode-number"` ids). Used for a 100%-accurate deck string. |
+| `playerNames` | `{ "1": name, "2": name }`. |
+
+**Key engine facts (verified against real exports):**
+- Card identity uses duels `"setCode-number"` strings (e.g. `"10-57"`), **not** LorcanaJSON numeric ids.
+- `myPlayer.deckOrder` is an array of duels card ids; the **top of the deck is the LAST element** (draws pop the end). Mulligans/shuffles rewrite it mid-game, so only the *live* (post-replay) `deckOrder` is meaningful.
+- Inkwell entries are `{ hidden, card }`. A card's full object is **stripped at end of turn** (becomes `{ hidden: true }`), so inkwell identity must be tracked separately.
+- Duels `turnNumber` is a **round counter** (it increments after both players act). Each `END_TURN` frame is **one player-turn** — that's the bookmark granularity we use (matching the `.md` import's one-node-per-turn feel).
+
+### **7.3 Core Functions**
+
+| Function | Purpose |
+|---|---|
+| `detectLogFormat(text)` | Returns `{ type: 'replay', data }` if the text JSON-parses with `format === 'duels-replay-v1'`, else `{ type: 'markdown' }`. Drives routing in `_applyDojoLog` and `validateDojoLog`. |
+| `applyJsonPatch(doc, ops)` | Minimal RFC 6902 applicator (`add`/`remove`/`replace`) over a JSON Pointer path. Distinguishes **array** parents (splice insert/remove) from **object** parents (set/delete key). Mutates in place. |
+| `buildSessionFromReplay(replay)` | The replay engine. Returns a session object **identical in shape** to `buildSessionFromLog` (so the loader tail is shared). |
+| `resolveCardName(name)` | Extended: a string matching `^\w+-\d+$` is resolved through `setNumberIndex` first (the duels bridge), before the existing name lookups. |
+
+### **7.4 Card ID Bridge (`setNumberIndex`)**
+
+LorcanaJSON indexes cards by numeric `id`; duels uses `"setCode-number"`. On card load we build `App.setNumberIndex["<setCode>-<number>"] = cardDB entry` (e.g. `"10-57"` → the Olaf card whose numeric id is `2246`). `resolveCardName` checks this index for any `setCode-number`-shaped string, so **both** importers benefit and there is one resolution path.
+
+### **7.5 State Mapping (duels → Dojo)**
+
+- Duels player **N → Dojo index N-1** (player 1 → `players[0]`, player 2 → `players[1]`), regardless of perspective. `myPlayer` maps to `players[perspective-1]`, `opponent` to the other.
+- Per card: `instanceId` kept as-is; duels `id` → numeric `cardId` (or `-999` if unresolved); `exerted`→`exerted`, `damage`→`damage`, `justPlayed`→`drying`; `cardsUnder` → `stackedCards` (these are face-down/hidden, so they become unknown placeholders).
+- **Perspective player deck:** `reverse(myPlayer.deckOrder)` mapped to instances — the Dojo's deck top is index 0, so reversing the duels deck (top = last) yields the correct draw order. This is live and shuffle-aware → **exact deck-order deduction**, stronger than the `.md` future-draw inference. The deck **string** comes from the embedded `decklist`.
+- **Inkwell identity:** because inkwell card objects are stripped at end of turn, we track `inkIds[dojoIdx]` from every `ADD_TO_INK` `takenAction.cardId` (in order, both players). When mapping an inkwell slot, prefer `entry.card`, else fall back to the tracked id, else unknown.
+
+### **7.6 Opponent Inference (hidden info)**
+
+The opponent's **draws are hidden** in a perspective replay (unlike the old `Player 2 drew X` markdown), so their hand/deck cannot be known exactly. To avoid an all-unknown opponent, we infer:
+
+1. **Pre-scan** every frame once up front, recording each opponent card the moment it first becomes visible — from `takenAction` (`cardInstanceId`/`cardId`, plus `attackerInstanceId`/`attackerCardId`) and from any card object inside an `/opponent/...` patch value (scanned recursively). Stored as `oppRevealSeq: Map<instanceId, { cardId, seq }>`, first-reveal wins.
+2. At each snapshot (tracking `currentSeq` = seq of the last applied frame), the opponent's **known-but-still-hidden** cards are those in `oppRevealSeq` whose `seq > currentSeq` and that aren't already visible on board. Sorted soonest-first, they **fill the hand first** (imminent reveals look like they're in hand), then the **deck**, with `cardId: -999` placeholders filling the remaining `handCount`/`deckCount`.
+3. As the replay advances, each known card leaves the hidden pool exactly when it's played, so the inferred hand/deck taper toward unknowns in the endgame.
+4. **Opponent deck string (`deck2`/`deck1`)** is built from the deduped `oppRevealSeq` values (every distinct revealed card).
+
+> **Heuristic caveat:** "hand vs deck right now" for the opponent is an educated guess (we can't see their draws). This matches the sandbox philosophy and is fully editable via the right-click replace UI.
+
+### **7.7 Bookmark Generation**
+
+`buildSessionFromReplay` walks the frames maintaining a **segment = one player-turn**:
+- Setup frames (`CHOOSE_STARTING_PLAYER`, `MULLIGAN`) are applied but not snapshotted.
+- A segment opens at the start of a player-turn (snapshot taken **before** that player's actions, after their ready+draw). Its `takenAction`s accumulate as frames are processed.
+- On `END_TURN`: close the segment (push the node), apply the patch (ready+draw transition into the next turn), then open the next segment. A final `closeSegment()` after the loop captures the last partial turn (e.g. the winning `GAME_FINISH`).
+
+Each node carries the same fields as `.md` nodes: `name` (`Turn N – Px Active`, where N is a **sequential player-turn counter** so labels match the live `turn`), `stats`, `color` (P1 `#a86b32` / P2 `#3f2e70`), `comment`, `cardsPlayedData`, and a compressed `state`. The **comment** is built from `takenAction` objects via `formatAction` (ink / play / quest with lore / challenge with banish flag / activate) — no string parsing. Actions by the non-active player in a segment are prefixed `(Opponent)`.
+
+`currentState` is a true final-board snapshot taken after all frames are applied. `deck1`/`deck2` are assigned by dojo index (perspective player's exact `decklist` to its slot, opponent's inferred list to the other).
+
+### **7.8 Validation & UI**
+
+- `validateDojoLog` detects a replay first and returns a green `ok` with player names and the `END_TURN` count. Non-replay JSON (wrong `format`) returns an explicit error. Markdown behavior is unchanged below that.
+- The Import Log modal's file input accepts `.md,.txt,.json,.replay`; the textarea/file copy mention replays. `onImportLogFileSelected` reads any of them as text — no change needed.
+
 

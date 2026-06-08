@@ -244,6 +244,35 @@ An Arrow should appear linking the two cards.
   - If the challenger character has 0 strength or less, it should be sent to the discard.
 - The game state should be updated accordingly.
 
+
+## Feature 20: Add button to fill in all unknown cards in a deck
+
+### User Story
+As a player, I want to be able to click a button that fills in all the unknown cards in my deck with real cards and appropriate quantities so that I can have a more accurate representation of my deck.
+
+### Details
+- When a player clicks a button, it should fill in all the unknown cards in their deck with real cards.
+- The cards should be inferred based on the cards already in the deck and the cards that have been played during the game.
+- For the cards that are in the deck, it should try to match the quantities of the cards that are already in the deck.
+- It can ask the user to select one of the existing decks from the practice dojo to use as a base for the unknown cards.
+- Otherwise the user can paste a decklist that they want to use as the basis.
+- If the player doesn't like the cards that were chosen, they can always click the button again to choose different cards.
+
+
+## Feature 21: Import Duels.ink Replays (JSON / .replay)
+
+### User Story
+As a player, I want to import a Duels.ink `.json` / `.replay` export (format `duels-replay-v1`) into the Practice Dojo so that the multiverse tree is reconstructed deterministically — without the brittle text parsing the `.md` importer relies on.
+
+### Details
+- Accepts the JSON replay through the same "Import Duels.ink Log" modal (paste or file). File picker accepts `.md`, `.txt`, `.json`, `.replay`.
+- The replay is a state machine: a `baseSnapshot` plus a `frames` array of RFC 6902 JSON Patch operations. The importer applies the patches to a virtual state and snapshots one bookmark node per player-turn (each `END_TURN`).
+- Card identities use the duels.ink `"setCode-number"` id (e.g. `"10-57"`), resolved against LorcanaJSON's `setCode`/`number` via a new set-number index.
+- **Deck-order deduction is preserved and strengthened:** the perspective player's deck order comes from the live `myPlayer.deckOrder` (deck top = last element, reversed for the Dojo), and the deck *string* comes from the embedded exact `decklist` (100% accurate). The opponent's deck is shown as unknown placeholders, with its deck string inferred from revealed cards, deduped by `instanceId`.
+- Node comments are built from each frame's semantic `takenAction` (ink / play / quest / challenge / activate), so summaries are clean with no regex parsing.
+- The `.md` importer is unchanged and fully backward compatible; the format is auto-detected.
+
+
 ---
 
 # Refactor
@@ -284,3 +313,4 @@ As a developer, I want the JSON game state to be way more optimized and organize
 - [x] Feature 17: Importing Logs from Duels.ink
 - [x] Feature 18: Swapping cards in your hand
 - [x] Feature 19: Drag card to opponents card to perform Challenge
+- [x] Feature 21: Import Duels.ink Replays (JSON / .replay)
