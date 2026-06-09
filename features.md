@@ -285,6 +285,20 @@ As a player, I want to import the gzipped replay files Duels.ink gives me (`*.re
 - (A direct "load my games from the Duels.ink API" feature was explored but dropped: Duels.ink serves no CORS headers, so a static single-file app can't call it without an external proxy, which we chose not to add.)
 
 
+## Feature 23: Craft Ideal Starting Hand
+
+### User Story
+As a player, at the start of my first turn I want to craft my ideal starting hand instead of relying on a random draw or mulligan, so I can theorycraft from a specific opening.
+
+### Details
+- A "Craft Hand" button sits next to "Mulligan" and shares the same visibility (turn 1 only, until the active player has mulliganed or crafted).
+- Opens a modal showing every **unique** card in the player's deck (the whole 60-card pool reconstructed across all zones).
+- Left-click a card to add a copy to the starting hand; right-click removes a copy. Copies are capped at how many the deck actually contains (e.g. a 3-of can't be added a 4th time).
+- The hand must total exactly 7 cards before Confirm is enabled. A live counter and a per-card `selected/available` badge guide the user.
+- On confirm: the chosen cards become the hand, the remaining cards become the shuffled deck, other zones (field/inkwell/discard) and ink are reset, and the player is locked out of further mulligan/craft (sets `hasMulliganed`).
+- Stays self-contained in the single HTML file.
+
+
 ---
 
 # Refactor
@@ -328,3 +342,4 @@ As a developer, I want the JSON game state to be way more optimized and organize
 - [ ] Feature 20: Add button to fill in all unknown cards in a deck
 - [x] Feature 21: Import Duels.ink Replays (JSON / .replay)
 - [x] Feature 22: Read Gzipped (.replay.gz) Replays
+- [x] Feature 23: Craft Ideal Starting Hand

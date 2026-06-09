@@ -437,6 +437,38 @@
         </div>
     </div>
 
+    <!-- Craft Hand Modal -->
+    <div id="craft-hand-modal"
+        class="absolute inset-0 z-50 bg-black bg-opacity-90 flex items-center justify-center hidden">
+        <div class="bg-gray-800 p-6 rounded-lg shadow-2xl w-[90vw] h-[90vh] max-w-7xl flex flex-col">
+            <h2
+                class="text-2xl font-bold mb-2 border-b border-gray-700 pb-2 text-white flex justify-between items-center">
+                <span id="craft-hand-title">Craft Starting Hand</span>
+                <button onclick="App.closeCraftHand()" class="text-gray-400 hover:text-white transition"><i
+                        class="fa-solid fa-times"></i></button>
+            </h2>
+            <p class="text-gray-400 mb-3">Left-click a card to add a copy to your starting hand (7 total).
+                Right-click to remove a copy. You can only add as many copies as your deck contains.</p>
+            <div class="flex items-center justify-between mb-3">
+                <div class="text-sm font-bold text-white">Selected: <span id="craft-hand-count"
+                        class="text-green-400">0</span> / 7</div>
+                <button onclick="App.clearCraftHand()"
+                    class="px-3 py-1 bg-gray-700 hover:bg-gray-600 text-sm text-gray-300 rounded transition">Clear</button>
+            </div>
+            <div id="craft-hand-grid"
+                class="flex-1 overflow-y-auto grid grid-cols-3 sm:grid-cols-5 md:grid-cols-7 lg:grid-cols-9 gap-3 p-2 content-start">
+                <!-- Unique deck cards injected here -->
+            </div>
+            <div class="mt-4 flex justify-end gap-4 border-t border-gray-700 pt-4">
+                <button onclick="App.closeCraftHand()"
+                    class="px-6 py-2 bg-gray-600 hover:bg-gray-500 text-white font-bold rounded transition">Cancel</button>
+                <button id="craft-hand-confirm" onclick="App.confirmCraftHand()"
+                    class="px-6 py-2 bg-green-600 hover:bg-green-700 text-white font-bold rounded transition disabled:opacity-40 disabled:cursor-not-allowed">Confirm
+                    Hand</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Inspect Deck Modal -->
     <div id="inspect-deck-modal"
         class="absolute inset-0 z-50 bg-black bg-opacity-90 flex items-center justify-center hidden">
@@ -793,6 +825,11 @@
                         title="Mulligan Active Hand">
                         <i class="fa-solid fa-rotate text-blue-500 mr-1"></i> Mulligan
                     </button>
+                    <button id="craft-hand-btn" onclick="App.openCraftHand()"
+                        class="flex-1 py-2 bg-gray-800 hover:bg-gray-700 text-sm font-semibold rounded text-gray-300 transition"
+                        title="Craft your ideal starting hand">
+                        <i class="fa-solid fa-wand-magic-sparkles text-green-500 mr-1"></i> Craft Hand
+                    </button>
                 </div>
                 <div class="flex gap-2">
                     <button onclick="App.toggleTimelines()"
@@ -1107,7 +1144,7 @@
         let cardFuse = null;
         let allSessions = [];
 
-        const APP_VERSION = "v1.21.0"; // Centralized version string
+        const APP_VERSION = "v1.22.0"; // Centralized version string
 
         window.addEventListener('DOMContentLoaded', () => {
             const loadingVer = document.getElementById('app-version-loading');
@@ -1124,6 +1161,8 @@
             allCards: [],
             abilitiesConfigLoaded: false,
             mulliganSelection: [],
+            craftSelection: {},
+            craftPoolCounts: {},
 
             bookmarks: [],
             autoSaves: [],
@@ -3489,6 +3528,152 @@
                 this.render();
             },
 
+            // --- Craft Hand Handlers ---
+
+            // Flattens every card the player owns (across all zones, including stacks) into one pool.
+            _collectAllCards(p) {
+                const pool = [];
+                const collect = (arr) => {
+                    (arr || []).forEach(c => {
+                        pool.push(c);
+                        if (c.stackedCards && c.stackedCards.length) collect(c.stackedCards);
+                    });
+                };
+                collect(p.hand); collect(p.deck); collect(p.field); collect(p.inkwell); collect(p.discard);
+                return pool;
+            },
+
+            _craftSelectedTotal() {
+                return Object.values(this.craftSelection).reduce((a, b) => a + b, 0);
+            },
+
+            openCraftHand() {
+                const p = this.state.players[this.state.activePlayer];
+                document.getElementById('craft-hand-title').innerText = `${p.name} — Craft Starting Hand`;
+                this.craftSelection = {};
+                // Count available copies of each unique card across the player's whole pool.
+                this.craftPoolCounts = {};
+                this._collectAllCards(p).forEach(c => {
+                    this.craftPoolCounts[c.cardId] = (this.craftPoolCounts[c.cardId] || 0) + 1;
+                });
+                this.renderCraftHand();
+                document.getElementById('craft-hand-modal').classList.remove('hidden');
+            },
+
+            closeCraftHand() {
+                document.getElementById('craft-hand-modal').classList.add('hidden');
+                this.craftSelection = {};
+                this.craftPoolCounts = {};
+            },
+
+            clearCraftHand() {
+                this.craftSelection = {};
+                this.renderCraftHand();
+            },
+
+            renderCraftHand() {
+                const grid = document.getElementById('craft-hand-grid');
+                grid.innerHTML = '';
+                const total = this._craftSelectedTotal();
+                document.getElementById('craft-hand-count').innerText = total;
+                document.getElementById('craft-hand-confirm').disabled = (total !== 7);
+
+                // Sort unique cards by ink cost, then name, for a tidy curve layout.
+                const cardIds = Object.keys(this.craftPoolCounts).map(Number).sort((a, b) => {
+                    const ca = this.cardDB[a], cb = this.cardDB[b];
+                    const costA = (ca && ca.cost != null) ? ca.cost : 0;
+                    const costB = (cb && cb.cost != null) ? cb.cost : 0;
+                    if (costA !== costB) return costA - costB;
+                    const na = (ca && (ca.fullName || ca.name)) || '';
+                    const nb = (cb && (cb.fullName || cb.name)) || '';
+                    return na.localeCompare(nb);
+                });
+
+                cardIds.forEach(cardId => {
+                    const dbCard = this.cardDB[cardId];
+                    const available = this.craftPoolCounts[cardId];
+                    const selected = this.craftSelection[cardId] || 0;
+                    const atHandLimit = total >= 7;
+
+                    const wrap = document.createElement('div');
+                    wrap.className = 'relative rounded-md overflow-hidden select-none cursor-pointer transition-all duration-150';
+                    wrap.style.aspectRatio = '5 / 7';
+                    wrap.style.backgroundImage = `url('${this.getCardImage(dbCard)}')`;
+                    wrap.style.backgroundSize = 'cover';
+                    wrap.style.backgroundPosition = 'center';
+
+                    if (selected > 0) {
+                        wrap.classList.add('ring-2', 'ring-green-400', 'shadow-lg');
+                    } else {
+                        wrap.style.opacity = atHandLimit ? '0.4' : '1';
+                        wrap.classList.add('border', 'border-white/10', 'hover:-translate-y-1', 'hover:shadow-xl', 'hover:z-10');
+                    }
+
+                    wrap.innerHTML = `
+                        <div class="absolute top-1 right-1 bg-black/70 text-[10px] font-mono text-gray-200 px-1.5 py-0.5 rounded">${selected}/${available}</div>
+                        ${selected > 0 ? `<div class="absolute bottom-0 inset-x-0 bg-green-600/90 text-white text-center text-sm font-bold py-0.5">×${selected} in hand</div>` : ''}
+                    `;
+
+                    wrap.onclick = () => {
+                        if (this._craftSelectedTotal() < 7 && (this.craftSelection[cardId] || 0) < available) {
+                            this.craftSelection[cardId] = (this.craftSelection[cardId] || 0) + 1;
+                            this.renderCraftHand();
+                        }
+                    };
+                    wrap.oncontextmenu = (e) => {
+                        e.preventDefault();
+                        if (this.craftSelection[cardId] > 0) {
+                            this.craftSelection[cardId]--;
+                            if (this.craftSelection[cardId] === 0) delete this.craftSelection[cardId];
+                            this.renderCraftHand();
+                        }
+                    };
+
+                    grid.appendChild(wrap);
+                });
+            },
+
+            confirmCraftHand() {
+                if (this._craftSelectedTotal() !== 7) return;
+
+                this.saveState();
+                const p = this.state.players[this.state.activePlayer];
+
+                // Flatten every card the player owns, resetting per-card visual/game props.
+                const pool = this._collectAllCards(p).map(c => ({
+                    ...c, exerted: false, damage: 0, faceUp: false, locationId: null, drying: false, stackedCards: []
+                }));
+
+                // Bucket the pool by cardId so we can pull the exact copies requested.
+                const byCardId = {};
+                pool.forEach(c => { (byCardId[c.cardId] = byCardId[c.cardId] || []).push(c); });
+
+                const newHand = [];
+                Object.entries(this.craftSelection).forEach(([cardId, count]) => {
+                    for (let i = 0; i < count; i++) {
+                        const card = byCardId[cardId] && byCardId[cardId].pop();
+                        if (card) newHand.push(card);
+                    }
+                });
+
+                const handIds = new Set(newHand.map(c => c.instanceId));
+                const newDeck = pool.filter(c => !handIds.has(c.instanceId));
+                this.shuffle(newDeck);
+
+                p.hand = newHand;
+                p.deck = newDeck;
+                p.field = [];
+                p.inkwell = [];
+                p.discard = [];
+                p.inkTotal = 0;
+                p.inkReady = 0;
+                p.hasMulliganed = true; // Locks both Mulligan and Craft Hand for this player
+
+                this.logAction(`You crafted a starting hand of ${newHand.length} cards.`);
+                this.closeCraftHand();
+                this.render();
+            },
+
             // --- Drag and Drop Handlers ---
 
             allowDrop(ev) {
@@ -5013,10 +5198,13 @@
                 document.getElementById('quest-count').innerText = readyLoreChars;
 
                 const mulliganBtn = document.getElementById('mulligan-btn');
+                const craftHandBtn = document.getElementById('craft-hand-btn');
                 if (this.state.turn === 1 && !ap.hasMulliganed) {
                     mulliganBtn.classList.remove('hidden');
+                    craftHandBtn.classList.remove('hidden');
                 } else {
                     mulliganBtn.classList.add('hidden');
+                    craftHandBtn.classList.add('hidden');
                 }
 
                 this.updateLog();
