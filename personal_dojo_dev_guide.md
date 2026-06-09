@@ -237,6 +237,16 @@ Each node carries the same fields as `.md` nodes: `name` (`Turn N – Px Active`
 ### **7.8 Validation & UI**
 
 - `validateDojoLog` detects a replay first and returns a green `ok` with player names and the `END_TURN` count. Non-replay JSON (wrong `format`) returns an explicit error. Markdown behavior is unchanged below that.
-- The Import Log modal's file input accepts `.md,.txt,.json,.replay`; the textarea/file copy mention replays. `onImportLogFileSelected` reads any of them as text — no change needed.
+- The Import Log modal's file input accepts `.md,.txt,.json,.replay,.gz`; the textarea/file copy mention replays.
+
+### **7.9 Gzipped replays (`.replay.gz`) — Feature 22 (v1.21.0)**
+
+Duels.ink replay downloads are gzip-compressed (`<gameId>_p1.replay.gz`). The importer reads them directly:
+
+- `onImportLogFileSelected` reads the file as an **ArrayBuffer** (not text) and passes it to `decodeMaybeGzip(buffer)`.
+- `decodeMaybeGzip` sniffs the gzip magic bytes (`1f 8b`); if present it decompresses via the browser's `DecompressionStream('gzip')`, otherwise it decodes the bytes as plain UTF-8 text. The resulting text flows into the normal paste/validate/import path, so both `.md` and `.json`/`.replay` content work whether or not they were gzipped.
+- Everything stays self-contained in the single HTML file.
+
+> **Note (dropped direction):** loading games directly from the Duels.ink API was prototyped but removed. Duels.ink serves **no CORS headers**, so a static single-file app hosted on GitHub Pages cannot call its API from the browser without an external proxy (a Supabase Edge Function was tried, then reverted to keep the app dependency-free). The reusable loader helper `_loadSessionIntoApp(session, turnCount)` introduced during that work was kept, since `_applyDojoLog` uses it.
 
 

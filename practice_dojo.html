@@ -523,11 +523,11 @@
                 <!-- File import -->
                 <div>
                     <label class="block text-sm font-semibold text-gray-300 mb-1.5">Import from file</label>
-                    <input type="file" id="import-log-file-modal" class="hidden" accept=".md,.txt,.json,.replay"
+                    <input type="file" id="import-log-file-modal" class="hidden" accept=".md,.txt,.json,.replay,.gz"
                         onchange="App.onImportLogFileSelected(event)">
                     <button onclick="document.getElementById('import-log-file-modal').click()"
                         class="bg-gray-800 hover:bg-gray-700 text-gray-300 border border-gray-600 hover:border-gray-400 font-semibold py-2 px-4 rounded-lg transition flex items-center gap-2 text-sm">
-                        <i class="fa-solid fa-folder-open text-yellow-400"></i> Choose .md, .txt, .json or .replay file
+                        <i class="fa-solid fa-folder-open text-yellow-400"></i> Choose .md, .txt, .json, .replay or .gz file
                     </button>
                 </div>
             </div>
@@ -1107,7 +1107,7 @@
         let cardFuse = null;
         let allSessions = [];
 
-        const APP_VERSION = "v1.20.0"; // Centralized version string
+        const APP_VERSION = "v1.21.0"; // Centralized version string
 
         window.addEventListener('DOMContentLoaded', () => {
             const loadingVer = document.getElementById('app-version-loading');
@@ -2699,21 +2699,8 @@
                 };
             },
 
-            // Core import logic shared by paste and file import
-            _applyDojoLog(logText) {
-                const fmt = this.detectLogFormat(logText);
-                let session, turnCount;
-                if (fmt.type === 'replay') {
-                    session = this.buildSessionFromReplay(fmt.data);
-                    turnCount = session._turnCount;
-                } else {
-                    const parsed = this.parseDojoLog(logText);
-                    if (!parsed.turns || parsed.turns.length === 0) {
-                        throw new Error("No turns found in this log. Make sure it is a valid Duels.ink log.");
-                    }
-                    session = this.buildSessionFromLog(parsed);
-                    turnCount = parsed.turns.length;
-                }
+            // Loads a built session object into the app (shared by all import paths).
+            _loadSessionIntoApp(session, turnCount) {
                 this.state = this.decompressState(session.currentState);
                 this.bookmarks = session.bookmarks;
                 this.autoSaves = [];
@@ -2729,7 +2716,39 @@
                 this.renderTree();
                 this.render();
                 this.showToast(`Log Imported: ${turnCount} turns loaded!`);
+            },
+
+            // Core import logic shared by paste and file import
+            _applyDojoLog(logText) {
+                const fmt = this.detectLogFormat(logText);
+                let session, turnCount;
+                if (fmt.type === 'replay') {
+                    session = this.buildSessionFromReplay(fmt.data);
+                    turnCount = session._turnCount;
+                } else {
+                    const parsed = this.parseDojoLog(logText);
+                    if (!parsed.turns || parsed.turns.length === 0) {
+                        throw new Error("No turns found in this log. Make sure it is a valid Duels.ink log.");
+                    }
+                    session = this.buildSessionFromLog(parsed);
+                    turnCount = parsed.turns.length;
+                }
+                this._loadSessionIntoApp(session, turnCount);
                 return { turnCount };
+            },
+
+            // ===== Gzip handling (Duels.ink .replay.gz downloads & proxy responses) =====
+
+            // Decode an ArrayBuffer that may be gzip-compressed (magic 1f 8b) into text.
+            async decodeMaybeGzip(buffer) {
+                const bytes = new Uint8Array(buffer);
+                const isGzip = bytes.length > 2 && bytes[0] === 0x1f && bytes[1] === 0x8b;
+                if (!isGzip) return new TextDecoder().decode(bytes);
+                if (typeof DecompressionStream === 'undefined') {
+                    throw new Error("This browser can't decompress .gz files. Please decompress it first, or use a newer browser.");
+                }
+                const stream = new Response(bytes).body.pipeThrough(new DecompressionStream('gzip'));
+                return await new Response(stream).text();
             },
 
             validateDojoLog(text) {
@@ -2813,11 +2832,18 @@
                 const file = event.target.files[0];
                 if (!file) return;
                 const reader = new FileReader();
-                reader.onload = (e) => {
-                    document.getElementById('import-log-textarea').value = e.target.result;
-                    this.onLogPasteInput();
+                reader.onload = async (e) => {
+                    try {
+                        // Handles plain text AND gzip (.replay.gz) — magic-byte sniffed.
+                        const text = await this.decodeMaybeGzip(e.target.result);
+                        document.getElementById('import-log-textarea').value = text;
+                        this.onLogPasteInput();
+                    } catch (err) {
+                        console.error('Failed to read log file', err);
+                        alert(err.message || 'Could not read that file.');
+                    }
                 };
-                reader.readAsText(file);
+                reader.readAsArrayBuffer(file);
                 event.target.value = '';
             },
 

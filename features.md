@@ -273,6 +273,18 @@ As a player, I want to import a Duels.ink `.json` / `.replay` export (format `du
 - The `.md` importer is unchanged and fully backward compatible; the format is auto-detected.
 
 
+## Feature 22: Read Gzipped (.replay.gz) Replays
+
+### User Story
+As a player, I want to import the gzipped replay files Duels.ink gives me (`*.replay.gz`) directly, without having to decompress them first.
+
+### Details
+- Duels.ink replay downloads are gzip-compressed (`<gameId>_p1.replay.gz`). The importer now auto-decompresses gzip on import — magic-byte sniffed (`1f 8b`) and decompressed in-browser via `DecompressionStream`, falling back to plain-text decoding for uncompressed files.
+- The file picker accepts `.gz` (alongside `.md`, `.txt`, `.json`, `.replay`). Plain pasted text still works as before.
+- Everything stays self-contained in the single HTML file — no servers or external services.
+- (A direct "load my games from the Duels.ink API" feature was explored but dropped: Duels.ink serves no CORS headers, so a static single-file app can't call it without an external proxy, which we chose not to add.)
+
+
 ---
 
 # Refactor
@@ -314,3 +326,5 @@ As a developer, I want the JSON game state to be way more optimized and organize
 - [x] Feature 18: Swapping cards in your hand
 - [x] Feature 19: Drag card to opponents card to perform Challenge
 - [ ] Feature 20: Add button to fill in all unknown cards in a deck
+- [x] Feature 21: Import Duels.ink Replays (JSON / .replay)
+- [x] Feature 22: Read Gzipped (.replay.gz) Replays
