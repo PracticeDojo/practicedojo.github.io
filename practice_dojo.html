@@ -8,6 +8,11 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
+    <!-- Redesign fonts: Geist Sans + Geist Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
     <!-- Supabase & Fuse Libraries -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.6.2"></script>
@@ -293,285 +298,613 @@
         .challenge-line {
             animation: challengeArrowFade 1s ease-in-out forwards;
         }
+
+/* ===================================================================
+   REDESIGN DESIGN SYSTEM  (appended — later source wins the cascade,
+   so these override the legacy rules above where they collide)
+=================================================================== */
+:root {
+    --bg:           oklch(0.155 0.008 60);
+    --bg-grid:      oklch(0.19 0.009 60);
+    --surface:      oklch(0.205 0.010 60);
+    --surface-2:    oklch(0.235 0.012 60);
+    --surface-3:    oklch(0.275 0.014 60);
+    --surface-hi:   oklch(0.32 0.016 60);
+    --border:       oklch(0.30 0.013 60);
+    --border-soft:  oklch(0.25 0.011 60);
+    --border-strong:oklch(0.40 0.018 60);
+    --text:         oklch(0.965 0.004 60);
+    --text-2:       oklch(0.78 0.008 60);
+    --text-dim:     oklch(0.62 0.012 60);
+    --text-faint:   oklch(0.46 0.014 60);
+    --accent:        oklch(0.78 0.14 70);
+    --accent-hi:     oklch(0.84 0.15 70);
+    --accent-dim:    oklch(0.55 0.12 70);
+    --accent-soft:   oklch(0.78 0.14 70 / 0.18);
+    --accent-faint:  oklch(0.78 0.14 70 / 0.08);
+    --p1:            oklch(0.74 0.14 60);
+    --p1-hi:         oklch(0.82 0.15 60);
+    --p1-soft:       oklch(0.74 0.14 60 / 0.18);
+    --p1-faint:      oklch(0.74 0.14 60 / 0.07);
+    --p2:            oklch(0.72 0.13 200);
+    --p2-hi:         oklch(0.80 0.14 200);
+    --p2-soft:       oklch(0.72 0.13 200 / 0.22);
+    --p2-faint:      oklch(0.72 0.13 200 / 0.08);
+    --bcr:           oklch(0.74 0.13 240);
+    --lvi:           oklch(0.82 0.13 95);
+    --rds:           oklch(0.74 0.13 150);
+    --ctl:           oklch(0.95 0.004 60);
+    --danger:        oklch(0.66 0.21 25);
+    --danger-soft:   oklch(0.66 0.21 25 / 0.16);
+    --ok:            oklch(0.74 0.13 155);
+    --topbar-h: 44px;
+    --sidebar-w: 296px;
+    --card-scale: 1;
+    --card-w: calc(80px * var(--card-scale));
+    --card-h: calc(112px * var(--card-scale));
+    --pile-w: calc(72px * var(--card-scale));
+    --pile-h: calc(100px * var(--card-scale));
+    --radius: 10px;
+    --radius-sm: 7px;
+    --font-sans: 'Geist', 'Söhne', system-ui, -apple-system, sans-serif;
+    --font-mono: 'Geist Mono', 'JetBrains Mono', ui-monospace, monospace;
+    --shadow-1: 0 1px 0 oklch(1 0 0 / 0.03) inset, 0 1px 2px oklch(0 0 0 / 0.25);
+    --shadow-2: 0 1px 0 oklch(1 0 0 / 0.04) inset, 0 12px 32px -8px oklch(0 0 0 / 0.55);
+    --shadow-3: 0 24px 60px -12px oklch(0 0 0 / 0.65);
+}
+* { box-sizing: border-box; }
+html, body {
+    margin: 0; height: 100%;
+    background: var(--bg); color: var(--text);
+    font-family: var(--font-sans); font-size: 14px; line-height: 1.45;
+    overflow: hidden; -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility; letter-spacing: -0.005em; user-select: none;
+}
+.mono { font-family: var(--font-mono); font-size: 0.78em; letter-spacing: 0; }
+.dim  { color: var(--text-faint); }
+.muted{ color: var(--text-dim); margin: 0; font-size: 13px; }
+
+/* TOP BAR */
+.topbar {
+    height: var(--topbar-h); display: grid; grid-template-columns: 1fr auto 1fr;
+    align-items: center; padding: 0 12px; background: var(--surface);
+    border-bottom: 1px solid var(--border-soft); position: relative; z-index: 50;
+}
+.topbar-left   { display: flex; align-items: center; gap: 10px; }
+.topbar-center { display: flex; justify-content: center; }
+.topbar-right  { display: flex; align-items: center; gap: 6px; justify-content: flex-end; }
+.brand { display: flex; align-items: center; gap: 8px; padding-left: 4px; }
+.brand-mark {
+    width: 16px; height: 16px;
+    background: conic-gradient(from 220deg, var(--accent) 0deg, var(--p2) 120deg, var(--accent-dim) 240deg, var(--accent) 360deg);
+    border-radius: 4px; box-shadow: 0 0 0 1px oklch(1 0 0 / 0.08), 0 4px 10px -2px oklch(0 0 0 / 0.6);
+}
+.brand-name { font-weight: 600; letter-spacing: -0.01em; }
+.brand-tag { font-family: var(--font-mono); font-size: 10px; padding: 2px 6px; border: 1px solid var(--border); border-radius: 4px; color: var(--text-faint); text-transform: uppercase; }
+.turn-pill { display: inline-flex; align-items: center; gap: 10px; padding: 5px 14px; background: var(--surface-2); border: 1px solid var(--border-soft); border-radius: 999px; font-size: 12px; color: var(--text-2); }
+.turn-pill .turn-num { font-family: var(--font-mono); font-size: 12px; color: var(--accent-hi); font-weight: 600; }
+.turn-pill .turn-arrow { color: var(--text-faint); font-size: 10px; }
+.turn-pill .turn-actor { font-weight: 500; color: var(--text); }
+.turn-pill.is-p1 .turn-num { color: var(--p1-hi); }
+.turn-pill.is-p2 .turn-num { color: var(--p2-hi); }
+
+/* BUTTONS */
+.icon-btn, .btn {
+    display: inline-flex; align-items: center; gap: 6px; background: var(--surface-2);
+    color: var(--text-2); border: 1px solid var(--border-soft); border-radius: 7px;
+    padding: 6px 10px; font-family: inherit; font-size: 12.5px; font-weight: 500;
+    cursor: pointer; transition: background .12s ease, color .12s ease, border-color .12s ease, transform .08s ease; line-height: 1;
+}
+.icon-btn:hover, .btn:hover { background: var(--surface-3); color: var(--text); border-color: var(--border); }
+.icon-btn:active, .btn:active { transform: translateY(0.5px); }
+.icon-btn:disabled, .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+.icon-btn.ghost { background: transparent; border-color: transparent; }
+.icon-btn.ghost:hover { background: var(--surface-3); }
+.icon-btn.primary, .btn-primary { background: var(--accent); color: oklch(0.18 0.02 60); border-color: oklch(0.78 0.14 70 / 0.45); font-weight: 600; }
+.icon-btn.primary:hover, .btn-primary:hover { background: var(--accent-hi); color: oklch(0.15 0.02 60); }
+.btn { padding: 8px 12px; }
+.btn-ghost { background: transparent; }
+.btn-ghost:hover { background: var(--surface-3); }
+.btn-danger-ghost { background: transparent; color: oklch(0.80 0.18 25); border: 1px solid oklch(0.5 0.18 25 / 0.4); }
+.btn-danger-ghost:hover { background: var(--danger-soft); color: oklch(0.85 0.18 25); }
+.btn-p1 { background: var(--p1); color: oklch(0.16 0.02 60); border-color: oklch(0.74 0.14 60 / 0.5); font-weight: 600; }
+.btn-p1:hover { background: var(--p1-hi); }
+.btn-block { width: 100%; justify-content: center; }
+.divider-v { width: 1px; height: 18px; background: var(--border-soft); margin: 0 4px; }
+
+/* SETUP OVERLAY */
+.overlay { position: fixed; inset: 0; background: oklch(0.05 0.01 60 / 0.78); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); z-index: 80; display: flex; align-items: center; justify-content: center; padding: 24px; }
+.overlay.hidden { display: none; }
+.setup-card { width: min(960px, 95vw); max-height: 92vh; background: var(--surface); border: 1px solid var(--border); border-radius: 16px; box-shadow: var(--shadow-3); display: flex; flex-direction: column; overflow: hidden; }
+.setup-head { padding: 20px 24px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border-soft); }
+.setup-head h1 { font-size: 22px; font-weight: 600; letter-spacing: -0.015em; margin: 0; display: flex; align-items: center; gap: 10px; }
+.setup-head .brand-mark { width: 22px; height: 22px; }
+.setup-head .version { font-family: var(--font-mono); font-size: 11px; color: var(--text-faint); }
+.setup-body { padding: 20px 24px; overflow-y: auto; display: flex; flex-direction: column; gap: 18px; }
+.deck-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.deck-card { background: var(--surface-2); border: 1px solid var(--border-soft); border-radius: var(--radius); padding: 14px; display: flex; flex-direction: column; gap: 10px; position: relative; overflow: hidden; }
+.deck-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, currentColor, transparent); opacity: 0.55; }
+.deck-card.is-p1 { color: var(--p1); }
+.deck-card.is-p2 { color: var(--p2); }
+.deck-card-label { display: flex; align-items: center; justify-content: space-between; color: var(--text); }
+.deck-card-label .label-text { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-dim); }
+.deck-card-label .label-tag { font-family: var(--font-mono); font-size: 11px; color: currentColor; padding: 2px 8px; background: color-mix(in oklch, currentColor 14%, transparent); border: 1px solid color-mix(in oklch, currentColor 30%, transparent); border-radius: 999px; }
+.input, .select, .dojo-textarea { background: var(--surface); border: 1px solid var(--border-soft); border-radius: var(--radius-sm); color: var(--text); padding: 8px 10px; font-family: inherit; font-size: 13px; width: 100%; outline: none; transition: border-color .12s ease, background .12s ease; }
+.input:focus, .select:focus, .dojo-textarea:focus { border-color: var(--accent-dim); background: var(--surface-2); }
+.dojo-textarea { resize: vertical; min-height: 110px; font-family: var(--font-mono); font-size: 12px; line-height: 1.5; }
+.session-row { display: flex; gap: 10px; align-items: stretch; flex-wrap: wrap; padding: 12px; background: var(--surface-2); border: 1px solid var(--border-soft); border-radius: var(--radius); }
+.session-row > .session-group { display: flex; gap: 6px; align-items: center; flex: 1 1 220px; }
+.session-row .session-group > .select { max-width: 220px; }
+.setup-foot { padding: 14px 24px; border-top: 1px solid var(--border-soft); background: var(--surface); display: flex; align-items: center; justify-content: space-between; gap: 14px; }
+.setup-foot .hint { font-size: 12px; color: var(--text-faint); }
+
+/* APP SHELL */
+.app { height: calc(100vh - var(--topbar-h)); display: grid; grid-template-columns: var(--sidebar-w) 1fr; overflow: hidden; }
+.app.hidden { display: none; }
+.sidebar { background: var(--surface); border-right: 1px solid var(--border-soft); display: flex; flex-direction: column; min-height: 0; position: relative; z-index: 10; }
+.sidebar-section { padding: 12px 14px; border-bottom: 1px solid var(--border-soft); display: flex; flex-direction: column; gap: 8px; }
+.sidebar-section .section-head { display: flex; align-items: center; justify-content: space-between; }
+.sidebar-section .section-head h3 { margin: 0; font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-dim); }
+.sidebar-section .section-head .hint { font-family: var(--font-mono); font-size: 10.5px; color: var(--text-faint); }
+.player-rows { display: flex; flex-direction: column; gap: 6px; }
+.player-row { display: flex; align-items: center; justify-content: space-between; padding: 8px 10px; background: var(--surface-2); border: 1px solid var(--border-soft); border-left: 3px solid currentColor; border-radius: var(--radius-sm); font-size: 12.5px; color: var(--text); }
+.player-row.is-p1 { color: var(--p1-hi); }
+.player-row.is-p2 { color: var(--p2-hi); }
+.player-row .player-name { color: var(--text); }
+.player-row .player-count { font-family: var(--font-mono); font-size: 11px; color: var(--text-dim); }
+.player-row.is-active { background: color-mix(in oklch, currentColor 10%, var(--surface-2)); }
+.metric { display: flex; flex-direction: column; gap: 4px; }
+.metric-label { display: flex; align-items: center; justify-content: space-between; font-size: 10.5px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-dim); }
+.metric-label .metric-icon { color: var(--bcr); }
+.metric.is-lvi .metric-label .metric-icon { color: var(--lvi); }
+.bar { height: 5px; background: var(--surface); border-radius: 999px; overflow: hidden; display: flex; }
+.bar-p1 { background: var(--p1); }
+.bar-p2 { background: var(--p2); }
+.metric-values { display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: 11px; }
+.metric-values .val-p1 { color: var(--p1-hi); }
+.metric-values .val-p2 { color: var(--p2-hi); }
+.preview-pane { flex: 0 0 auto; height: 192px; background: oklch(0.13 0.008 60); border-bottom: 1px solid var(--border-soft); border-top: 1px solid var(--border-soft); position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+.preview-placeholder { color: var(--text-faint); font-size: 10.5px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; }
+.preview-image { position: absolute; inset: 0; background-position: bottom center; background-repeat: no-repeat; background-size: 100% auto; transition: opacity .15s ease; }
+.preview-metrics { display: flex; justify-content: space-between; padding: 8px 14px; background: oklch(0.105 0.008 60); border-bottom: 1px solid var(--border-soft); transition: opacity .15s ease; }
+.preview-metrics .pm-cell { display: flex; flex-direction: column; align-items: center; font-family: var(--font-mono); font-size: 11px; }
+.preview-metrics .pm-label { font-size: 9px; color: var(--text-faint); letter-spacing: 0.08em; }
+.preview-metrics .pm-val { font-weight: 600; color: var(--text); }
+.preview-metrics .pm-cell.is-bcr .pm-val { color: var(--bcr); }
+.preview-metrics .pm-cell.is-lvi .pm-val { color: var(--lvi); }
+.preview-metrics .pm-cell.is-rds .pm-val { color: var(--rds); }
+.log-pane { flex: 1 1 auto; overflow-y: auto; padding: 10px 14px; display: flex; flex-direction: column; gap: 5px; min-height: 80px; }
+.log-entry { font-size: 12px; color: var(--text-2); line-height: 1.5; padding: 4px 8px; border-radius: 6px; background: var(--surface-2); border: 1px solid var(--border-soft); border-left: 2px solid var(--text-faint); }
+.log-entry.is-system { background: transparent; border: none; color: var(--text-faint); font-style: italic; font-size: 11px; padding-left: 0; }
+.log-entry.is-p1 { border-left-color: var(--p1); }
+.log-entry.is-p2 { border-left-color: var(--p2); }
+.sidebar-foot { padding: 12px 14px; background: var(--surface); border-top: 1px solid var(--border-soft); display: flex; flex-direction: column; gap: 8px; }
+.toggle-row { display: flex; align-items: center; justify-content: space-between; padding-bottom: 8px; border-bottom: 1px solid var(--border-soft); margin-bottom: 4px; }
+.toggle-row .toggle-label { font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-dim); }
+.switch { position: relative; display: inline-block; width: 32px; height: 18px; }
+.switch input { opacity: 0; width: 0; height: 0; }
+.switch .slider { position: absolute; cursor: pointer; inset: 0; background: var(--surface-3); border-radius: 999px; transition: background .14s ease; }
+.switch .slider::before { content: ''; position: absolute; top: 2px; left: 2px; width: 14px; height: 14px; background: var(--text-2); border-radius: 50%; transition: transform .14s ease, background .14s ease; }
+.switch input:checked + .slider { background: var(--accent); }
+.switch input:checked + .slider::before { transform: translateX(14px); background: oklch(0.18 0.02 60); }
+.action-row { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.action-row.three { grid-template-columns: auto auto 1fr; }
+.action-row.tri { grid-template-columns: 1fr 1fr 1fr; }
+.action-row .btn { padding: 8px 10px; justify-content: center; font-size: 12.5px; }
+
+/* PLAY AREA */
+.play { display: flex; flex-direction: column; position: relative; background: var(--bg); overflow-y: auto; min-width: 0; min-height: 0; }
+.board-half { flex: 1 1 auto; position: relative; padding: 4px 14px; display: flex; flex-direction: column; min-height: 0; gap: 4px; }
+.board-bg-letter { position: absolute; font-family: var(--font-sans); font-weight: 700; font-size: 110px; letter-spacing: -0.04em; color: currentColor; opacity: 0.06; pointer-events: none; line-height: 0.85; z-index: 0; }
+.board-half.top    .board-bg-letter { top: 14px; left: 24px; }
+.board-half.bottom .board-bg-letter { bottom: 14px; left: 24px; }
+.board-divider { height: 2px; background: linear-gradient(90deg, transparent 0%, var(--p2) 20%, var(--accent-hi) 50%, var(--p1) 80%, transparent 100%); position: relative; z-index: 1; flex: 0 0 auto; opacity: 0.5; }
+.field-strip { flex: 1 1 auto; display: flex; align-items: center; justify-content: center; min-height: calc(var(--card-h) + 12px); position: relative; z-index: 2; overflow: visible; }
+.field-strip .field { min-height: calc(var(--card-h) + 24px); display: flex; flex-wrap: wrap; align-content: center; justify-content: center; gap: 14px; padding: 10px 16px; border-radius: 14px; width: 100%; max-width: 1200px; border: 1px dashed transparent; transition: border-color .12s ease, background .12s ease; }
+.field-strip .field.is-empty::before { content: 'Drag here to play to the field'; color: var(--text-faint); font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; }
+.board-half.top .hand-wrap   { order: 1; }
+.board-half.top .pile-row    { order: 2; }
+.board-half.top .field-strip { order: 3; }
+.board-half.bottom .notes-anchor { order: 0; height: 0; }
+.board-half.bottom .field-strip { order: 1; }
+.board-half.bottom .pile-row    { order: 2; }
+.board-half.bottom .hand-wrap   { order: 3; }
+.board-half.is-p1 .pile-row { background: color-mix(in oklch, var(--p1) 16%, var(--bg)); border-color: color-mix(in oklch, var(--p1) 38%, var(--border-soft)) !important; }
+.board-half.is-p2 .pile-row { background: color-mix(in oklch, var(--p2) 16%, var(--bg)); border-color: color-mix(in oklch, var(--p2) 38%, var(--border-soft)) !important; }
+.pile-row { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 4px 12px; margin: 2px auto; background: color-mix(in oklch, var(--bg) 70%, transparent); border: 1px solid var(--border-soft); border-radius: var(--radius); width: 100%; max-width: 1100px; z-index: 2; position: relative; flex-shrink: 0; }
+.pile-row .ink-cluster { display: flex; align-items: center; gap: 12px; flex: 1; min-width: 0; }
+.ink-readout { display: flex; align-items: baseline; gap: 6px; padding: 4px 10px; background: var(--surface); border: 1px solid var(--border-soft); border-radius: var(--radius-sm); font-family: var(--font-mono); font-size: 13px; color: var(--text); white-space: nowrap; }
+.ink-readout .ink-icon { width: 8px; height: 8px; background: var(--bcr); border-radius: 2px; transform: rotate(45deg); margin-right: 2px; }
+.inkwell { position: relative; flex: 1; min-width: 0; height: var(--pile-h); display: flex; align-items: center; cursor: pointer; overflow: hidden; }
+.pile-cluster { display: flex; gap: 10px; }
+.pile { width: var(--pile-w); height: var(--pile-h); border: 1px dashed var(--border); border-radius: 8px; background: oklch(0.13 0.008 60 / 0.6); position: relative; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: border-color .12s ease, background .12s ease; flex-shrink: 0; }
+.pile:hover { border-color: var(--border-strong); }
+.pile .pile-label { font-size: 10px; font-weight: 600; color: var(--text-faint); letter-spacing: 0.12em; text-transform: uppercase; pointer-events: none; }
+.pile .pile-count { position: absolute; bottom: -8px; right: -8px; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; font-family: var(--font-mono); font-size: 11px; color: var(--text); padding: 2px 6px; pointer-events: none; z-index: 4; }
+.pile.deck { background: var(--bg); border-style: solid; border-color: var(--border); overflow: hidden; }
+.pile.deck .pile-label { color: var(--accent-hi); }
+.hand-wrap { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 2px 0; position: relative; z-index: 3; flex-shrink: 0; }
+.hand-meta { display: flex; gap: 12px; align-items: center; padding: 4px 12px; background: var(--surface-2); border: 1px solid var(--border-soft); border-radius: 999px; font-family: var(--font-mono); font-size: 10.5px; color: var(--text-2); }
+.hand-meta .meta-key { color: var(--text-faint); text-transform: uppercase; letter-spacing: 0.08em; font-size: 10px; margin-right: 4px; }
+.hand-meta .meta-key.is-bcr { color: var(--bcr); }
+.hand-meta .meta-key.is-lvi { color: var(--lvi); }
+.hand-meta .meta-key.is-rds { color: var(--rds); }
+.hand { min-height: calc(var(--card-h) + 8px); display: flex; justify-content: center; padding: 2px 0; flex-shrink: 0; }
+.hand .card-wrap { margin-left: -32px; transition: transform .15s ease, margin .15s ease; }
+.hand .card-wrap:first-child { margin-left: 0; }
+.hand .card-wrap:hover { transform: translateY(-12px); z-index: 30; margin-right: 30px; }
+.board-half.top .hand { transform: scale(0.82); transform-origin: top center; }
+.peek-toggle { display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; background: var(--surface-2); border: 1px solid var(--border-soft); border-radius: 999px; font-size: 11px; color: var(--text-2); cursor: pointer; transition: background .12s ease, color .12s ease; }
+.peek-toggle:hover { background: var(--surface-3); color: var(--text); }
+.lore-badge { position: absolute; z-index: 4; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 8px 12px; display: flex; flex-direction: column; align-items: center; min-width: 78px; box-shadow: var(--shadow-2); }
+.lore-badge .lore-row { display: flex; align-items: center; gap: 8px; margin-bottom: 2px; }
+.lore-badge .lore-row .lore-label { font-size: 10px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-faint); }
+.lore-badge .lore-row button { background: transparent; border: none; color: var(--text-dim); cursor: pointer; padding: 2px 4px; font-size: 12px; border-radius: 4px; transition: color .12s ease, background .12s ease; }
+.lore-badge .lore-row button:hover { color: var(--text); background: var(--surface-2); }
+.lore-badge .lore-row button.plus:hover  { color: var(--ok); }
+.lore-badge .lore-row button.minus:hover { color: var(--danger); }
+.lore-badge .lore-value { font-size: 30px; line-height: 1; font-weight: 700; color: var(--text); font-variant-numeric: tabular-nums; }
+.lore-badge.is-p1 .lore-value { color: var(--p1-hi); }
+.lore-badge.is-p2 .lore-value { color: var(--p2-hi); }
+.lore-badge.is-p1 { border-color: color-mix(in oklch, var(--p1) 50%, var(--border)); }
+.lore-badge.is-p2 { border-color: color-mix(in oklch, var(--p2) 50%, var(--border)); }
+.board-half.top    .lore-badge { top: 10px;    right: 16px; }
+.board-half.bottom .lore-badge { bottom: 10px; right: 16px; }
+.notes-panel { position: absolute; z-index: 4; width: 210px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; display: flex; flex-direction: column; gap: 6px; }
+.notes-panel .notes-head { display: flex; align-items: center; gap: 6px; color: var(--text-faint); font-size: 10px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; }
+.notes-panel textarea { background: var(--bg); border: 1px solid var(--border-soft); border-radius: 6px; padding: 6px 8px; font-family: var(--font-sans); font-size: 12px; min-height: 54px; color: var(--text); resize: none; transition: min-height .18s ease, border-color .12s ease; }
+.notes-panel textarea:focus { min-height: 110px; border-color: var(--accent-dim); }
+.board-half.bottom .notes-panel { top: 10px; left: 16px; }
+
+/* CARDS */
+.card { width: var(--card-w); height: var(--card-h); border-radius: 7px; background: var(--surface-2); background-size: cover; background-position: center; box-shadow: 0 4px 10px -2px oklch(0 0 0 / 0.55), 0 1px 0 oklch(1 0 0 / 0.04) inset; cursor: grab; position: relative; flex-shrink: 0; border: 1px solid oklch(1 0 0 / 0.06); transition: transform .15s ease, box-shadow .15s ease, filter .15s ease; }
+.card.exerted { transform: rotate(90deg) scale(0.85); filter: brightness(0.85); }
+.card.drying { filter: grayscale(70%) brightness(0.78); }
+.card.drying::after { content: 'NEW'; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: oklch(0 0 0 / 0.7); color: var(--text); font-size: 9px; font-weight: 600; padding: 3px 7px; border-radius: 999px; letter-spacing: 0.1em; border: 1px solid var(--border); pointer-events: none; }
+.card.card-back { background-image: radial-gradient(ellipse at center, oklch(0.32 0.10 270 / 0.6), transparent 70%), repeating-linear-gradient(135deg, oklch(0.22 0.04 270) 0 6px, oklch(0.18 0.04 270) 6px 12px); background-color: oklch(0.18 0.04 270); box-shadow: inset 0 0 0 4px oklch(0.30 0.06 70 / 0.4), 0 4px 10px -2px oklch(0 0 0 / 0.55); }
+.card-wrap { position: relative; width: var(--card-w); height: var(--card-h); }
+.card-wrap.exerted { width: var(--card-h); height: var(--card-w); }
+.card .damage-counter { position: absolute; top: -8px; right: -8px; background: var(--danger); color: var(--text); border-radius: 999px; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 11px; border: 1.5px solid var(--bg); z-index: 3; }
+.card-actions { position: absolute; inset: auto 0 0 0; display: flex; flex-wrap: wrap; justify-content: center; gap: 4px; padding: 6px; background: linear-gradient(to top, oklch(0 0 0 / 0.85), oklch(0 0 0 / 0)); border-radius: 0 0 7px 7px; opacity: 0; transform: translateY(8px); transition: opacity .14s ease, transform .14s ease; pointer-events: none; z-index: 6; }
+.card-wrap:hover .card-actions { opacity: 1; transform: translateY(0); pointer-events: auto; }
+.card-wrap.exerted .card-actions { display: none; }
+.card-actions .chip { background: var(--surface-2); color: var(--text); border: 1px solid var(--border); border-radius: 999px; padding: 3px 8px; font-size: 10px; font-weight: 600; font-family: var(--font-mono); cursor: pointer; transition: background .1s ease, color .1s ease, border-color .1s ease; line-height: 1; letter-spacing: 0.04em; }
+.card-actions .chip:hover { background: var(--accent); color: oklch(0.16 0.02 60); border-color: var(--accent-hi); }
+.card-actions .chip.is-danger:hover { background: var(--danger); color: var(--text); border-color: var(--danger); }
+.drop-zone { transition: background .14s ease, border-color .14s ease, box-shadow .14s ease; }
+.drop-target, .drop-zone.drop-target-active { border-color: var(--accent) !important; background: var(--accent-faint) !important; box-shadow: 0 0 0 2px var(--accent-soft) inset; }
+.drop-target-challenge { border-color: var(--danger) !important; background: oklch(0.66 0.21 25 / 0.12) !important; box-shadow: 0 0 0 2px oklch(0.66 0.21 25 / 0.3) inset; }
+
+/* CONTEXT MENU (redesign) */
+#context-menu { position: fixed; background: var(--surface-2); border: 1px solid var(--border); border-radius: 8px; padding: 5px; z-index: 1000; box-shadow: var(--shadow-2); min-width: 180px; }
+.ctx-item { padding: 6px 10px; border-radius: 6px; color: var(--text-2); font-size: 12.5px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.ctx-item:hover { background: var(--surface-3); color: var(--text); }
+.ctx-item .ctx-key { font-family: var(--font-mono); font-size: 10px; color: var(--text-faint); padding: 1px 5px; border-radius: 4px; background: var(--bg); border: 1px solid var(--border-soft); }
+.ctx-item.is-danger { color: oklch(0.78 0.18 25); }
+.ctx-item.is-danger:hover { background: var(--danger-soft); }
+.ctx-divider { height: 1px; background: var(--border-soft); margin: 4px 6px; }
+.ctx-section { font-size: 10px; color: var(--text-faint); padding: 6px 10px 2px; letter-spacing: 0.08em; text-transform: uppercase; }
+
+/* MODALS (cards styled; visibility kept via Tailwind .hidden on the container) */
+.modal-backdrop { background: oklch(0 0 0 / 0.6); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+.modal-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; box-shadow: var(--shadow-3); width: min(960px, 95vw); max-height: 90vh; display: flex; flex-direction: column; overflow: hidden; }
+.modal-card.wide { width: min(1200px, 96vw); height: min(820px, 90vh); }
+.modal-head { padding: 14px 18px; border-bottom: 1px solid var(--border-soft); display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+.modal-head h2 { margin: 0; font-size: 16px; font-weight: 600; display: flex; align-items: center; gap: 10px; }
+.modal-head .close { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; background: transparent; border: 1px solid var(--border-soft); border-radius: 7px; color: var(--text-dim); cursor: pointer; font-size: 14px; }
+.modal-head .close:hover { background: var(--surface-2); color: var(--text); }
+.modal-body { padding: 18px; overflow-y: auto; flex: 1 1 auto; min-height: 0; }
+.modal-foot { padding: 12px 18px; border-top: 1px solid var(--border-soft); display: flex; justify-content: flex-end; gap: 10px; flex-shrink: 0; }
+.card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 10px; }
+.card-grid .card-slot { aspect-ratio: 2.5 / 3.5; background: var(--surface-2); border: 1px solid var(--border-soft); border-radius: 7px; background-size: cover; background-position: center; cursor: pointer; position: relative; overflow: hidden; }
+.card-grid .card-slot:hover { transform: translateY(-2px); border-color: var(--accent-dim); }
+.card-grid .card-slot.is-unknown { display: flex; align-items: center; justify-content: center; color: var(--text-faint); font-size: 10px; text-transform: uppercase; }
+.card-grid .card-slot.is-selected { box-shadow: 0 0 0 3px var(--accent) inset; }
+
+/* TIMELINES DRAWER */
+.drawer-overlay { position: absolute; inset: 0; background: color-mix(in oklch, var(--surface) 65%, transparent); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); z-index: 30; transform: translateX(-105%); transition: transform 0.25s cubic-bezier(0.5, 0, 0.2, 1); display: flex; flex-direction: column; border-right: 1px solid var(--border); }
+.drawer-overlay.is-open { transform: translateX(0); box-shadow: var(--shadow-2); }
+.drawer-head { padding: 12px 14px; border-bottom: 1px solid var(--border-soft); display: flex; align-items: center; justify-content: space-between; }
+.drawer-head h2 { margin: 0; font-size: 13px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text); display: flex; align-items: center; gap: 8px; }
+.drawer-row { display: grid; grid-template-columns: repeat(4, 1fr); border-bottom: 1px solid var(--border-soft); }
+.drawer-row .icon-btn { border-radius: 0; border: none; border-right: 1px solid var(--border-soft); background: transparent; padding: 10px 6px; justify-content: center; font-size: 11px; font-weight: 600; color: var(--text-dim); }
+.drawer-row .icon-btn:hover { background: var(--surface-2); color: var(--text); }
+.drawer-row .icon-btn:last-child { border-right: none; }
+.drawer-row .icon-btn.is-accent { color: var(--accent-hi); }
+.drawer-row .icon-btn.is-ok { color: var(--ok); }
+.drawer-section { padding: 12px 14px; border-bottom: 1px solid var(--border-soft); display: flex; flex-direction: column; gap: 8px; }
+.drawer-list { flex: 1 1 auto; overflow-y: auto; padding: 10px 14px; display: flex; flex-direction: column; gap: 6px; }
+.drawer-list-head { display: flex; justify-content: space-between; align-items: center; color: var(--text-faint); font-size: 10px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 4px; padding-top: 4px; }
+.bookmark { background: var(--surface-2); border: 1px solid var(--border-soft); border-left: 3px solid var(--accent); border-radius: 7px; padding: 8px 10px; display: flex; flex-direction: column; gap: 4px; cursor: pointer; transition: background .12s ease, border-color .12s ease; }
+.bookmark:hover { background: var(--surface-3); }
+.bookmark.is-p1 { border-left-color: var(--p1); }
+.bookmark.is-p2 { border-left-color: var(--p2); }
+
+/* MULTIVERSE TREE NODES (redesign styling layered on existing markup) */
+.tree-node { width: 200px; background: var(--surface-2); border: 1px solid var(--border); border-left: 4px solid var(--accent); border-radius: 9px; padding: 8px 10px; cursor: pointer; transition: transform .12s ease, box-shadow .12s ease, border-color .12s ease; }
+.tree-node:hover { transform: translateY(-2px); box-shadow: var(--shadow-2); }
+.tree-node.is-p1 { border-left-color: var(--p1); }
+.tree-node.is-p2 { border-left-color: var(--p2); }
+.tree-toolbar { position: absolute; bottom: 16px; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 6px; padding: 6px 10px; background: color-mix(in oklch, var(--surface) 70%, transparent); backdrop-filter: blur(10px); border: 1px solid var(--border-soft); border-radius: 999px; z-index: 5; box-shadow: var(--shadow-2); }
+
+/* TWEAKS PANEL */
+.tweaks-panel { position: fixed; right: 16px; bottom: 16px; width: 280px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; z-index: 200; box-shadow: var(--shadow-3); display: none; }
+.tweaks-panel.is-open { display: block; }
+.tweaks-head { padding: 10px 14px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border-soft); }
+.tweaks-head h3 { margin: 0; font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text); }
+.tweaks-head .close { background: transparent; border: none; color: var(--text-dim); cursor: pointer; font-size: 16px; line-height: 1; padding: 0 4px; }
+.tweaks-body { padding: 12px 14px; display: flex; flex-direction: column; gap: 14px; }
+.tweak { display: flex; flex-direction: column; gap: 6px; }
+.tweak-label { font-size: 10.5px; font-weight: 600; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.06em; display: flex; justify-content: space-between; }
+.tweak-label .tweak-val { color: var(--text); font-family: var(--font-mono); font-size: 10px; }
+.swatch-row { display: flex; gap: 6px; }
+.swatch { width: 28px; height: 28px; border-radius: 7px; border: 1.5px solid var(--border); cursor: pointer; transition: transform .1s ease, border-color .1s ease; }
+.swatch:hover { transform: scale(1.06); }
+.swatch.is-active { border-color: var(--text); box-shadow: 0 0 0 2px var(--bg), 0 0 0 3px currentColor; }
+.tweak-radio { display: grid; grid-template-columns: repeat(3, 1fr); background: var(--surface-2); border: 1px solid var(--border-soft); border-radius: 7px; padding: 2px; gap: 2px; }
+.tweak-radio button { background: transparent; border: none; color: var(--text-dim); padding: 6px 0; font-family: inherit; font-size: 11px; cursor: pointer; border-radius: 5px; transition: background .1s ease, color .1s ease; }
+.tweak-radio button.is-active { background: var(--surface-hi); color: var(--text); }
+input[type="range"] { -webkit-appearance: none; appearance: none; width: 100%; height: 16px; background: transparent; cursor: pointer; }
+input[type="range"]::-webkit-slider-runnable-track { height: 4px; background: var(--surface-2); border-radius: 2px; }
+input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 14px; height: 14px; background: var(--accent); border-radius: 50%; margin-top: -5px; border: 2px solid var(--bg); cursor: grab; }
+input[type="range"]::-moz-range-track { height: 4px; background: var(--surface-2); border-radius: 2px; }
+input[type="range"]::-moz-range-thumb { width: 14px; height: 14px; background: var(--accent); border-radius: 50%; border: 2px solid var(--bg); cursor: grab; }
+
+/* ALT PANEL LAYOUT (tweak option) */
+.app.layout-floating { grid-template-columns: 1fr; }
+.app.layout-floating .sidebar { position: absolute; top: 12px; left: 12px; bottom: 12px; width: 304px; border-radius: 12px; border: 1px solid var(--border); box-shadow: var(--shadow-2); overflow: hidden; z-index: 20; }
+.app.layout-floating .play { padding-left: 332px; }
+@media (max-width: 1100px) { :root { --sidebar-w: 264px; } .pile-row { padding: 6px 10px; } }
+
+/* ===== COMPAT BRIDGES ===== */
+/* Guarantee the .hidden toggle (used everywhere by the engine to show/hide
+   overlays, modals, the app shell and buttons) always wins, regardless of
+   when the Tailwind Play CDN injects its own stylesheet. */
+.hidden { display: none !important; }
+
+/* identity-based board coloring · Feature 16 */
+.board-half.top    { color: var(--p2); background: radial-gradient(ellipse at 50% 0%, var(--half-glow,transparent) 0%, transparent 65%), linear-gradient(180deg, var(--half-2, color-mix(in oklch, var(--p2) 28%, var(--bg))) 0%, var(--half-1, color-mix(in oklch, var(--p2) 8%, var(--bg))) 100%); }
+.board-half.bottom { color: var(--p1); background: radial-gradient(ellipse at 50% 100%, var(--half-glow,transparent) 0%, transparent 65%), linear-gradient(0deg, var(--half-2, color-mix(in oklch, var(--p1) 28%, var(--bg))) 0%, var(--half-1, color-mix(in oklch, var(--p1) 8%, var(--bg))) 100%); }
+.board-half.is-p1 { color: var(--p1); --half-1: color-mix(in oklch, var(--p1) 8%, var(--bg)); --half-2: color-mix(in oklch, var(--p1) 28%, var(--bg)); --half-glow: color-mix(in oklch, var(--p1) 45%, transparent); }
+.board-half.is-p2 { color: var(--p2); --half-1: color-mix(in oklch, var(--p2) 8%, var(--bg)); --half-2: color-mix(in oklch, var(--p2) 28%, var(--bg)); --half-glow: color-mix(in oklch, var(--p2) 45%, transparent); }
+/* keep tree-node active pulse readable on the new palette */
+.tree-node-active { box-shadow: 0 0 0 2px var(--accent), var(--shadow-2) !important; border-color: var(--accent) !important; background: var(--accent-faint) !important; }
+/* ----- hover-chip stability -----
+   The chips were hard to click because hovering caused layout reflow + the card
+   jumped out from under the cursor (flicker loop). Fix: no margin reflow on hover,
+   no card-level transform jump (keep exerted rotation), bigger chip targets, and a
+   short hide-delay so the pointer can travel from card to chip without losing hover. */
+.hand .card-wrap:hover { transform: translateY(-14px); z-index: 30; margin-right: 0; }
+.card-wrap .card:not(.exerted):hover { transform: none; box-shadow: 0 8px 18px -4px oklch(0 0 0 / 0.6); }
+.card-actions {
+    padding: 10px 6px 7px;
+    gap: 5px;
+    transition: opacity .12s ease, transform .12s ease;
+    transition-delay: .04s;            /* appear slightly damped */
+}
+.card-wrap:hover .card-actions { transition-delay: 0s; }
+.card-actions .chip { padding: 5px 10px; font-size: 11px; }
+/* taller invisible hit-bridge under each card so travelling to the chips keeps :hover */
+.card-wrap::after { content: ''; position: absolute; left: 0; right: 0; bottom: -14px; height: 14px; }
     </style>
 </head>
 
-<body class="bg-gray-900 text-gray-200 h-screen w-screen flex flex-col font-sans select-none">
+<body>
 
     <!-- Feature 19: Challenge Arrow Overlay -->
     <svg id="challenge-arrow-svg" xmlns="http://www.w3.org/2000/svg"></svg>
 
     <!-- Loading Screen -->
-    <div id="loading-screen" class="absolute inset-0 z-50 bg-gray-900 flex flex-col items-center justify-center">
-        <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-purple-500 mb-4"></div>
-        <h2 class="text-2xl font-bold text-white mb-2">Lorcana Practice Dojo <span class="text-sm text-gray-400 ml-2"
-                id="app-version-loading"></span></h2>
-        <p id="loading-text" class="text-gray-400">Fetching Card Database (This may take a moment)...</p>
+    <div id="loading-screen" class="loader">
+        <div class="spinner"></div>
+        <div class="loader-title">Practice Dojo <span id="app-version-loading" style="color:var(--text-faint);font-family:var(--font-mono);font-size:12px"></span></div>
+        <p id="loading-text" class="loader-msg">Fetching Card Database (This may take a moment)...</p>
     </div>
 
-    <!-- Deck Setup Modal -->
-    <div id="setup-modal"
-        class="absolute inset-0 z-40 bg-black/80 backdrop-blur-sm flex items-center justify-center hidden">
-        <div
-            class="bg-gray-800 p-8 rounded-2xl shadow-2xl w-[900px] max-w-[95vw] flex flex-col border border-gray-700/50">
-            <!-- Header -->
-            <div class="flex justify-between items-center mb-6">
-                <h2 class="text-3xl font-black text-white tracking-wide flex items-center gap-3">
-                    <i class="fa-solid fa-khanda text-purple-500"></i> Practice Dojo
-                </h2>
-                <div class="text-sm font-mono text-gray-500 bg-black/50 px-3 py-1 rounded-full border border-gray-700/50"
-                    id="app-version-setup">
-                </div>
+    <!-- ============ TOP BAR ============ -->
+    <header class="topbar" id="topbar" style="display:none">
+        <div class="topbar-left">
+            <div class="brand">
+                <span class="brand-mark"></span>
+                <span class="brand-name">Practice Dojo</span>
+                <span class="brand-tag">sandbox</span>
+            </div>
+        </div>
+        <div class="topbar-center">
+            <div class="turn-pill" id="turn-pill">
+                <span class="mono">TURN</span>
+                <span class="turn-num" id="turn-num">1</span>
+                <span class="turn-arrow">&rarr;</span>
+                <span class="turn-actor" id="turn-actor">Player 1</span>
+            </div>
+        </div>
+        <div class="topbar-right">
+            <button class="icon-btn" onclick="App.undo()" title="Undo last action"><i class="fa-solid fa-rotate-left"></i> <span>Undo</span></button>
+            <button class="icon-btn" onclick="App.toggleTimelines()" title="Timelines &amp; bookmarks (T)"><i class="fa-solid fa-clock-rotate-left"></i> <span>Timelines</span></button>
+            <button class="icon-btn" onclick="App.openTreeModal()" title="Multiverse tree (M)"><i class="fa-solid fa-network-wired"></i> <span>Multiverse</span></button>
+            <div class="divider-v"></div>
+            <button class="icon-btn" onclick="document.getElementById('tweaks-panel').classList.toggle('is-open')" title="Tweaks"><i class="fa-solid fa-sliders"></i></button>
+            <button class="icon-btn" onclick="App.showSetup()" title="Reset / change decks"><i class="fa-solid fa-rotate-right"></i></button>
+        </div>
+    </header>
+
+    <!-- Deck Setup Overlay -->
+    <div id="setup-modal" class="overlay hidden">
+        <div class="setup-card">
+            <div class="setup-head">
+                <h1><span class="brand-mark"></span> Practice Dojo</h1>
+                <span class="version" id="app-version-setup"></span>
             </div>
 
-            <!-- Main Decks Area -->
-            <div class="flex gap-6 mb-6">
-                <!-- Player 1 -->
-                <div
-                    class="flex-1 flex flex-col bg-gray-900/80 p-5 rounded-xl border border-purple-500/30 shadow-inner relative overflow-hidden group">
-                    <div
-                        class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-purple-500 to-transparent opacity-50">
+            <div class="setup-body">
+                <div class="deck-pair">
+                    <div class="deck-card is-p1">
+                        <div class="deck-card-label">
+                            <span class="label-text">Player 1 · You</span>
+                            <span class="label-tag">P1</span>
+                        </div>
+                        <select id="p1-deck-select" class="select" onchange="App.onDeckSelect(1, this.value)">
+                            <option value="">— Pick a deck from cloud —</option>
+                        </select>
+                        <textarea id="deck1-input" class="dojo-textarea" style="height:140px"
+                            placeholder="Paste decklist&#10;(e.g. 4 Tinker Bell - Giant Fairy)"></textarea>
                     </div>
-                    <label class="font-bold text-lg text-purple-400 mb-3 flex items-center gap-2">
-                        <i class="fa-solid fa-user"></i> Player 1 Decklist
-                    </label>
-                    <select id="p1-deck-select"
-                        class="w-full bg-black text-sm p-2.5 mb-3 rounded border border-gray-700 text-gray-300 focus:border-purple-500 focus:ring-1 focus:ring-purple-500 focus:outline-none transition group-hover:border-purple-500/50 cursor-pointer"
-                        onchange="App.onDeckSelect(1, this.value)">
-                        <option value="">-- Load from Database --</option>
-                    </select>
-                    <textarea id="deck1-input"
-                        class="w-full h-[140px] bg-black text-sm p-3 rounded border border-gray-700 focus:border-purple-500 focus:ring-1 focus:ring-purple-500 focus:outline-none transition resize-none"
-                        placeholder="Paste decklist here&#10;(e.g. 4 Tinker Bell - Giant Fairy)"></textarea>
-                </div>
-                <!-- Player 2 -->
-                <div
-                    class="flex-1 flex flex-col bg-gray-900/80 p-5 rounded-xl border border-orange-500/30 shadow-inner relative overflow-hidden group">
-                    <div
-                        class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-orange-500 to-transparent opacity-50">
+                    <div class="deck-card is-p2">
+                        <div class="deck-card-label">
+                            <span class="label-text">Player 2 · Opponent</span>
+                            <span class="label-tag">P2</span>
+                        </div>
+                        <select id="p2-deck-select" class="select" onchange="App.onDeckSelect(2, this.value)">
+                            <option value="">— Pick a deck from cloud —</option>
+                        </select>
+                        <textarea id="deck2-input" class="dojo-textarea" style="height:140px"
+                            placeholder="Paste decklist&#10;(e.g. 4 Maui - Hero to All)"></textarea>
                     </div>
-                    <label class="font-bold text-lg text-orange-400 mb-3 flex items-center gap-2">
-                        <i class="fa-solid fa-user-ninja"></i> Player 2 Decklist
-                    </label>
-                    <select id="p2-deck-select"
-                        class="w-full bg-black text-sm p-2.5 mb-3 rounded border border-gray-700 text-gray-300 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 focus:outline-none transition group-hover:border-orange-500/50 cursor-pointer"
-                        onchange="App.onDeckSelect(2, this.value)">
-                        <option value="">-- Load from Database --</option>
-                    </select>
-                    <textarea id="deck2-input"
-                        class="w-full h-[140px] bg-black text-sm p-3 rounded border border-gray-700 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 focus:outline-none transition resize-none"
-                        placeholder="Paste decklist here&#10;(e.g. 4 Maui - Hero to All)"></textarea>
+                </div>
+
+                <div class="session-row">
+                    <div class="session-group">
+                        <select id="example-session-select" class="select">
+                            <option value="">— Cloud sessions —</option>
+                        </select>
+                        <button class="btn btn-ghost" id="btn-load-example" onclick="App.loadExampleSession()">
+                            <i class="fa-solid fa-cloud-arrow-down"></i> Load demo
+                        </button>
+                    </div>
+                    <div class="session-group" id="session-restore-container">
+                        <input type="file" id="setup-import-file" class="hidden" accept=".json" onchange="App.importTimelines(event)">
+                        <button class="btn btn-ghost" onclick="document.getElementById('setup-import-file').click()">
+                            <i class="fa-solid fa-file-import"></i> Upload .json
+                        </button>
+                        <button class="btn btn-ghost" onclick="App.openImportLogModal()">
+                            <i class="fa-solid fa-file-lines"></i> Import Duels.ink log
+                        </button>
+                    </div>
                 </div>
             </div>
 
-            <!-- Session Actions Area -->
-            <div
-                class="bg-gray-900/50 p-4 rounded-xl border border-gray-700 flex flex-wrap gap-4 items-center justify-between mb-6">
-                <!-- Example Session -->
-                <div class="flex items-center gap-3">
-                    <select id="example-session-select"
-                        class="bg-black text-sm p-2.5 rounded border border-gray-700 text-gray-300 focus:border-blue-500 focus:outline-none w-48 cursor-pointer">
-                        <option value="">-- Load from Database --</option>
-                    </select>
-                    <button onclick="App.loadExampleSession()"
-                        class="bg-gray-800 hover:bg-gray-700 text-blue-400 border border-blue-500/50 hover:border-blue-400 font-bold py-2.5 px-4 rounded transition flex items-center text-sm disabled:opacity-50 shadow-md"
-                        id="btn-load-example">
-                        <i class="fa-solid fa-cloud-arrow-down mr-2"></i> Load Demo
-                    </button>
-                </div>
-
-                <div class="w-px h-8 bg-gray-700 block"></div>
-
-                <!-- Session Import -->
-                <div class="flex items-center gap-3" id="session-restore-container">
-                    <input type="file" id="setup-import-file" class="hidden" accept=".json"
-                        onchange="App.importTimelines(event)">
-                    <button onclick="document.getElementById('setup-import-file').click()"
-                        class="bg-gray-800 hover:bg-gray-700 text-white border border-gray-600 font-bold py-2.5 px-4 rounded transition flex items-center text-sm shadow-md">
-                        <i class="fa-solid fa-file-import mr-2"></i> Upload File
-                    </button>
-                    <!-- Local Storage Button injected here -->
-                </div>
-
-                <div class="w-px h-8 bg-gray-700 block"></div>
-
-                <!-- Duels.ink Log Import -->
-                <div class="flex items-center gap-3">
-                    <button onclick="App.openImportLogModal()"
-                        class="bg-gray-800 hover:bg-gray-700 text-green-400 border border-green-500/50 hover:border-green-400 font-bold py-2.5 px-4 rounded transition flex items-center text-sm shadow-md">
-                        <i class="fa-solid fa-file-lines mr-2"></i> Import Duels.ink Log
-                    </button>
-                </div>
-            </div>
-
-            <!-- Footer / Primary Action -->
-            <div class="flex justify-between items-center">
-                <p class="text-sm text-gray-500 italic"><i class="fa-solid fa-circle-info mr-1"></i> Hint: Leave
-                    decklists blank to use random dummy decks.</p>
-                <button onclick="App.startGame()"
-                    class="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold py-3 px-8 rounded-lg transition-transform hover:scale-105 active:scale-95 shadow-[0_0_20px_rgba(79,70,229,0.3)] text-lg flex items-center gap-2">
-                    Start Match <i class="fa-solid fa-arrow-right"></i>
+            <div class="setup-foot">
+                <span class="hint"><i class="fa-solid fa-circle-info"></i> Leave both decklists empty for random dummy decks.</span>
+                <button class="btn btn-primary" onclick="App.startGame()">
+                    Start match <i class="fa-solid fa-arrow-right"></i>
                 </button>
             </div>
         </div>
     </div>
 
     <!-- Mulligan Modal -->
-    <div id="mulligan-modal"
-        class="absolute inset-0 z-50 bg-black bg-opacity-90 flex items-center justify-center hidden">
-        <div class="bg-gray-800 p-6 rounded-lg shadow-2xl max-w-5xl w-full flex flex-col">
-            <h2 class="text-2xl font-bold mb-2 border-b border-gray-700 pb-2 text-white" id="mulligan-title">Player
-                Mulligan</h2>
-            <p class="text-gray-400 mb-6">Select up to 7 cards to replace. The selected cards will be shuffled back into
-                your deck.</p>
-            <div id="mulligan-hand" class="flex flex-wrap justify-center gap-4 mb-8 min-h-[196px]">
-                <!-- Cards injected here -->
+    <div id="mulligan-modal" class="modal-backdrop fixed inset-0 flex items-center justify-center hidden p-6" style="z-index:90">
+        <div class="modal-card wide">
+            <div class="modal-head">
+                <h2 id="mulligan-title">Player Mulligan</h2>
+                <button class="close" onclick="App.closeMulligan()">&times;</button>
             </div>
-            <div class="flex justify-end gap-4">
-                <button onclick="App.closeMulligan()"
-                    class="px-6 py-2 bg-gray-600 hover:bg-gray-500 text-white font-bold rounded transition">Cancel</button>
-                <button onclick="App.confirmMulligan()"
-                    class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded transition">Confirm
-                    Mulligan</button>
+            <div class="modal-body">
+                <p class="muted">Tap any card to mark it for replacement. Selected cards shuffle back in; you redraw to seven.</p>
+                <div id="mulligan-hand" class="flex flex-wrap justify-center gap-4 mt-4 min-h-[196px]">
+                    <!-- Cards injected here -->
+                </div>
+            </div>
+            <div class="modal-foot">
+                <button class="btn btn-ghost" onclick="App.closeMulligan()">Cancel</button>
+                <button class="btn btn-primary" onclick="App.confirmMulligan()">Confirm mulligan</button>
             </div>
         </div>
     </div>
 
     <!-- Craft Hand Modal -->
-    <div id="craft-hand-modal"
-        class="absolute inset-0 z-50 bg-black bg-opacity-90 flex items-center justify-center hidden">
-        <div class="bg-gray-800 p-6 rounded-lg shadow-2xl w-[90vw] h-[90vh] max-w-7xl flex flex-col">
-            <h2
-                class="text-2xl font-bold mb-2 border-b border-gray-700 pb-2 text-white flex justify-between items-center">
-                <span id="craft-hand-title">Craft Starting Hand</span>
-                <button onclick="App.closeCraftHand()" class="text-gray-400 hover:text-white transition"><i
-                        class="fa-solid fa-times"></i></button>
-            </h2>
-            <p class="text-gray-400 mb-3">Left-click a card to add a copy to your starting hand (7 total).
-                Right-click to remove a copy. You can only add as many copies as your deck contains.</p>
-            <div class="flex items-center justify-between mb-3">
-                <div class="text-sm font-bold text-white">Selected: <span id="craft-hand-count"
-                        class="text-green-400">0</span> / 7</div>
-                <button onclick="App.clearCraftHand()"
-                    class="px-3 py-1 bg-gray-700 hover:bg-gray-600 text-sm text-gray-300 rounded transition">Clear</button>
+    <div id="craft-hand-modal" class="modal-backdrop fixed inset-0 flex items-center justify-center hidden p-6" style="z-index:90">
+        <div class="modal-card wide">
+            <div class="modal-head">
+                <h2><span id="craft-hand-title">Craft Starting Hand</span></h2>
+                <button class="close" onclick="App.closeCraftHand()">&times;</button>
             </div>
-            <div id="craft-hand-grid"
-                class="flex-1 overflow-y-auto grid grid-cols-3 sm:grid-cols-5 md:grid-cols-7 lg:grid-cols-9 gap-3 p-2 content-start">
-                <!-- Unique deck cards injected here -->
+            <div class="modal-body" style="display:flex;flex-direction:column;gap:12px;">
+                <p class="muted">Left-click a card to add a copy to your starting hand (7 total). Right-click to remove a copy. You can only add as many copies as your deck contains.</p>
+                <div class="flex items-center justify-between">
+                    <div style="font-size:13px;color:var(--text)">Selected: <span id="craft-hand-count" style="color:var(--accent-hi);font-weight:700">0</span> / 7</div>
+                    <button class="btn btn-ghost" onclick="App.clearCraftHand()">Clear</button>
+                </div>
+                <div id="craft-hand-grid" class="card-grid" style="grid-template-columns:repeat(auto-fill,minmax(90px,1fr))">
+                    <!-- Unique deck cards injected here -->
+                </div>
             </div>
-            <div class="mt-4 flex justify-end gap-4 border-t border-gray-700 pt-4">
-                <button onclick="App.closeCraftHand()"
-                    class="px-6 py-2 bg-gray-600 hover:bg-gray-500 text-white font-bold rounded transition">Cancel</button>
-                <button id="craft-hand-confirm" onclick="App.confirmCraftHand()"
-                    class="px-6 py-2 bg-green-600 hover:bg-green-700 text-white font-bold rounded transition disabled:opacity-40 disabled:cursor-not-allowed">Confirm
-                    Hand</button>
+            <div class="modal-foot">
+                <button class="btn btn-ghost" onclick="App.closeCraftHand()">Cancel</button>
+                <button class="btn btn-primary" id="craft-hand-confirm" onclick="App.confirmCraftHand()">Confirm Hand</button>
             </div>
         </div>
     </div>
 
     <!-- Inspect Deck Modal -->
-    <div id="inspect-deck-modal"
-        class="absolute inset-0 z-50 bg-black bg-opacity-90 flex items-center justify-center hidden">
-        <div class="bg-gray-800 p-6 rounded-lg shadow-2xl w-[90vw] h-[90vh] max-w-7xl flex flex-col">
-            <h2
-                class="text-2xl font-bold mb-4 border-b border-gray-700 pb-2 text-white flex justify-between items-center">
-                <span id="inspect-deck-title">Inspecting Deck</span>
-                <button onclick="App.closeInspectDeck()" class="text-gray-400 hover:text-white transition"><i
-                        class="fa-solid fa-times"></i></button>
-            </h2>
-            <div id="inspect-deck-grid"
-                class="flex-1 overflow-y-auto grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-4 p-2 content-start">
-                <!-- Cards injected here -->
+    <div id="inspect-deck-modal" class="modal-backdrop fixed inset-0 flex items-center justify-center hidden p-6" style="z-index:90">
+        <div class="modal-card wide">
+            <div class="modal-head">
+                <h2 id="inspect-deck-title">Inspecting Deck</h2>
+                <button class="close" onclick="App.closeInspectDeck()">&times;</button>
             </div>
-            <div class="mt-4 flex justify-end gap-4 border-t border-gray-700 pt-4">
-                <button onclick="App.closeInspectDeck()"
-                    class="px-6 py-2 bg-gray-600 hover:bg-gray-500 text-white font-bold rounded transition">Cancel</button>
-                <button onclick="App.saveInspectDeck()"
-                    class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded transition">Save Custom
-                    Order</button>
+            <div class="modal-body">
+                <div id="inspect-deck-grid" class="card-grid"><!-- Cards injected here --></div>
+            </div>
+            <div class="modal-foot">
+                <button class="btn btn-ghost" onclick="App.closeInspectDeck()">Cancel</button>
+                <button class="btn btn-primary" onclick="App.saveInspectDeck()">Save Custom Order</button>
             </div>
         </div>
     </div>
 
     <!-- Inspect Discard Modal -->
-    <div id="inspect-discard-modal"
-        class="absolute inset-0 z-50 bg-black bg-opacity-90 flex items-center justify-center hidden">
-        <div class="bg-gray-800 p-6 rounded-lg shadow-2xl w-[90vw] h-[90vh] max-w-7xl flex flex-col">
-            <h2
-                class="text-2xl font-bold mb-4 border-b border-gray-700 pb-2 text-white flex justify-between items-center">
-                <span id="inspect-discard-title">Inspecting Discard Pile</span>
-                <button onclick="App.closeInspectDiscard()" class="text-gray-400 hover:text-white transition"><i
-                        class="fa-solid fa-times"></i></button>
-            </h2>
-            <div id="inspect-discard-grid"
-                class="flex-1 overflow-y-auto grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-4 p-2 content-start">
-                <!-- Cards injected here -->
+    <div id="inspect-discard-modal" class="modal-backdrop fixed inset-0 flex items-center justify-center hidden p-6" style="z-index:90">
+        <div class="modal-card wide">
+            <div class="modal-head">
+                <h2 id="inspect-discard-title">Inspecting Discard Pile</h2>
+                <button class="close" onclick="App.closeInspectDiscard()">&times;</button>
             </div>
-            <div class="mt-4 flex justify-end gap-4 border-t border-gray-700 pt-4">
-                <button onclick="App.closeInspectDiscard()"
-                    class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded transition">Close</button>
+            <div class="modal-body">
+                <div id="inspect-discard-grid" class="card-grid"><!-- Cards injected here --></div>
+            </div>
+            <div class="modal-foot">
+                <button class="btn btn-primary" onclick="App.closeInspectDiscard()">Close</button>
             </div>
         </div>
     </div>
 
     <!-- Import Duels.ink Log Modal -->
-    <div id="import-log-modal"
-        class="absolute inset-0 z-50 bg-black bg-opacity-90 flex items-center justify-center hidden">
-        <div class="bg-gray-900 border border-gray-700 rounded-xl shadow-2xl w-full max-w-2xl flex flex-col mx-4"
-            style="max-height: 90vh;">
-            <!-- Header -->
-            <div class="flex items-center justify-between p-5 border-b border-gray-700 shrink-0">
-                <h2 class="text-lg font-bold text-white flex items-center gap-2">
-                    <i class="fa-solid fa-file-lines text-green-400"></i> Import Duels.ink Log
-                </h2>
-                <button onclick="App.closeImportLogModal()"
-                    class="text-gray-400 hover:text-white transition text-xl leading-none">&times;</button>
+    <div id="import-log-modal" class="modal-backdrop fixed inset-0 flex items-center justify-center hidden p-6" style="z-index:90">
+        <div class="modal-card">
+            <div class="modal-head">
+                <h2><i class="fa-solid fa-file-lines" style="color:var(--ok)"></i> Import Duels.ink Log</h2>
+                <button class="close" onclick="App.closeImportLogModal()">&times;</button>
             </div>
-
-            <!-- Body -->
-            <div class="flex flex-col gap-4 p-5 flex-1 min-h-0 overflow-y-auto">
-                <!-- Paste area -->
+            <div class="modal-body" style="display:flex;flex-direction:column;gap:14px;">
                 <div>
-                    <label class="block text-sm font-semibold text-gray-300 mb-1.5">Paste log content</label>
-                    <textarea id="import-log-textarea"
-                        class="w-full bg-black border border-gray-700 focus:border-green-500 focus:ring-1 focus:ring-green-500 rounded-lg text-xs text-gray-300 p-3 resize-none outline-none custom-scrollbar font-mono transition"
-                        rows="12" placeholder="Paste a Duels.ink match log (.md) or replay (.json / .replay) here..."
-                        oninput="App.onLogPasteInput()"></textarea>
+                    <label class="tweak-label" style="margin-bottom:6px">Paste log content</label>
+                    <textarea id="import-log-textarea" rows="12"
+                        placeholder="Paste a Duels.ink match log (.md) or replay (.json / .replay) here..."
+                        oninput="App.onLogPasteInput()"
+                        style="width:100%;background:var(--bg);border:1px solid var(--border-soft);border-radius:7px;color:var(--text);font-family:var(--font-mono);font-size:11px;min-height:200px;padding:10px;resize:vertical;outline:none"></textarea>
                 </div>
-
-                <!-- Validation badge -->
-                <div id="import-log-validation" class="hidden rounded-lg px-3 py-2 text-sm flex items-start gap-2">
-                    <i id="import-log-validation-icon" class="mt-0.5 shrink-0"></i>
+                <div id="import-log-validation" class="hidden" style="border-radius:7px;padding:8px 12px;font-size:12.5px;display:flex;align-items:flex-start;gap:8px;">
+                    <i id="import-log-validation-icon" style="margin-top:2px;flex-shrink:0"></i>
                     <span id="import-log-validation-msg"></span>
                 </div>
-
-                <!-- Divider -->
-                <div class="flex items-center gap-3 text-gray-600 text-xs">
-                    <div class="flex-1 h-px bg-gray-700"></div>
-                    <span>or</span>
-                    <div class="flex-1 h-px bg-gray-700"></div>
+                <div style="display:flex;align-items:center;gap:10px;">
+                    <div style="flex:1;height:1px;background:var(--border-soft)"></div>
+                    <span class="mono dim">or</span>
+                    <div style="flex:1;height:1px;background:var(--border-soft)"></div>
                 </div>
-
-                <!-- File import -->
                 <div>
-                    <label class="block text-sm font-semibold text-gray-300 mb-1.5">Import from file</label>
+                    <label class="tweak-label" style="margin-bottom:6px">Import from file</label>
                     <input type="file" id="import-log-file-modal" class="hidden" accept=".md,.txt,.json,.replay,.gz"
                         onchange="App.onImportLogFileSelected(event)">
-                    <button onclick="document.getElementById('import-log-file-modal').click()"
-                        class="bg-gray-800 hover:bg-gray-700 text-gray-300 border border-gray-600 hover:border-gray-400 font-semibold py-2 px-4 rounded-lg transition flex items-center gap-2 text-sm">
-                        <i class="fa-solid fa-folder-open text-yellow-400"></i> Choose .md, .txt, .json, .replay or .gz file
+                    <button class="btn btn-ghost" onclick="document.getElementById('import-log-file-modal').click()">
+                        <i class="fa-solid fa-folder-open" style="color:var(--lvi)"></i> Choose .md, .txt, .json, .replay or .gz file
                     </button>
                 </div>
             </div>
-
-            <!-- Footer -->
-            <div class="flex justify-end gap-3 p-5 border-t border-gray-700 shrink-0">
-                <button onclick="App.closeImportLogModal()"
-                    class="px-5 py-2 bg-gray-700 hover:bg-gray-600 text-white font-semibold rounded-lg transition text-sm">
-                    Cancel
-                </button>
-                <button id="import-log-confirm-btn" onclick="App.importLogFromModal()" disabled
-                    class="px-5 py-2 bg-green-700 hover:bg-green-600 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold rounded-lg transition text-sm flex items-center gap-2">
+            <div class="modal-foot">
+                <button class="btn btn-ghost" onclick="App.closeImportLogModal()">Cancel</button>
+                <button class="btn btn-primary" id="import-log-confirm-btn" onclick="App.importLogFromModal()" disabled>
                     <i class="fa-solid fa-file-import"></i> Import
                 </button>
             </div>
@@ -579,27 +912,19 @@
     </div>
 
     <!-- Card Search Modal -->
-    <div id="card-search-modal"
-        class="absolute inset-0 z-50 bg-black bg-opacity-90 flex items-center justify-center hidden">
-        <div class="bg-gray-800 p-6 rounded-lg shadow-2xl w-[90vw] h-[90vh] max-w-7xl flex flex-col">
-            <h2
-                class="text-2xl font-bold mb-4 border-b border-gray-700 pb-2 text-white flex justify-between items-center">
-                <span id="card-search-title">Search Replacement Card</span>
-                <button onclick="App.closeCardSearch()" class="text-gray-400 hover:text-white transition"><i
-                        class="fa-solid fa-times"></i></button>
-            </h2>
-            <div class="mb-4">
-                <input type="text" id="card-search-input" onkeyup="App.executeCardSearch(this.value)"
-                    class="w-full bg-black text-white p-3 rounded border border-gray-700 focus:border-blue-500 focus:outline-none text-lg transition"
-                    placeholder="Type a card name to search...">
+    <div id="card-search-modal" class="modal-backdrop fixed inset-0 flex items-center justify-center hidden p-6" style="z-index:90">
+        <div class="modal-card wide">
+            <div class="modal-head">
+                <h2 id="card-search-title">Search Replacement Card</h2>
+                <button class="close" onclick="App.closeCardSearch()">&times;</button>
             </div>
-            <div id="card-search-results"
-                class="flex-1 overflow-y-auto grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-4 p-2 content-start">
-                <!-- Search results injected here -->
+            <div class="modal-body">
+                <input type="text" id="card-search-input" class="input" onkeyup="App.executeCardSearch(this.value)"
+                    placeholder="Type a card name to search…" style="margin-bottom:14px">
+                <div id="card-search-results" class="card-grid"><!-- Search results injected here --></div>
             </div>
-            <div class="mt-4 flex justify-end gap-4 border-t border-gray-700 pt-4">
-                <button onclick="App.closeCardSearch()"
-                    class="px-6 py-2 bg-gray-600 hover:bg-gray-500 text-white font-bold rounded transition">Cancel</button>
+            <div class="modal-foot">
+                <button class="btn btn-ghost" onclick="App.closeCardSearch()">Cancel</button>
             </div>
         </div>
     </div>
@@ -644,494 +969,279 @@
         class="fixed top-8 left-1/2 transform -translate-x-1/2 z-50 flex flex-col gap-2 pointer-events-none"></div>
 
     <!-- Main App Container -->
-    <div id="app" class="flex-1 flex overflow-hidden hidden">
+    <div id="app" class="app hidden">
 
-        <!-- Sidebar Game Log -->
-        <div class="w-72 bg-[#1a1a1e] border-r border-gray-800 flex flex-col shadow-xl z-20 relative">
-            <div class="p-4 border-b border-gray-800 flex items-center justify-between">
-                <h1 class="font-bold text-lg tracking-wide flex items-baseline gap-2">
-                    <i class="fa-solid fa-khanda text-purple-500 mr-1"></i>
-                    Practice Dojo
-                    <span class="text-xs text-gray-500 font-mono tracking-normal" id="app-version-sidebar"></span>
-                </h1>
-                <div class="flex items-center gap-3">
-                    <div class="group relative cursor-help">
-                        <i
-                            class="fa-solid fa-keyboard text-gray-500 hover:text-white transition group-hover:text-blue-400"></i>
-                        <!-- Hotkeys Tooltip -->
-                        <div
-                            class="absolute left-0 top-full mt-2 w-64 p-3 bg-black/95 backdrop-blur-md text-gray-300 text-[11px] leading-relaxed rounded-lg border border-gray-700 shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 pointer-events-none transform group-hover:translate-y-0 -translate-y-1">
-                            <div
-                                class="text-white font-bold text-xs uppercase tracking-wider mb-2 border-b border-gray-700 pb-1">
-                                <i class="fa-solid fa-keyboard mr-1"></i> Global Hotkeys
-                            </div>
-                            <div class="flex justify-between mb-1"><span
-                                    class="bg-gray-800 px-1.5 py-0.5 rounded text-white font-mono">M</span> <span>Toggle
-                                    Multiverse Tree</span></div>
-                            <div class="flex justify-between mb-1"><span
-                                    class="bg-gray-800 px-1.5 py-0.5 rounded text-white font-mono">T</span> <span>Toggle
-                                    Timelines Drawer</span></div>
-                            <div class="flex justify-between mb-1"><span
-                                    class="bg-gray-800 px-1.5 py-0.5 rounded text-white font-mono">Q</span> <span>Quest
-                                    with All Ready</span></div>
-                            <div class="flex justify-between mb-1"><span
-                                    class="bg-gray-800 px-1.5 py-0.5 rounded text-white font-mono">Space</span>
-                                <span>End Turn</span>
-                            </div>
-                            <div
-                                class="mt-2 text-gray-500 border-t border-gray-800 pt-1 leading-tight text-[9px] italic">
-                                Navigating the tree view can be done via Arrow Keys + Enter.</div>
-                        </div>
+        <!-- SIDEBAR -->
+        <aside class="sidebar">
+            <div class="sidebar-section">
+                <div class="section-head"><h3>Players</h3><span class="hint" id="app-version-sidebar"></span></div>
+                <div class="player-rows">
+                    <div class="player-row is-p1 is-active" id="p0-badge">
+                        <span class="player-name">Player 1 (You)</span>
+                        <span class="player-count" id="p0-cards">0 cards</span>
                     </div>
-                    <button onclick="App.showSetup()" class="text-gray-500 hover:text-white transition"
-                        title="Reset/Change Decks"><i class="fa-solid fa-rotate-right"></i></button>
-                </div>
-            </div>
-
-            <div class="p-4 border-b border-gray-800 bg-[#151518]">
-                <div class="flex justify-between items-center mb-2">
-                    <span class="text-xs text-gray-400 font-bold uppercase tracking-wider">Players</span>
-                </div>
-                <div id="p0-badge"
-                    class="py-1 px-2 rounded bg-gray-800 text-sm mb-1 border-l-2 border-orange-500 flex justify-between">
-                    <span>Player 1 (You)</span> <span id="p0-cards">0 cards</span>
-                </div>
-                <div id="p1-badge"
-                    class="py-1 px-2 rounded bg-gray-800 text-sm border-l-2 border-purple-500 flex justify-between text-gray-400">
-                    <span>Player 2</span> <span id="p1-cards">0 cards</span>
+                    <div class="player-row is-p2" id="p1-badge">
+                        <span class="player-name">Player 2</span>
+                        <span class="player-count" id="p1-cards">0 cards</span>
+                    </div>
                 </div>
             </div>
 
             <!-- Win Probability Meters -->
-            <div class="p-4 border-b border-gray-800 bg-[#1a1a1e] flex flex-col gap-3">
-                <!-- BCR Meter -->
-                <div class="group relative cursor-help">
-                    <!-- Custom Tooltip -->
-                    <div
-                        class="absolute left-0 top-full mt-2 w-full p-3 bg-black/95 backdrop-blur-md text-gray-300 text-[11px] leading-relaxed rounded-lg border border-gray-700 shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 pointer-events-none transform group-hover:translate-y-0 -translate-y-1">
-                        <div class="text-blue-400 font-bold text-xs uppercase tracking-wider mb-1"><i
-                                class="fa-solid fa-scale-balanced mr-1"></i> Tug-of-War Meter</div>
-                        Represents the percentage of the total Board Control Rating (BCR) currently controlled by each
-                        player based <span class="text-white font-bold border-b border-gray-500">ONLY</span> on cards in
-                        the field.
+            <div class="sidebar-section">
+                <div class="section-head"><h3>Win Probability</h3><span class="hint">field-based</span></div>
+                <div class="metric" title="Percentage of total Board Control Rating (BCR) controlled by each player, based ONLY on cards in the field.">
+                    <div class="metric-label"><span>Board Control · BCR</span><span class="metric-icon">&#9670;</span></div>
+                    <div class="bar">
+                        <div class="bar-p1" id="bcr-p1" style="width:50%"></div>
+                        <div class="bar-p2" id="bcr-p2" style="width:50%"></div>
                     </div>
-
-                    <div class="text-xs text-gray-400 font-bold uppercase tracking-wider mb-1 flex justify-between">
-                        <span>Board Control (BCR)</span>
-                        <i class="fa-solid fa-khanda text-blue-400 group-hover:text-white transition-colors"></i>
-                    </div>
-                    <div class="w-full bg-gray-700 rounded-full h-2 flex overflow-hidden">
-                        <div id="bcr-p1" class="bg-orange-500 h-2 transition-all duration-500" style="width: 50%"></div>
-                        <div id="bcr-p2" class="bg-purple-500 h-2 transition-all duration-500" style="width: 50%"></div>
-                    </div>
-                    <div class="flex justify-between text-xs mt-1">
-                        <span id="bcr-val-p1" class="text-orange-400">0.0</span>
-                        <span id="bcr-val-p2" class="text-purple-400">0.0</span>
+                    <div class="metric-values">
+                        <span class="val-p1" id="bcr-val-p1">0.0</span>
+                        <span class="val-p2" id="bcr-val-p2">0.0</span>
                     </div>
                 </div>
-
-                <!-- LVI Meter -->
-                <div class="group relative cursor-help">
-                    <!-- Custom Tooltip -->
-                    <div
-                        class="absolute left-0 top-full mt-2 w-full p-3 bg-black/95 backdrop-blur-md text-gray-300 text-[11px] leading-relaxed rounded-lg border border-gray-700 shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 pointer-events-none transform group-hover:translate-y-0 -translate-y-1">
-                        <div class="text-yellow-400 font-bold text-xs uppercase tracking-wider mb-1"><i
-                                class="fa-solid fa-scale-balanced mr-1"></i> Tug-of-War Meter</div>
-                        Represents the percentage of the total Lore Velocity Index (LVI) currently controlled by each
-                        player based <span class="text-white font-bold border-b border-gray-500">ONLY</span> on cards in
-                        the field.
+                <div class="metric is-lvi" title="Percentage of total Lore Velocity Index (LVI) controlled by each player, based ONLY on cards in the field.">
+                    <div class="metric-label"><span>Lore Velocity · LVI</span><span class="metric-icon">&#9670;</span></div>
+                    <div class="bar">
+                        <div class="bar-p1" id="lvi-p1" style="width:50%"></div>
+                        <div class="bar-p2" id="lvi-p2" style="width:50%"></div>
                     </div>
-
-                    <div class="text-xs text-gray-400 font-bold uppercase tracking-wider mb-1 flex justify-between">
-                        <span>Lore Velocity (LVI)</span>
-                        <i class="fa-solid fa-gem text-yellow-400 group-hover:text-white transition-colors"></i>
-                    </div>
-                    <div class="w-full bg-gray-700 rounded-full h-2 flex overflow-hidden">
-                        <div id="lvi-p1" class="bg-orange-500 h-2 transition-all duration-500" style="width: 50%"></div>
-                        <div id="lvi-p2" class="bg-purple-500 h-2 transition-all duration-500" style="width: 50%"></div>
-                    </div>
-                    <div class="flex justify-between text-xs mt-1">
-                        <span id="lvi-val-p1" class="text-orange-400">0.0</span>
-                        <span id="lvi-val-p2" class="text-purple-400">0.0</span>
+                    <div class="metric-values">
+                        <span class="val-p1" id="lvi-val-p1">0.0</span>
+                        <span class="val-p2" id="lvi-val-p2">0.0</span>
                     </div>
                 </div>
             </div>
 
-            <!-- Card Preview Panel (Moved ABOVE Game Log) -->
-            <div
-                class="h-[200px] w-full border-t border-gray-800 bg-[#111] flex items-center justify-center relative overflow-hidden shrink-0">
-                <span id="sidebar-preview-placeholder"
-                    class="text-gray-600 text-xs font-bold uppercase tracking-widest text-center px-4 pointer-events-none">Hover
-                    card for details</span>
-                <div id="sidebar-preview"
-                    class="absolute inset-0 bg-bottom bg-no-repeat opacity-0 transition-opacity duration-200 pointer-events-none"
-                    style="background-size: 100% auto;"></div>
-
-                <!-- Ink Symbol overlay -->
-                <div id="preview-ink-container"
-                    class="absolute bottom-4 right-4 flex items-center justify-center w-14 h-14 pointer-events-none transition-opacity duration-200 opacity-0">
-                    <svg id="preview-ink-hex" class="absolute inset-0 w-full h-full drop-shadow-lg hidden"
-                        viewBox="0 0 100 100">
+            <!-- Card Preview Panel -->
+            <div class="preview-pane">
+                <span id="sidebar-preview-placeholder" class="preview-placeholder">Hover a card for details</span>
+                <div id="sidebar-preview" class="preview-image opacity-0" style="background-size:100% auto;background-position:bottom center;pointer-events:none"></div>
+                <div id="preview-ink-container" class="opacity-0" style="position:absolute;bottom:10px;right:10px;width:46px;height:46px;display:flex;align-items:center;justify-content:center;pointer-events:none;transition:opacity .2s ease;filter:drop-shadow(0 3px 7px rgba(0,0,0,.55))">
+                    <svg id="preview-ink-hex" class="hidden" viewBox="0 0 100 100" style="position:absolute;inset:0;width:100%;height:100%">
                         <polygon points="50,5 95,25 95,75 50,95 5,75 5,25" fill="#222" stroke="#666" stroke-width="4" />
                     </svg>
-                    <svg id="preview-ink-circle" class="absolute inset-0 w-full h-full drop-shadow-lg hidden"
-                        viewBox="0 0 100 100">
+                    <svg id="preview-ink-circle" class="hidden" viewBox="0 0 100 100" style="position:absolute;inset:0;width:100%;height:100%">
                         <circle cx="50" cy="50" r="45" fill="#D4AF37" stroke="#FFF" stroke-width="4" />
                     </svg>
-                    <span id="preview-ink-cost" class="z-10 font-bold text-2xl"></span>
+                    <span id="preview-ink-cost" style="position:relative;z-index:1;font-weight:700;font-size:18px"></span>
                 </div>
             </div>
 
             <!-- Card Metrics Bar -->
-            <div id="preview-metrics-bar"
-                class="w-full bg-[#0a0a0c] border-t border-gray-800 p-2 flex justify-between px-4 text-xs font-mono tracking-wider opacity-0 transition-opacity duration-200 shrink-0 shadow-inner">
-                <div class="flex flex-col items-center"><span class="text-gray-500 text-[9px]">CTL</span><span
-                        id="metric-ctl" class="text-white font-bold">0.00</span></div>
-                <div class="flex flex-col items-center"><span class="text-gray-500 text-[9px]">BCR</span><span
-                        id="metric-bcr" class="text-blue-400 font-bold">0.00</span></div>
-                <div class="flex flex-col items-center"><span class="text-gray-500 text-[9px]">RDS</span><span
-                        id="metric-rds" class="text-green-400 font-bold">0.00</span></div>
-                <div class="flex flex-col items-center"><span class="text-gray-500 text-[9px]">LVI</span><span
-                        id="metric-lvi" class="text-yellow-400 font-bold">0.00</span></div>
+            <div id="preview-metrics-bar" class="preview-metrics opacity-0">
+                <div class="pm-cell"><span class="pm-label">CTL</span><span class="pm-val" id="metric-ctl">0.00</span></div>
+                <div class="pm-cell is-bcr"><span class="pm-label">BCR</span><span class="pm-val" id="metric-bcr">0.00</span></div>
+                <div class="pm-cell is-rds"><span class="pm-label">RDS</span><span class="pm-val" id="metric-rds">0.00</span></div>
+                <div class="pm-cell is-lvi"><span class="pm-label">LVI</span><span class="pm-val" id="metric-lvi">0.00</span></div>
             </div>
 
-            <div class="flex-1 overflow-y-auto p-4 flex flex-col gap-2 bg-[#1a1a1e]" id="game-log">
-                <!-- Log entries injected here -->
-            </div>
+            <div class="log-pane" id="game-log"><!-- Log entries injected here --></div>
 
-            <div class="p-4 border-t border-gray-800 bg-[#151518] flex flex-col gap-2 shrink-0 z-30 relative">
-                <!-- Auto-Save Toggle -->
-                <div class="flex items-center justify-between pb-2 border-b border-gray-800 mb-1 px-1">
-                    <span class="text-[10px] font-bold uppercase tracking-wider text-gray-400"
-                        title="Automatically save the game state to the Multiverse Tree before ending each turn">Save
-                        state every turn</span>
-                    <label class="relative inline-flex items-center cursor-pointer"
-                        title="Automatically save the game state to the Multiverse Tree before ending each turn">
-                        <input type="checkbox" id="auto-save-turn" class="sr-only peer" checked>
-                        <div
-                            class="w-9 h-5 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-gray-300 after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-purple-600">
-                        </div>
+            <div class="sidebar-foot">
+                <div class="toggle-row">
+                    <span class="toggle-label" title="Automatically save the game state to the Multiverse Tree before ending each turn">Auto-save every turn</span>
+                    <label class="switch" title="Automatically save the game state to the Multiverse Tree before ending each turn">
+                        <input type="checkbox" id="auto-save-turn" checked>
+                        <span class="slider"></span>
                     </label>
                 </div>
-                <div class="flex gap-2">
-                    <button onclick="App.questWithAll()"
-                        class="flex-1 py-2 bg-gray-800 hover:bg-gray-700 text-sm font-semibold rounded text-gray-300 transition"
-                        title="Quest with all available characters">
-                        <i class="fa-solid fa-diamond text-yellow-500 mr-1"></i> Quest all (<span
-                            id="quest-count">0</span>)
+                <div class="action-row tri">
+                    <button class="btn" onclick="App.questWithAll()" title="Quest with all available characters">
+                        <i class="fa-solid fa-diamond" style="color:var(--lvi)"></i> Quest <span class="mono dim" id="quest-count">0</span>
                     </button>
-                    <button id="mulligan-btn" onclick="App.openMulligan()"
-                        class="flex-1 py-2 bg-gray-800 hover:bg-gray-700 text-sm font-semibold rounded text-gray-300 transition"
-                        title="Mulligan Active Hand">
-                        <i class="fa-solid fa-rotate text-blue-500 mr-1"></i> Mulligan
+                    <button class="btn" id="mulligan-btn" onclick="App.openMulligan()" title="Mulligan active hand">
+                        <i class="fa-solid fa-rotate"></i> Mulligan
                     </button>
-                    <button id="craft-hand-btn" onclick="App.openCraftHand()"
-                        class="flex-1 py-2 bg-gray-800 hover:bg-gray-700 text-sm font-semibold rounded text-gray-300 transition"
-                        title="Craft your ideal starting hand">
-                        <i class="fa-solid fa-wand-magic-sparkles text-green-500 mr-1"></i> Craft Hand
+                    <button class="btn" id="craft-hand-btn" onclick="App.openCraftHand()" title="Craft your ideal starting hand">
+                        <i class="fa-solid fa-wand-magic-sparkles" style="color:var(--ok)"></i> Craft
                     </button>
                 </div>
-                <div class="flex gap-2">
-                    <button onclick="App.toggleTimelines()"
-                        class="px-3 py-2 bg-gray-800 hover:bg-gray-700 text-sm font-semibold rounded text-purple-400 transition"
-                        title="Timelines & Bookmarks">
-                        <i class="fa-solid fa-clock-rotate-left"></i>
-                    </button>
-                    <button onclick="App.undo()"
-                        class="px-3 py-2 bg-gray-800 hover:bg-gray-700 text-sm font-semibold rounded text-gray-300 transition"
-                        title="Undo Last Action">
-                        <i class="fa-solid fa-rotate-left"></i>
-                    </button>
-                    <button onclick="App.endTurn()"
-                        class="flex-1 py-2 bg-white hover:bg-gray-200 text-black text-sm font-bold rounded transition shadow-[0_0_15px_rgba(255,255,255,0.2)]">
-                        End Turn &rarr;
-                    </button>
+                <div class="action-row three">
+                    <button class="icon-btn" onclick="App.toggleTimelines()" title="Timelines &amp; bookmarks (T)"><i class="fa-solid fa-clock-rotate-left"></i></button>
+                    <button class="icon-btn" onclick="App.undo()" title="Undo last action"><i class="fa-solid fa-rotate-left"></i></button>
+                    <button class="btn btn-p1 btn-block" onclick="App.endTurn()">End turn &rarr;</button>
                 </div>
             </div>
 
-            <!-- Timelines Drawer (Overlaying Sidebar) -->
-            <div id="timeline-drawer"
-                class="absolute inset-0 bg-black/95 backdrop-blur-md z-40 flex flex-col transform -translate-x-full transition-transform duration-300 shadow-2xl">
-                <div class="p-4 border-b border-gray-800 flex justify-between items-center shrink-0">
-                    <h2 class="font-bold text-lg text-white"><i
-                            class="fa-solid fa-code-branch text-purple-500 mr-2"></i> Timelines</h2>
-                    <button onclick="App.toggleTimelines()" class="text-gray-400 hover:text-white transition"><i
-                            class="fa-solid fa-times text-lg"></i></button>
+            <!-- Timelines Drawer (overlays the sidebar) -->
+            <div id="timeline-drawer" class="drawer-overlay">
+                <div class="drawer-head">
+                    <h2><i class="fa-solid fa-code-branch" style="color:var(--accent-hi)"></i> Timelines</h2>
+                    <button class="icon-btn ghost" onclick="App.toggleTimelines()">&times;</button>
                 </div>
-
-                <!-- Import / Export Utility Row -->
-                <div class="flex border-b border-gray-800 shrink-0 bg-[#0a0a0c]">
-                    <input type="file" id="import-file" class="hidden" accept=".json"
-                        onchange="App.importTimelines(event)">
-                    <button onclick="document.getElementById('import-file').click()"
-                        class="flex-1 py-2 text-xs font-bold text-gray-400 hover:text-white hover:bg-gray-800 transition border-r border-gray-800">
-                        <i class="fa-solid fa-file-import mr-1"></i> Import
-                    </button>
-                    <button onclick="App.exportTimelines()"
-                        class="flex-1 py-2 text-xs font-bold text-gray-400 hover:text-white hover:bg-gray-800 transition border-r border-gray-800">
-                        <i class="fa-solid fa-file-export mr-1"></i> Export
-                    </button>
-                    <button onclick="App.promptSaveSessionToCloud()"
-                        class="flex-1 py-2 text-xs font-bold text-blue-400 hover:text-blue-300 hover:bg-gray-800 transition border-r border-gray-800">
-                        <i class="fa-solid fa-cloud-arrow-up mr-1"></i> Save to Cloud
-                    </button>
-                    <button onclick="App.openImportLogModal()"
-                        class="flex-1 py-2 text-xs font-bold text-green-400 hover:text-green-300 hover:bg-gray-800 transition">
-                        <i class="fa-solid fa-file-lines mr-1"></i> Import Log
+                <div class="drawer-row">
+                    <input type="file" id="import-file" class="hidden" accept=".json" onchange="App.importTimelines(event)">
+                    <button class="icon-btn" onclick="document.getElementById('import-file').click()"><i class="fa-solid fa-file-import"></i> Import</button>
+                    <button class="icon-btn" onclick="App.exportTimelines()"><i class="fa-solid fa-file-export"></i> Export</button>
+                    <button class="icon-btn is-accent" onclick="App.promptSaveSessionToCloud()"><i class="fa-solid fa-cloud-arrow-up"></i> Save</button>
+                    <button class="icon-btn is-ok" onclick="App.openImportLogModal()"><i class="fa-solid fa-file-lines"></i> Log</button>
+                </div>
+                <div class="drawer-section">
+                    <button class="btn btn-block" onclick="App.openTreeModal()">
+                        <i class="fa-solid fa-network-wired" style="color:var(--accent-hi)"></i> Explore multiverse (tree view)
                     </button>
                 </div>
-
-                <!-- Open Multiverse Tree View -->
-                <div class="p-4 border-b border-gray-800 shrink-0 bg-[#151518]">
-                    <button onclick="App.openTreeModal()"
-                        class="w-full py-3 bg-gray-800 hover:bg-gray-700 border border-purple-500/50 hover:border-purple-400 text-white text-sm font-bold rounded transition shadow-[0_0_15px_rgba(147,51,234,0.15)] flex justify-center items-center gap-2">
-                        <i class="fa-solid fa-network-wired text-purple-400"></i> Explore Multiverse (Tree View)
-                    </button>
+                <div class="drawer-section">
+                    <input type="text" id="bookmark-name" class="input" placeholder="Name this timeline (optional)…">
+                    <textarea id="bookmark-comment" class="input" placeholder="Add a comment (markdown supported)…" rows="2" style="resize:none"></textarea>
+                    <button class="btn btn-primary btn-block" onclick="App.saveTimeline()">+ Save current state</button>
                 </div>
-
-                <!-- Create Bookmark -->
-                <div class="p-4 bg-[#1a1a1e] border-b border-gray-800 shrink-0 flex flex-col gap-2">
-                    <input type="text" id="bookmark-name"
-                        class="w-full bg-black border border-gray-700 rounded p-2 text-xs text-white focus:border-purple-500 outline-none transition"
-                        placeholder="Name this timeline (optional)...">
-                    <textarea id="bookmark-comment"
-                        class="w-full bg-black border border-gray-700 rounded p-2 text-xs text-white focus:border-purple-500 outline-none transition resize-none"
-                        placeholder="Add a comment (optional)..." rows="2"></textarea>
-                    <button onclick="App.saveTimeline()"
-                        class="w-full py-2 bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold rounded transition shadow-lg mt-1">
-                        + Save Current State
-                    </button>
-                </div>
-
-                <!-- Auto-Saves (Safety Net) -->
-                <div class="p-3 bg-gray-900 border-t border-gray-800 flex-1 overflow-y-auto">
-                    <div
-                        class="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-2 ml-1 flex justify-between sticky top-0 bg-gray-900 pb-1 z-10">
-                        <span>Auto-Saves (Time Jumps)</span>
-                        <i class="fa-solid fa-life-ring text-gray-600"></i>
-                    </div>
-                    <div id="autosave-list" class="flex flex-col gap-1.5 pb-4">
-                        <!-- Auto-saves injected here -->
-                    </div>
+                <div class="drawer-list">
+                    <div class="drawer-list-head"><span>Auto-saves (time jumps)</span><i class="fa-solid fa-life-ring"></i></div>
+                    <div id="autosave-list" style="display:flex;flex-direction:column;gap:6px;"><!-- Auto-saves injected here --></div>
                 </div>
             </div>
-        </div>
+        </aside>
 
-        <!-- Main Play Area -->
-        <div class="flex-1 flex flex-col relative bg-gray-900">
-            <!-- Center dividing line -->
-            <div id="board-divider"
-                class="absolute top-1/2 left-0 right-0 h-1 z-30 opacity-0 transform -translate-y-1/2 transition-all duration-500 pointer-events-none">
-            </div>
+        <!-- PLAY AREA -->
+        <main class="play" id="play">
 
-            <!-- Top Area (Opponent) -->
-            <div id="top-board"
-                class="flex-1 relative p-4 flex flex-col-reverse justify-between overflow-hidden transition-colors duration-500 z-10">
-                <!-- Top Player Stats Overlay -->
-                <!-- these are absolute positioned so DOM order vs reverse doesn't break them conceptually -->
-                <div
-                    class="absolute top-4 right-4 bg-black bg-opacity-60 border border-gray-600 rounded-lg p-3 flex flex-col items-center min-w-[60px] shadow-lg z-30">
-                    <div class="flex justify-between w-full text-xs text-gray-400 font-bold mb-1 items-center gap-2">
-                        <button onclick="App.changeLore(App.state.inactivePlayer, -1)"
-                            class="hover:text-red-400 px-1 transition-colors z-40" title="Decrease Lore"><i
-                                class="fa-solid fa-minus"></i></button>
-                        <span>LORE</span>
-                        <button onclick="App.changeLore(App.state.inactivePlayer, 1)"
-                            class="hover:text-green-400 px-1 transition-colors z-40" title="Increase Lore"><i
-                                class="fa-solid fa-plus"></i></button>
+            <!-- TOP (opponent) half -->
+            <div class="board-half top is-p2" id="top-board">
+                <div class="board-bg-letter" id="top-player-bg-text">P2</div>
+                <div class="lore-badge is-p2">
+                    <div class="lore-row">
+                        <button class="minus" onclick="App.changeLore(App.state.inactivePlayer, -1)" title="Decrease Lore">&minus;</button>
+                        <span class="lore-label">Lore</span>
+                        <button class="plus" onclick="App.changeLore(App.state.inactivePlayer, 1)" title="Increase Lore">+</button>
                     </div>
-                    <span id="top-lore" class="text-3xl font-black text-white">0</span>
+                    <div class="lore-value" id="top-lore">0</div>
                 </div>
 
-                <div class="absolute top-4 left-4 text-white/30 text-8xl font-black pointer-events-none z-0"
-                    id="top-player-bg-text">P2</div>
-
-                <!-- Opponent Field -->
-                <div class="flex-1 flex items-end justify-center pb-2 w-full shrink-0 z-20">
-                    <div id="top-field"
-                        class="flex gap-4 flex-wrap justify-center w-full max-w-4xl min-h-[150px] drop-zone p-2 rounded"
-                        ondragover="App.allowDrop(event)" ondragenter="App.dragEnter(event)"
-                        ondragleave="App.dragLeave(event)" ondrop="App.drop(event, 'field', 'top')"></div>
+                <!-- hand row -->
+                <div class="hand-wrap">
+                    <button class="peek-toggle" onmousedown="App.setHandReveal(true)" onmouseup="App.setHandReveal(false)" onmouseleave="App.setHandReveal(false)" title="Hold to peek opponent hand">
+                        <i id="reveal-icon" class="fa-solid fa-eye"></i> <span id="reveal-text">Hold to Reveal Hand</span>
+                    </button>
+                    <div class="hand drop-zone" ondragover="App.allowDrop(event)" ondragenter="App.dragEnter(event)" ondragleave="App.dragLeave(event)" ondrop="App.drop(event, 'hand', 'top')">
+                        <div id="top-hand" style="display:flex;justify-content:center;"></div>
+                    </div>
+                    <div class="hand-meta" title="Total potential metrics of all cards in hand">
+                        <span><span class="meta-key">CTL</span><span id="top-hand-ctl">0.0</span></span>
+                        <span><span class="meta-key is-bcr">BCR</span><span id="top-hand-bcr">0.0</span></span>
+                        <span><span class="meta-key is-rds">RDS</span><span id="top-hand-rds">0.0</span></span>
+                        <span><span class="meta-key is-lvi">LVI</span><span id="top-hand-lvi">0.0</span></span>
+                    </div>
                 </div>
 
-                <!-- Opponent Inkwell & Deck Row -->
-                <div
-                    class="flex justify-between items-center w-full max-w-5xl mx-auto px-4 mb-4 bg-black/20 rounded-xl p-3 border border-gray-700/50 shadow-inner shrink-0 z-20">
-                    <!-- Inkwell -->
-                    <div class="flex items-center gap-4 w-1/2 drop-zone p-2 border border-transparent rounded hover:border-gray-500 transition"
-                        ondragover="App.allowDrop(event)" ondragenter="App.dragEnter(event)"
-                        ondragleave="App.dragLeave(event)" ondrop="App.drop(event, 'inkwell', 'top')">
-                        <div
-                            class="bg-black/80 px-4 py-2 rounded text-lg font-bold pointer-events-none z-10 shadow-lg border border-gray-600">
-                            <i class="fa-solid fa-hexagon text-blue-300 mr-1"></i> <span id="top-ink">0/0</span>
-                        </div>
-                        <div id="top-inkwell-cards" class="relative h-[140px] flex-1"></div>
+                <!-- pile row (ink + discard + deck) -->
+                <div class="pile-row">
+                    <div class="ink-cluster drop-zone" ondragover="App.allowDrop(event)" ondragenter="App.dragEnter(event)" ondragleave="App.dragLeave(event)" ondrop="App.drop(event, 'inkwell', 'top')">
+                        <div class="ink-readout"><span class="ink-icon"></span><span id="top-ink">0/0</span></div>
+                        <div class="inkwell" id="top-inkwell-cards" style="overflow:visible"></div>
                     </div>
-                    <!-- Discard & Deck -->
-                    <div class="flex gap-6">
-                        <div id="top-discard"
-                            class="relative w-[100px] h-[140px] border-2 border-dashed border-gray-500 bg-black/40 rounded drop-zone transition hover:border-gray-300 cursor-pointer"
-                            ondragover="App.allowDrop(event)" ondragenter="App.dragEnter(event)"
-                            ondragleave="App.dragLeave(event)" ondrop="App.drop(event, 'discard', 'top')"
-                            oncontextmenu="App.showDiscardContextMenu(event, App.state.inactivePlayer)">
-                            <span
-                                class="absolute inset-0 flex items-center justify-center text-gray-400 text-xs font-bold pointer-events-none">DISCARD</span>
+                    <div class="pile-cluster">
+                        <div class="pile drop-zone" id="top-discard" ondragover="App.allowDrop(event)" ondragenter="App.dragEnter(event)" ondragleave="App.dragLeave(event)" ondrop="App.drop(event, 'discard', 'top')" oncontextmenu="App.showDiscardContextMenu(event, App.state.inactivePlayer)">
+                            <span class="pile-label">Discard</span>
                         </div>
-                        <div class="relative cursor-pointer w-[100px] h-[140px] drop-zone hover:scale-105 transition"
-                            onclick="App.drawCard(App.state.inactivePlayer)" ondragover="App.allowDrop(event)"
-                            ondragenter="App.dragEnter(event)" ondragleave="App.dragLeave(event)"
-                            ondrop="App.drop(event, 'deck', 'top')"
-                            oncontextmenu="App.showDeckContextMenu(event, App.state.inactivePlayer)">
-                            <div class="card card-back absolute inset-0 shadow-lg" draggable="true"
-                                ondragstart="App.dragStartTopCard(event, 'top')"></div>
-                            <div class="absolute -bottom-2 -right-2 bg-black text-xs px-2 py-0.5 rounded border border-gray-600 pointer-events-none shadow"
-                                id="top-deck-count">60</div>
+                        <div class="pile deck drop-zone" draggable="true" onclick="App.drawCard(App.state.inactivePlayer)" ondragstart="App.dragStartTopCard(event, 'top')" ondragover="App.allowDrop(event)" ondragenter="App.dragEnter(event)" ondragleave="App.dragLeave(event)" ondrop="App.drop(event, 'deck', 'top')" oncontextmenu="App.showDeckContextMenu(event, App.state.inactivePlayer)">
+                            <span class="pile-label">Deck</span>
+                            <div class="pile-count" id="top-deck-count">60</div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Opponent Hand -->
-                <div class="flex flex-col items-center mb-4 relative shrink-0 z-20">
-                    <div class="flex justify-center h-[120px] drop-zone p-2 w-full max-w-4xl mx-auto z-10"
-                        ondragover="App.allowDrop(event)" ondragenter="App.dragEnter(event)"
-                        ondragleave="App.dragLeave(event)" ondrop="App.drop(event, 'hand', 'top')">
-                        <div id="top-hand" class="hand-container scale-[0.85] origin-top"></div>
-                    </div>
-
-                    <!-- Top Hand Potential Badge -->
-                    <div class="flex gap-4 bg-black/60 px-4 py-1.5 rounded-full border border-gray-600/50 text-[10px] font-mono -mt-2 z-0 shadow-lg"
-                        title="Total Potential Metrics of all cards currently in Hand">
-                        <span class="text-gray-400 font-bold uppercase tracking-wider mr-2">Hand Potential</span>
-                        <span class="text-white">CTL <span id="top-hand-ctl"
-                                class="font-bold text-[11px]">0.0</span></span>
-                        <span class="text-blue-400">BCR <span id="top-hand-bcr"
-                                class="font-bold text-[11px]">0.0</span></span>
-                        <span class="text-green-400">RDS <span id="top-hand-rds"
-                                class="font-bold text-[11px]">0.0</span></span>
-                        <span class="text-yellow-400">LVI <span id="top-hand-lvi"
-                                class="font-bold text-[11px]">0.0</span></span>
-                    </div>
-
-                    <!-- Opponent Hand Toggle (Hold to Reveal) -->
-                    <div class="flex justify-center mt-2 relative z-20 shrink-0">
-                        <button onmousedown="App.setHandReveal(true)" onmouseup="App.setHandReveal(false)"
-                            onmouseleave="App.setHandReveal(false)"
-                            class="text-xs text-gray-300 hover:text-white transition flex items-center gap-2 bg-black/40 hover:bg-black/60 px-3 py-1 rounded-full border border-gray-600 select-none cursor-pointer">
-                            <i id="reveal-icon" class="fa-solid fa-eye"></i> <span id="reveal-text">Hold to Reveal
-                                Hand</span>
-                        </button>
-                    </div>
+                <!-- field (touches divider) -->
+                <div class="field-strip">
+                    <div class="field drop-zone" id="top-field" ondragover="App.allowDrop(event)" ondragenter="App.dragEnter(event)" ondragleave="App.dragLeave(event)" ondrop="App.drop(event, 'field', 'top')"></div>
                 </div>
             </div>
 
-            <!-- Bottom Area (Active Player) -->
-            <div id="bottom-board"
-                class="flex-1 relative p-4 flex flex-col justify-between overflow-hidden transition-colors duration-500">
+            <div class="board-divider" id="board-divider"></div>
 
-                <!-- Bottom Player Stats Overlay -->
-                <!-- Turn Comment Box for Active Field -->
-                <div class="absolute top-4 left-4 z-0 group flex flex-col pointer-events-auto">
-                    <div class="flex items-center gap-2 text-white/50 mb-1 pointer-events-none">
-                        <i class="fa-solid fa-book-open"></i>
-                        <span class="text-xs font-bold uppercase tracking-wider">Turn <span
-                                id="turn-comment-header-num">1</span> Notes</span>
+            <!-- BOTTOM (you) half -->
+            <div class="board-half bottom is-p1" id="bottom-board">
+                <div class="board-bg-letter" id="bottom-player-bg-text">P1</div>
+
+                <div class="notes-panel">
+                    <div class="notes-head"><i class="fa-solid fa-book-open"></i><span>Turn <span id="turn-comment-header-num">1</span> notes</span></div>
+                    <textarea id="active-turn-comment" placeholder="Add notes for this turn… (saves on blur)" onblur="App.updateTurnComment(App.state.turn, App.state.activePlayer, this.value)"></textarea>
+                </div>
+
+                <div class="lore-badge is-p1">
+                    <div class="lore-row">
+                        <button class="minus" onclick="App.changeLore(App.state.activePlayer, -1)" title="Decrease Lore">&minus;</button>
+                        <span class="lore-label">Lore</span>
+                        <button class="plus" onclick="App.changeLore(App.state.activePlayer, 1)" title="Increase Lore">+</button>
                     </div>
-                    <textarea id="active-turn-comment"
-                        class="w-48 h-24 bg-black/30 border border-gray-600/50 rounded p-2 text-xs text-white focus:bg-black/80 focus:border-purple-500 focus:w-64 focus:h-40 focus:z-50 focus:shadow-2xl outline-none transition-all duration-200 resize-none hover:bg-black/50 hover:border-gray-500"
-                        placeholder="Add comments for this turn... (Saves on click away)"
-                        onblur="App.updateTurnComment(App.state.turn, App.state.activePlayer, this.value)"></textarea>
+                    <div class="lore-value" id="bottom-lore">0</div>
                 </div>
 
-                <div
-                    class="absolute bottom-4 right-4 bg-black bg-opacity-60 border border-gray-600 rounded-lg p-3 flex flex-col items-center min-w-[60px] shadow-lg z-30">
-                    <div class="flex justify-between w-full text-xs text-gray-400 font-bold mb-1 items-center gap-2">
-                        <button onclick="App.changeLore(App.state.activePlayer, -1)"
-                            class="hover:text-red-400 px-1 transition-colors z-40" title="Decrease Lore"><i
-                                class="fa-solid fa-minus"></i></button>
-                        <span>LORE</span>
-                        <button onclick="App.changeLore(App.state.activePlayer, 1)"
-                            class="hover:text-green-400 px-1 transition-colors z-40" title="Increase Lore"><i
-                                class="fa-solid fa-plus"></i></button>
+                <!-- field (touches divider) -->
+                <div class="field-strip">
+                    <div class="field drop-zone" id="bottom-field" ondragover="App.allowDrop(event)" ondragenter="App.dragEnter(event)" ondragleave="App.dragLeave(event)" ondrop="App.drop(event, 'field', 'bottom')"></div>
+                </div>
+
+                <!-- pile row -->
+                <div class="pile-row">
+                    <div class="ink-cluster drop-zone" ondragover="App.allowDrop(event)" ondragenter="App.dragEnter(event)" ondragleave="App.dragLeave(event)" ondrop="App.drop(event, 'inkwell', 'bottom')">
+                        <div class="ink-readout" title="Click ink below to exert one"><span class="ink-icon"></span><span id="bottom-ink">0/0</span></div>
+                        <div class="inkwell" id="bottom-inkwell-cards" onclick="App.exertInk()" style="overflow:visible"></div>
                     </div>
-                    <span id="bottom-lore" class="text-3xl font-black text-white">0</span>
-                </div>
-
-                <div class="absolute bottom-4 left-4 text-black/20 text-8xl font-black pointer-events-none"
-                    id="bottom-player-bg-text">P1</div>
-
-                <!-- Active Field -->
-                <div class="flex-1 flex items-start justify-center pt-2 w-full">
-                    <div id="bottom-field"
-                        class="flex gap-4 flex-wrap justify-center w-full max-w-4xl min-h-[150px] drop-zone p-2 rounded"
-                        ondragover="App.allowDrop(event)" ondragenter="App.dragEnter(event)"
-                        ondragleave="App.dragLeave(event)" ondrop="App.drop(event, 'field', 'bottom')"></div>
-                </div>
-
-                <!-- Active Inkwell & Deck Row -->
-                <div
-                    class="flex justify-between items-center w-full max-w-5xl mx-auto px-4 mt-4 bg-black/20 rounded-xl p-3 border border-gray-700/50 shadow-inner">
-                    <!-- Inkwell -->
-                    <div class="flex items-center gap-4 w-1/2 drop-zone p-2 border border-transparent rounded hover:border-gray-500 transition"
-                        ondragover="App.allowDrop(event)" ondragenter="App.dragEnter(event)"
-                        ondragleave="App.dragLeave(event)" ondrop="App.drop(event, 'inkwell', 'bottom')">
-                        <div
-                            class="bg-black/80 px-4 py-2 rounded text-lg font-bold pointer-events-none z-10 shadow-lg border border-gray-600">
-                            <i class="fa-solid fa-hexagon text-blue-300 mr-1"></i> <span id="bottom-ink">0/0</span>
+                    <div class="pile-cluster">
+                        <div class="pile drop-zone" id="bottom-discard" ondragover="App.allowDrop(event)" ondragenter="App.dragEnter(event)" ondragleave="App.dragLeave(event)" ondrop="App.drop(event, 'discard', 'bottom')" oncontextmenu="App.showDiscardContextMenu(event, App.state.activePlayer)">
+                            <span class="pile-label">Discard</span>
                         </div>
-                        <div id="bottom-inkwell-cards" class="relative h-[140px] flex-1 cursor-pointer"
-                            onclick="App.exertInk()"></div>
-                    </div>
-                    <!-- Discard & Deck -->
-                    <div class="flex gap-6">
-                        <div id="bottom-discard"
-                            class="relative w-[100px] h-[140px] border-2 border-dashed border-gray-500 bg-black/40 rounded drop-zone transition hover:border-gray-300 cursor-pointer"
-                            ondragover="App.allowDrop(event)" ondragenter="App.dragEnter(event)"
-                            ondragleave="App.dragLeave(event)" ondrop="App.drop(event, 'discard', 'bottom')"
-                            oncontextmenu="App.showDiscardContextMenu(event, App.state.activePlayer)">
-                            <span
-                                class="absolute inset-0 flex items-center justify-center text-gray-400 text-xs font-bold pointer-events-none">DISCARD</span>
-                        </div>
-                        <div class="relative cursor-pointer w-[100px] h-[140px] drop-zone hover:scale-105 transition"
-                            onclick="App.drawCard(App.state.activePlayer)" ondragover="App.allowDrop(event)"
-                            ondragenter="App.dragEnter(event)" ondragleave="App.dragLeave(event)"
-                            ondrop="App.drop(event, 'deck', 'bottom')"
-                            oncontextmenu="App.showDeckContextMenu(event, App.state.activePlayer)">
-                            <div class="card card-back absolute inset-0 shadow-lg" draggable="true"
-                                ondragstart="App.dragStartTopCard(event, 'bottom')"></div>
-                            <div class="absolute -bottom-2 -right-2 bg-black text-xs px-2 py-0.5 rounded border border-gray-600 pointer-events-none shadow"
-                                id="bottom-deck-count">60</div>
+                        <div class="pile deck drop-zone" draggable="true" onclick="App.drawCard(App.state.activePlayer)" ondragstart="App.dragStartTopCard(event, 'bottom')" ondragover="App.allowDrop(event)" ondragenter="App.dragEnter(event)" ondragleave="App.dragLeave(event)" ondrop="App.drop(event, 'deck', 'bottom')" oncontextmenu="App.showDeckContextMenu(event, App.state.activePlayer)">
+                            <span class="pile-label">Deck</span>
+                            <div class="pile-count" id="bottom-deck-count">60</div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Active Hand -->
-                <div class="flex flex-col items-center mt-4 relative">
-                    <!-- Bottom Hand Potential Badge -->
-                    <div class="flex gap-4 bg-black/60 px-4 py-1.5 rounded-full border border-gray-600/50 text-[10px] font-mono -mb-2 z-0 shadow-lg"
-                        title="Total Potential Metrics of all cards currently in Hand">
-                        <span class="text-gray-400 font-bold uppercase tracking-wider mr-2">Hand Potential</span>
-                        <span class="text-white">CTL <span id="bottom-hand-ctl"
-                                class="font-bold text-[11px]">0.0</span></span>
-                        <span class="text-blue-400">BCR <span id="bottom-hand-bcr"
-                                class="font-bold text-[11px]">0.0</span></span>
-                        <span class="text-green-400">RDS <span id="bottom-hand-rds"
-                                class="font-bold text-[11px]">0.0</span></span>
-                        <span class="text-yellow-400">LVI <span id="bottom-hand-lvi"
-                                class="font-bold text-[11px]">0.0</span></span>
+                <!-- hand -->
+                <div class="hand-wrap">
+                    <div class="hand-meta" title="Total potential metrics of all cards in hand">
+                        <span><span class="meta-key">CTL</span><span id="bottom-hand-ctl">0.0</span></span>
+                        <span><span class="meta-key is-bcr">BCR</span><span id="bottom-hand-bcr">0.0</span></span>
+                        <span><span class="meta-key is-rds">RDS</span><span id="bottom-hand-rds">0.0</span></span>
+                        <span><span class="meta-key is-lvi">LVI</span><span id="bottom-hand-lvi">0.0</span></span>
                     </div>
-
-                    <div class="flex justify-center h-[150px] drop-zone p-2 w-full max-w-4xl mx-auto z-10"
-                        ondragover="App.allowDrop(event)" ondragenter="App.dragEnter(event)"
-                        ondragleave="App.dragLeave(event)" ondrop="App.drop(event, 'hand', 'bottom')">
-                        <div id="bottom-hand" class="hand-container z-10"></div>
+                    <div class="hand drop-zone" ondragover="App.allowDrop(event)" ondragenter="App.dragEnter(event)" ondragleave="App.dragLeave(event)" ondrop="App.drop(event, 'hand', 'bottom')">
+                        <div id="bottom-hand" style="display:flex;justify-content:center;"></div>
                     </div>
                 </div>
             </div>
-        </div>
+        </main>
     </div>
 
     <!-- Context Menu -->
     <div id="context-menu"></div>
+
+    <!-- ============ TWEAKS PANEL ============ -->
+    <div class="tweaks-panel" id="tweaks-panel">
+        <div class="tweaks-head">
+            <h3>Tweaks</h3>
+            <button class="close" id="tweaks-close">&times;</button>
+        </div>
+        <div class="tweaks-body">
+            <div class="tweak">
+                <div class="tweak-label"><span>Accent</span><span class="tweak-val" id="tweak-accent-name">Amber</span></div>
+                <div class="swatch-row" id="tweak-accent-row"></div>
+            </div>
+            <div class="tweak">
+                <div class="tweak-label"><span>Card size</span><span class="tweak-val" id="tweak-size-val">1.00×</span></div>
+                <input type="range" id="tweak-card-size" min="0.7" max="1.4" step="0.05" value="1">
+            </div>
+            <div class="tweak">
+                <div class="tweak-label"><span>Panel layout</span></div>
+                <div class="tweak-radio" id="tweak-layout">
+                    <button data-val="docked" class="is-active">Docked</button>
+                    <button data-val="floating">Floating</button>
+                    <button data-val="hidden">Hide</button>
+                </div>
+            </div>
+            <div class="tweak">
+                <div class="tweak-label"><span>Player palette</span></div>
+                <div class="tweak-radio" id="tweak-palette">
+                    <button data-val="modern" class="is-active">Modern</button>
+                    <button data-val="classic">Classic</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script>
         // Supabase Client Setup
@@ -1144,7 +1254,16 @@
         let cardFuse = null;
         let allSessions = [];
 
-        const APP_VERSION = "v1.22.0"; // Centralized version string
+        const APP_VERSION = "v2.0.0"; // Centralized version string (redesign)
+
+        // Tweaks panel accent presets (hue values for the OKLCH accent ramp)
+        const ACCENT_PRESETS = {
+            amber:   { name: 'Amber',   h: 70 },
+            rose:    { name: 'Rose',    h: 12 },
+            emerald: { name: 'Emerald', h: 150 },
+            violet:  { name: 'Violet',  h: 292 },
+            azure:   { name: 'Azure',   h: 245 },
+        };
 
         window.addEventListener('DOMContentLoaded', () => {
             const loadingVer = document.getElementById('app-version-loading');
@@ -1153,6 +1272,7 @@
             if (loadingVer) loadingVer.innerText = APP_VERSION;
             if (setupVer) setupVer.innerText = APP_VERSION;
             if (sidebarVer) sidebarVer.innerText = APP_VERSION;
+            try { App.bindTweaks(); } catch (e) { console.warn('Tweaks init failed', e); }
         });
 
         const App = {
@@ -1633,6 +1753,8 @@
             showSetup() {
                 document.getElementById('setup-modal').classList.remove('hidden');
                 document.getElementById('app').classList.add('hidden');
+                const tb = document.getElementById('topbar');
+                if (tb) tb.style.display = 'none';
             },
 
             parseDeck(text) {
@@ -1902,7 +2024,7 @@
             // --- Timelines & Bookmarks System ---
 
             toggleTimelines() {
-                document.getElementById('timeline-drawer').classList.toggle('-translate-x-full');
+                document.getElementById('timeline-drawer').classList.toggle('is-open');
             },
 
             exportTimelines() {
@@ -4365,8 +4487,12 @@
                 return 'https://deckbuilder.lorcanajson.org/images/card-back.png';
             },
 
-            createCardElement(c, isOpponentHand = false, isInkwell = false) {
+            createCardElement(c, isOpponentHand = false, isInkwell = false, opts = {}) {
                 const dbCard = this.cardDB[c.cardId];
+                // Redesign: a .card-wrap holds the .card so hover-chips + exert sizing work.
+                const wrap = document.createElement('div');
+                wrap.className = 'card-wrap' + (c.exerted ? ' exerted' : '');
+
                 const el = document.createElement('div');
                 el.className = `card ${c.exerted ? 'exerted' : ''} ${c.drying ? 'drying' : ''}`;
 
@@ -4378,19 +4504,11 @@
                     el.classList.add('card-back');
                 } else {
                     el.style.backgroundImage = `url('${this.getCardImage(dbCard)}')`;
-
-                    // Add Hover Preview Events
+                    // Add Hover Preview Events (no mouseleave — last hovered card stays visible)
                     el.addEventListener('mouseenter', () => this.showPreview(dbCard));
-                    // Mouseleave event removed so the last hovered card stays visible
                 }
 
-                // Add Drying Badge
-                if (c.drying && !isOpponentHand && (!isInkwell || c.faceUp)) {
-                    const badge = document.createElement('div');
-                    badge.className = 'drying-badge';
-                    badge.innerHTML = '<i class="fa-solid fa-droplet"></i> Drying';
-                    el.appendChild(badge);
-                }
+                // Drying state is shown via the .card.drying ::after "NEW" badge (CSS).
 
                 // Add Damage overlay
                 if (c.damage > 0) {
@@ -4403,24 +4521,50 @@
                 // Add Stack count badge
                 if (c.stackedCards && c.stackedCards.length > 0 && !isOpponentHand && (!isInkwell || c.faceUp)) {
                     const stackBadge = document.createElement('div');
-                    stackBadge.className = 'absolute -bottom-2 -right-2 bg-purple-600 border border-white text-white rounded w-6 h-6 flex items-center justify-center text-xs font-bold shadow-lg z-20';
+                    stackBadge.className = 'damage-counter';
+                    stackBadge.style.cssText = 'top:auto;bottom:-8px;right:-8px;background:var(--p2);border-color:var(--bg)';
                     stackBadge.innerText = c.stackedCards.length;
                     stackBadge.title = `${c.stackedCards.length} cards stacked underneath`;
                     el.appendChild(stackBadge);
                 }
 
-                // Context menu trigger
+                // Context menu trigger (left-click and right-click, matching original)
                 el.addEventListener('click', (e) => {
                     e.stopPropagation();
                     this.showContextMenu(e, c.instanceId);
                 });
-
                 el.addEventListener('contextmenu', (e) => {
                     e.preventDefault();
                     this.showContextMenu(e, c.instanceId);
                 });
 
-                return el;
+                wrap.appendChild(el);
+
+                // Hover action chips — only for own, face-up, non-exerted cards
+                const showChips = opts.chips && dbCard && !c.exerted && !isOpponentHand && (!isInkwell || c.faceUp);
+                if (showChips) {
+                    const chips = document.createElement('div');
+                    chips.className = 'card-actions';
+                    const chip = (label, fn, danger) => {
+                        const b = document.createElement('button');
+                        b.className = 'chip' + (danger ? ' is-danger' : '');
+                        b.innerText = label;
+                        b.addEventListener('click', (e) => { e.stopPropagation(); fn(); });
+                        chips.appendChild(b);
+                    };
+                    if (opts.loc === 'hand') {
+                        chip('PLAY', () => this.playCard(c.instanceId));
+                        if (dbCard.inkwell) chip('INK', () => this.playToInkwell(c.instanceId));
+                    } else if (opts.loc === 'field') {
+                        if (!c.drying && (dbCard.lore || 0) > 0) chip('QUEST', () => this.quest(c.instanceId));
+                        chip(c.exerted ? 'READY' : 'EXERT', () => this.toggleExert(c.instanceId));
+                        chip('+DMG', () => this.addDamage(c.instanceId, 1));
+                        chip('BANISH', () => this.banish(c.instanceId), true);
+                    }
+                    if (chips.children.length) wrap.appendChild(chips);
+                }
+
+                return wrap;
             },
 
             showPreview(dbCard) {
@@ -4495,7 +4639,7 @@
 
                 const addOption = (text, onClick) => {
                     const item = document.createElement('div');
-                    item.className = 'context-item';
+                    item.className = 'ctx-item';
                     item.innerText = text;
                     item.onclick = (evt) => {
                         evt.stopPropagation();
@@ -4507,7 +4651,7 @@
 
                 const addDivider = () => {
                     const d = document.createElement('div');
-                    d.className = 'context-divider';
+                    d.className = 'ctx-divider';
                     menu.appendChild(d);
                 };
 
@@ -4587,7 +4731,7 @@
 
                 const addOption = (text, onClick) => {
                     const item = document.createElement('div');
-                    item.className = 'context-item flex items-center gap-2';
+                    item.className = 'ctx-item';
                     item.innerHTML = text;
                     item.onclick = (evt) => {
                         evt.stopPropagation();
@@ -4702,7 +4846,7 @@
 
                 const addOption = (text, onClick) => {
                     const item = document.createElement('div');
-                    item.className = 'context-item flex items-center gap-2';
+                    item.className = 'ctx-item';
                     item.innerHTML = text;
                     item.onclick = (evt) => {
                         evt.stopPropagation();
@@ -4832,7 +4976,7 @@
 
                 const addOption = (text, onClick) => {
                     const item = document.createElement('div');
-                    item.className = 'context-item flex items-center gap-2';
+                    item.className = 'ctx-item';
                     item.innerHTML = text;
                     item.onclick = (evt) => {
                         evt.stopPropagation();
@@ -5156,7 +5300,7 @@
                     }
 
                     // Render main card on top
-                    const mainEl = this.createCardElement(c);
+                    const mainEl = this.createCardElement(c, false, false, isOpponent ? {} : { chips: true, loc: 'field' });
                     group.appendChild(mainEl);
 
                     container.appendChild(group);
@@ -5206,9 +5350,20 @@
                 document.getElementById('p0-cards').innerText = `${this.state.players[0].deck.length} deck | ${this.state.players[0].hand.length} hand`;
                 document.getElementById('p1-cards').innerText = `${this.state.players[1].deck.length} deck | ${this.state.players[1].hand.length} hand`;
 
-                // Highlight active player badge
-                document.getElementById('p0-badge').className = `py-1 px-2 rounded bg-gray-800 text-sm mb-1 border-l-2 border-orange-500 flex justify-between ${this.state.activePlayer === 0 ? 'text-white shadow-inner bg-gray-700' : 'text-gray-400'}`;
-                document.getElementById('p1-badge').className = `py-1 px-2 rounded bg-gray-800 text-sm border-l-2 border-purple-500 flex justify-between ${this.state.activePlayer === 1 ? 'text-white shadow-inner bg-gray-700' : 'text-gray-400'}`;
+                // Highlight active player badge (redesign player-row styling)
+                document.getElementById('p0-badge').className = `player-row is-p1${this.state.activePlayer === 0 ? ' is-active' : ''}`;
+                document.getElementById('p1-badge').className = `player-row is-p2${this.state.activePlayer === 1 ? ' is-active' : ''}`;
+
+                // Top bar (turn pill) + ensure it is visible during play
+                const topbar = document.getElementById('topbar');
+                if (topbar) {
+                    topbar.style.display = 'flex';
+                    document.getElementById('turn-num').innerText = this.state.turn;
+                    document.getElementById('turn-actor').innerText = ap.name;
+                    const pill = document.getElementById('turn-pill');
+                    pill.classList.toggle('is-p1', ap.id === 0);
+                    pill.classList.toggle('is-p2', ap.id === 1);
+                }
 
                 // Quest Count & Mulligan Visibility
                 let readyLoreChars = 0;
@@ -5233,30 +5388,24 @@
                 const divider = document.getElementById('board-divider');
                 if (divider) {
                     if (this.state.activeTimelineColor) {
-                        divider.style.backgroundColor = this.state.activeTimelineColor;
-                        divider.style.boxShadow = `0 0 15px ${this.state.activeTimelineColor}`;
-                        divider.classList.remove('opacity-0');
-                        divider.classList.add('opacity-80');
+                        divider.style.background = this.state.activeTimelineColor;
+                        divider.style.boxShadow = `0 0 12px ${this.state.activeTimelineColor}`;
+                        divider.style.opacity = '0.9';
                     } else {
-                        divider.style.backgroundColor = 'transparent';
-                        divider.style.boxShadow = 'none';
-                        divider.classList.add('opacity-0');
-                        divider.classList.remove('opacity-80');
+                        divider.style.background = '';
+                        divider.style.boxShadow = '';
+                        divider.style.opacity = '';
                     }
                 }
 
                 // Apply Player Identity Colors dynamically to Top and Bottom Boards
-                // P1 (id=0) is Orange (#a86b32), P2 (id=1) is Purple (#3f2e70)
+                // P1 (id=0) -> .is-p1 (amber), P2 (id=1) -> .is-p2 (cyan). Color follows identity (Feature 16).
                 const topBoard = document.getElementById('top-board');
                 const bottomBoard = document.getElementById('bottom-board');
-
-                // Remove existing
-                topBoard.classList.remove('bg-[#a86b32]', 'bg-[#3f2e70]');
-                bottomBoard.classList.remove('bg-[#a86b32]', 'bg-[#3f2e70]');
-
-                // Add based on who is playing
-                topBoard.classList.add(ip.id === 0 ? 'bg-[#a86b32]' : 'bg-[#3f2e70]');
-                bottomBoard.classList.add(ap.id === 0 ? 'bg-[#a86b32]' : 'bg-[#3f2e70]');
+                topBoard.classList.remove('is-p1', 'is-p2');
+                bottomBoard.classList.remove('is-p1', 'is-p2');
+                topBoard.classList.add(ip.id === 0 ? 'is-p1' : 'is-p2');
+                bottomBoard.classList.add(ap.id === 0 ? 'is-p1' : 'is-p2');
 
                 // --- TOP BOARD (Inactive Player) ---
                 document.getElementById('top-player-bg-text').innerText = `P${ip.id + 1}`;
@@ -5329,7 +5478,7 @@
                 // Bottom Hand (Visible)
                 const bh = document.getElementById('bottom-hand');
                 bh.innerHTML = '';
-                ap.hand.forEach(c => bh.appendChild(this.createCardElement(c)));
+                ap.hand.forEach(c => bh.appendChild(this.createCardElement(c, false, false, { chips: true, loc: 'hand' })));
 
                 // Bottom Field
                 const bf = document.getElementById('bottom-field');
@@ -5357,6 +5506,98 @@
                     el.style.zIndex = i;
                     bd.appendChild(el);
                 });
+            },
+
+            // --- Helpers used by the tweaks panel ---
+            $(id) { return document.getElementById(id); },
+            el(tag, cls, html) {
+                const e = document.createElement(tag);
+                if (cls) e.className = cls;
+                if (html !== undefined) e.innerHTML = html;
+                return e;
+            },
+
+            // --- Tweaks panel (accent / card size / layout / palette) ---
+            loadTweaks() {
+                try { return JSON.parse(localStorage.getItem('lorcana_dojo_tweaks') || '{}'); } catch (e) { return {}; }
+            },
+            saveTweaks(t) { localStorage.setItem('lorcana_dojo_tweaks', JSON.stringify(t)); },
+            applyTweaks(t) {
+                const root = document.documentElement;
+                if (t.accent && ACCENT_PRESETS[t.accent]) {
+                    const h = ACCENT_PRESETS[t.accent].h;
+                    root.style.setProperty('--accent', `oklch(0.78 0.14 ${h})`);
+                    root.style.setProperty('--accent-hi', `oklch(0.84 0.15 ${h})`);
+                    root.style.setProperty('--accent-dim', `oklch(0.55 0.12 ${h})`);
+                    root.style.setProperty('--accent-soft', `oklch(0.78 0.14 ${h} / 0.18)`);
+                    root.style.setProperty('--accent-faint', `oklch(0.78 0.14 ${h} / 0.08)`);
+                    const nm = this.$('tweak-accent-name'); if (nm) nm.textContent = ACCENT_PRESETS[t.accent].name;
+                }
+                if (t.cardSize) {
+                    root.style.setProperty('--card-scale', String(t.cardSize));
+                    const sv = this.$('tweak-size-val'); if (sv) sv.textContent = `${parseFloat(t.cardSize).toFixed(2)}×`;
+                    const cs = this.$('tweak-card-size'); if (cs) cs.value = t.cardSize;
+                }
+                if (t.layout) {
+                    const app = this.$('app');
+                    app.classList.remove('layout-docked', 'layout-floating', 'layout-hidden');
+                    app.classList.add('layout-' + t.layout);
+                    const lay = this.$('tweak-layout');
+                    if (lay) lay.querySelectorAll('button').forEach(b => b.classList.toggle('is-active', b.dataset.val === t.layout));
+                    const sidebar = app.querySelector('.sidebar');
+                    if (t.layout === 'hidden') {
+                        root.style.setProperty('--sidebar-w', '0px');
+                        if (sidebar) sidebar.style.display = 'none';
+                    } else {
+                        root.style.setProperty('--sidebar-w', '296px');
+                        if (sidebar) sidebar.style.display = '';
+                    }
+                }
+                if (t.palette === 'classic') {
+                    root.style.setProperty('--p1', '#a86b32');
+                    root.style.setProperty('--p1-hi', '#d18a45');
+                    root.style.setProperty('--p2', '#3f2e70');
+                    root.style.setProperty('--p2-hi', '#6047a8');
+                } else if (t.palette === 'modern') {
+                    root.style.removeProperty('--p1');
+                    root.style.removeProperty('--p1-hi');
+                    root.style.removeProperty('--p2');
+                    root.style.removeProperty('--p2-hi');
+                }
+                const pal = this.$('tweak-palette');
+                if (pal) pal.querySelectorAll('button').forEach(b => b.classList.toggle('is-active', b.dataset.val === (t.palette || 'modern')));
+            },
+            bindTweaks() {
+                const t = this.loadTweaks();
+                if (!t.accent) t.accent = 'amber';
+                if (!t.cardSize) t.cardSize = 1;
+                if (!t.layout) t.layout = 'docked';
+                if (!t.palette) t.palette = 'modern';
+                const row = this.$('tweak-accent-row');
+                if (row && !row.children.length) {
+                    Object.entries(ACCENT_PRESETS).forEach(([key, def]) => {
+                        const s = this.el('div', 'swatch');
+                        s.style.background = `oklch(0.78 0.14 ${def.h})`;
+                        s.style.color = `oklch(0.78 0.14 ${def.h})`;
+                        s.title = def.name;
+                        if (t.accent === key) s.classList.add('is-active');
+                        s.addEventListener('click', () => {
+                            t.accent = key; this.saveTweaks(t); this.applyTweaks(t);
+                            row.querySelectorAll('.swatch').forEach(x => x.classList.remove('is-active'));
+                            s.classList.add('is-active');
+                        });
+                        row.appendChild(s);
+                    });
+                }
+                const cs = this.$('tweak-card-size');
+                if (cs) cs.addEventListener('input', (e) => { t.cardSize = parseFloat(e.target.value); this.saveTweaks(t); this.applyTweaks(t); });
+                const lay = this.$('tweak-layout');
+                if (lay) lay.querySelectorAll('button').forEach(b => b.addEventListener('click', () => { t.layout = b.dataset.val; this.saveTweaks(t); this.applyTweaks(t); }));
+                const pal = this.$('tweak-palette');
+                if (pal) pal.querySelectorAll('button').forEach(b => b.addEventListener('click', () => { t.palette = b.dataset.val; this.saveTweaks(t); this.applyTweaks(t); }));
+                const close = this.$('tweaks-close');
+                if (close) close.addEventListener('click', () => this.$('tweaks-panel').classList.remove('is-open'));
+                this.applyTweaks(t);
             }
         };
 

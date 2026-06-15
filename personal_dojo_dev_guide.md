@@ -249,4 +249,44 @@ Duels.ink replay downloads are gzip-compressed (`<gameId>_p1.replay.gz`). The im
 
 > **Note (dropped direction):** loading games directly from the Duels.ink API was prototyped but removed. Duels.ink serves **no CORS headers**, so a static single-file app hosted on GitHub Pages cannot call its API from the browser without an external proxy (a Supabase Edge Function was tried, then reverted to keep the app dependency-free). The reusable loader helper `_loadSessionIntoApp(session, turnCount)` introduced during that work was kept, since `_applyDojoLog` uses it.
 
+---
+
+## **8\. Visual Redesign Migration (v2.0.0)**
+
+The hi-fi redesign in `practice_dojo/redesign/` was migrated onto the production tool. Full play-by-play
+lives in `redesign/IMP_dojo_redesign_dev_log.md`. Architectural summary for future devs:
+
+### 8.1 Strategy — re-skin, do **not** rewrite the engine
+The production engine (state, mutation flow, undo, timelines, Duels.ink `.md`/replay/gzip import,
+challenge/stack/location, craft hand, cloud) is far richer than the redesign's stubbed `dojo.js`.
+So we kept the **entire `App` engine intact** and changed only the presentation layer:
+- The redesign `dojo.css` is appended into the single-file `<style>` (later source wins the cascade;
+  legacy rules remain below but are overridden). Design tokens are OKLCH; accent = amber; fonts = Geist.
+- **Tailwind is still loaded.** The engine toggles visibility with the `.hidden` class and uses
+  `.flex`/`.opacity-*`/arbitrary-value utilities, so Tailwind must stay. We added
+  `.hidden{display:none!important}` to make show/hide cascade-order-proof against the Play-CDN injection.
+- Body markup was rebuilt to the redesign structure (top bar, `.sidebar`, reordered `.board-half`s,
+  `.drawer-overlay`, tweaks panel) **keeping every original element ID and inline `on*` handler**, so
+  the drag/drop contract (`drop(ev,zone,pos)`), context menus and all wiring are byte-identical.
+
+### 8.2 What changed in the JS (presentation only)
+- `createCardElement(c, isOpp, isInk, opts)` — now returns `.card-wrap > .card`; 4th `opts` arg adds
+  hover-action chips (`{chips:true, loc:'hand'|'field'}`). First three params unchanged for back-compat.
+- `render()` — player badges → `.player-row is-p1/is-p2`; board tint → `.is-p1/.is-p2` (identity, Feature 16);
+  divider reverts to its CSS gradient when no `activeTimelineColor`; top-bar turn pill updated + shown.
+- Context menu builders emit `.ctx-item`/`.ctx-divider`. `toggleTimelines()` toggles `.is-open`.
+  `showSetup()` hides the top bar.
+- New: `$`, `el`, `loadTweaks/saveTweaks/applyTweaks/bindTweaks` + `ACCENT_PRESETS`. Tweaks persist in
+  `localStorage['lorcana_dojo_tweaks']` (accent / card-size `--card-scale` / panel layout / player palette;
+  `classic` palette restores the original `#a86b32`/`#3f2e70`). `bindTweaks()` runs on `DOMContentLoaded`.
+- `showPreview`, `updateMetrics`, `updateLog`, `setHandReveal` were left **verbatim** — their IDs and
+  Tailwind opacity/scale toggles are preserved in the new markup.
+
+### 8.3 Gotchas
+- Identity vs position: redesign colors halves by screen position; we override via `.board-half.is-p1/.is-p2`
+  (hue from identity) + `.top/.bottom` (gradient orientation) so Feature 16 coloring is preserved.
+- The tree modal markup was kept as-is (functional); only its nodes are restyled via `.tree-node`.
+- Inkwell still renders full-card stacks inside `.inkwell` (not the redesign micro-stack).
+- When bumping the version, update `APP_VERSION` and the three `#app-version-*` spans (loading/setup/sidebar).
+
 
