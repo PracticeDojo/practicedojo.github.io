@@ -4069,33 +4069,52 @@
                     `Took ${dmgToChallenger} dmg back (${cf.card.damage}/${cWp}).`
                 ];
 
-                // Banish defender if damage >= willpower
-                if (dWp > 0 && df.card.damage >= dWp) {
-                    const idx = df.player.field.findIndex(c => c.instanceId === defenderInstanceId);
-                    if (idx !== -1) {
-                        const cards = this._unpackStack(df.card);
-                        df.player.field.splice(idx, 1);
-                        cards.forEach(c => { c.damage = 0; c.exerted = false; c.drying = false; c.locationId = null; df.player.discard.push(c); });
-                        logParts.push(`${dDb.name} was banished!`);
-                    }
-                }
-
-                // Banish challenger if damage >= willpower (re-find after possible splice above)
-                if (cWp > 0 && cf.card.damage >= cWp) {
-                    const cf2 = this.findCard(challengerInstanceId);
-                    if (cf2 && cf2.loc === 'field') {
-                        const idx = cf2.player.field.findIndex(c => c.instanceId === challengerInstanceId);
-                        if (idx !== -1) {
-                            const cards = this._unpackStack(cf2.card);
-                            cf2.player.field.splice(idx, 1);
-                            cards.forEach(c => { c.damage = 0; c.exerted = false; c.drying = false; c.locationId = null; cf2.player.discard.push(c); });
-                            logParts.push(`${cDb.name} was banished!`);
-                        }
-                    }
-                }
-
                 this.logAction(logParts.join(' '));
                 this.render();
+
+                // Delay banishing by 1000ms to match the challenge arrow timeout
+                setTimeout(() => {
+                    let changed = false;
+
+                    // Banish defender if damage >= willpower (re-find in current state)
+                    const df2 = this.findCard(defenderInstanceId);
+                    if (df2 && df2.loc === 'field') {
+                        const dDb2 = this.cardDB[df2.card.cardId];
+                        const dWp2 = dDb2.willpower || 0;
+                        if (dWp2 > 0 && df2.card.damage >= dWp2) {
+                            const idx = df2.player.field.findIndex(c => c.instanceId === defenderInstanceId);
+                            if (idx !== -1) {
+                                const cards = this._unpackStack(df2.card);
+                                df2.player.field.splice(idx, 1);
+                                cards.forEach(c => { c.damage = 0; c.exerted = false; c.drying = false; c.locationId = null; df2.player.discard.push(c); });
+                                this.logAction(`${dDb2.name} was banished!`);
+                                changed = true;
+                            }
+                        }
+                    }
+
+                    // Banish challenger if damage >= willpower (re-find in current state)
+                    const cf2 = this.findCard(challengerInstanceId);
+                    if (cf2 && cf2.loc === 'field') {
+                        const cDb2 = this.cardDB[cf2.card.cardId];
+                        const cWp2 = cDb2.willpower || 0;
+                        if (cWp2 > 0 && cf2.card.damage >= cWp2) {
+                            const idx = cf2.player.field.findIndex(c => c.instanceId === challengerInstanceId);
+                            if (idx !== -1) {
+                                const cards = this._unpackStack(cf2.card);
+                                cf2.player.field.splice(idx, 1);
+                                cards.forEach(c => { c.damage = 0; c.exerted = false; c.drying = false; c.locationId = null; cf2.player.discard.push(c); });
+                                this.logAction(`${cDb2.name} was banished!`);
+                                changed = true;
+                            }
+                        }
+                    }
+
+                    if (changed) {
+                        this.render();
+                        this.checkBranchOver();
+                    }
+                }, 1000);
             },
 
             returnToHand(instanceId) {
