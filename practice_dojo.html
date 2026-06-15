@@ -1814,6 +1814,30 @@ input[type="range"]::-moz-range-thumb { width: 14px; height: 14px; background: v
                 this.state.log.push({ text: msg, isSystem, player: this.state.activePlayer });
             },
 
+            // Track a structured per-turn action (inked / played / banished) so the
+            // auto-save timeline node can summarise the turn (Duels.ink-style recap).
+            _trackAction(type, cardId) {
+                if (!this.state.turnActions) this.state.turnActions = { inked: [], played: [], banished: [] };
+                if (!this.state.turnActions[type]) this.state.turnActions[type] = [];
+                this.state.turnActions[type].push(cardId);
+            },
+            // Build a markdown recap of the actions taken during the turn that just ended.
+            _formatTurnActions() {
+                const ta = this.state.turnActions || {};
+                const fmt = (ids) => {
+                    if (!ids || !ids.length) return null;
+                    const counts = {};
+                    ids.forEach(id => { const n = (this.cardDB[id] && this.cardDB[id].name) || 'Unknown card'; counts[n] = (counts[n] || 0) + 1; });
+                    return Object.entries(counts).map(([n, c]) => c > 1 ? `${n} ×${c}` : n).join(', ');
+                };
+                const lines = [];
+                const inked = fmt(ta.inked); if (inked) lines.push(`- **Inked:** ${inked}`);
+                const played = fmt(ta.played); if (played) lines.push(`- **Played:** ${played}`);
+                const banished = fmt(ta.banished); if (banished) lines.push(`- **Banished:** ${banished}`);
+                if (!lines.length) return '';
+                return `\n\n**Turn recap**\n${lines.join('\n')}`;
+            },
+
             shuffle(array) {
                 for (let i = array.length - 1; i > 0; i--) {
                     const j = Math.floor(Math.random() * (i + 1));
@@ -1835,6 +1859,7 @@ input[type="range"]::-moz-range-thumb { width: 14px; height: 14px; background: v
                     activeBookmarkId: null,
                     turn: 1, activePlayer: 0, inactivePlayer: 1, opponentHandRevealed: false, log: [], turnComments: {},
                     cardsPlayedThisTurn: [],
+                    turnActions: { inked: [], played: [], banished: [] },
                     activeTimelineColor: null,
                     players: [
                         { id: 0, name: "Player 1", deck: [], hand: [], field: [], inkwell: [], discard: [], lore: 0, inkTotal: 0, inkReady: 0, hasMulliganed: false },
@@ -1945,7 +1970,16 @@ input[type="range"]::-moz-range-thumb { width: 14px; height: 14px; background: v
 
                     const commentKey = `${prevTurn}-${prevPlayerId}`;
                     const customComment = this.state.turnComments[commentKey];
-                    const finalComment = customComment && customComment.trim() !== "" ? customComment : "Auto-saved at start of turn.";
+                    // Duels.ink-style recap of the turn that just ended (inked / played / banished),
+                    // appended BELOW whatever note the user wrote manually.
+                    const recap = this._formatTurnActions();
+                    let baseComment = customComment && customComment.trim() !== "" ? customComment.trim() : "Auto-saved at start of turn.";
+                    // Strip any previously-appended recap so restoring a node then replaying doesn't nest recaps.
+                    const recapMarker = '\n\n**Turn recap**';
+                    const mIdx = baseComment.indexOf(recapMarker);
+                    if (mIdx !== -1) baseComment = baseComment.slice(0, mIdx).trim();
+                    if (!baseComment) baseComment = "Auto-saved at start of turn.";
+                    const finalComment = baseComment + recap;
 
                     this.bookmarks.push({
                         id: newId,
@@ -1960,8 +1994,9 @@ input[type="range"]::-moz-range-thumb { width: 14px; height: 14px; background: v
                         isDeckEdit: false
                     });
 
-                    // Clear the buffer now that the previous turn's played cards are saved
+                    // Clear the buffers now that the previous turn's actions are saved
                     this.state.cardsPlayedThisTurn = [];
+                    this.state.turnActions = { inked: [], played: [], banished: [] };
 
                     this.state.activeBookmarkId = newId;
                     this.showToast("Auto-Saved Timeline");
@@ -3884,6 +3919,7 @@ input[type="range"]::-moz-range-thumb { width: 14px; height: 14px; background: v
                     // Feature 14: Track played cards for visual rendering in auto-saves
                     if (!this.state.cardsPlayedThisTurn) this.state.cardsPlayedThisTurn = [];
                     this.state.cardsPlayedThisTurn.push(found.card.cardId);
+                    this._trackAction('played', found.card.cardId);
                 }
 
                 // Remove from old location
@@ -3977,6 +4013,7 @@ input[type="range"]::-moz-range-thumb { width: 14px; height: 14px; background: v
                 // Feature 14: Track card played to inkwell
                 if (!this.state.cardsPlayedThisTurn) this.state.cardsPlayedThisTurn = [];
                 this.state.cardsPlayedThisTurn.push(found.card.cardId);
+                this._trackAction('inked', found.card.cardId);
 
                 const cardsToMove = this._unpackStack(found.card);
                 cardsToMove.forEach(c => {
@@ -4033,6 +4070,9 @@ input[type="range"]::-moz-range-thumb { width: 14px; height: 14px; background: v
                 } else {
                     this.logAction(`You played ${dbCard.name} (cost ${dbCard.cost}).`);
                 }
+                if (!this.state.cardsPlayedThisTurn) this.state.cardsPlayedThisTurn = [];
+                this.state.cardsPlayedThisTurn.push(found.card.cardId);
+                this._trackAction('played', found.card.cardId);
                 this.render();
             },
 
@@ -4126,6 +4166,7 @@ input[type="range"]::-moz-range-thumb { width: 14px; height: 14px; background: v
                 });
 
                 this.logAction(`${dbCard.name}${cardsToMove.length > 1 ? ` and its stack (${cardsToMove.length} cards)` : ''} was banished.`);
+                this._trackAction('banished', found.card.cardId);
                 this.render();
             },
 
@@ -4210,6 +4251,7 @@ input[type="range"]::-moz-range-thumb { width: 14px; height: 14px; background: v
                                 df2.player.field.splice(idx, 1);
                                 cards.forEach(c => { c.damage = 0; c.exerted = false; c.drying = false; c.locationId = null; df2.player.discard.push(c); });
                                 this.logAction(`${dDb2.name} was banished!`);
+                                this._trackAction('banished', df2.card.cardId);
                                 changed = true;
                             }
                         }
@@ -4227,6 +4269,7 @@ input[type="range"]::-moz-range-thumb { width: 14px; height: 14px; background: v
                                 cf2.player.field.splice(idx, 1);
                                 cards.forEach(c => { c.damage = 0; c.exerted = false; c.drying = false; c.locationId = null; cf2.player.discard.push(c); });
                                 this.logAction(`${cDb2.name} was banished!`);
+                                this._trackAction('banished', cf2.card.cardId);
                                 changed = true;
                             }
                         }
