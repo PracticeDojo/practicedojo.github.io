@@ -686,6 +686,63 @@ input[type="range"]::-moz-range-thumb { width: 14px; height: 14px; background: v
 .card-actions .chip { padding: 5px 10px; font-size: 11px; }
 /* taller invisible hit-bridge under each card so travelling to the chips keeps :hover */
 .card-wrap::after { content: ''; position: absolute; left: 0; right: 0; bottom: -14px; height: 14px; }
+
+/* ===== Touch / mobile support ===== */
+/* Draggable elements must opt out of native touch scrolling so the pointer-event
+   drag shim can form a drag gesture (mandatory on iOS Safari). */
+[draggable="true"] { touch-action: none; }
+/* Floating clone that follows the finger during a touch drag. */
+.touch-drag-ghost {
+    position: fixed; left: 0; top: 0; pointer-events: none; z-index: 99999;
+    opacity: .85; transform: translate(-50%, -50%) scale(1.05);
+    border-radius: var(--radius-sm); box-shadow: var(--shadow-3);
+    will-change: left, top;
+}
+
+/* Hamburger + sidebar scrim are desktop-hidden; the phone media query reveals them. */
+#mobile-menu-btn { display: none; }
+.sidebar-scrim {
+    display: none; position: fixed; inset: 0; z-index: 39;
+    background: oklch(0.03 0.01 60 / 0.55); opacity: 0;
+    transition: opacity .22s ease; pointer-events: none;
+}
+.sidebar-scrim.is-open { opacity: 1; pointer-events: auto; }
+
+/* ===== Phone layout (≤760px): single column, off-canvas sidebar, full-screen modals ===== */
+@media (max-width: 760px) {
+    /* One column — the board owns the screen; the sidebar floats over it. */
+    .app { grid-template-columns: 1fr; }
+    .sidebar {
+        position: fixed; top: var(--topbar-h); left: 0; bottom: 0;
+        width: min(86vw, 320px); z-index: 40;
+        border-right: 1px solid var(--border);
+        box-shadow: var(--shadow-3);
+        transform: translateX(-105%);
+        transition: transform 0.25s cubic-bezier(0.5, 0, 0.2, 1);
+    }
+    .sidebar.is-open { transform: translateX(0); }
+    .sidebar-scrim { display: block; }
+    #mobile-menu-btn { display: inline-flex; }
+
+    /* Reclaim horizontal space across the board. */
+    .board-half { padding: 4px 6px; }
+    .pile-row { max-width: 100%; gap: 8px; padding: 6px 8px; }
+    .field-strip .field { gap: 8px; max-width: 100%; padding: 8px; }
+    .hand .card-wrap { margin-left: -40px; }
+    .lore-badge { transform: scale(0.85); transform-origin: top right; }
+    .notes-panel { display: none; }
+    /* Icon-only top bar so the controls fit a narrow header. */
+    .topbar-right .icon-btn span { display: none; }
+    .brand-tag { display: none; }
+
+    /* Full-screen, scrollable modals. */
+    .setup-card,
+    .modal-card { width: 100vw; max-width: 100vw; max-height: 100dvh; border-radius: 0; }
+    .modal-card.wide { width: 100vw; height: 100dvh; }
+    .overlay { padding: 0; }
+    .card-grid { grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); }
+    .deck-pair { grid-template-columns: 1fr; }
+}
     </style>
 </head>
 
@@ -704,6 +761,7 @@ input[type="range"]::-moz-range-thumb { width: 14px; height: 14px; background: v
     <!-- ============ TOP BAR ============ -->
     <header class="topbar" id="topbar" style="display:none">
         <div class="topbar-left">
+            <button id="mobile-menu-btn" class="icon-btn" onclick="App.toggleSidebar()" title="Menu" aria-label="Open menu"><i class="fa-solid fa-bars"></i></button>
             <div class="brand">
                 <span class="brand-mark"></span>
                 <span class="brand-name">Practice Dojo</span>
@@ -1095,6 +1153,9 @@ input[type="range"]::-moz-range-thumb { width: 14px; height: 14px; background: v
             </div>
         </aside>
 
+        <!-- Mobile: dim/click-catch behind the off-canvas sidebar drawer -->
+        <div id="sidebar-scrim" class="sidebar-scrim" onclick="App.toggleSidebar(false)"></div>
+
         <!-- PLAY AREA -->
         <main class="play" id="play">
 
@@ -1112,7 +1173,7 @@ input[type="range"]::-moz-range-thumb { width: 14px; height: 14px; background: v
 
                 <!-- hand row -->
                 <div class="hand-wrap">
-                    <button class="peek-toggle" onmousedown="App.setHandReveal(true)" onmouseup="App.setHandReveal(false)" onmouseleave="App.setHandReveal(false)" title="Hold to peek opponent hand">
+                    <button class="peek-toggle" onmousedown="App.setHandReveal(true)" onmouseup="App.setHandReveal(false)" onmouseleave="App.setHandReveal(false)" ontouchstart="App.togglePeek(event)" title="Tap (or hold on desktop) to peek opponent hand">
                         <i id="reveal-icon" class="fa-solid fa-eye"></i> <span id="reveal-text">Hold to Reveal Hand</span>
                     </button>
                     <div class="hand drop-zone" ondragover="App.allowDrop(event)" ondragenter="App.dragEnter(event)" ondragleave="App.dragLeave(event)" ondrop="App.drop(event, 'hand', 'top')">
@@ -1254,7 +1315,7 @@ input[type="range"]::-moz-range-thumb { width: 14px; height: 14px; background: v
         let cardFuse = null;
         let allSessions = [];
 
-        const APP_VERSION = "v2.0.0"; // Centralized version string (redesign)
+        const APP_VERSION = "v2.4.0"; // Centralized version string (redesign)
 
         // Tweaks panel accent presets (hue values for the OKLCH accent ramp)
         const ACCENT_PRESETS = {
@@ -1693,6 +1754,23 @@ input[type="range"]::-moz-range-thumb { width: 14px; height: 14px; background: v
                 const viewport = document.getElementById('tree-viewport');
                 const canvas = document.getElementById('tree-canvas');
 
+                const applyTreeTransform = () => {
+                    canvas.style.transform = `translate(${this.treePan.translateX}px, ${this.treePan.translateY}px) scale(${this.treePan.zoom})`;
+                };
+                // Zoom toward a viewport point (clientX/Y), keeping that point stationary.
+                const zoomAt = (newZoom, clientX, clientY) => {
+                    newZoom = Math.min(Math.max(0.1, newZoom), 3.0);
+                    if (newZoom === this.treePan.zoom) return;
+                    const rect = viewport.getBoundingClientRect();
+                    const offsetX = (clientX - rect.left) - this.treePan.translateX;
+                    const offsetY = (clientY - rect.top) - this.treePan.translateY;
+                    const ratio = newZoom / this.treePan.zoom;
+                    this.treePan.translateX -= offsetX * (ratio - 1);
+                    this.treePan.translateY -= offsetY * (ratio - 1);
+                    this.treePan.zoom = newZoom;
+                    applyTreeTransform();
+                };
+
                 viewport.addEventListener('mousedown', (e) => {
                     if (e.target.closest('.tree-node')) return; // Do not pan if clicking a node card
                     this.treePan.isDragging = true;
@@ -1741,6 +1819,56 @@ input[type="range"]::-moz-range-thumb { width: 14px; height: 14px; background: v
                         canvas.style.transform = `translate(${this.treePan.translateX}px, ${this.treePan.translateY}px) scale(${this.treePan.zoom})`;
                     }
                 }, { passive: false });
+
+                // ---- Touch: one-finger pan + two-finger pinch zoom ----
+                let pinchDist = 0;
+                const fingerDist = (a, b) => Math.hypot(b.clientX - a.clientX, b.clientY - a.clientY);
+                const fingerMid = (a, b) => ({ x: (a.clientX + b.clientX) / 2, y: (a.clientY + b.clientY) / 2 });
+
+                viewport.addEventListener('touchstart', (e) => {
+                    if (e.touches.length === 1) {
+                        if (e.target.closest('.tree-node')) return; // tapping a node shouldn't pan
+                        this.treePan.isDragging = true;
+                        this.treePan.startX = e.touches[0].clientX - this.treePan.translateX;
+                        this.treePan.startY = e.touches[0].clientY - this.treePan.translateY;
+                    } else if (e.touches.length === 2) {
+                        this.treePan.isDragging = false;
+                        pinchDist = fingerDist(e.touches[0], e.touches[1]);
+                        e.preventDefault();
+                    }
+                }, { passive: false });
+
+                viewport.addEventListener('touchmove', (e) => {
+                    if (e.touches.length === 2) {
+                        e.preventDefault();
+                        const nd = fingerDist(e.touches[0], e.touches[1]);
+                        if (pinchDist > 0 && nd > 0) {
+                            const m = fingerMid(e.touches[0], e.touches[1]);
+                            zoomAt(this.treePan.zoom * (nd / pinchDist), m.x, m.y);
+                        }
+                        pinchDist = nd;
+                    } else if (e.touches.length === 1 && this.treePan.isDragging) {
+                        e.preventDefault();
+                        this.treePan.translateX = e.touches[0].clientX - this.treePan.startX;
+                        this.treePan.translateY = e.touches[0].clientY - this.treePan.startY;
+                        applyTreeTransform();
+                    }
+                }, { passive: false });
+
+                const endTreeTouch = (e) => {
+                    if (e.touches.length === 0) {
+                        this.treePan.isDragging = false;
+                        pinchDist = 0;
+                    } else if (e.touches.length === 1) {
+                        // Lifting one finger of a pinch → resume single-finger pan cleanly.
+                        pinchDist = 0;
+                        this.treePan.isDragging = true;
+                        this.treePan.startX = e.touches[0].clientX - this.treePan.translateX;
+                        this.treePan.startY = e.touches[0].clientY - this.treePan.translateY;
+                    }
+                };
+                viewport.addEventListener('touchend', endTreeTouch);
+                viewport.addEventListener('touchcancel', endTreeTouch);
             },
 
             resetTreeZoom() {
@@ -2017,6 +2145,12 @@ input[type="range"]::-moz-range-thumb { width: 14px; height: 14px; background: v
                 }
             },
 
+            // Touch: hold-to-peek is awkward, so a tap toggles the reveal instead.
+            togglePeek(e) {
+                if (e) e.preventDefault(); // suppress the synthesized mouse events that follow
+                this.setHandReveal(!this.state.opponentHandRevealed);
+            },
+
             setHandReveal(isRevealed) {
                 if (this.state.opponentHandRevealed === isRevealed) return;
 
@@ -2059,7 +2193,24 @@ input[type="range"]::-moz-range-thumb { width: 14px; height: 14px; background: v
             // --- Timelines & Bookmarks System ---
 
             toggleTimelines() {
-                document.getElementById('timeline-drawer').classList.toggle('is-open');
+                const drawer = document.getElementById('timeline-drawer');
+                const opening = !drawer.classList.contains('is-open');
+                drawer.classList.toggle('is-open');
+                // On phones the timeline drawer is nested inside the off-canvas sidebar,
+                // so reveal/hide the sidebar alongside it.
+                if (window.matchMedia && window.matchMedia('(max-width: 760px)').matches) {
+                    this.toggleSidebar(opening);
+                }
+            },
+
+            // Mobile: slide the sidebar in/out as an off-canvas drawer (+ scrim).
+            toggleSidebar(force) {
+                const sb = document.querySelector('.sidebar');
+                const scrim = document.getElementById('sidebar-scrim');
+                if (!sb) return;
+                const open = typeof force === 'boolean' ? force : !sb.classList.contains('is-open');
+                sb.classList.toggle('is-open', open);
+                if (scrim) scrim.classList.toggle('is-open', open);
             },
 
             exportTimelines() {
@@ -4698,6 +4849,13 @@ input[type="range"]::-moz-range-thumb { width: 14px; height: 14px; background: v
                     menu.appendChild(d);
                 };
 
+                // Touch devices have no hover preview, so offer it explicitly. Opening the
+                // sidebar drawer surfaces the preview pane (which lives inside it on mobile).
+                if (dbCard && window.matchMedia && window.matchMedia('(pointer: coarse)').matches) {
+                    addOption('Preview Card', () => { this.showPreview(dbCard); this.toggleSidebar(true); });
+                    addDivider();
+                }
+
                 // Build menu based on location
                 if (found.loc === 'hand') {
                     if (isActivePlayerOwned) {
@@ -5588,9 +5746,12 @@ input[type="range"]::-moz-range-thumb { width: 14px; height: 14px; background: v
                     const lay = this.$('tweak-layout');
                     if (lay) lay.querySelectorAll('button').forEach(b => b.classList.toggle('is-active', b.dataset.val === t.layout));
                     const sidebar = app.querySelector('.sidebar');
+                    const isMobile = window.matchMedia && window.matchMedia('(max-width: 760px)').matches;
                     if (t.layout === 'hidden') {
                         root.style.setProperty('--sidebar-w', '0px');
-                        if (sidebar) sidebar.style.display = 'none';
+                        // On phones the sidebar is an off-canvas drawer (transform-driven), so never
+                        // hard-hide it with display:none or the hamburger drawer would be unusable.
+                        if (sidebar) sidebar.style.display = isMobile ? '' : 'none';
                     } else {
                         root.style.setProperty('--sidebar-w', '296px');
                         if (sidebar) sidebar.style.display = '';
@@ -5613,7 +5774,8 @@ input[type="range"]::-moz-range-thumb { width: 14px; height: 14px; background: v
             bindTweaks() {
                 const t = this.loadTweaks();
                 if (!t.accent) t.accent = 'amber';
-                if (!t.cardSize) t.cardSize = 1;
+                // Smaller default cards on touch devices so the board fits a phone screen.
+                if (!t.cardSize) t.cardSize = (window.matchMedia && window.matchMedia('(pointer: coarse)').matches) ? 0.8 : 1;
                 if (!t.layout) t.layout = 'docked';
                 if (!t.palette) t.palette = 'modern';
                 const row = this.$('tweak-accent-row');
@@ -5648,6 +5810,173 @@ input[type="range"]::-moz-range-thumb { width: 14px; height: 14px; background: v
         document.addEventListener('click', () => {
             document.getElementById('context-menu').style.display = 'none';
         });
+
+        /* =========================================================================
+           Touch → HTML5-drag shim
+           -------------------------------------------------------------------------
+           Touch screens never fire native HTML5 drag events, yet every card move in
+           this app is built on them. This shim synthesizes the full drag lifecycle
+           (dragstart → dragenter/over/leave → drop → dragend) from Pointer Events and
+           invokes the existing inline `.ondragstart` / `.ondrop` / `.ondragover` …
+           element-property handlers unchanged. It is gated on pointerType === touch/pen
+           so mouse (desktop + hybrid laptops) keeps using native drag-and-drop.
+           ========================================================================= */
+        (function TouchDragShim() {
+            const THRESHOLD = 8;          // px of movement before a press becomes a drag
+            const EDGE = 48;              // px from the play-area edge that triggers autoscroll
+            let st = null;                // active drag state, or null
+            let suppressClickUntil = 0;   // swallow the synthetic click that follows a drag
+            let rafId = null, scrollDir = 0, scrollPlay = null;
+
+            // A minimal stand-in for the native DataTransfer the handlers read/write.
+            function makeDT() {
+                const d = {};
+                return {
+                    setData(t, v) { d[t] = String(v); },
+                    getData(t) { return d[t] || ''; },
+                    clearData() { for (const k in d) delete d[k]; },
+                    setDragImage() {},
+                    effectAllowed: 'move', dropEffect: 'move',
+                    get types() { return Object.keys(d); },
+                };
+            }
+
+            // Build the synthetic event object passed to a drag handler.
+            function synth(dt, targetEl, e, related) {
+                return {
+                    target: targetEl, currentTarget: targetEl, dataTransfer: dt,
+                    clientX: e.clientX, clientY: e.clientY, relatedTarget: related || null,
+                    preventDefault() {}, stopPropagation() {},
+                };
+            }
+
+            // Invoke an element's drag-event property handler if present.
+            function fire(el, prop, dt, targetEl, e, related) {
+                const fn = el && el[prop];
+                if (typeof fn === 'function') fn.call(el, synth(dt, targetEl, e, related));
+            }
+
+            // Nearest ancestor (incl. self) that owns a drop handler. We resolve by the
+            // `.ondrop` property so both `.drop-zone` containers and the dynamic
+            // challenge/location/stack group wrappers are found — innermost wins.
+            function closestDrop(el) {
+                while (el && el !== document) {
+                    if (typeof el.ondrop === 'function') return el;
+                    el = el.parentElement;
+                }
+                return null;
+            }
+
+            function positionGhost(e) {
+                if (st && st.ghost) {
+                    st.ghost.style.left = e.clientX + 'px';
+                    st.ghost.style.top = e.clientY + 'px';
+                }
+            }
+
+            function startDrag(e) {
+                st.dragging = true;
+                st.dt = makeDT();
+                fire(st.src, 'ondragstart', st.dt, st.src, e, null);
+                // Floating clone that tracks the finger.
+                const r = st.src.getBoundingClientRect();
+                const g = st.src.cloneNode(true);
+                g.classList.add('touch-drag-ghost');
+                g.style.width = r.width + 'px';
+                g.style.height = r.height + 'px';
+                // Inline transform beats the `.card.exerted` rotation, keeping the ghost upright.
+                g.style.transform = 'translate(-50%, -50%) scale(1.05)';
+                document.body.appendChild(g);
+                st.ghost = g;
+                positionGhost(e);
+            }
+
+            function autoScroll(e) {
+                if (!scrollPlay) scrollPlay = document.querySelector('.play');
+                if (!scrollPlay) return;
+                const r = scrollPlay.getBoundingClientRect();
+                scrollDir = e.clientY < r.top + EDGE ? -1 : (e.clientY > r.bottom - EDGE ? 1 : 0);
+                if (scrollDir && !rafId) {
+                    const step = () => {
+                        if (!scrollDir || !st || !st.dragging) { rafId = null; return; }
+                        scrollPlay.scrollTop += scrollDir * 12;
+                        rafId = requestAnimationFrame(step);
+                    };
+                    rafId = requestAnimationFrame(step);
+                }
+            }
+
+            function moveDrag(e) {
+                positionGhost(e);
+                if (st.ghost) st.ghost.style.visibility = 'hidden';
+                const hit = document.elementFromPoint(e.clientX, e.clientY);
+                if (st.ghost) st.ghost.style.visibility = '';
+                const target = hit ? closestDrop(hit) : null;
+                if (target !== st.over) {
+                    if (st.over) fire(st.over, 'ondragleave', st.dt, st.over, e, null);
+                    st.over = target;
+                    if (target) fire(target, 'ondragenter', st.dt, target, e, st.src);
+                }
+                if (target) fire(target, 'ondragover', st.dt, target, e, st.src);
+                autoScroll(e);
+            }
+
+            function cleanup(s) {
+                if (s && s.ghost && s.ghost.parentNode) s.ghost.parentNode.removeChild(s.ghost);
+                scrollDir = 0;
+                if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
+            }
+
+            document.addEventListener('pointerdown', (e) => {
+                if (e.pointerType !== 'touch' && e.pointerType !== 'pen') return;
+                const src = e.target.closest && e.target.closest('[draggable="true"]');
+                if (!src) return;
+                st = { src, id: e.pointerId, sx: e.clientX, sy: e.clientY, dragging: false, ghost: null, over: null, dt: null };
+                // Do NOT preventDefault here — a pure tap must still fire click (context menu / draw).
+            }, true);
+
+            document.addEventListener('pointermove', (e) => {
+                if (!st || e.pointerId !== st.id) return;
+                if (!st.dragging) {
+                    if (Math.hypot(e.clientX - st.sx, e.clientY - st.sy) < THRESHOLD) return;
+                    startDrag(e);
+                }
+                if (!st.dragging) return;
+                e.preventDefault();   // stop the page from scrolling mid-drag
+                moveDrag(e);
+            }, { capture: true, passive: false });
+
+            document.addEventListener('pointerup', (e) => {
+                if (!st || e.pointerId !== st.id) return;
+                const s = st; st = null;
+                if (!s.dragging) { cleanup(s); return; }   // was a tap → let native click run
+                if (s.ghost) s.ghost.style.visibility = 'hidden';
+                const hit = document.elementFromPoint(e.clientX, e.clientY);
+                const target = hit ? closestDrop(hit) : null;
+                if (s.over && s.over !== target) fire(s.over, 'ondragleave', s.dt, s.over, e, null);
+                if (target) fire(target, 'ondrop', s.dt, target, e, s.src);
+                fire(s.src, 'ondragend', s.dt, s.src, e, null);
+                cleanup(s);
+                suppressClickUntil = Date.now() + 500;   // kill the trailing synthetic click
+            }, { capture: true, passive: false });
+
+            document.addEventListener('pointercancel', (e) => {
+                if (!st || e.pointerId !== st.id) return;
+                const s = st; st = null;
+                if (s.over) fire(s.over, 'ondragleave', s.dt, s.over, e, null);
+                cleanup(s);
+            }, true);
+
+            // One-shot capture swallow of the click the browser fires after a touch drag,
+            // so it doesn't open the context menu / draw a card.
+            document.addEventListener('click', (e) => {
+                if (Date.now() < suppressClickUntil) {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    suppressClickUntil = 0;
+                }
+            }, true);
+        })();
 
         // Global Keyboard Hotkeys & Multiverse Tree Navigation Support
         document.addEventListener('keydown', (e) => {
