@@ -1578,6 +1578,11 @@
             right: 16px;
         }
 
+        /* Mobile-only floating quick actions — hidden on desktop (drawer has the full set). */
+        .mobile-quick-actions {
+            display: none;
+        }
+
         .notes-panel {
             position: absolute;
             z-index: 4;
@@ -2616,6 +2621,27 @@
                 display: none;
             }
 
+            /* Floating Quest / End-turn cluster, anchored bottom-right (opposite the
+               bottom-left lore badge) so it stays clear of the centered hand fan. */
+            .mobile-quick-actions {
+                display: flex;
+                flex-direction: column;
+                gap: 6px;
+                position: fixed;
+                right: 8px;
+                bottom: 10px;
+                z-index: 35;
+                pointer-events: none;
+            }
+
+            .mobile-quick-actions .mqa-btn {
+                pointer-events: auto;
+                padding: 9px 13px;
+                font-size: 12.5px;
+                white-space: nowrap;
+                box-shadow: var(--shadow-3);
+            }
+
             /* --- Opponent (top) hand: collapsed by default; only the count/peek button shows.
            Tapping "Reveal" (App.togglePeek → body.opp-hand-revealed) expands it. --- */
             .hand-meta {
@@ -3299,6 +3325,20 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Mobile-only quick actions: surface the two most-used current-player
+                 actions (Quest with all, End turn) without opening the sidebar drawer.
+                 Hidden on desktop; anchored bottom-right (opposite the bottom-left lore badge). -->
+            <div class="mobile-quick-actions" id="mobile-quick-actions">
+                <button class="btn mqa-btn" onclick="App.questWithAll()"
+                    title="Quest with all available characters">
+                    <i class="fa-solid fa-diamond" style="color:var(--lvi)"></i> Quest
+                    <span class="mono dim" id="quest-count-mobile">0</span>
+                </button>
+                <button class="btn btn-p1 mqa-btn" onclick="App.endTurn()" title="End turn">
+                    End turn <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </div>
         </main>
     </div>
 
@@ -3351,7 +3391,7 @@
         let cardFuse = null;
         let allSessions = [];
 
-        const APP_VERSION = "v2.5.1"; // Centralized version string (redesign)
+        const APP_VERSION = "v2.5.2"; // Centralized version string (redesign)
 
         // Tweaks panel accent presets (hue values for the OKLCH accent ramp)
         const ACCENT_PRESETS = {
@@ -7609,6 +7649,8 @@
                 // Update quest counter to exclude drying characters
                 ap.field.forEach(c => { if (!c.exerted && !c.drying && this.cardDB[c.cardId].lore > 0) readyLoreChars++; });
                 document.getElementById('quest-count').innerText = readyLoreChars;
+                const questCountMobile = document.getElementById('quest-count-mobile');
+                if (questCountMobile) questCountMobile.innerText = readyLoreChars;
 
                 const mulliganBtn = document.getElementById('mulligan-btn');
                 const craftHandBtn = document.getElementById('craft-hand-btn');
