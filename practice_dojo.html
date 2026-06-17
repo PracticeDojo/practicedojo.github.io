@@ -805,6 +805,9 @@
         /* APP SHELL */
         .app {
             height: calc(100vh - var(--topbar-h));
+            /* fallback */
+            height: calc(100dvh - var(--topbar-h));
+            /* visible viewport on mobile Chromium (Brave/Chrome) */
             display: grid;
             grid-template-columns: var(--sidebar-w) 1fr;
             overflow: hidden;
@@ -3348,7 +3351,7 @@
         let cardFuse = null;
         let allSessions = [];
 
-        const APP_VERSION = "v2.5.0"; // Centralized version string (redesign)
+        const APP_VERSION = "v2.5.1"; // Centralized version string (redesign)
 
         // Tweaks panel accent presets (hue values for the OKLCH accent ramp)
         const ACCENT_PRESETS = {
