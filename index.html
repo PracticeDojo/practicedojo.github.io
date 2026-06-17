@@ -10,47 +10,77 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link
-    href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap"
     rel="stylesheet">
   <style>
     :root {
-      --bg: #0a0a0c;
-      --panel: #151518;
-      --panel-2: #1a1a1e;
-      --line: #26262d;
-      --line-2: #34343c;
-      --ink: #e7e7ea;
-      --ink-dim: #8a8a93;
-      --ink-faint: #5a5a63;
-      --purple: #8b5cf6;
-      --purple-soft: #a855f7;
-      --purple-deep: #6d28d9;
-      --orange: #f97316;
-      --orange-soft: #fb923c;
-      --blue: #60a5fa;
-      --yellow: #facc15;
-      --green: #4ade80;
+      /* ---- Ported from practice_dojo.html design system (OKLCH, amber accent) ---- */
+      --bg: oklch(0.155 0.008 60);
+      --bg-2: oklch(0.135 0.007 60);
+      --surface: oklch(0.205 0.010 60);
+      --surface-2: oklch(0.235 0.012 60);
+      --surface-3: oklch(0.275 0.014 60);
+      --border: oklch(0.30 0.013 60);
+      --border-soft: oklch(0.25 0.011 60);
+      --border-strong: oklch(0.40 0.018 60);
+      --text: oklch(0.965 0.004 60);
+      --text-2: oklch(0.78 0.008 60);
+      --text-dim: oklch(0.62 0.012 60);
+      --text-faint: oklch(0.46 0.014 60);
+      --accent: oklch(0.78 0.14 70);
+      --accent-hi: oklch(0.84 0.15 70);
+      --accent-dim: oklch(0.55 0.12 70);
+      --p1: oklch(0.74 0.14 60);
+      --p1-hi: oklch(0.82 0.15 60);
+      --p2: oklch(0.72 0.13 200);
+      --p2-hi: oklch(0.80 0.14 200);
+      --bcr: oklch(0.74 0.13 240);
+      --lvi: oklch(0.82 0.13 95);
+      --rds: oklch(0.74 0.13 150);
+      --ok: oklch(0.74 0.13 155);
+      --danger: oklch(0.66 0.21 25);
+
+      /* ---- Legacy landing aliases mapped onto the app palette ---- */
+      --panel: var(--surface);
+      --panel-2: var(--surface-2);
+      --line: var(--border-soft);
+      --line-2: var(--border);
+      --ink: var(--text);
+      --ink-dim: var(--text-2);
+      --ink-faint: var(--text-faint);
+      /* brand chrome → amber accent (was purple) */
+      --purple: var(--accent);
+      --purple-soft: var(--accent-hi);
+      --purple-deep: var(--accent-dim);
+      /* player / contrast identities → amber (P1) + cyan (P2) */
+      --orange: var(--p1);
+      --orange-soft: var(--p1-hi);
+      --blue: var(--bcr);
+      --yellow: var(--lvi);
+      --green: var(--rds);
+      --p2c: var(--p2);
+      --p2c-soft: var(--p2-hi);
     }
 
     html,
     body {
       background: var(--bg);
       color: var(--ink);
-      font-family: 'Inter', system-ui, sans-serif;
+      font-family: 'Geist', system-ui, sans-serif;
       -webkit-font-smoothing: antialiased;
     }
 
     .font-display {
-      font-family: 'Space Grotesk', 'Inter', sans-serif;
+      font-family: 'Geist', system-ui, sans-serif;
       letter-spacing: -0.02em;
     }
 
     .font-mono {
-      font-family: 'JetBrains Mono', ui-monospace, monospace;
+      font-family: 'Geist Mono', ui-monospace, monospace;
     }
 
     .tag {
-      font-family: 'JetBrains Mono', monospace;
+      font-family: 'Geist Mono', monospace;
       font-size: 10px;
       letter-spacing: 0.16em;
       text-transform: uppercase;
@@ -68,11 +98,11 @@
     }
 
     .glow-purple {
-      background: radial-gradient(ellipse at center, rgba(139, 92, 246, 0.25), transparent 60%);
+      background: radial-gradient(ellipse at center, oklch(0.78 0.14 70 / 0.22), transparent 60%);
     }
 
     .glow-orange {
-      background: radial-gradient(ellipse at center, rgba(249, 115, 22, 0.18), transparent 60%);
+      background: radial-gradient(ellipse at center, oklch(0.72 0.13 200 / 0.16), transparent 60%);
     }
 
     .hairline {
@@ -101,25 +131,26 @@
       gap: 8px;
       padding: 6px 12px;
       border-radius: 999px;
-      background: rgba(139, 92, 246, 0.08);
-      border: 1px solid rgba(139, 92, 246, 0.25);
-      color: #c4b5fd;
-      font-family: 'JetBrains Mono', monospace;
+      background: oklch(0.78 0.14 70 / 0.10);
+      border: 1px solid oklch(0.78 0.14 70 / 0.30);
+      color: var(--accent-hi);
+      font-family: 'Geist Mono', monospace;
       font-size: 11px;
       letter-spacing: 0.1em;
       text-transform: uppercase;
     }
 
     .btn-primary {
-      background: linear-gradient(180deg, #7c3aed 0%, #5b21b6 100%);
-      border: 1px solid rgba(168, 85, 247, 0.6);
-      box-shadow: 0 0 0 1px rgba(139, 92, 246, 0.15), 0 10px 30px -10px rgba(139, 92, 246, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+      background: linear-gradient(180deg, var(--accent) 0%, var(--accent-dim) 100%);
+      border: 1px solid oklch(0.84 0.15 70 / 0.6);
+      color: oklch(0.20 0.03 70);
+      box-shadow: 0 0 0 1px oklch(0.78 0.14 70 / 0.15), 0 10px 30px -10px oklch(0.78 0.14 70 / 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.18);
       transition: transform 0.15s, box-shadow 0.2s;
     }
 
     .btn-primary:hover {
       transform: translateY(-1px);
-      box-shadow: 0 0 0 1px rgba(139, 92, 246, 0.3), 0 14px 40px -10px rgba(139, 92, 246, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.18);
+      box-shadow: 0 0 0 1px oklch(0.84 0.15 70 / 0.35), 0 14px 40px -10px oklch(0.78 0.14 70 / 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.25);
     }
 
     .btn-secondary {
@@ -130,7 +161,7 @@
 
     .btn-secondary:hover {
       background: rgba(255, 255, 255, 0.06);
-      border-color: #4b4b54;
+      border-color: var(--border-strong);
     }
 
     /* ---- Hero multiverse tree ---- */
@@ -162,7 +193,7 @@
       height: 78px;
       transform: translate(-50%, -50%);
       border-radius: 6px;
-      background: linear-gradient(180deg, #1f1f25 0%, #14141a 100%);
+      background: linear-gradient(180deg, var(--surface-2) 0%, var(--surface) 100%);
       border: 1px solid var(--line-2);
       box-shadow: 0 8px 18px -6px rgba(0, 0, 0, 0.8);
       display: flex;
@@ -174,12 +205,12 @@
 
     .tree-node:hover {
       transform: translate(-50%, -50%) scale(1.06);
-      border-color: var(--purple-soft);
+      border-color: var(--accent);
     }
 
     .tree-node .strip {
       height: 6px;
-      background: var(--purple-deep);
+      background: var(--accent-dim);
     }
 
     .tree-node .body {
@@ -191,7 +222,7 @@
     }
 
     .tree-node .turn {
-      font-family: 'JetBrains Mono', monospace;
+      font-family: 'Geist Mono', monospace;
       font-size: 8px;
       color: var(--ink-dim);
       letter-spacing: 0.1em;
@@ -201,7 +232,7 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      font-family: 'JetBrains Mono', monospace;
+      font-family: 'Geist Mono', monospace;
       font-size: 9px;
     }
 
@@ -209,26 +240,26 @@
       width: 6px;
       height: 6px;
       border-radius: 999px;
-      background: var(--orange);
-      box-shadow: 0 0 6px rgba(249, 115, 22, 0.7);
+      background: var(--p1);
+      box-shadow: 0 0 6px oklch(0.74 0.14 60 / 0.7);
     }
 
     .tree-node .dot-p {
       width: 6px;
       height: 6px;
       border-radius: 999px;
-      background: var(--purple-soft);
-      box-shadow: 0 0 6px rgba(168, 85, 247, 0.7);
+      background: var(--p2-hi);
+      box-shadow: 0 0 6px oklch(0.72 0.13 200 / 0.7);
     }
 
     .tree-node.active {
-      border-color: var(--purple-soft);
-      background: linear-gradient(180deg, #2e1065 0%, #1a103c 100%);
-      box-shadow: 0 0 0 2px rgba(168, 85, 247, 0.35), 0 12px 28px -8px rgba(139, 92, 246, 0.55);
+      border-color: var(--accent);
+      background: linear-gradient(180deg, oklch(0.32 0.06 70) 0%, oklch(0.22 0.04 70) 100%);
+      box-shadow: 0 0 0 2px oklch(0.78 0.14 70 / 0.35), 0 12px 28px -8px oklch(0.78 0.14 70 / 0.55);
     }
 
     .tree-node.active .strip {
-      background: linear-gradient(90deg, #a855f7, #f472b6);
+      background: linear-gradient(90deg, var(--accent-hi), var(--p2-hi));
     }
 
     .tree-node.dim {
@@ -237,15 +268,15 @@
 
     @keyframes pulseRing {
       0% {
-        box-shadow: 0 0 0 0 rgba(168, 85, 247, 0.6), 0 12px 28px -8px rgba(139, 92, 246, 0.55);
+        box-shadow: 0 0 0 0 oklch(0.78 0.14 70 / 0.6), 0 12px 28px -8px oklch(0.78 0.14 70 / 0.55);
       }
 
       70% {
-        box-shadow: 0 0 0 12px rgba(168, 85, 247, 0), 0 12px 28px -8px rgba(139, 92, 246, 0.55);
+        box-shadow: 0 0 0 12px oklch(0.78 0.14 70 / 0), 0 12px 28px -8px oklch(0.78 0.14 70 / 0.55);
       }
 
       100% {
-        box-shadow: 0 0 0 0 rgba(168, 85, 247, 0), 0 12px 28px -8px rgba(139, 92, 246, 0.55);
+        box-shadow: 0 0 0 0 oklch(0.78 0.14 70 / 0), 0 12px 28px -8px oklch(0.78 0.14 70 / 0.55);
       }
     }
 
@@ -266,18 +297,18 @@
     }
 
     .branch-dim {
-      stroke: #2a2a32;
+      stroke: var(--border);
     }
 
     .label-flag {
       position: absolute;
       transform: translate(-50%, -50%);
-      font-family: 'JetBrains Mono', monospace;
+      font-family: 'Geist Mono', monospace;
       font-size: 9px;
       letter-spacing: 0.14em;
       text-transform: uppercase;
       color: var(--ink-dim);
-      background: rgba(10, 10, 12, 0.85);
+      background: oklch(0.135 0.007 60 / 0.85);
       border: 1px solid var(--line);
       padding: 3px 7px;
       border-radius: 4px;
@@ -286,8 +317,8 @@
     }
 
     .label-flag.active {
-      color: #ddd6fe;
-      border-color: rgba(168, 85, 247, 0.5);
+      color: var(--accent-hi);
+      border-color: oklch(0.78 0.14 70 / 0.5);
     }
 
     /* card placeholder used in mockups */
@@ -362,7 +393,7 @@
       border-radius: 4px;
       object-fit: cover;
       object-position: center top;
-      background: #14141a;
+      background: var(--surface);
       border: 1px solid rgba(255, 255, 255, 0.12);
       box-shadow: 0 4px 8px -2px rgba(0, 0, 0, 0.7);
       flex-shrink: 0;
@@ -375,7 +406,7 @@
     }
 
     .meter-track {
-      background: #2a2a32;
+      background: var(--surface-3);
       height: 6px;
       border-radius: 999px;
       overflow: hidden;
@@ -395,8 +426,8 @@
 
     .feature:hover {
       transform: translateY(-2px);
-      border-color: var(--line-2);
-      background: #18181d;
+      border-color: var(--border-strong);
+      background: var(--surface-2);
     }
 
     /* keystroke key */
@@ -407,18 +438,18 @@
       min-width: 22px;
       height: 22px;
       padding: 0 6px;
-      background: #1f1f25;
+      background: var(--surface-2);
       border: 1px solid var(--line-2);
       border-bottom-width: 2px;
       border-radius: 4px;
-      font-family: 'JetBrains Mono', monospace;
+      font-family: 'Geist Mono', monospace;
       font-size: 11px;
-      color: #e7e7ea;
+      color: var(--text);
     }
 
     /* CTA glow */
     .cta-glow {
-      background: radial-gradient(ellipse at 50% 0%, rgba(139, 92, 246, 0.25), transparent 65%);
+      background: radial-gradient(ellipse at 50% 0%, oklch(0.78 0.14 70 / 0.22), transparent 65%);
     }
 
     /* Scrollable demo scrubber dot */
@@ -426,8 +457,8 @@
       width: 14px;
       height: 14px;
       border-radius: 999px;
-      background: var(--purple-soft);
-      box-shadow: 0 0 0 4px rgba(168, 85, 247, 0.18), 0 0 16px rgba(168, 85, 247, 0.6);
+      background: var(--accent-hi);
+      box-shadow: 0 0 0 4px oklch(0.78 0.14 70 / 0.18), 0 0 16px oklch(0.78 0.14 70 / 0.6);
     }
 
     /* tiny shine */
@@ -458,7 +489,7 @@
     }
 
     .ring-pulse {
-      box-shadow: 0 0 0 0 rgba(168, 85, 247, 0.7);
+      box-shadow: 0 0 0 0 oklch(0.78 0.14 70 / 0.7);
       animation: pulseRing 2s infinite;
     }
 
@@ -480,11 +511,11 @@
 <body class="min-h-screen">
 
   <!-- ============ NAV ============ -->
-  <header class="sticky top-0 z-40 backdrop-blur-md bg-[rgba(10,10,12,0.75)] border-b hairline">
+  <header class="sticky top-0 z-40 backdrop-blur-md bg-[rgba(18,16,13,0.75)] border-b hairline">
     <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
       <div class="flex items-center gap-3">
         <div class="w-8 h-8 rounded-md flex items-center justify-center"
-          style="background: linear-gradient(135deg, #7c3aed, #4c1d95); box-shadow: 0 0 14px rgba(124,58,237,0.45);">
+          style="background: linear-gradient(135deg, var(--accent), var(--accent-dim)); box-shadow: 0 0 14px oklch(0.78 0.14 70 / 0.45);">
           <i class="fa-solid fa-khanda text-white text-sm"></i>
         </div>
         <div class="font-display font-semibold text-[15px] tracking-tight">Practice Dojo</div>
@@ -518,12 +549,12 @@
     <div class="max-w-7xl mx-auto px-6 pt-20 pb-24 relative grid lg:grid-cols-12 gap-16 items-center">
       <div class="lg:col-span-6">
         <div class="chip mb-8">
-          <span class="w-1.5 h-1.5 rounded-full bg-purple-400 ring-pulse"></span>
+          <span class="w-1.5 h-1.5 rounded-full bg-[var(--accent)] ring-pulse"></span>
           Multiverse Theorycraft
         </div>
         <h1 class="font-display text-5xl md:text-6xl lg:text-[68px] font-bold leading-[1.02] text-white">Try every line.
           <span
-            style="background: linear-gradient(90deg, #c4b5fd 0%, #f0abfc 60%, #fdba74 100%); -webkit-background-clip: text; background-clip: text; color: transparent;">Branch
+            style="background: linear-gradient(90deg, #f2cf93 0%, var(--accent-hi) 55%, #5fcdd9 100%); -webkit-background-clip: text; background-clip: text; color: transparent;">Branch
             any turn.</span>
         </h1>
         <p class="mt-6 text-lg text-[var(--ink-dim)] max-w-xl leading-relaxed">
@@ -553,7 +584,7 @@
             <span class="w-2 h-2 rounded-full bg-orange-500"></span> Manual sandbox
           </div>
           <div class="flex items-center gap-2 text-[var(--ink-dim)]">
-            <span class="w-2 h-2 rounded-full bg-purple-500"></span> Rewind &amp; branch
+            <span class="w-2 h-2 rounded-full bg-[var(--accent)]"></span> Rewind &amp; branch
           </div>
           <div class="flex items-center gap-2 text-[var(--ink-dim)]">
             <span class="w-2 h-2 rounded-full bg-blue-400"></span> Win-prob meters
@@ -568,12 +599,12 @@
           <svg class="tree-svg" viewBox="0 0 560 560" preserveAspectRatio="none">
             <defs>
               <linearGradient id="branchGrad" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0%" stop-color="#a855f7" stop-opacity="0.9" />
-                <stop offset="100%" stop-color="#f472b6" stop-opacity="0.9" />
+                <stop offset="0%" stop-color="#e0a34d" stop-opacity="0.9" />
+                <stop offset="100%" stop-color="#5fcdd9" stop-opacity="0.9" />
               </linearGradient>
               <radialGradient id="nodeGlow" cx="50%" cy="50%">
-                <stop offset="0%" stop-color="#a855f7" stop-opacity="0.35" />
-                <stop offset="100%" stop-color="#a855f7" stop-opacity="0" />
+                <stop offset="0%" stop-color="#e0a34d" stop-opacity="0.35" />
+                <stop offset="100%" stop-color="#e0a34d" stop-opacity="0" />
               </radialGradient>
             </defs>
 
@@ -615,13 +646,13 @@
             <div class="strip"></div>
             <div class="body">
               <div class="turn">T2 · P2</div>
-              <div class="lore"><span class="dot-p"></span><span style="color:#ddd6fe">1</span></div>
+              <div class="lore"><span class="dot-p"></span><span style="color:#c2e7ed">1</span></div>
             </div>
           </div>
 
           <!-- T2 alt (dim) -->
           <div class="tree-node dim" style="left:80%; top:20%;">
-            <div class="strip" style="background:#3a2a6b"></div>
+            <div class="strip" style="background:#1f3b43"></div>
             <div class="body">
               <div class="turn">T2'</div>
               <div class="lore"><span class="dot-p"></span><span>1</span></div>
@@ -652,7 +683,7 @@
 
           <!-- T4 alt leaf (dim) -->
           <div class="tree-node dim" style="left:73%; top:88%;">
-            <div class="strip" style="background:#3a2a6b"></div>
+            <div class="strip" style="background:#1f3b43"></div>
             <div class="body">
               <div class="turn">T4'</div>
               <div class="lore"><span class="dot-p"></span><span>4</span></div>
@@ -662,7 +693,7 @@
 
           <!-- T1 alt -->
           <div class="tree-node dim" style="left:22%; top:72%;">
-            <div class="strip" style="background:#3a2a6b"></div>
+            <div class="strip" style="background:#1f3b43"></div>
             <div class="body">
               <div class="turn">T1'</div>
               <div class="lore"><span class="dot-o"></span><span>0</span></div>
@@ -691,7 +722,7 @@
   </section>
 
   <!-- ============ SCREENSHOT / SEE IT IN ACTION ============ -->
-  <section id="screenshot" class="relative overflow-hidden" style="background: #08080a;">
+  <section id="screenshot" class="relative overflow-hidden" style="background: var(--bg-2);">
     <div class="absolute -top-32 left-1/4 w-[700px] h-[700px] glow-purple opacity-40 pointer-events-none"></div>
     <div class="max-w-7xl mx-auto px-6 py-24 relative">
       <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-10">
@@ -705,7 +736,7 @@
         </div>
         <div class="flex flex-wrap gap-2 text-[11px] font-mono text-[var(--ink-dim)]">
           <span class="px-3 py-1.5 rounded-full border hairline"><span
-              class="w-1.5 h-1.5 inline-block rounded-full bg-purple-500 mr-1.5 align-middle"></span> Turn 8 · P2
+              class="w-1.5 h-1.5 inline-block rounded-full bg-[var(--p2)] mr-1.5 align-middle"></span> Turn 8 · P2
             active</span>
           <span class="px-3 py-1.5 rounded-full border hairline"><span
               class="w-1.5 h-1.5 inline-block rounded-full bg-orange-500 mr-1.5 align-middle"></span> P1 lore 17 / P2
@@ -716,7 +747,7 @@
         </div>
       </div>
 
-      <div class="relative panel overflow-hidden" style="background: #0c0c10;">
+      <div class="relative panel overflow-hidden" style="background: oklch(0.165 0.008 60);">
         <!-- window chrome -->
         <div class="flex items-center justify-between px-4 py-2.5 border-b hairline bg-[var(--panel-2)]">
           <div class="flex items-center gap-2">
@@ -735,26 +766,26 @@
           <!-- subtle annotation overlays -->
           <div class="hidden lg:block absolute" style="top: 18%; left: 0.5%;">
             <div class="panel-2 px-3 py-2 text-[11px] font-mono text-[var(--ink-dim)] flex items-center gap-2 shadow-xl"
-              style="background: rgba(20,20,24,0.92);">
+              style="background: rgba(28,25,20,0.92);">
               <span class="w-1.5 h-1.5 rounded-full" style="background: var(--blue);"></span> Live win-prob meters
             </div>
           </div>
           <div class="hidden lg:block absolute" style="top: 60%; left: 0.5%;">
             <div class="panel-2 px-3 py-2 text-[11px] font-mono text-[var(--ink-dim)] flex items-center gap-2 shadow-xl"
-              style="background: rgba(20,20,24,0.92);">
+              style="background: rgba(28,25,20,0.92);">
               <span class="w-1.5 h-1.5 rounded-full" style="background: var(--orange-soft);"></span> Turn-by-turn log
             </div>
           </div>
           <div class="hidden lg:block absolute" style="top: 30%; right: 0.5%;">
             <div class="panel-2 px-3 py-2 text-[11px] font-mono text-[var(--ink-dim)] flex items-center gap-2 shadow-xl"
-              style="background: rgba(20,20,24,0.92);">
+              style="background: rgba(28,25,20,0.92);">
               <span class="w-1.5 h-1.5 rounded-full" style="background: var(--purple-soft);"></span> Card preview on
               hover
             </div>
           </div>
           <div class="hidden lg:block absolute" style="top: 86%; left: 12%;">
             <div class="panel-2 px-3 py-2 text-[11px] font-mono text-[var(--ink-dim)] flex items-center gap-2 shadow-xl"
-              style="background: rgba(20,20,24,0.92);">
+              style="background: rgba(28,25,20,0.92);">
               <span class="w-1.5 h-1.5 rounded-full" style="background: var(--yellow);"></span> Per-turn notes
               (Markdown)
             </div>
@@ -794,7 +825,7 @@
   </section>
 
   <!-- ============ STAT STRIP / PROBLEM ============ -->
-  <section class="relative border-y hairline" style="background: #08080a;">
+  <section class="relative border-y hairline" style="background: var(--bg-2);">
     <div class="max-w-7xl mx-auto px-6 py-14 grid md:grid-cols-3 gap-10">
       <div>
         <div class="tag mb-3">The idea</div>
@@ -813,12 +844,12 @@
         <div class="bg-[var(--panel)] p-6">
           <div class="font-mono text-[10px] text-[var(--ink-faint)] tracking-widest uppercase">Branches per bookmark
           </div>
-          <div class="mt-2 font-display text-4xl" style="color:#c4b5fd;">∞</div>
+          <div class="mt-2 font-display text-4xl" style="color:var(--accent-hi);">∞</div>
           <div class="mt-1 text-xs text-[var(--ink-dim)]">Explore as many lines as you like</div>
         </div>
         <div class="bg-[var(--panel)] p-6">
           <div class="font-mono text-[10px] text-[var(--ink-faint)] tracking-widest uppercase">Time to rewind</div>
-          <div class="mt-2 font-display text-4xl" style="color:#fdba74;">instant</div>
+          <div class="mt-2 font-display text-4xl" style="color:var(--p2-hi);">instant</div>
           <div class="mt-1 text-xs text-[var(--ink-dim)]">No replays, no setup, just jump back</div>
         </div>
       </div>
@@ -874,8 +905,8 @@
                 <div>Player 1 drew <span class="text-orange-300">Hamm - Piggy Bank</span></div>
                 <div>Player 1 inked <span class="text-orange-300">Hamm - Piggy Bank</span></div>
                 <div class="text-[var(--ink-faint)] mt-1">## Turn 2</div>
-                <div>Player 2 drew <span class="text-purple-300">Lumiere - Fiery Friend</span></div>
-                <div>Player 2 played <span class="text-purple-300">Lumiere - Fiery Friend</span></div>
+                <div>Player 2 drew <span class="text-[var(--p2-hi)]">Lumiere - Fiery Friend</span></div>
+                <div>Player 2 played <span class="text-[var(--p2-hi)]">Lumiere - Fiery Friend</span></div>
                 <div class="text-[var(--ink-faint)] mt-1">## Turn 3</div>
                 <div>Player 1 played <span class="text-orange-300">Grandmother Willow</span></div>
                 <div>Player 1 quested with <span class="text-orange-300">Jessie</span> for 3 lore</div>
@@ -930,13 +961,13 @@
                 class="fa-solid fa-circle text-[6px]"></i> live</span>
           </div>
           <div class="relative"
-            style="background-image: radial-gradient(rgba(255,255,255,0.04) 1px, transparent 1px); background-size: 28px 28px; background-color:#0c0c10; height: 460px;">
+            style="background-image: radial-gradient(rgba(255,255,255,0.04) 1px, transparent 1px); background-size: 28px 28px; background-color:oklch(0.165 0.008 60); height: 460px;">
             <svg viewBox="0 0 700 460" class="absolute inset-0 w-full h-full">
               <defs>
                 <linearGradient id="importSpine" x1="0" y1="0" x2="1" y2="0">
                   <stop offset="0%" stop-color="#86efac" />
-                  <stop offset="50%" stop-color="#a855f7" />
-                  <stop offset="100%" stop-color="#f472b6" />
+                  <stop offset="50%" stop-color="#e0a34d" />
+                  <stop offset="100%" stop-color="#5fcdd9" />
                 </linearGradient>
               </defs>
               <!-- Spine through all 8 turns -->
@@ -961,7 +992,7 @@
                 <div class="strip" style="background: #16a34a;"></div>
                 <div class="body">
                   <div class="turn">T2 · P2</div>
-                  <div class="lore"><span class="dot-p"></span><span style="color:#ddd6fe">0</span></div>
+                  <div class="lore"><span class="dot-p"></span><span style="color:#c2e7ed">0</span></div>
                 </div>
               </div>
             </div>
@@ -979,7 +1010,7 @@
                 <div class="strip" style="background: #16a34a;"></div>
                 <div class="body">
                   <div class="turn">T4 · P2</div>
-                  <div class="lore"><span class="dot-p"></span><span style="color:#ddd6fe">1</span></div>
+                  <div class="lore"><span class="dot-p"></span><span style="color:#c2e7ed">1</span></div>
                 </div>
               </div>
             </div>
@@ -997,7 +1028,7 @@
                 <div class="strip"></div>
                 <div class="body">
                   <div class="turn">T8 · P2</div>
-                  <div class="lore"><span class="dot-p"></span><span style="color:#ddd6fe">14</span></div>
+                  <div class="lore"><span class="dot-p"></span><span style="color:#c2e7ed">14</span></div>
                 </div>
               </div>
             </div>
@@ -1053,7 +1084,7 @@
     <div class="max-w-7xl mx-auto px-6 py-28 relative">
       <div class="max-w-3xl">
         <div class="chip mb-6">
-          <i class="fa-solid fa-network-wired text-purple-400 text-[11px]"></i>
+          <i class="fa-solid fa-network-wired text-[var(--accent-hi)] text-[11px]"></i>
           Core feature · Multiverse navigation
         </div>
         <h2 class="font-display text-4xl md:text-5xl text-white font-bold leading-[1.05]">
@@ -1083,15 +1114,15 @@
 
         <!-- viewport -->
         <div class="relative"
-          style="background-image: radial-gradient(rgba(255,255,255,0.04) 1px, transparent 1px); background-size: 32px 32px; background-color:#0c0c10;">
+          style="background-image: radial-gradient(rgba(255,255,255,0.04) 1px, transparent 1px); background-size: 32px 32px; background-color:oklch(0.165 0.008 60);">
           <div class="grid lg:grid-cols-12">
             <!-- TREE -->
             <div class="lg:col-span-8 relative" style="height: 520px;">
               <svg viewBox="0 0 800 520" class="absolute inset-0 w-full h-full overflow-visible">
                 <defs>
                   <linearGradient id="b2" x1="0" y1="0" x2="1" y2="0">
-                    <stop offset="0%" stop-color="#a855f7" />
-                    <stop offset="100%" stop-color="#f472b6" />
+                    <stop offset="0%" stop-color="#e0a34d" />
+                    <stop offset="100%" stop-color="#5fcdd9" />
                   </linearGradient>
                 </defs>
                 <!-- Main spine -->
@@ -1105,21 +1136,21 @@
                   stroke-linecap="round" />
 
                 <!-- Branches off T3 -->
-                <path d="M 260,200 C 340,240 360,300 440,320" stroke="#2a2a32" stroke-width="1.5" fill="none"
+                <path d="M 260,200 C 340,240 360,300 440,320" stroke="#2e2a25" stroke-width="1.5" fill="none"
                   stroke-linecap="round" stroke-dasharray="3 4" />
-                <path d="M 440,320 C 520,330 540,360 620,380" stroke="#2a2a32" stroke-width="1.5" fill="none"
+                <path d="M 440,320 C 520,330 540,360 620,380" stroke="#2e2a25" stroke-width="1.5" fill="none"
                   stroke-linecap="round" stroke-dasharray="3 4" />
-                <path d="M 260,200 C 320,260 320,360 360,440" stroke="#2a2a32" stroke-width="1.5" fill="none"
+                <path d="M 260,200 C 320,260 320,360 360,440" stroke="#2e2a25" stroke-width="1.5" fill="none"
                   stroke-linecap="round" stroke-dasharray="3 4" />
                 <!-- Sub branch off T5 active -->
-                <path d="M 620,200 C 660,220 680,260 700,300" stroke="#2a2a32" stroke-width="1.5" fill="none"
+                <path d="M 620,200 C 660,220 680,260 700,300" stroke="#2e2a25" stroke-width="1.5" fill="none"
                   stroke-linecap="round" stroke-dasharray="3 4" />
                 <!-- branch labels -->
-                <text x="320" y="280" fill="#5a5a63" font-family="JetBrains Mono" font-size="10"
+                <text x="320" y="280" fill="#6a6459" font-family="Geist Mono" font-size="10"
                   letter-spacing="1">branch · inkwell skip</text>
-                <text x="285" y="380" fill="#5a5a63" font-family="JetBrains Mono" font-size="10"
+                <text x="285" y="380" fill="#6a6459" font-family="Geist Mono" font-size="10"
                   letter-spacing="1">branch · mulligan retry</text>
-                <text x="640" y="265" fill="#5a5a63" font-family="JetBrains Mono" font-size="10"
+                <text x="640" y="265" fill="#6a6459" font-family="Geist Mono" font-size="10"
                   letter-spacing="1">branch · alt finisher</text>
               </svg>
 
@@ -1149,7 +1180,7 @@
                   <div class="strip"></div>
                   <div class="body">
                     <div class="turn">T4</div>
-                    <div class="lore"><span class="dot-p"></span><span style="color:#ddd6fe">3</span></div>
+                    <div class="lore"><span class="dot-p"></span><span style="color:#c2e7ed">3</span></div>
                   </div>
                 </div>
               </div>
@@ -1169,7 +1200,7 @@
               <!-- Branch nodes (dim) -->
               <div class="absolute" style="left:440px; top:320px;">
                 <div class="tree-node dim" style="position:relative; left:0; top:0; transform:translate(-50%,-50%);">
-                  <div class="strip" style="background:#3a2a6b"></div>
+                  <div class="strip" style="background:#1f3b43"></div>
                   <div class="body">
                     <div class="turn">T4'</div>
                     <div class="lore"><span class="dot-p"></span><span>2</span></div>
@@ -1178,7 +1209,7 @@
               </div>
               <div class="absolute" style="left:620px; top:380px;">
                 <div class="tree-node dim" style="position:relative; left:0; top:0; transform:translate(-50%,-50%);">
-                  <div class="strip" style="background:#3a2a6b"></div>
+                  <div class="strip" style="background:#1f3b43"></div>
                   <div class="body">
                     <div class="turn">T5'</div>
                     <div class="lore"><span class="dot-o"></span><span>5</span></div>
@@ -1187,7 +1218,7 @@
               </div>
               <div class="absolute" style="left:360px; top:440px;">
                 <div class="tree-node dim" style="position:relative; left:0; top:0; transform:translate(-50%,-50%);">
-                  <div class="strip" style="background:#3a2a6b"></div>
+                  <div class="strip" style="background:#1f3b43"></div>
                   <div class="body">
                     <div class="turn">T2'</div>
                     <div class="lore"><span class="dot-o"></span><span>1</span></div>
@@ -1196,7 +1227,7 @@
               </div>
               <div class="absolute" style="left:700px; top:300px;">
                 <div class="tree-node dim" style="position:relative; left:0; top:0; transform:translate(-50%,-50%);">
-                  <div class="strip" style="background:#3a2a6b"></div>
+                  <div class="strip" style="background:#1f3b43"></div>
                   <div class="body">
                     <div class="turn">T5″</div>
                     <div class="lore"><span class="dot-p"></span><span>4</span></div>
@@ -1209,7 +1240,7 @@
                 class="absolute bottom-4 left-4 panel-2 px-3 py-2 flex items-center gap-4 text-[11px] text-[var(--ink-dim)]">
                 <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded bg-[var(--purple-soft)]"></span>
                   Active line</span>
-                <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded bg-[#3a2a6b]"></span> Saved
+                <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded bg-[#1f3b43]"></span> Saved
                   branch</span>
                 <span class="flex items-center gap-1.5"><i
                     class="fa-solid fa-arrows-up-down-left-right text-[10px]"></i> drag · scroll · zoom</span>
@@ -1247,11 +1278,11 @@
                 <div class="tag mb-2">Tug-of-war · Board control</div>
                 <div class="meter-track">
                   <div style="background: var(--orange); width: 64%;"></div>
-                  <div style="background: var(--purple); width: 36%;"></div>
+                  <div style="background: var(--p2); width: 36%;"></div>
                 </div>
                 <div class="flex justify-between text-[11px] font-mono mt-1.5">
                   <span class="text-orange-400">P1 · 64%</span>
-                  <span class="text-purple-400">36% · P2</span>
+                  <span class="text-[var(--p2-hi)]">36% · P2</span>
                 </div>
               </div>
 
@@ -1459,7 +1490,7 @@
           <!-- mock: setup -->
           <div class="panel-2 p-4">
             <div class="flex items-center justify-between mb-3">
-              <div class="flex items-center gap-2 text-xs text-purple-300 font-semibold"><i
+              <div class="flex items-center gap-2 text-xs text-[var(--p1-hi)] font-semibold"><i
                   class="fa-solid fa-user"></i> Player 1 Decklist</div>
               <div class="text-[10px] text-[var(--ink-faint)] font-mono">60 cards</div>
             </div>
@@ -1471,7 +1502,7 @@
               <div class="text-[var(--ink-faint)]">… 49 more</div>
             </div>
             <div class="mt-3 flex items-center justify-between">
-              <div class="flex items-center gap-2 text-xs text-orange-400"><i class="fa-solid fa-user-ninja"></i> Player
+              <div class="flex items-center gap-2 text-xs text-[var(--p2-hi)]"><i class="fa-solid fa-user-ninja"></i> Player
                 2</div>
               <button class="text-[11px] btn-primary px-3 py-1.5 rounded-md font-semibold">Start match <i
                   class="fa-solid fa-arrow-right text-[10px] ml-0.5"></i></button>
@@ -1492,9 +1523,9 @@
           <!-- mock: board -->
           <div class="panel-2 p-4 relative overflow-hidden">
             <!-- player top strip -->
-            <div class="rounded-md mb-3" style="background:#3f2e70; padding: 8px;">
+            <div class="rounded-md mb-3" style="background:#22454e; padding: 8px;">
               <div
-                class="flex items-center justify-between text-[10px] uppercase tracking-widest text-purple-200 mb-2 font-mono">
+                class="flex items-center justify-between text-[10px] uppercase tracking-widest text-[var(--p2-hi)] mb-2 font-mono">
                 <span><i class="fa-solid fa-user-ninja mr-1"></i> Player 2</span>
                 <span>Lore <span class="text-yellow-200">4</span> / 20</span>
               </div>
@@ -1518,7 +1549,7 @@
               </div>
               <div class="meter-track">
                 <div style="background: var(--orange); width: 58%;"></div>
-                <div style="background: var(--purple); width: 42%;"></div>
+                <div style="background: var(--p2); width: 42%;"></div>
               </div>
             </div>
             <!-- player bottom strip -->
@@ -1561,28 +1592,28 @@
             <svg viewBox="0 0 300 140" class="w-full h-32">
               <defs>
                 <linearGradient id="mg" x1="0" y1="0" x2="1" y2="0">
-                  <stop offset="0%" stop-color="#a855f7" />
-                  <stop offset="100%" stop-color="#f472b6" />
+                  <stop offset="0%" stop-color="#e0a34d" />
+                  <stop offset="100%" stop-color="#5fcdd9" />
                 </linearGradient>
               </defs>
               <path d="M 30,70 C 70,70 90,40 130,40" stroke="url(#mg)" stroke-width="2" fill="none"
                 stroke-dasharray="4 3" />
               <path d="M 130,40 C 170,40 190,40 230,30" stroke="url(#mg)" stroke-width="2" fill="none"
                 stroke-dasharray="4 3" />
-              <path d="M 130,40 C 170,70 190,90 230,100" stroke="#3a3a44" stroke-width="1.5" fill="none"
+              <path d="M 130,40 C 170,70 190,90 230,100" stroke="#2e2a25" stroke-width="1.5" fill="none"
                 stroke-dasharray="3 3" />
-              <circle cx="30" cy="70" r="8" fill="#1a1a1e" stroke="#5a5a63" stroke-width="1.5" />
-              <circle cx="130" cy="40" r="8" fill="#1a1a1e" stroke="#5a5a63" stroke-width="1.5" />
-              <circle cx="230" cy="30" r="10" fill="#2e1065" stroke="#a855f7" stroke-width="2" />
-              <circle cx="230" cy="100" r="8" fill="#1a1a1e" stroke="#3a2a6b" stroke-width="1.5" />
-              <text x="44" y="88" fill="#5a5a63" font-family="JetBrains Mono" font-size="8">T1</text>
-              <text x="144" y="58" fill="#5a5a63" font-family="JetBrains Mono" font-size="8">T3 · branch</text>
-              <text x="200" y="20" fill="#c4b5fd" font-family="JetBrains Mono" font-size="8">T5 · here</text>
-              <text x="200" y="120" fill="#5a5a63" font-family="JetBrains Mono" font-size="8">T5' · alt</text>
+              <circle cx="30" cy="70" r="8" fill="#211e1a" stroke="#6a6459" stroke-width="1.5" />
+              <circle cx="130" cy="40" r="8" fill="#211e1a" stroke="#6a6459" stroke-width="1.5" />
+              <circle cx="230" cy="30" r="10" fill="#3a2a12" stroke="#e0a34d" stroke-width="2" />
+              <circle cx="230" cy="100" r="8" fill="#211e1a" stroke="#1f3b43" stroke-width="1.5" />
+              <text x="44" y="88" fill="#6a6459" font-family="Geist Mono" font-size="8">T1</text>
+              <text x="144" y="58" fill="#6a6459" font-family="Geist Mono" font-size="8">T3 · branch</text>
+              <text x="200" y="20" fill="#f2cf93" font-family="Geist Mono" font-size="8">T5 · here</text>
+              <text x="200" y="120" fill="#6a6459" font-family="Geist Mono" font-size="8">T5' · alt</text>
             </svg>
             <div
               class="absolute bottom-3 left-4 right-4 flex items-center justify-between text-[10px] font-mono text-[var(--ink-faint)]">
-              <span><i class="fa-solid fa-bookmark text-purple-400 mr-1"></i> 4 bookmarks</span>
+              <span><i class="fa-solid fa-bookmark text-[var(--accent-hi)] mr-1"></i> 4 bookmarks</span>
               <span>2 branches · 1 active</span>
             </div>
           </div>
@@ -1592,7 +1623,7 @@
   </section>
 
   <!-- ============ METRICS DEEP-DIVE ============ -->
-  <section id="metrics" class="relative border-y hairline" style="background: #08080a;">
+  <section id="metrics" class="relative border-y hairline" style="background: var(--bg-2);">
     <div class="max-w-7xl mx-auto px-6 py-24 grid lg:grid-cols-12 gap-12 items-center">
       <div class="lg:col-span-5">
         <div class="tag mb-3">Win-probability engine</div>
@@ -1651,11 +1682,11 @@
               </div>
               <div class="meter-track">
                 <div style="background: var(--orange); width: 64%;" class="shine"></div>
-                <div style="background: var(--purple); width: 36%;"></div>
+                <div style="background: var(--p2); width: 36%;"></div>
               </div>
               <div class="flex justify-between text-[11px] font-mono mt-1.5">
                 <span class="text-orange-400">14.6</span>
-                <span class="text-purple-400">8.2</span>
+                <span class="text-[var(--p2-hi)]">8.2</span>
               </div>
             </div>
             <!-- LVI -->
@@ -1667,11 +1698,11 @@
               </div>
               <div class="meter-track">
                 <div style="background: var(--orange); width: 52%;" class="shine"></div>
-                <div style="background: var(--purple); width: 48%;"></div>
+                <div style="background: var(--p2); width: 48%;"></div>
               </div>
               <div class="flex justify-between text-[11px] font-mono mt-1.5">
                 <span class="text-orange-400">11.4</span>
-                <span class="text-purple-400">10.5</span>
+                <span class="text-[var(--p2-hi)]">10.5</span>
               </div>
             </div>
 
@@ -1713,13 +1744,13 @@
     <div class="absolute inset-0 cta-glow pointer-events-none"></div>
     <div class="max-w-5xl mx-auto px-6 py-28 relative text-center">
       <div class="chip mb-8 mx-auto">
-        <i class="fa-solid fa-khanda text-purple-400 text-[11px]"></i>
+        <i class="fa-solid fa-khanda text-[var(--accent-hi)] text-[11px]"></i>
         Single-file · client-side · no install
       </div>
       <h2 class="font-display text-5xl md:text-6xl text-white font-bold leading-[1.05]">
         Revisit your matches.<br />
         <span
-          style="background: linear-gradient(90deg, #c4b5fd, #f0abfc); -webkit-background-clip: text; background-clip: text; color: transparent;">Explore
+          style="background: linear-gradient(90deg, #f2cf93, var(--accent-hi)); -webkit-background-clip: text; background-clip: text; color: transparent;">Explore
           every line.</span>
       </h2>
       <p class="mt-6 text-[var(--ink-dim)] text-lg max-w-2xl mx-auto leading-relaxed">
@@ -1746,7 +1777,7 @@
     <div class="max-w-7xl mx-auto px-6 py-10 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
       <div class="flex items-center gap-3">
         <div class="w-7 h-7 rounded-md flex items-center justify-center"
-          style="background: linear-gradient(135deg, #7c3aed, #4c1d95);">
+          style="background: linear-gradient(135deg, var(--accent), var(--accent-dim));">
           <i class="fa-solid fa-khanda text-white text-xs"></i>
         </div>
         <div class="text-sm text-[var(--ink-dim)]">Practice Dojo · a theorycrafting sandbox</div>
