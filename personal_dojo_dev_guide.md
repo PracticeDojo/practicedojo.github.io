@@ -328,4 +328,15 @@ Target = normal phone (~1080×2392 device px, ~360–797 CSS px after browser ch
 - Inspect modals already go full-screen on mobile (`.modal-card.wide`); added `.modal-backdrop { padding:0 }`
   so the 100vw card doesn't overflow horizontally.
 
+### 9.5 Discard occlusion + lore placement fixes
+- **Discard spill (desktop + mobile):** the discard pile renders full-size cards (`--card-w` 80px) inside a
+  72px `.pile` slot, absolutely positioned with a fan offset. A tall stack overflowed the box and painted
+  over the adjacent deck. Fix: `.pile:not(.deck) { overflow: hidden }` clips the stack to the slot, and the
+  render fan was tightened from `min(i*3, 30)` to `min(i*2, 10)` (both top & bottom loops) so the top card
+  stays mostly visible inside the clipped box. `.pile-inspect` z-index raised to 50 so the inspect button
+  isn't buried under discard cards (cards use `zIndex = i`).
+- **Lore badges (mobile):** were anchored top/bottom-**right**, so the top badge sat over the deck and the
+  bottom badge hid under the hand. Now anchored **left** (`.board-half.top .lore-badge` top-left,
+  `.board-half.bottom .lore-badge` bottom-left), away from the right-side piles, both visible.
+
 
