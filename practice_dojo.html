@@ -708,6 +708,17 @@ input[type="range"]::-moz-range-thumb { width: 14px; height: 14px; background: v
 }
 .sidebar-scrim.is-open { opacity: 1; pointer-events: auto; }
 
+/* Per-pile inspect affordance — desktop uses right-click (oncontextmenu); this
+   corner button is the touch path to Inspect Deck / Inspect Discard. Hidden on
+   desktop, revealed in the phone media query. */
+.pile-inspect {
+    display: none; position: absolute; top: 3px; left: 3px; z-index: 5;
+    width: 22px; height: 22px; align-items: center; justify-content: center;
+    background: var(--surface); border: 1px solid var(--border); border-radius: 6px;
+    color: var(--accent-hi); font-size: 11px; cursor: pointer; padding: 0; line-height: 1;
+}
+.pile-inspect:active { background: var(--surface-3); }
+
 /* ===== Phone layout (≤760px): single column, off-canvas sidebar, full-screen modals ===== */
 @media (max-width: 760px) {
     /* One column — the board owns the screen; the sidebar floats over it. */
@@ -724,22 +735,48 @@ input[type="range"]::-moz-range-thumb { width: 14px; height: 14px; background: v
     .sidebar-scrim { display: block; }
     #mobile-menu-btn { display: inline-flex; }
 
-    /* Reclaim horizontal space across the board. */
-    .board-half { padding: 4px 6px; }
-    .pile-row { max-width: 100%; gap: 8px; padding: 6px 8px; }
-    .field-strip .field { gap: 8px; max-width: 100%; padding: 8px; }
+    /* --- Top bar: fit every control on a narrow header --- */
+    .topbar { grid-template-columns: auto minmax(0, 1fr) auto; padding: 0 6px; gap: 4px; }
+    .brand { display: none; }                       /* free the left side; hamburger remains */
+    .topbar-right { gap: 3px; }
+    .topbar-right .icon-btn { padding: 6px 7px; }
+    .topbar-right .icon-btn span { display: none; } /* icon-only buttons */
+    .divider-v { margin: 0 1px; }
+    /* Compact the turn indicator — drop the "TURN" word, shrink, truncate the actor name. */
+    .turn-pill { gap: 5px; padding: 4px 9px; font-size: 11px; max-width: 100%; overflow: hidden; }
+    .turn-pill .mono { display: none; }
+    .turn-pill .turn-actor { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    /* --- Vertical budget: prioritise the bottom (current-player) half --- */
+    .board-half { padding: 2px 6px; flex: 0 1 auto; gap: 2px; }
+    .board-half.bottom { flex: 1 1 auto; }          /* current player gets the spare room */
+    .board-half .board-bg-letter { display: none; } /* declutter */
+    .field-strip { min-height: calc(var(--card-h) * 0.55); }
+    .field-strip .field { gap: 6px; max-width: 100%; padding: 6px; min-height: calc(var(--card-h) * 0.7); }
+    .pile-row { max-width: 100%; gap: 8px; padding: 4px 8px; }
     .hand .card-wrap { margin-left: -40px; }
-    .lore-badge { transform: scale(0.85); transform-origin: top right; }
+    .lore-badge { transform: scale(0.7); transform-origin: top right; }
     .notes-panel { display: none; }
-    /* Icon-only top bar so the controls fit a narrow header. */
-    .topbar-right .icon-btn span { display: none; }
-    .brand-tag { display: none; }
+
+    /* --- Opponent (top) hand: collapsed by default; only the count/peek button shows.
+           Tapping "Reveal" (App.togglePeek → body.opp-hand-revealed) expands it. --- */
+    .board-half.top .hand-meta { display: none; }
+    .board-half.top .hand {
+        max-height: 0; min-height: 0; padding: 0; overflow: hidden; transform: none;
+        transition: max-height .25s ease;
+    }
+    body.opp-hand-revealed .board-half.top .hand { max-height: 210px; overflow: visible; }
+    /* Neutralise the desktop "fly-down" reveal transform so peeked cards stay in flow. */
+    .board-half.top #top-hand { transform: none !important; }
+
+    /* Touch path to inspect piles. */
+    .pile-inspect { display: inline-flex; }
 
     /* Full-screen, scrollable modals. */
     .setup-card,
     .modal-card { width: 100vw; max-width: 100vw; max-height: 100dvh; border-radius: 0; }
     .modal-card.wide { width: 100vw; height: 100dvh; }
-    .overlay { padding: 0; }
+    .overlay, .modal-backdrop { padding: 0; }
     .card-grid { grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); }
     .deck-pair { grid-template-columns: 1fr; }
 }
@@ -1196,10 +1233,12 @@ input[type="range"]::-moz-range-thumb { width: 14px; height: 14px; background: v
                     <div class="pile-cluster">
                         <div class="pile drop-zone" id="top-discard" ondragover="App.allowDrop(event)" ondragenter="App.dragEnter(event)" ondragleave="App.dragLeave(event)" ondrop="App.drop(event, 'discard', 'top')" oncontextmenu="App.showDiscardContextMenu(event, App.state.inactivePlayer)">
                             <span class="pile-label">Discard</span>
+                            <button class="pile-inspect" title="Inspect discard pile" onclick="event.stopPropagation(); App.inspectDiscard(App.state.inactivePlayer)"><i class="fa-solid fa-magnifying-glass"></i></button>
                         </div>
                         <div class="pile deck drop-zone" draggable="true" onclick="App.drawCard(App.state.inactivePlayer)" ondragstart="App.dragStartTopCard(event, 'top')" ondragover="App.allowDrop(event)" ondragenter="App.dragEnter(event)" ondragleave="App.dragLeave(event)" ondrop="App.drop(event, 'deck', 'top')" oncontextmenu="App.showDeckContextMenu(event, App.state.inactivePlayer)">
                             <span class="pile-label">Deck</span>
                             <div class="pile-count" id="top-deck-count">60</div>
+                            <button class="pile-inspect" title="Inspect deck" onclick="event.stopPropagation(); App.inspectDeck(App.state.inactivePlayer)"><i class="fa-solid fa-magnifying-glass"></i></button>
                         </div>
                     </div>
                 </div>
@@ -1244,10 +1283,12 @@ input[type="range"]::-moz-range-thumb { width: 14px; height: 14px; background: v
                     <div class="pile-cluster">
                         <div class="pile drop-zone" id="bottom-discard" ondragover="App.allowDrop(event)" ondragenter="App.dragEnter(event)" ondragleave="App.dragLeave(event)" ondrop="App.drop(event, 'discard', 'bottom')" oncontextmenu="App.showDiscardContextMenu(event, App.state.activePlayer)">
                             <span class="pile-label">Discard</span>
+                            <button class="pile-inspect" title="Inspect discard pile" onclick="event.stopPropagation(); App.inspectDiscard(App.state.activePlayer)"><i class="fa-solid fa-magnifying-glass"></i></button>
                         </div>
                         <div class="pile deck drop-zone" draggable="true" onclick="App.drawCard(App.state.activePlayer)" ondragstart="App.dragStartTopCard(event, 'bottom')" ondragover="App.allowDrop(event)" ondragenter="App.dragEnter(event)" ondragleave="App.dragLeave(event)" ondrop="App.drop(event, 'deck', 'bottom')" oncontextmenu="App.showDeckContextMenu(event, App.state.activePlayer)">
                             <span class="pile-label">Deck</span>
                             <div class="pile-count" id="bottom-deck-count">60</div>
+                            <button class="pile-inspect" title="Inspect deck" onclick="event.stopPropagation(); App.inspectDeck(App.state.activePlayer)"><i class="fa-solid fa-magnifying-glass"></i></button>
                         </div>
                     </div>
                 </div>
@@ -1315,7 +1356,7 @@ input[type="range"]::-moz-range-thumb { width: 14px; height: 14px; background: v
         let cardFuse = null;
         let allSessions = [];
 
-        const APP_VERSION = "v2.4.0"; // Centralized version string (redesign)
+        const APP_VERSION = "v2.5.0"; // Centralized version string (redesign)
 
         // Tweaks panel accent presets (hue values for the OKLCH accent ramp)
         const ACCENT_PRESETS = {
@@ -2155,6 +2196,8 @@ input[type="range"]::-moz-range-thumb { width: 14px; height: 14px; background: v
                 if (this.state.opponentHandRevealed === isRevealed) return;
 
                 this.state.opponentHandRevealed = isRevealed;
+                // Mobile drives the collapsed/expanded opponent-hand state off this body class.
+                document.body.classList.toggle('opp-hand-revealed', isRevealed);
 
                 // Directly manipulate the DOM for smooth animation without a full React-style render
                 const th = document.getElementById('top-hand');

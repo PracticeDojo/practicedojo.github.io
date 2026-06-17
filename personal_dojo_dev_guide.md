@@ -289,4 +289,43 @@ So we kept the **entire `App` engine intact** and changed only the presentation 
 - Inkwell still renders full-card stacks inside `.inkwell` (not the redesign micro-stack).
 - When bumping the version, update `APP_VERSION` and the three `#app-version-*` spans (loading/setup/sidebar).
 
+---
+
+## **9\. Mobile Compatibility Pass (v2.5.0)**
+
+Target = normal phone (~1080×2392 device px, ~360–797 CSS px after browser chrome). Goal: bottom
+(current-player) half always usable, hand visible without scroll. All work lives in the existing
+`@media (max-width: 760px)` block plus 3 small hooks. Desktop untouched (rules scoped to media query).
+
+### 9.1 Prioritise bottom half, shrink top half
+- `.board-half` → `flex: 0 1 auto` (shrink to content); `.board-half.bottom` → `flex: 1 1 auto`
+  (current player gets spare room). Top half only as tall as its content.
+- Tightened `.field-strip` / `.field` min-heights (`calc(var(--card-h)*0.55)` / `*0.7`), board-half
+  padding/gap, `.pile-row` padding. Hid `.board-bg-letter` (declutter), shrank `.lore-badge` to `scale(0.7)`.
+
+### 9.2 Opponent (top) hand collapses by default
+- `.board-half.top .hand` → `max-height: 0; overflow: hidden` on mobile (face-down cards hidden;
+  only the peek button + count via sidebar). `.board-half.top .hand-meta` hidden too.
+- Reveal = `body.opp-hand-revealed` class → `max-height: 210px; overflow: visible`. Class toggled in
+  `setHandReveal(isRevealed)` (`document.body.classList.toggle('opp-hand-revealed', isRevealed)`).
+  Existing peek button drives it: desktop hold (mouse), mobile tap (`ontouchstart=App.togglePeek`).
+- Desktop reveal adds Tailwind `translate-y-[120px] scale-[1.1]` to `#top-hand`; on mobile we override
+  `.board-half.top #top-hand { transform: none !important }` so peeked cards stay in flow, not fly down.
+
+### 9.3 Top bar fits all controls
+- `.topbar` → `grid-template-columns: auto minmax(0,1fr) auto`, reduced padding/gap.
+- `.brand` hidden (hamburger stays). Right buttons icon-only (`span` hidden), tighter padding/gap.
+- Turn pill compacted: drop the "TURN" word (`.turn-pill .mono { display:none }`), shrink font/padding,
+  `.turn-actor` truncates with ellipsis.
+
+### 9.4 Inspect deck / discard on touch
+- Desktop opens these via right-click (`oncontextmenu` → `showDeckContextMenu`/`showDiscardContextMenu`).
+  No right-click on touch, so added a corner `.pile-inspect` button inside each of the 4 pile divs
+  (top/bottom × deck/discard). `display:none` desktop, `inline-flex` in media query.
+- Buttons call `App.inspectDeck`/`App.inspectDiscard` with the correct index (top=`inactivePlayer`,
+  bottom=`activePlayer`) and `event.stopPropagation()` so the deck's `onclick=drawCard` doesn't fire.
+  Touch-drag shim (pointer events) lets a pure tap through, so the button click runs.
+- Inspect modals already go full-screen on mobile (`.modal-card.wide`); added `.modal-backdrop { padding:0 }`
+  so the 100vw card doesn't overflow horizontally.
+
 
