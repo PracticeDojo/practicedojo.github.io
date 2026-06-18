@@ -339,4 +339,104 @@ Target = normal phone (~1080×2392 device px, ~360–797 CSS px after browser ch
   bottom badge hid under the hand. Now anchored **left** (`.board-half.top .lore-badge` top-left,
   `.board-half.bottom .lore-badge` bottom-left), away from the right-side piles, both visible.
 
+---
+
+## **10\. Card Image Rendering — `<img>` Migration (Mobile Decode Fix) (v2.6.0)**
+
+### 10.1 The bug
+
+On mobile, dense card grids (notably the 60-card **Inspect Deck** view) showed **blank tiles even
+when the exact same card was already rendered elsewhere** (e.g. visible in hand). Investigation
+confirmed two distinct layers of "reuse," only one of which was working:
+
+- **File download — was already reused.** `getCardImage(dbCard)` returns the same URL for a given
+  `cardId` everywhere, and the browser HTTP cache is keyed by URL, so each unique card image
+  downloads **once**. No wasted network. (Image priority order unchanged: `images.thumbnail` →
+  `images.full` → card-back URL.)
+- **Decoded bitmap in RAM — was NOT reused.** Every card face was painted via CSS
+  `background-image`. Browsers decode a `background-image` **per element** and do **not** reliably
+  share that decoded surface between two elements, even with an identical URL. In a 60-tile grid,
+  off-screen tiles never decode until scrolled, and under mobile memory pressure the engine evicts
+  decoded backgrounds aggressively → blank tiles next to a loaded twin.
+
+> Key fact: the constraint on mobile is **decoded-bitmap RAM**, not download size. A decoded image
+> costs `width × height × 4 bytes` regardless of its (compressed) file size. iOS Safari has a hard
+> per-tab memory ceiling and silently drops decoded surfaces (or reloads the tab) when it's hit.
+
+### 10.2 The fix — real `<img>` with shared decode
+
+Card faces now render as a real `<img loading="lazy" decoding="async">` instead of a CSS
+`background-image`. Modern engines key the **decoded-image cache by `src` (+ rendered size)**, so
+one decode is shared across every element with that `src`. `loading="lazy"` defers off-screen
+decode and `decoding="async"` keeps decode off the main thread. This directly fixes the
+"loaded elsewhere, blank here" symptom.
+
+**Shared CSS** (added next to `.card`):
+
+```css
+.card-img {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    object-fit: cover;
+    border-radius: inherit;
+    pointer-events: none;      /* drag/hover events fall through to the parent card */
+    -webkit-user-drag: none;
+    user-select: none;
+}
+```
+
+**Shared helper** (on `App`, next to `getCardImage`):
+
+```js
+makeCardImg(dbCard) {
+    const img = document.createElement('img');
+    img.className = 'card-img';
+    img.loading = 'lazy';
+    img.decoding = 'async';
+    img.draggable = false;
+    img.src = this.getCardImage(dbCard);
+    if (dbCard && dbCard.name) img.alt = dbCard.name;
+    return img;
+}
+```
+
+### 10.3 Call sites converted
+
+| Path | Before | After |
+|---|---|---|
+| `createCardElement` (board: hand/field/inkwell/discard/stacks) | `el.style.backgroundImage = url(...)` | `el.appendChild(this.makeCardImg(dbCard))` — img is the **first child** of `.card`, so badges (damage, stack count), the `.drying::after` "NEW" pill, and hover chips still paint on top. `.card`'s `background: var(--surface-2)` now acts as a load placeholder instead of going blank. |
+| `renderInspectGrid` (60-card Inspect Deck) | `el.style.backgroundImage` | `el.appendChild(this.makeCardImg(dbCard))`. The `(Unknown)` label for `cardId: -999` cards is still appended after the img and sits on top (img is `position:absolute`, doesn't disturb the flex label). **Biggest win** — this was the worst offender. |
+| `renderInspectDiscardGrid` | `el.style.backgroundImage` | `el.appendChild(this.makeCardImg(dbCard))`. |
+
+### 10.4 Why `render()` was NOT refactored into a DOM diff
+
+`render()` still fully tears down and rebuilds each zone (`innerHTML = ''` → rebuild from state),
+which matches the architecture in §4.1 / §5.4. A keyed reconciliation was considered to avoid
+re-decoding unchanged cards but **deliberately rejected**:
+
+- The `<img>` migration already achieves the goal. When `render()` rebuilds a node, the new `<img>`
+  with the same `src` hits the browser's decoded-image cache → **no re-decode, no re-fetch**. Rebuild
+  cost drops to plain DOM-node creation.
+- A real diff of `render()` + `buildField` is high-risk: `buildField` wires per-element stacks,
+  locations, and native drag/drop handlers. The marginal saving (node creation only) does not justify
+  the bug surface in this single-file, "mutate state then re-render" engine.
+
+So the "mutate → `render()` rebuilds everything" contract in §4.1 and §5.4 is **unchanged and still
+authoritative**. Do not introduce manual DOM tracking to optimise this without profiling proof that
+node creation (not decode) is the bottleneck.
+
+### 10.5 Not converted (intentional)
+
+`background-image` is still used for low-risk / low-count paths where the decode-sharing problem
+doesn't bite: the **mulligan** hand (7 cards, once), the **craft pool** (unique cards only, opened
+rarely), the **card-search** results grid (capped at 18), the tiny thumbnail strips (35×50 / 18×25),
+and `showPreview` (a single full-res sidebar element). Convert with the same `makeCardImg` helper if
+they ever scale up.
+
+### 10.6 Thumbnails retained
+
+`getCardImage` still prefers `images.thumbnail`, so mobile grids decode the small thumbnail
+(~`280×390` ≈ 0.4 MB bitmap) rather than the full image (~`1024×1468` ≈ 6 MB bitmap). This keeps
+total decoded RAM well under the iOS ceiling and compounds the `<img>` win. Full-res is used only by
+the single hover `showPreview` element.
 
