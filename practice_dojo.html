@@ -2371,6 +2371,76 @@
             --half-glow: color-mix(in oklch, var(--p2) 45%, transparent);
         }
 
+        /* ----- Desktop: tighten the opponent (top) half -----
+   The top half reserved as much room as the bottom for the opponent's hand,
+   inkwell and piles, leaving big dead gaps and a cramped battlefield. On
+   desktop we shrink those secondary zones and hand the reclaimed vertical
+   budget to the top field-strip so the cards in play breathe. Scoped to
+   min-width:761px so the mobile (max-width:760px) rules are untouched. */
+        @media (min-width: 761px) {
+            /* Top half only as tall as it needs; bottom (current player) keeps the spare room. */
+            .board-half.top {
+                flex: 0 1 auto;
+                gap: 2px;
+                padding: 2px 14px;
+            }
+
+            .board-half.bottom {
+                flex: 1 1 auto;
+            }
+
+            /* Opponent hand: short cards, no reserved full-card height. Shrink the
+               actual card vars (not a scale transform) so the row down to the CTL
+               line is genuinely shorter. */
+            .board-half.top .hand {
+                --card-w: calc(52px * var(--card-scale));
+                --card-h: calc(73px * var(--card-scale));
+                min-height: 0;
+                padding: 0;
+            }
+
+            .board-half.top .hand .card-wrap {
+                margin-left: -20px;
+            }
+
+            /* Pull the CTL/meta line up close to the cards (~10px gap). */
+            .board-half.top .hand-wrap {
+                gap: 2px;
+            }
+
+            .board-half.top .hand-meta {
+                transform: scale(0.85);
+                padding: 2px 10px;
+                margin-top: -4px;
+            }
+
+            /* Opponent inkwell / deck / discard row: more compact. */
+            .board-half.top .pile-row {
+                --pile-w: calc(56px * var(--card-scale));
+                --pile-h: calc(78px * var(--card-scale));
+                padding: 2px 10px;
+                gap: 10px;
+            }
+
+            /* Inkwell cards render at full card size and get clipped by the slot;
+               shrink the card vars so they actually fit the smaller ink area. */
+            .board-half.top .inkwell {
+                --card-w: calc(52px * var(--card-scale));
+                --card-h: calc(73px * var(--card-scale));
+            }
+
+            /* Battlefield gets the reclaimed room: grow it and let cards fill it. */
+            .board-half.top .field-strip {
+                flex: 1 1 auto;
+                min-height: calc(var(--card-h) + 24px);
+            }
+
+            .board-half.top .field {
+                height: 100%;
+                align-content: center;
+            }
+        }
+
         /* keep tree-node active pulse readable on the new palette */
         .tree-node-active {
             box-shadow: 0 0 0 2px var(--accent), var(--shadow-2) !important;
@@ -3407,7 +3477,7 @@
         let cardFuse = null;
         let allSessions = [];
 
-        const APP_VERSION = "v2.5.2"; // Centralized version string (redesign)
+        const APP_VERSION = "v2.5.5"; // Centralized version string (redesign)
 
         // Tweaks panel accent presets (hue values for the OKLCH accent ramp)
         const ACCENT_PRESETS = {
