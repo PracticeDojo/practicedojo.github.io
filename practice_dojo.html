@@ -5763,6 +5763,16 @@
                         el.style.borderImage = 'none';
                     }
 
+                    // Apply deck color/gradient to the background of the node at 12% opacity (overlaying on dark theme or active purple theme)
+                    const baseOverlayColor = isActive ? 'rgba(46, 16, 101, 0.88)' : 'rgba(26, 26, 30, 0.88)';
+                    if (b.gradient) {
+                        el.style.backgroundImage = `linear-gradient(0deg, ${baseOverlayColor}, ${baseOverlayColor}), ${b.gradient}`;
+                    } else if (b.color) {
+                        el.style.backgroundImage = `linear-gradient(0deg, ${baseOverlayColor}, ${baseOverlayColor}), linear-gradient(0deg, ${b.color}, ${b.color})`;
+                    } else {
+                        el.style.backgroundImage = 'none';
+                    }
+
                     const isEditing = this.state.editingNodeId === b.id;
 
                     if (isEditing) {
@@ -6871,7 +6881,7 @@
                 el.draggable = true;
                 el.ondragstart = (e) => this.dragStart(e, c.instanceId);
 
-                if (isOpponentHand || (isInkwell && !c.faceUp)) {
+                if (isOpponentHand || isInkwell) {
                     el.classList.add('card-back');
                 } else {
                     // Card face as a shared-decode <img> behind the overlays/badges.

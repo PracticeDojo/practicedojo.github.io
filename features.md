@@ -299,6 +299,21 @@ As a player, at the start of my first turn I want to craft my ideal starting han
 - Stays self-contained in the single HTML file.
 
 
+<!-- ## Feature 24: auto updating card probabilities
+
+### User Story
+
+- As a player I want to know the probabilities of drawing a certain card in my deck at any moment. 
+
+### Details
+- At any point in the game the top bar will show the probability of drawing any card in the deck.
+- If you are drawing a card on your turn, then the probability will be different from your opponents turn.
+- This is helpful because you will be able to make more informed decisions when playing the game. 
+- the probability should be calculated as follows:
+  - (Number of copies of the card in deck) / (Total number of cards in deck)
+  
+   -->
+
 ---
 
 # Refactor
