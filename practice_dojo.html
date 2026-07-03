@@ -2850,6 +2850,33 @@
             color: var(--text-faint);
         }
 
+        /* Mulligan modal odds column (Feature 25) */
+        .mull-body-grid {
+            display: flex;
+            gap: 16px;
+            align-items: stretch;
+            min-height: 0;
+        }
+
+        .mull-hand-col {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .mull-odds {
+            width: 300px;
+            flex: none;
+            border-left: 1px solid var(--border-soft);
+            padding-left: 12px;
+            display: flex;
+            flex-direction: column;
+            max-height: 62vh;
+        }
+
+        .mull-odds .prob-list {
+            overflow-y: auto;
+        }
+
         /* ===== Phone layout (≤760px): single column, off-canvas sidebar, full-screen modals ===== */
         @media (max-width: 760px) {
 
@@ -2859,7 +2886,8 @@
             }
 
             /* Draw-odds pane is desktop-only */
-            .prob-pane {
+            .prob-pane,
+            .mull-odds {
                 display: none;
             }
 
@@ -3227,10 +3255,30 @@
                 <button class="close" onclick="App.closeMulligan()">&times;</button>
             </div>
             <div class="modal-body">
-                <p class="muted">Tap any card to mark it for replacement. Selected cards shuffle back in; you redraw to
-                    seven.</p>
-                <div id="mulligan-hand" class="flex flex-wrap justify-center gap-4 mt-4 min-h-[196px]">
-                    <!-- Cards injected here -->
+                <div class="mull-body-grid">
+                    <div class="mull-hand-col">
+                        <p class="muted">Tap any card to mark it for replacement. Selected cards shuffle back in; you
+                            redraw to seven.</p>
+                        <div id="mulligan-hand" class="flex flex-wrap justify-center gap-4 mt-4 min-h-[196px]">
+                            <!-- Cards injected here -->
+                        </div>
+                    </div>
+                    <!-- Mulligan draw odds (Feature 25) -->
+                    <div class="mull-odds">
+                        <div class="prob-cols">
+                            <span class="prob-count"></span>
+                            <span class="prob-name">Card</span>
+                            <span class="prob-val" id="mull-rd-head"
+                                title="Chance to hit it among your replacement draws">RD</span>
+                            <span class="prob-val" id="mull-win-0"
+                                title="Cumulative: redraws + next N turn draws"></span>
+                            <span class="prob-val" id="mull-win-1"
+                                title="Cumulative: redraws + next N turn draws"></span>
+                            <span class="prob-val" id="mull-win-2"
+                                title="Cumulative: redraws + next N turn draws"></span>
+                        </div>
+                        <div class="prob-list" id="mulligan-prob"></div>
+                    </div>
                 </div>
             </div>
             <div class="modal-foot">
@@ -3815,7 +3863,7 @@
         let cardFuse = null;
         let allSessions = [];
 
-        const APP_VERSION = "v2.6.0"; // Centralized version string (redesign)
+        const APP_VERSION = "v2.7.0"; // Centralized version string (redesign)
 
         // Tweaks panel accent presets (hue values for the OKLCH accent ramp)
         const ACCENT_PRESETS = {
@@ -6325,6 +6373,8 @@
 
                     container.appendChild(el);
                 });
+
+                this.updateMulliganProb();
             },
 
             confirmMulligan() {
@@ -8118,6 +8168,95 @@
                 wins[idx] = Math.max(1, Math.min(60, parseInt(value, 10) || 1));
                 localStorage.setItem('lorcana_dojo_prob_windows', JSON.stringify(wins));
                 this.updateProbPane();
+                if (!document.getElementById('mulligan-modal').classList.contains('hidden')) this.updateMulliganProb();
+            },
+
+            // P(at least one copy seen across the mulligan redraws AND the next n turn draws).
+            // Kdeck = copies drawable from the deck now, Kret = marked copies going back
+            // (bottomed, so unreachable during the M redraws, but shuffled in afterwards),
+            // N = deck size (unchanged by the mulligan: M out, M back in), M = cards marked.
+            mulliganHypergeo(Kdeck, Kret, N, M, n) {
+                if (N <= 0) return 0;
+                let pNone = 1;
+                for (let i = 0; i < Math.min(M, N); i++) pNone *= Math.max(0, N - Kdeck - i) / (N - i);
+                const K2 = Kdeck + Kret; // given no hit in the redraws, the shuffled deck holds all copies
+                for (let i = 0; i < Math.min(n, N); i++) pNone *= Math.max(0, N - K2 - i) / (N - i);
+                return 1 - pNone;
+            },
+
+            updateMulliganProb() {
+                const list = document.getElementById('mulligan-prob');
+                if (!list) return;
+                const p = this.state.players[this.state.activePlayer];
+                const N = p.deck.length;
+                const M = this.mulliganSelection.length;
+                const wins = this.getProbWindows();
+                wins.forEach((w, i) => {
+                    const el = document.getElementById(`mull-win-${i}`);
+                    if (el) el.innerText = `+${w}`;
+                });
+                document.getElementById('mull-rd-head').innerText = `RD${M}`;
+                list.innerHTML = '';
+                if (!N) {
+                    const empty = document.createElement('div');
+                    empty.className = 'prob-empty';
+                    empty.innerText = 'Deck is empty.';
+                    list.appendChild(empty);
+                    return;
+                }
+
+                const inDeck = new Map();
+                p.deck.forEach(c => inDeck.set(c.cardId, (inDeck.get(c.cardId) || 0) + 1));
+                const marked = new Map();
+                p.hand.forEach(c => {
+                    if (this.mulliganSelection.includes(c.instanceId)) marked.set(c.cardId, (marked.get(c.cardId) || 0) + 1);
+                });
+                const poolIds = new Set(this._collectAllCards(p).map(c => c.cardId));
+                const rows = [...poolIds].map(cardId => {
+                    const dbCard = cardId === -999 ? null : this.cardDB[cardId];
+                    const count = inDeck.get(cardId) || 0;
+                    const ret = marked.get(cardId) || 0;
+                    return {
+                        cardId, count, ret, dbCard,
+                        name: dbCard ? dbCard.fullName || dbCard.name : 'Unknown',
+                        rd: this.mulliganHypergeo(count, ret, N, M, 0),
+                        cum: this.mulliganHypergeo(count, ret, N, M, wins[0])
+                    };
+                });
+                // Rank by what the current selection makes most likely: redraw hit chance
+                // first, then the cumulative first window (covers M=0, where rd is all 0).
+                rows.sort((a, b) => b.rd - a.rd || b.cum - a.cum || a.name.localeCompare(b.name));
+
+                const pct = pr => pr >= 0.9995 ? '100' : (pr * 100).toFixed(1);
+                rows.forEach(r => {
+                    const drawable = r.count + r.ret;
+                    const row = document.createElement('div');
+                    row.className = 'prob-row' + (r.dbCard ? '' : ' is-unknown') + (drawable ? '' : ' is-out');
+                    const badge = document.createElement('span');
+                    badge.className = 'prob-count';
+                    badge.innerText = r.count;
+                    row.appendChild(badge);
+                    const name = document.createElement('span');
+                    name.className = 'prob-name';
+                    name.innerText = r.name;
+                    name.title = r.dbCard
+                        ? `${r.name} — ${r.count} in deck${r.ret ? `, ${r.ret} marked to shuffle back` : ''}`
+                        : `${r.count} unidentified cards in deck`;
+                    if (r.dbCard && drawable) this.applyInkTint(name, r.dbCard.color);
+                    row.appendChild(name);
+                    const rd = document.createElement('span');
+                    rd.className = 'prob-val';
+                    rd.innerText = M ? pct(r.rd) : '–';
+                    row.appendChild(rd);
+                    wins.forEach(n => {
+                        const val = document.createElement('span');
+                        val.className = 'prob-val';
+                        val.innerText = drawable ? pct(this.mulliganHypergeo(r.count, r.ret, N, M, n)) : '–';
+                        row.appendChild(val);
+                    });
+                    if (r.dbCard) row.addEventListener('mouseenter', () => this.showPreview(r.dbCard));
+                    list.appendChild(row);
+                });
             },
 
             // Tint a card-name element with its ink color(s); dual-ink gets a gradient.

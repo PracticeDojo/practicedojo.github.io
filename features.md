@@ -314,6 +314,20 @@ As a player, at the start of my first turn I want to craft my ideal starting han
   
   
 
+## Feature 25: Mulligan draw odds
+
+### User Story
+As a player, while choosing which cards to mulligan I want to see live draw odds that account for the cards I've marked to throw back, so I can make that decision with real numbers instead of gut feeling.
+
+### Details
+- The mulligan modal gains a compact odds panel (same row style as the Draw Odds pane) beside the 7 opening-hand cards. It updates in real time as cards are marked/unmarked.
+- Models the exact Lorcana mulligan: marked cards go to the **bottom** of the deck, the replacements are drawn from the top (so marked cards can never appear among the redraws), and only then is the deck shuffled (so marked copies **do** count again for later turn draws).
+- Columns, with M = number of cards currently marked:
+  - **RD (Redraw)** = P(at least one copy among the M replacement draws).
+  - The three draw windows = **cumulative** P(at least one copy in the redraws OR in the next N turn draws). Uses the same editable window values (default 1/2/3) as the main Draw Odds pane.
+- Rows are the whole card pool, same as the main pane: copy-count badge (copies drawable from deck), ink-colored names, grayed when a card can no longer be drawn, hover shows the card preview in the left panel.
+- Stays self-contained in the single HTML file.
+
 ---
 
 # Refactor
@@ -359,3 +373,4 @@ As a developer, I want the JSON game state to be way more optimized and organize
 - [x] Feature 22: Read Gzipped (.replay.gz) Replays
 - [x] Feature 23: Craft Ideal Starting Hand
 - [x] Feature 24: auto updating card probabilities
+- [x] Feature 25: Mulligan draw odds
