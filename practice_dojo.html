@@ -923,7 +923,7 @@
             height: calc(100dvh - var(--topbar-h));
             /* visible viewport on mobile Chromium (Brave/Chrome) */
             display: grid;
-            grid-template-columns: var(--sidebar-w) 1fr;
+            grid-template-columns: var(--sidebar-w) 1fr auto;
             overflow: hidden;
         }
 
@@ -2679,12 +2679,188 @@
             background: var(--surface-3);
         }
 
+        /* ===== Draw-odds pane (Feature 24): right-side hypergeometric probabilities ===== */
+        .prob-pane {
+            width: 232px;
+            background: var(--surface);
+            border-left: 1px solid var(--border-soft);
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+            overflow: hidden;
+        }
+
+        .prob-pane.is-collapsed {
+            width: 30px;
+        }
+
+        .prob-head {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 8px 8px 10px;
+            border-bottom: 1px solid var(--border-soft);
+            flex: none;
+        }
+
+        .prob-head h3 {
+            margin: 0;
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--text-dim);
+            flex: 1;
+            white-space: nowrap;
+            overflow: hidden;
+        }
+
+        .prob-toggle {
+            background: none;
+            border: none;
+            color: var(--text-dim);
+            cursor: pointer;
+            font-size: 12px;
+            padding: 2px 4px;
+            line-height: 1;
+        }
+
+        .prob-toggle:hover {
+            color: var(--text);
+        }
+
+        .prob-pane.is-collapsed .prob-head {
+            padding: 8px 0;
+            justify-content: center;
+            border-bottom: none;
+        }
+
+        .prob-pane.is-collapsed .prob-head h3,
+        .prob-pane.is-collapsed .prob-cols,
+        .prob-pane.is-collapsed .prob-list {
+            display: none;
+        }
+
+        .prob-cols {
+            display: flex;
+            align-items: center;
+            padding: 4px 10px;
+            font-size: 10px;
+            color: var(--text-faint);
+            border-bottom: 1px solid var(--border-soft);
+            flex: none;
+        }
+
+        .prob-cols .prob-name {
+            flex: 1;
+        }
+
+        .prob-count {
+            width: 18px;
+            flex: none;
+            font-family: 'Geist Mono', monospace;
+            font-size: 10px;
+            color: var(--text-faint);
+        }
+
+        .prob-win {
+            width: 38px;
+            flex: none;
+            background: none;
+            border: none;
+            border-bottom: 1px dashed var(--border-strong);
+            color: var(--text-dim);
+            font-family: 'Geist Mono', monospace;
+            font-size: 10px;
+            text-align: right;
+            padding: 0 0 1px;
+            -moz-appearance: textfield;
+            appearance: textfield;
+        }
+
+        .prob-win::-webkit-outer-spin-button,
+        .prob-win::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        .prob-win:focus {
+            outline: none;
+            color: var(--text);
+            border-bottom-color: var(--accent);
+        }
+
+        .prob-list {
+            flex: 1;
+            overflow-y: auto;
+            min-height: 0;
+            padding: 4px 0;
+        }
+
+        .prob-row {
+            display: flex;
+            align-items: center;
+            padding: 3px 10px;
+            font-size: 11px;
+            cursor: default;
+        }
+
+        .prob-row:hover {
+            background: var(--surface-2);
+        }
+
+        .prob-row .prob-name {
+            flex: 1;
+            color: var(--text-2);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            min-width: 0;
+        }
+
+        .prob-row.is-unknown .prob-name {
+            color: var(--text-faint);
+            font-style: italic;
+        }
+
+        /* No copies left in deck — gray the whole row */
+        .prob-row.is-out .prob-name,
+        .prob-row.is-out .prob-count,
+        .prob-row.is-out .prob-val {
+            color: var(--text-faint);
+            opacity: 0.65;
+        }
+
+        .prob-val {
+            width: 38px;
+            flex: none;
+            text-align: right;
+            font-family: 'Geist Mono', monospace;
+            font-size: 10.5px;
+            color: var(--text-dim);
+        }
+
+        .prob-row:not(.is-out) .prob-name+.prob-val {
+            color: var(--text);
+        }
+
+        .prob-empty {
+            padding: 12px 10px;
+            font-size: 11px;
+            color: var(--text-faint);
+        }
+
         /* ===== Phone layout (≤760px): single column, off-canvas sidebar, full-screen modals ===== */
         @media (max-width: 760px) {
 
             /* One column — the board owns the screen; the sidebar floats over it. */
             .app {
                 grid-template-columns: 1fr;
+            }
+
+            /* Draw-odds pane is desktop-only */
+            .prob-pane {
+                display: none;
             }
 
             .sidebar {
@@ -3566,6 +3742,28 @@
                 </button>
             </div>
         </main>
+
+        <!-- DRAW ODDS PANE (Feature 24) — hypergeometric odds for the active player's deck -->
+        <aside class="prob-pane" id="prob-pane">
+            <div class="prob-head">
+                <h3>Draw Odds <span class="mono dim" id="prob-deck-count"></span></h3>
+                <button class="prob-toggle" id="prob-toggle" onclick="App.toggleProbPane()"
+                    title="Collapse / expand draw odds">
+                    <i class="fa-solid fa-angles-right" id="prob-toggle-icon"></i>
+                </button>
+            </div>
+            <div class="prob-cols">
+                <span class="prob-count"></span>
+                <span class="prob-name">Card</span>
+                <input class="prob-win" id="prob-win-0" type="number" min="1" max="60"
+                    onchange="App.onProbWindowChange(0, this.value)" title="Draw window: chance within next N draws">
+                <input class="prob-win" id="prob-win-1" type="number" min="1" max="60"
+                    onchange="App.onProbWindowChange(1, this.value)" title="Draw window: chance within next N draws">
+                <input class="prob-win" id="prob-win-2" type="number" min="1" max="60"
+                    onchange="App.onProbWindowChange(2, this.value)" title="Draw window: chance within next N draws">
+            </div>
+            <div class="prob-list" id="prob-list"></div>
+        </aside>
     </div>
 
     <!-- Context Menu -->
@@ -3617,7 +3815,7 @@
         let cardFuse = null;
         let allSessions = [];
 
-        const APP_VERSION = "v2.5.6"; // Centralized version string (redesign)
+        const APP_VERSION = "v2.6.0"; // Centralized version string (redesign)
 
         // Tweaks panel accent presets (hue values for the OKLCH accent ramp)
         const ACCENT_PRESETS = {
@@ -3636,6 +3834,11 @@
             if (setupVer) setupVer.innerText = APP_VERSION;
             if (sidebarVer) sidebarVer.innerText = APP_VERSION;
             try { App.bindTweaks(); } catch (e) { console.warn('Tweaks init failed', e); }
+            // Restore draw-odds pane collapsed state (Feature 24)
+            if (localStorage.getItem('lorcana_dojo_prob_pane') === 'collapsed') {
+                document.getElementById('prob-pane').classList.add('is-collapsed');
+                App.applyProbPaneToggleIcon(true);
+            }
         });
 
         const App = {
@@ -3857,17 +4060,17 @@
                 return Array.from(colors);
             },
 
-            getDeckGradient(colors) {
-                const colorMap = {
-                    'amber': '#f59e0b',
-                    'amethyst': '#a855f7',
-                    'emerald': '#10b981',
-                    'ruby': '#ef4444',
-                    'sapphire': '#3b82f6',
-                    'steel': '#6b7280'
-                };
+            inkColorMap: {
+                'amber': '#f59e0b',
+                'amethyst': '#a855f7',
+                'emerald': '#10b981',
+                'ruby': '#ef4444',
+                'sapphire': '#3b82f6',
+                'steel': '#6b7280'
+            },
 
-                const hexColors = colors.map(c => colorMap[c] || '#4b5563');
+            getDeckGradient(colors) {
+                const hexColors = colors.map(c => this.inkColorMap[c] || '#4b5563');
 
                 if (hexColors.length === 1) {
                     return hexColors[0];
@@ -7882,6 +8085,126 @@
                 });
             },
 
+            // --- Draw-odds pane (Feature 24) ---
+            // P(at least one of K copies in the next n draws from a deck of N):
+            // 1 - C(N-K, n) / C(N, n), computed as a running product to avoid big factorials.
+            hypergeoAtLeastOne(K, N, n) {
+                n = Math.min(n, N);
+                if (K <= 0 || N <= 0 || n <= 0) return 0;
+                if (N - K < n) return 1;
+                let pNone = 1;
+                for (let i = 0; i < n; i++) pNone *= (N - K - i) / (N - i);
+                return 1 - pNone;
+            },
+
+            toggleProbPane() {
+                const pane = document.getElementById('prob-pane');
+                const collapsed = pane.classList.toggle('is-collapsed');
+                localStorage.setItem('lorcana_dojo_prob_pane', collapsed ? 'collapsed' : 'open');
+                this.applyProbPaneToggleIcon(collapsed);
+            },
+
+            getProbWindows() {
+                if (!this._probWindows) {
+                    try { this._probWindows = JSON.parse(localStorage.getItem('lorcana_dojo_prob_windows')) || [1, 2, 3]; }
+                    catch (e) { this._probWindows = [1, 2, 3]; }
+                    if (!Array.isArray(this._probWindows) || this._probWindows.length !== 3) this._probWindows = [1, 2, 3];
+                }
+                return this._probWindows;
+            },
+
+            onProbWindowChange(idx, value) {
+                const wins = this.getProbWindows();
+                wins[idx] = Math.max(1, Math.min(60, parseInt(value, 10) || 1));
+                localStorage.setItem('lorcana_dojo_prob_windows', JSON.stringify(wins));
+                this.updateProbPane();
+            },
+
+            // Tint a card-name element with its ink color(s); dual-ink gets a gradient.
+            // Colors are lifted toward white so they stay readable at small sizes on the dark pane.
+            applyInkTint(el, colorStr) {
+                const inks = (colorStr || '').toLowerCase().split(/[-\/]/)
+                    .map(s => s.trim()).filter(c => this.inkColorMap[c]);
+                if (!inks.length) return;
+                const tint = c => `color-mix(in oklab, ${this.inkColorMap[c]} 72%, white)`;
+                if (inks.length === 1) {
+                    el.style.color = tint(inks[0]);
+                } else {
+                    el.style.background = `linear-gradient(90deg, ${tint(inks[0])}, ${tint(inks[1])})`;
+                    el.style.webkitBackgroundClip = 'text';
+                    el.style.backgroundClip = 'text';
+                    el.style.color = 'transparent';
+                }
+            },
+
+            applyProbPaneToggleIcon(collapsed) {
+                const icon = document.getElementById('prob-toggle-icon');
+                if (icon) icon.className = `fa-solid ${collapsed ? 'fa-angles-left' : 'fa-angles-right'}`;
+            },
+
+            updateProbPane() {
+                const list = document.getElementById('prob-list');
+                if (!list) return;
+                const wins = this.getProbWindows();
+                wins.forEach((w, i) => {
+                    const input = document.getElementById(`prob-win-${i}`);
+                    if (input && document.activeElement !== input) input.value = w;
+                });
+
+                const p = this.state.players[this.state.activePlayer];
+                const N = p.deck.length;
+                document.getElementById('prob-deck-count').innerText = N ? `(${N})` : '';
+                list.innerHTML = '';
+                if (!N) {
+                    const empty = document.createElement('div');
+                    empty.className = 'prob-empty';
+                    empty.innerText = 'Deck is empty.';
+                    list.appendChild(empty);
+                    return;
+                }
+
+                // Rows come from the player's whole card pool (all zones), so cards you've
+                // fully drawn stay listed but grayed. Counts = copies still in the deck.
+                // Unknown placeholders collapse into one grouped row.
+                const inDeck = new Map();
+                p.deck.forEach(c => inDeck.set(c.cardId, (inDeck.get(c.cardId) || 0) + 1));
+                const poolIds = new Set(this._collectAllCards(p).map(c => c.cardId));
+                const rows = [...poolIds].map(cardId => {
+                    const dbCard = cardId === -999 ? null : this.cardDB[cardId];
+                    return {
+                        cardId,
+                        count: inDeck.get(cardId) || 0,
+                        dbCard,
+                        name: dbCard ? dbCard.fullName || dbCard.name : 'Unknown'
+                    };
+                });
+                rows.sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
+
+                const pct = pr => pr >= 0.9995 ? '100' : (pr * 100).toFixed(1);
+                rows.forEach(r => {
+                    const row = document.createElement('div');
+                    row.className = 'prob-row' + (r.dbCard ? '' : ' is-unknown') + (r.count ? '' : ' is-out');
+                    const badge = document.createElement('span');
+                    badge.className = 'prob-count';
+                    badge.innerText = r.count;
+                    row.appendChild(badge);
+                    const name = document.createElement('span');
+                    name.className = 'prob-name';
+                    name.innerText = r.name;
+                    name.title = r.dbCard ? `${r.name} — ${r.count} left in deck` : `${r.count} unidentified cards in deck`;
+                    if (r.dbCard && r.count) this.applyInkTint(name, r.dbCard.color);
+                    row.appendChild(name);
+                    wins.forEach(n => {
+                        const val = document.createElement('span');
+                        val.className = 'prob-val';
+                        val.innerText = r.count ? pct(this.hypergeoAtLeastOne(r.count, N, n)) : '–';
+                        row.appendChild(val);
+                    });
+                    if (r.dbCard) row.addEventListener('mouseenter', () => this.showPreview(r.dbCard));
+                    list.appendChild(row);
+                });
+            },
+
             render() {
                 const ap = this.state.players[this.state.activePlayer];
                 const ip = this.state.players[this.state.inactivePlayer];
@@ -7925,6 +8248,7 @@
 
                 this.updateLog();
                 this.updateMetrics();
+                this.updateProbPane();
 
                 // Update Timeline Board Divider Color
                 const divider = document.getElementById('board-divider');

@@ -299,20 +299,20 @@ As a player, at the start of my first turn I want to craft my ideal starting han
 - Stays self-contained in the single HTML file.
 
 
-<!-- ## Feature 24: auto updating card probabilities
+## Feature 24: auto updating card probabilities
 
 ### User Story
 
 - As a player I want to know the probabilities of drawing a certain card in my deck at any moment. 
 
 ### Details
-- At any point in the game the top bar will show the probability of drawing any card in the deck.
-- If you are drawing a card on your turn, then the probability will be different from your opponents turn.
-- This is helpful because you will be able to make more informed decisions when playing the game. 
-- the probability should be calculated as follows:
-  - (Number of copies of the card in deck) / (Total number of cards in deck)
+- At any point in the game a right side pane should show what the probabilities of you drawing a certain card is, based on the cards in your deck and the cards in your hand and discard pile, cards played etc.
+- it should do this using the hypergeometric probability of drawing cards that is a standard in calculating these odds for card games. 
+- the probabilities should be updated in real-time as the game state changes.
+- it should be a compact panel, that doesn't take up too much space, but is still easy to read.
+- full card name only, no card details. Only if you hover over the you should show a image of the card in the left panel card details section.
   
-   -->
+  
 
 ---
 
@@ -354,7 +354,8 @@ As a developer, I want the JSON game state to be way more optimized and organize
 - [x] Feature 17: Importing Logs from Duels.ink
 - [x] Feature 18: Swapping cards in your hand
 - [x] Feature 19: Drag card to opponents card to perform Challenge
-- [ ] Feature 20: Add button to fill in all unknown cards in a deck
+- [x] Feature 20: Add button to fill in all unknown cards in a deck
 - [x] Feature 21: Import Duels.ink Replays (JSON / .replay)
 - [x] Feature 22: Read Gzipped (.replay.gz) Replays
 - [x] Feature 23: Craft Ideal Starting Hand
+- [x] Feature 24: auto updating card probabilities
