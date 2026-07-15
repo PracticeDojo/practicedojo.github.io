@@ -440,3 +440,29 @@ they ever scale up.
 total decoded RAM well under the iOS ceiling and compounds the `<img>` win. Full-res is used only by
 the single hover `showPreview` element.
 
+---
+
+## **11\. Card Shifting Detection & Action Tracking (v2.7.1)**
+
+### **11.1 Overview**
+
+When a card is manually stacked on top of another in the sandbox field (via `shiftOnto`), the app checks if this represents a **Shift** action. It does this by checking if the card beneath has its name (base name or full name) contained within the name of the card above (base name or full name). 
+
+If a shift is detected, the action is formally recorded for the active turn recap and the card is added to the turn's cards-played list so that the multiverse timeline nodes can display it in their "Cards Played:" thumbnail strip.
+
+### **11.2 State & Action Tracking**
+
+* **`shifted` Action Type**: Added a `shifted` array to `this.state.turnActions` (initialized in `startGame()`, tracked in `_trackAction()`, and reset at the start of a turn in `endTurn()`).
+* **Turn Recap Formatting**: `_formatTurnActions` is updated to include a `- **Shifted:**` list detailing any shifts executed during the turn.
+* **Cards Played Buffer**: If a stack matches the shift criteria, the card ID of the shifted card is pushed to `this.state.cardsPlayedThisTurn`. This populates `cardsPlayedData` on timeline auto-saves and manual bookmark nodes.
+
+### **11.3 Core Functions & Log Output**
+
+* **`shiftOnto(draggedInstanceId, targetInstanceId)`**:
+  * Added validation checking whether `beneathDb.name` / `beneathDb.fullName` is contained in `dbCard.name` / `dbCard.fullName`.
+  * If `isShift` is true:
+    * Pushes the shifted card ID to `this.state.cardsPlayedThisTurn`.
+    * Tracks the action as `'shifted'` via `_trackAction`.
+    * Replaces the generic stacking log with a descriptive action log: `You shifted [CardName] onto [BeneathCardName] (cost [Cost]).`
+
+

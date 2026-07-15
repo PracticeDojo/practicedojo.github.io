@@ -3863,7 +3863,7 @@
         let cardFuse = null;
         let allSessions = [];
 
-        const APP_VERSION = "v2.7.0"; // Centralized version string (redesign)
+        const APP_VERSION = "v2.7.1"; // Centralized version string (redesign)
 
         // Tweaks panel accent presets (hue values for the OKLCH accent ramp)
         const ACCENT_PRESETS = {
@@ -4506,10 +4506,10 @@
                 this.state.log.push({ text: msg, isSystem, player: this.state.activePlayer });
             },
 
-            // Track a structured per-turn action (inked / played / banished) so the
+            // Track a structured per-turn action (inked / played / banished / shifted) so the
             // auto-save timeline node can summarise the turn (Duels.ink-style recap).
             _trackAction(type, cardId) {
-                if (!this.state.turnActions) this.state.turnActions = { inked: [], played: [], banished: [] };
+                if (!this.state.turnActions) this.state.turnActions = { inked: [], played: [], banished: [], shifted: [] };
                 if (!this.state.turnActions[type]) this.state.turnActions[type] = [];
                 this.state.turnActions[type].push(cardId);
             },
@@ -4525,6 +4525,7 @@
                 const lines = [];
                 const inked = fmt(ta.inked); if (inked) lines.push(`- **Inked:** ${inked}`);
                 const played = fmt(ta.played); if (played) lines.push(`- **Played:** ${played}`);
+                const shifted = fmt(ta.shifted); if (shifted) lines.push(`- **Shifted:** ${shifted}`);
                 const banished = fmt(ta.banished); if (banished) lines.push(`- **Banished:** ${banished}`);
                 if (!lines.length) return '';
                 return `\n\n**Turn recap**\n${lines.join('\n')}`;
@@ -4551,7 +4552,7 @@
                     activeBookmarkId: null,
                     turn: 1, activePlayer: 0, inactivePlayer: 1, opponentHandRevealed: false, log: [], turnComments: {},
                     cardsPlayedThisTurn: [],
-                    turnActions: { inked: [], played: [], banished: [] },
+                    turnActions: { inked: [], played: [], banished: [], shifted: [] },
                     activeTimelineColor: null,
                     players: [
                         { id: 0, name: "Player 1", deck: [], hand: [], field: [], inkwell: [], discard: [], lore: 0, inkTotal: 0, inkReady: 0, hasMulliganed: false },
@@ -4688,7 +4689,7 @@
 
                     // Clear the buffers now that the previous turn's actions are saved
                     this.state.cardsPlayedThisTurn = [];
-                    this.state.turnActions = { inked: [], played: [], banished: [] };
+                    this.state.turnActions = { inked: [], played: [], banished: [], shifted: [] };
 
                     this.state.activeBookmarkId = newId;
                     this.showToast("Auto-Saved Timeline");
@@ -7154,6 +7155,22 @@
                     }
                 }
 
+                // Check if this stacking is considered a shift (matching names)
+                const beneathDb = this.cardDB[targetFound.card.cardId];
+                const beneathName = beneathDb ? (beneathDb.name || "").toLowerCase() : "";
+                const aboveName = dbCard ? (dbCard.name || "").toLowerCase() : "";
+                const beneathFullName = beneathDb ? (beneathDb.fullName || "").toLowerCase() : "";
+                const aboveFullName = dbCard ? (dbCard.fullName || "").toLowerCase() : "";
+
+                const isShift = (beneathName && aboveName && (aboveName.includes(beneathName) || aboveFullName.includes(beneathName))) ||
+                                (beneathFullName && aboveFullName && (aboveFullName.includes(beneathFullName) || aboveName.includes(beneathFullName)));
+
+                if (isShift) {
+                    if (!this.state.cardsPlayedThisTurn) this.state.cardsPlayedThisTurn = [];
+                    this.state.cardsPlayedThisTurn.push(draggedFound.card.cardId);
+                    this._trackAction('shifted', draggedFound.card.cardId);
+                }
+
                 // Inherit state from the target card
                 draggedFound.card.exerted = targetFound.card.exerted;
                 draggedFound.card.damage = targetFound.card.damage;
@@ -7190,7 +7207,11 @@
                     draggedFound.loc = 'field';
                 }
 
-                this.logAction(`Assigned ${dbCard.name} to stack onto ${this.cardDB[targetFound.card.cardId].name}.`);
+                if (isShift) {
+                    this.logAction(`You shifted ${dbCard.name} onto ${beneathDb ? beneathDb.name : 'Unknown card'} (cost ${dbCard.cost}).`);
+                } else {
+                    this.logAction(`Assigned ${dbCard.name} to stack onto ${beneathDb ? beneathDb.name : 'Unknown card'}.`);
+                }
                 this.render();
             },
 
