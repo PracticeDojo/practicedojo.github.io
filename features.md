@@ -345,6 +345,19 @@ As a developer, I want the JSON game state to be way more optimized and organize
  
 
 
+## Feature 26: Design-system hardening (v2 file)
+
+### User Story
+As a player, I want the Dojo's high-stakes moments (winning, saving, deleting, errors) to feel like part of the app instead of raw browser popups, and I want the whole tool to be usable by keyboard.
+
+### Details
+- Shipped in `practice_dojo_v2.html` (A/B against untouched `practice_dojo.html`; test protocol in `TEST-PROTOCOL-v2.md`).
+- Reusable styled dialog component replaces every native `confirm`/`prompt`/`alert`; game over gets a celebratory trophy dialog.
+- Deleting a multiverse node or auto-save shows an Undo toast (8s) instead of deleting silently; deleting the active node moves the pointer to its parent.
+- Keyboard/screen-reader access: cards focusable with Enter/Space opening their menu, context-menu items are real buttons with arrow-key navigation, Escape closes menus and dismissible modals, modals carry dialog ARIA.
+- Multiverse tree, toasts, auto-save list ported from legacy Tailwind purple/gray onto the design tokens; bookmark colors stored as `--p1`/`--p2` token refs so they follow palette tweaks; legacy hex colors mapped at render.
+- Victory nodes: trophy icon + winner's deck-ink gradient as a left edge strip and background tint (`is-victory`), replacing the old border-image hack; mono-ink winners use their single ink color.
+
 # Progress
 
 - [x] Feature 1: Manual Lore Scoring
@@ -374,3 +387,4 @@ As a developer, I want the JSON game state to be way more optimized and organize
 - [x] Feature 23: Craft Ideal Starting Hand
 - [x] Feature 24: auto updating card probabilities
 - [x] Feature 25: Mulligan draw odds
+- [x] Feature 26: Design-system hardening (v2 file — dialogs, delete undo, keyboard access, multiverse token redesign)
