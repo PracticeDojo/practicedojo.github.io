@@ -193,27 +193,6 @@
             letter-spacing: 1px;
         }
 
-        /* Tree Node Pulse */
-        @keyframes treeNodePulse {
-            0% {
-                box-shadow: 0 0 0 0 rgba(147, 51, 234, 0.7);
-            }
-
-            70% {
-                box-shadow: 0 0 0 10px rgba(147, 51, 234, 0);
-            }
-
-            100% {
-                box-shadow: 0 0 0 0 rgba(147, 51, 234, 0);
-            }
-        }
-
-        .tree-node-active {
-            animation: treeNodePulse 2s infinite;
-            border-color: #a855f7 !important;
-            background-color: #2e1065 !important;
-        }
-
         /* Markdown Styles for Node Comments */
         .markdown-comment p {
             margin-bottom: 0.5em;
@@ -323,7 +302,7 @@
             gap: 24px;
             font-family: var(--font-mono, monospace);
             background:
-                radial-gradient(ellipse 55% 45% at 50% 40%, var(--accent-faint, rgba(255,168,0,.08)) 0%, transparent 72%),
+                radial-gradient(ellipse 55% 45% at 50% 40%, var(--accent-faint, rgba(255, 168, 0, .08)) 0%, transparent 72%),
                 radial-gradient(circle at 50% 50%, var(--bg-grid, #1f1c16) 0%, var(--bg, #161310) 72%);
         }
 
@@ -356,14 +335,37 @@
             animation: pdPetalIn 0.7s cubic-bezier(0.34, 1.4, 0.5, 1) backwards;
         }
 
-        .pd-petal:nth-child(1)  { animation-delay: 0.00s; }
-        .pd-petal:nth-child(2)  { animation-delay: 0.07s; }
-        .pd-petal:nth-child(3)  { animation-delay: 0.14s; }
-        .pd-petal:nth-child(4)  { animation-delay: 0.21s; }
-        .pd-petal:nth-child(5)  { animation-delay: 0.28s; }
-        .pd-petal:nth-child(6)  { animation-delay: 0.35s; }
-        .pd-petal:nth-child(7)  { animation-delay: 0.42s; }
-        .pd-petal:nth-child(8)  { animation-delay: 0.49s; }
+        .pd-petal:nth-child(1) {
+            animation-delay: 0.00s;
+        }
+
+        .pd-petal:nth-child(2) {
+            animation-delay: 0.07s;
+        }
+
+        .pd-petal:nth-child(3) {
+            animation-delay: 0.14s;
+        }
+
+        .pd-petal:nth-child(4) {
+            animation-delay: 0.21s;
+        }
+
+        .pd-petal:nth-child(5) {
+            animation-delay: 0.28s;
+        }
+
+        .pd-petal:nth-child(6) {
+            animation-delay: 0.35s;
+        }
+
+        .pd-petal:nth-child(7) {
+            animation-delay: 0.42s;
+        }
+
+        .pd-petal:nth-child(8) {
+            animation-delay: 0.49s;
+        }
 
         .pd-temple {
             transform-box: fill-box;
@@ -388,37 +390,83 @@
         }
 
         @keyframes pdRoseSettle {
-            from { transform: rotate(-160deg); }
-            to   { transform: rotate(0deg); }
+            from {
+                transform: rotate(-160deg);
+            }
+
+            to {
+                transform: rotate(0deg);
+            }
         }
 
         @keyframes pdPetalIn {
-            from { opacity: 0; transform: scale(0.25); }
-            to   { opacity: 1; transform: scale(1); }
+            from {
+                opacity: 0;
+                transform: scale(0.25);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
         }
 
         @keyframes pdTempleIn {
-            from { opacity: 0; transform: scale(0.85); }
-            to   { opacity: 1; transform: scale(1); }
+            from {
+                opacity: 0;
+                transform: scale(0.85);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
         }
 
         @keyframes pdBreath {
-            0%, 100% { transform: scale(1); }
-            50%      { transform: scale(1.05); }
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.05);
+            }
         }
 
         @keyframes pdGlow {
-            0%, 100% { filter: drop-shadow(0 0 6px rgba(255, 168, 0, 0.25)); }
-            50%      { filter: drop-shadow(0 0 22px rgba(255, 168, 0, 0.65)); }
+
+            0%,
+            100% {
+                filter: drop-shadow(0 0 6px rgba(255, 168, 0, 0.25));
+            }
+
+            50% {
+                filter: drop-shadow(0 0 22px rgba(255, 168, 0, 0.65));
+            }
         }
 
         @keyframes pdTextPulse {
-            0%, 100% { opacity: 0.55; }
-            50%      { opacity: 1; }
+
+            0%,
+            100% {
+                opacity: 0.55;
+            }
+
+            50% {
+                opacity: 1;
+            }
         }
 
         @media (prefers-reduced-motion: reduce) {
-            .pd-logo-wrap, .pd-logo, .pd-rose, .pd-petal, .pd-temple, .loader-msg {
+
+            .pd-logo-wrap,
+            .pd-logo,
+            .pd-rose,
+            .pd-petal,
+            .pd-temple,
+            .loader-msg {
                 animation: none !important;
             }
         }
@@ -2050,6 +2098,569 @@
             flex-shrink: 0;
         }
 
+        /* DIALOGS (styled replacement for native confirm/prompt/alert) */
+        .dlg-backdrop {
+            position: fixed;
+            inset: 0;
+            z-index: 1100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            background: oklch(0 0 0 / 0.6);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+        }
+
+        .dlg {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            box-shadow: var(--shadow-3);
+            width: min(420px, 100%);
+            overflow: hidden;
+        }
+
+        .dlg.is-celebrate {
+            border-color: var(--accent-dim);
+            background:
+                linear-gradient(180deg, var(--accent-faint), transparent 55%),
+                var(--surface);
+        }
+
+        .dlg-head {
+            padding: 16px 18px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .dlg-head .dlg-icon {
+            width: 30px;
+            height: 30px;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            background: var(--accent-soft);
+            color: var(--accent-hi);
+            font-size: 13px;
+        }
+
+        .dlg.is-danger .dlg-icon {
+            background: var(--danger-soft);
+            color: var(--danger);
+        }
+
+        .dlg-head h2 {
+            margin: 0;
+            font-size: 15px;
+            font-weight: 600;
+        }
+
+        .dlg-body {
+            padding: 10px 18px 16px;
+            color: var(--text-2);
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        .dlg-body .dlg-stat {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            color: var(--text-dim);
+            margin-top: 6px;
+        }
+
+        .dlg-body .input {
+            margin-top: 10px;
+            width: 100%;
+        }
+
+        .dlg-foot {
+            padding: 12px 18px;
+            border-top: 1px solid var(--border-soft);
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        /* TOASTS (token port of the legacy purple pill) */
+        #toast-container {
+            position: fixed;
+            top: 32px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1050;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            pointer-events: none;
+        }
+
+        .toast {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 9px 16px;
+            background: var(--surface-2);
+            border: 1px solid var(--border-strong);
+            border-radius: 999px;
+            color: var(--text);
+            font-size: 12.5px;
+            font-weight: 600;
+            box-shadow: var(--shadow-2);
+            opacity: 0;
+            transform: translateY(-14px);
+            transition: opacity .25s ease, transform .25s ease;
+        }
+
+        .toast.is-in {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .toast i {
+            color: var(--accent);
+            font-size: 12px;
+        }
+
+        .toast .toast-action {
+            pointer-events: auto;
+            margin-left: 4px;
+            padding: 3px 10px;
+            background: var(--accent-soft);
+            border: 1px solid var(--accent-dim);
+            border-radius: 999px;
+            color: var(--accent-hi);
+            font: inherit;
+            font-size: 11px;
+            cursor: pointer;
+        }
+
+        .toast .toast-action:hover {
+            background: var(--accent-dim);
+            color: var(--bg);
+        }
+
+        #time-flash {
+            position: absolute;
+            inset: 0;
+            z-index: 40;
+            pointer-events: none;
+            background: var(--accent-soft);
+            opacity: 0;
+            transition: opacity .3s ease;
+        }
+
+        #time-flash.is-on {
+            opacity: 1;
+        }
+
+        /* MULTIVERSE TREE MODAL (token port) */
+        #tree-modal {
+            background: oklch(0 0 0 / 0.5);
+            backdrop-filter: blur(2px);
+            -webkit-backdrop-filter: blur(2px);
+        }
+
+        .tree-head {
+            padding: 12px 18px;
+            background: color-mix(in oklch, var(--surface) 88%, transparent);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            z-index: 10;
+            flex-shrink: 0;
+        }
+
+        .tree-head h2 {
+            margin: 0;
+            font-size: 16px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .tree-head h2 i {
+            color: var(--accent);
+        }
+
+        .tree-head .hint {
+            font-size: 11px;
+            color: var(--text-dim);
+        }
+
+        #tree-viewport {
+            background-color: var(--bg);
+            background-image: radial-gradient(oklch(1 0 0 / 0.05) 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+
+        .tree-node {
+            position: absolute;
+            width: 220px;
+            height: 250px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            background:
+                linear-gradient(0deg, color-mix(in oklch, var(--surface-2) 82%, transparent), color-mix(in oklch, var(--surface-2) 82%, transparent)),
+                linear-gradient(0deg, var(--node-c, var(--border-strong)), var(--node-c, var(--border-strong)));
+            border: 1px solid var(--border);
+            border-left: 4px solid var(--node-c, var(--accent));
+            border-radius: 9px;
+            box-shadow: var(--shadow-1);
+            transition: transform .12s ease, box-shadow .12s ease;
+        }
+
+        .tree-node:hover {
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: var(--shadow-2);
+            z-index: 20;
+        }
+
+        .tree-node.is-active {
+            border-color: var(--accent);
+            border-left-color: var(--node-c, var(--accent));
+            box-shadow: 0 0 0 2px var(--accent-soft), var(--shadow-2);
+        }
+
+        .tree-node.is-nav {
+            outline: 3px solid var(--text);
+            outline-offset: 2px;
+            z-index: 30;
+        }
+
+        /* Victory nodes (branch won): the winner's deck-ink colors become the node's
+           identity — a gradient edge strip + tint, in place of the player-color border. */
+        .tree-node.is-victory {
+            --node-g: linear-gradient(0deg, var(--node-c, var(--accent)), var(--node-c, var(--accent)));
+            border-left-width: 1px;
+            border-left-color: var(--border);
+            background:
+                linear-gradient(0deg, color-mix(in oklch, var(--surface-2) 82%, transparent), color-mix(in oklch, var(--surface-2) 82%, transparent)),
+                var(--node-g);
+        }
+
+        .tree-node.is-victory::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background-image: var(--node-g);
+            z-index: 1;
+        }
+
+        .tree-node.is-victory .tn-title i {
+            color: var(--accent-hi);
+        }
+
+        .tn-body {
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            flex: 1 1 0;
+            min-height: 0;
+            position: relative;
+        }
+
+        .tn-title {
+            appearance: none;
+            background: none;
+            border: none;
+            padding: 0;
+            padding-right: 56px;
+            text-align: left;
+            font: inherit;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            flex-shrink: 0;
+        }
+
+        .tn-title i {
+            color: var(--node-c, var(--accent));
+            font-size: 11px;
+        }
+
+        .tn-title:hover span,
+        .tn-title:focus-visible span {
+            text-decoration: underline;
+            text-underline-offset: 2px;
+        }
+
+        .tn-title span {
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .tn-stats {
+            font-family: var(--font-mono);
+            font-size: 9.5px;
+            letter-spacing: 0.04em;
+            color: var(--text-dim);
+            margin-top: 4px;
+            flex-shrink: 0;
+        }
+
+        .tn-comment {
+            font-size: 11px;
+            color: var(--text-2);
+            margin-top: 6px;
+            overflow-y: auto;
+            overflow-wrap: break-word;
+            padding-right: 4px;
+            flex: 1 1 0;
+            min-height: 0;
+        }
+
+        .tn-cards {
+            border-top: 1px solid var(--border-soft);
+            background: color-mix(in oklch, var(--bg) 55%, transparent);
+            flex-shrink: 0;
+        }
+
+        .tn-cards-label {
+            font-size: 9px;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--text-dim);
+            text-align: center;
+            padding: 3px 0 1px;
+        }
+
+        .tn-cards-row {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 4px;
+            padding: 4px;
+            max-height: 90px;
+            overflow-y: auto;
+        }
+
+        .tn-cards-row .tn-card-thumb {
+            width: 35px;
+            height: 50px;
+            background-size: cover;
+            background-position: center;
+            border-radius: 4px;
+            box-shadow: var(--shadow-1);
+        }
+
+        .tn-icon-btn {
+            position: absolute;
+            top: 6px;
+            width: 26px;
+            height: 26px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--surface-3);
+            border: 1px solid var(--border-soft);
+            border-radius: 7px;
+            color: var(--text-dim);
+            font-size: 10px;
+            cursor: pointer;
+            z-index: 20;
+        }
+
+        .tn-icon-btn.tn-edit {
+            right: 36px;
+        }
+
+        .tn-icon-btn.tn-delete {
+            right: 6px;
+        }
+
+        .tn-icon-btn:hover,
+        .tn-icon-btn:focus-visible {
+            background: var(--surface-hi);
+            color: var(--text);
+        }
+
+        .tn-icon-btn.tn-delete:hover,
+        .tn-icon-btn.tn-delete:focus-visible {
+            background: var(--danger-soft);
+            border-color: var(--danger);
+            color: var(--danger);
+        }
+
+        .tree-node .tn-edit-form {
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            flex: 1 1 0;
+            min-height: 0;
+            background: var(--surface-2);
+        }
+
+        .tree-node .tn-edit-form .input {
+            font-size: 11px;
+            padding: 4px 8px;
+        }
+
+        .tree-node .tn-edit-form textarea.input {
+            flex: 1 1 0;
+            min-height: 0;
+            resize: none;
+        }
+
+        .tn-edit-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 6px;
+            flex-shrink: 0;
+        }
+
+        .tn-edit-actions .btn {
+            padding: 3px 10px;
+            font-size: 11px;
+        }
+
+        .tree-empty {
+            position: absolute;
+            left: 100px;
+            top: 100px;
+            color: var(--text-dim);
+            font-style: italic;
+        }
+
+        /* AUTO-SAVE LIST (token port) */
+        .autosave-item {
+            position: relative;
+            background: var(--surface-2);
+            border: 1px solid var(--border-soft);
+            border-radius: 7px;
+            padding: 8px 10px;
+            margin-bottom: 4px;
+            cursor: pointer;
+            overflow: hidden;
+            transition: border-color .12s ease, background .12s ease;
+        }
+
+        .autosave-item:hover {
+            border-color: var(--border-strong);
+            background: var(--surface-3);
+        }
+
+        .autosave-item .as-name {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-2);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .autosave-item .as-stats {
+            font-family: var(--font-mono);
+            font-size: 9.5px;
+            color: var(--text-dim);
+            margin-top: 2px;
+        }
+
+        .autosave-item .as-cards {
+            display: flex;
+            gap: 3px;
+            margin-top: 5px;
+            opacity: 0.6;
+            transition: opacity .15s ease;
+        }
+
+        .autosave-item:hover .as-cards {
+            opacity: 1;
+        }
+
+        .autosave-item .as-cards .tn-card-thumb {
+            width: 18px;
+            height: 25px;
+            background-size: cover;
+            background-position: center;
+            border-radius: 3px;
+            flex-shrink: 0;
+        }
+
+        .autosave-item .as-restore {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: oklch(0 0 0 / 0.75);
+            backdrop-filter: blur(3px);
+            color: var(--text);
+            font-size: 11px;
+            font-weight: 600;
+            opacity: 0;
+            transition: opacity .15s ease;
+            z-index: 10;
+        }
+
+        .autosave-item:hover .as-restore,
+        .autosave-item:focus-visible .as-restore {
+            opacity: 1;
+        }
+
+        .autosave-empty {
+            font-size: 11px;
+            color: var(--text-faint);
+            font-style: italic;
+            text-align: center;
+            padding: 14px 0;
+        }
+
+        /* KEYBOARD FOCUS (a11y) */
+        .card-wrap:focus-visible,
+        .card:focus-visible {
+            outline: 2px solid var(--accent);
+            outline-offset: 2px;
+            border-radius: 6px;
+        }
+
+        .switch:has(input:focus-visible) .slider {
+            outline: 2px solid var(--accent);
+            outline-offset: 2px;
+        }
+
+        .input:focus-visible {
+            outline: 2px solid var(--accent-soft);
+            outline-offset: 1px;
+        }
+
+        button.ctx-item {
+            appearance: none;
+            background: none;
+            border: none;
+            width: 100%;
+            font: inherit;
+            font-size: 12.5px;
+            text-align: left;
+        }
+
+        button.ctx-item:focus-visible {
+            background: var(--surface-3);
+            color: var(--text);
+            outline: none;
+        }
+
         .card-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
@@ -2213,31 +2824,6 @@
         }
 
         .bookmark.is-p2 {
-            border-left-color: var(--p2);
-        }
-
-        /* MULTIVERSE TREE NODES (redesign styling layered on existing markup) */
-        .tree-node {
-            width: 200px;
-            background: var(--surface-2);
-            border: 1px solid var(--border);
-            border-left: 4px solid var(--accent);
-            border-radius: 9px;
-            padding: 8px 10px;
-            cursor: pointer;
-            transition: transform .12s ease, box-shadow .12s ease, border-color .12s ease;
-        }
-
-        .tree-node:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-2);
-        }
-
-        .tree-node.is-p1 {
-            border-left-color: var(--p1);
-        }
-
-        .tree-node.is-p2 {
             border-left-color: var(--p2);
         }
 
@@ -2558,13 +3144,6 @@
                 height: 100%;
                 align-content: center;
             }
-        }
-
-        /* keep tree-node active pulse readable on the new palette */
-        .tree-node-active {
-            box-shadow: 0 0 0 2px var(--accent), var(--shadow-2) !important;
-            border-color: var(--accent) !important;
-            background: var(--accent-faint) !important;
         }
 
         /* ----- hover-chip stability -----
@@ -3124,19 +3703,37 @@
                 style="fill-rule:evenodd;clip-rule:evenodd;" aria-hidden="true">
                 <g class="pd-temple">
                     <g transform="matrix(12.721909,0,0,12.886864,-182.18117,-1126.941065)">
-                        <path d="M94.711,327.029L95.154,327.008L95.154,327.029L94.711,327.029ZM212.414,327.029L211.972,327.029L211.972,327.008L212.414,327.029ZM42.374,167.577C36.692,149.965 29.831,134.696 22.427,122.879C36.545,134.436 89.886,143.041 153.454,143.041C217.123,143.041 270.534,134.408 284.549,122.823L284.734,122.823C277.316,134.649 270.442,149.939 264.75,167.58C264.658,167.866 264.567,168.152 264.475,168.439L254.223,168.439C250.129,168.753 245.977,169.048 241.769,169.324L241.769,190.469C245.686,190.308 249.45,190.137 253.048,189.956C251.647,195.963 250.46,202.923 249.615,210.431L241.769,210.431L241.769,327.029L212.414,327.029L218.256,210.431L88.87,210.431L94.711,327.029L65.356,327.029L65.356,210.431L57.511,210.431C56.666,202.923 55.479,195.963 54.077,189.956C57.676,190.137 61.44,190.308 65.356,190.469L65.356,169.322C61.161,169.047 57.02,168.752 52.937,168.439L42.651,168.439C42.559,168.151 42.467,167.864 42.374,167.577ZM86.872,170.542L87.908,191.232C107.67,191.773 129.97,192.077 153.563,192.077C177.155,192.077 199.456,191.773 219.217,191.232L220.254,170.544C199.038,171.562 176.676,172.107 153.58,172.107C130.472,172.107 108.098,171.562 86.872,170.542Z" style="fill:rgb(255,168,0);"/>
+                        <path
+                            d="M94.711,327.029L95.154,327.008L95.154,327.029L94.711,327.029ZM212.414,327.029L211.972,327.029L211.972,327.008L212.414,327.029ZM42.374,167.577C36.692,149.965 29.831,134.696 22.427,122.879C36.545,134.436 89.886,143.041 153.454,143.041C217.123,143.041 270.534,134.408 284.549,122.823L284.734,122.823C277.316,134.649 270.442,149.939 264.75,167.58C264.658,167.866 264.567,168.152 264.475,168.439L254.223,168.439C250.129,168.753 245.977,169.048 241.769,169.324L241.769,190.469C245.686,190.308 249.45,190.137 253.048,189.956C251.647,195.963 250.46,202.923 249.615,210.431L241.769,210.431L241.769,327.029L212.414,327.029L218.256,210.431L88.87,210.431L94.711,327.029L65.356,327.029L65.356,210.431L57.511,210.431C56.666,202.923 55.479,195.963 54.077,189.956C57.676,190.137 61.44,190.308 65.356,190.469L65.356,169.322C61.161,169.047 57.02,168.752 52.937,168.439L42.651,168.439C42.559,168.151 42.467,167.864 42.374,167.577ZM86.872,170.542L87.908,191.232C107.67,191.773 129.97,192.077 153.563,192.077C177.155,192.077 199.456,191.773 219.217,191.232L220.254,170.544C199.038,171.562 176.676,172.107 153.58,172.107C130.472,172.107 108.098,171.562 86.872,170.542Z"
+                            style="fill:rgb(255,168,0);" />
                     </g>
                 </g>
                 <g class="pd-rose">
                     <g transform="matrix(4.804303,0,0,4.804303,746.246307,1211.517407)">
-                        <path class="pd-petal" d="M291.869,303.551C286.285,348.414 272.233,363.957 272.161,364.003C252.57,376.528 167.934,397.393 112.939,330.115C101.152,315.695 90.117,293.261 95.269,296.987C100.394,300.693 128.539,321.047 169.54,324.088C197.015,326.125 201.289,320.94 205.517,332.493C208.925,341.805 212.286,361.009 214.729,354.641C224.004,330.469 221.159,327.265 229.418,325.169C270.705,314.689 286.686,284.998 290.175,269.414C290.292,268.893 293.13,256.216 293.346,263.544C294.131,290.216 292.039,302.13 291.869,303.551Z" style="fill:rgb(255,168,0);"/>
-                        <path class="pd-petal" d="M201.092,194.4C212.707,139.225 211.224,98.793 212.919,97.994C215.621,96.721 214.225,99.205 214.933,107.46C221.218,180.812 223.88,237.817 274.591,245.026C274.925,245.073 287.513,246.863 277.427,248.145C216.118,255.942 216.566,314.509 214.147,316.007C213.258,316.558 212.366,316.106 210.1,303.573C204.775,274.118 178.333,251.762 154.48,248.633C153.936,248.561 140.194,246.759 148.46,245.367C180.106,240.038 191.236,227.737 201.092,194.4Z" style="fill:rgb(255,168,0);"/>
-                        <path class="pd-petal" d="M138.798,205.53C136.38,226.267 137.518,235.361 118.625,243.781C106.256,249.293 132.087,250.13 135.525,264.493C145.128,304.606 170.313,309.315 160.5,308.526C159.822,308.472 144.574,300.085 136.834,294.038C93.097,259.863 86.293,216.579 86.833,214.579C96.679,178.13 123.816,138.87 170.568,122.689C174.546,121.312 187.029,116.813 178.786,122.792C165.79,132.217 148.252,158.94 142.245,185.447C139.984,195.423 140.203,195.374 138.798,205.53Z" style="fill:rgb(255,168,0);"/>
-                        <path class="pd-petal" d="M333.874,276.445C334.348,280.75 341.494,293.542 317.058,326.177C307.133,339.431 290.377,353.674 289.513,353.336C286.719,352.242 291.922,351.365 296.985,316.58C301.584,284.976 295.709,258.234 296.745,256.635C300.478,250.876 319.17,248.178 308.393,243.783C283.949,233.815 295.902,222.377 278.119,198.794C269.125,186.867 262.515,182.994 260.853,182.021C248.807,174.963 280.901,183.73 298.154,200.886C324.061,226.646 330.131,254.955 333.874,276.445Z" style="fill:rgb(255,168,0);"/>
-                        <path class="pd-petal" d="M340.73,271.303C338.779,263.052 333.096,216.185 290.838,188.014C263.479,169.776 243.933,175.152 240.671,169.396C240.505,169.103 238.388,165.369 240.383,165.193C277.718,161.908 325.893,177.407 332.021,191.729C343.395,218.31 339.372,232.147 359.587,243.344C363.479,245.499 365.385,247.251 361.339,249.12C344.749,256.783 342.191,271.128 342.11,271.263C342.054,271.358 342.11,271.263 340.73,271.303Z" style="fill:rgb(255,168,0);"/>
-                        <path class="pd-petal" d="M230.155,132.563C229.884,131.36 226.967,118.431 227.358,117.4C227.952,115.832 283.854,119.66 318.586,169.44C318.759,169.688 325.749,177.996 319.59,174.294C287.654,155.095 241.651,161.518 238.374,160.905C235.887,160.44 230.631,134.876 230.155,132.563Z" style="fill:rgb(255,168,0);"/>
-                        <path class="pd-petal" d="M85.106,270.606C74.85,246.111 63.116,252.103 63.28,246.487C63.332,244.709 64.109,245.174 68.613,242.692C76.299,238.454 81.183,229.527 82.552,230.409C83.254,230.861 82.995,230.943 84.622,235.459C96.826,269.329 133.307,308.327 174.54,317.409C182.166,319.089 173.689,319.567 173.5,319.544C140.466,315.528 116.797,302.351 112.303,299.849C84.587,284.418 87.211,280.841 85.106,270.606Z" style="fill:rgb(255,168,0);"/>
-                        <path class="pd-petal" d="M196.957,131.582C188.966,172.073 184.965,171.818 179.651,173.907C174.225,176.04 156.438,186.185 146.962,201.883C146.813,202.129 142.394,209.45 143.755,203.514C149.664,177.744 158.451,142.935 197.588,117.659C202.016,114.8 197.61,128.807 196.957,131.582Z" style="fill:rgb(255,168,0);"/>
+                        <path class="pd-petal"
+                            d="M291.869,303.551C286.285,348.414 272.233,363.957 272.161,364.003C252.57,376.528 167.934,397.393 112.939,330.115C101.152,315.695 90.117,293.261 95.269,296.987C100.394,300.693 128.539,321.047 169.54,324.088C197.015,326.125 201.289,320.94 205.517,332.493C208.925,341.805 212.286,361.009 214.729,354.641C224.004,330.469 221.159,327.265 229.418,325.169C270.705,314.689 286.686,284.998 290.175,269.414C290.292,268.893 293.13,256.216 293.346,263.544C294.131,290.216 292.039,302.13 291.869,303.551Z"
+                            style="fill:rgb(255,168,0);" />
+                        <path class="pd-petal"
+                            d="M201.092,194.4C212.707,139.225 211.224,98.793 212.919,97.994C215.621,96.721 214.225,99.205 214.933,107.46C221.218,180.812 223.88,237.817 274.591,245.026C274.925,245.073 287.513,246.863 277.427,248.145C216.118,255.942 216.566,314.509 214.147,316.007C213.258,316.558 212.366,316.106 210.1,303.573C204.775,274.118 178.333,251.762 154.48,248.633C153.936,248.561 140.194,246.759 148.46,245.367C180.106,240.038 191.236,227.737 201.092,194.4Z"
+                            style="fill:rgb(255,168,0);" />
+                        <path class="pd-petal"
+                            d="M138.798,205.53C136.38,226.267 137.518,235.361 118.625,243.781C106.256,249.293 132.087,250.13 135.525,264.493C145.128,304.606 170.313,309.315 160.5,308.526C159.822,308.472 144.574,300.085 136.834,294.038C93.097,259.863 86.293,216.579 86.833,214.579C96.679,178.13 123.816,138.87 170.568,122.689C174.546,121.312 187.029,116.813 178.786,122.792C165.79,132.217 148.252,158.94 142.245,185.447C139.984,195.423 140.203,195.374 138.798,205.53Z"
+                            style="fill:rgb(255,168,0);" />
+                        <path class="pd-petal"
+                            d="M333.874,276.445C334.348,280.75 341.494,293.542 317.058,326.177C307.133,339.431 290.377,353.674 289.513,353.336C286.719,352.242 291.922,351.365 296.985,316.58C301.584,284.976 295.709,258.234 296.745,256.635C300.478,250.876 319.17,248.178 308.393,243.783C283.949,233.815 295.902,222.377 278.119,198.794C269.125,186.867 262.515,182.994 260.853,182.021C248.807,174.963 280.901,183.73 298.154,200.886C324.061,226.646 330.131,254.955 333.874,276.445Z"
+                            style="fill:rgb(255,168,0);" />
+                        <path class="pd-petal"
+                            d="M340.73,271.303C338.779,263.052 333.096,216.185 290.838,188.014C263.479,169.776 243.933,175.152 240.671,169.396C240.505,169.103 238.388,165.369 240.383,165.193C277.718,161.908 325.893,177.407 332.021,191.729C343.395,218.31 339.372,232.147 359.587,243.344C363.479,245.499 365.385,247.251 361.339,249.12C344.749,256.783 342.191,271.128 342.11,271.263C342.054,271.358 342.11,271.263 340.73,271.303Z"
+                            style="fill:rgb(255,168,0);" />
+                        <path class="pd-petal"
+                            d="M230.155,132.563C229.884,131.36 226.967,118.431 227.358,117.4C227.952,115.832 283.854,119.66 318.586,169.44C318.759,169.688 325.749,177.996 319.59,174.294C287.654,155.095 241.651,161.518 238.374,160.905C235.887,160.44 230.631,134.876 230.155,132.563Z"
+                            style="fill:rgb(255,168,0);" />
+                        <path class="pd-petal"
+                            d="M85.106,270.606C74.85,246.111 63.116,252.103 63.28,246.487C63.332,244.709 64.109,245.174 68.613,242.692C76.299,238.454 81.183,229.527 82.552,230.409C83.254,230.861 82.995,230.943 84.622,235.459C96.826,269.329 133.307,308.327 174.54,317.409C182.166,319.089 173.689,319.567 173.5,319.544C140.466,315.528 116.797,302.351 112.303,299.849C84.587,284.418 87.211,280.841 85.106,270.606Z"
+                            style="fill:rgb(255,168,0);" />
+                        <path class="pd-petal"
+                            d="M196.957,131.582C188.966,172.073 184.965,171.818 179.651,173.907C174.225,176.04 156.438,186.185 146.962,201.883C146.813,202.129 142.394,209.45 143.755,203.514C149.664,177.744 158.451,142.935 197.588,117.659C202.016,114.8 197.61,128.807 196.957,131.582Z"
+                            style="fill:rgb(255,168,0);" />
                     </g>
                 </g>
             </svg>
@@ -3247,8 +3844,8 @@
     </div>
 
     <!-- Mulligan Modal -->
-    <div id="mulligan-modal" class="modal-backdrop fixed inset-0 flex items-center justify-center hidden p-6"
-        style="z-index:90">
+    <div id="mulligan-modal" role="dialog" aria-modal="true" aria-labelledby="mulligan-title"
+        class="modal-backdrop fixed inset-0 flex items-center justify-center hidden p-6" style="z-index:90">
         <div class="modal-card wide">
             <div class="modal-head">
                 <h2 id="mulligan-title">Player Mulligan</h2>
@@ -3289,8 +3886,8 @@
     </div>
 
     <!-- Craft Hand Modal -->
-    <div id="craft-hand-modal" class="modal-backdrop fixed inset-0 flex items-center justify-center hidden p-6"
-        style="z-index:90">
+    <div id="craft-hand-modal" role="dialog" aria-modal="true" aria-labelledby="craft-hand-title"
+        class="modal-backdrop fixed inset-0 flex items-center justify-center hidden p-6" style="z-index:90">
         <div class="modal-card wide">
             <div class="modal-head">
                 <h2><span id="craft-hand-title">Craft Starting Hand</span></h2>
@@ -3318,8 +3915,8 @@
     </div>
 
     <!-- Inspect Deck Modal -->
-    <div id="inspect-deck-modal" class="modal-backdrop fixed inset-0 flex items-center justify-center hidden p-6"
-        style="z-index:90">
+    <div id="inspect-deck-modal" role="dialog" aria-modal="true" aria-labelledby="inspect-deck-title"
+        class="modal-backdrop fixed inset-0 flex items-center justify-center hidden p-6" style="z-index:90">
         <div class="modal-card wide">
             <div class="modal-head">
                 <h2 id="inspect-deck-title">Inspecting Deck</h2>
@@ -3336,8 +3933,8 @@
     </div>
 
     <!-- Inspect Discard Modal -->
-    <div id="inspect-discard-modal" class="modal-backdrop fixed inset-0 flex items-center justify-center hidden p-6"
-        style="z-index:90">
+    <div id="inspect-discard-modal" role="dialog" aria-modal="true" aria-labelledby="inspect-discard-title"
+        class="modal-backdrop fixed inset-0 flex items-center justify-center hidden p-6" style="z-index:90">
         <div class="modal-card wide">
             <div class="modal-head">
                 <h2 id="inspect-discard-title">Inspecting Discard Pile</h2>
@@ -3353,11 +3950,12 @@
     </div>
 
     <!-- Import Duels.ink Log Modal -->
-    <div id="import-log-modal" class="modal-backdrop fixed inset-0 flex items-center justify-center hidden p-6"
-        style="z-index:90">
+    <div id="import-log-modal" role="dialog" aria-modal="true" aria-labelledby="import-log-title"
+        class="modal-backdrop fixed inset-0 flex items-center justify-center hidden p-6" style="z-index:90">
         <div class="modal-card">
             <div class="modal-head">
-                <h2><i class="fa-solid fa-file-lines" style="color:var(--ok)"></i> Import Duels.ink Log</h2>
+                <h2 id="import-log-title"><i class="fa-solid fa-file-lines" style="color:var(--ok)"></i> Import
+                    Duels.ink Log</h2>
                 <button class="close" onclick="App.closeImportLogModal()">&times;</button>
             </div>
             <div class="modal-body" style="display:flex;flex-direction:column;gap:14px;">
@@ -3398,8 +3996,8 @@
     </div>
 
     <!-- Card Search Modal -->
-    <div id="card-search-modal" class="modal-backdrop fixed inset-0 flex items-center justify-center hidden p-6"
-        style="z-index:90">
+    <div id="card-search-modal" role="dialog" aria-modal="true" aria-labelledby="card-search-title"
+        class="modal-backdrop fixed inset-0 flex items-center justify-center hidden p-6" style="z-index:90">
         <div class="modal-card wide">
             <div class="modal-head">
                 <h2 id="card-search-title">Search Replacement Card</h2>
@@ -3417,27 +4015,23 @@
     </div>
 
     <!-- Multiverse Tree Modal -->
-    <div id="tree-modal" class="absolute inset-0 z-50 bg-black/50 backdrop-blur-[2px] hidden flex-col overflow-hidden">
-        <div
-            class="p-4 bg-gray-900/80 border-b border-gray-800 flex justify-between items-center z-10 shadow-2xl backdrop-blur-[2px]">
-            <div class="flex items-center gap-3">
-                <i class="fa-solid fa-network-wired text-purple-500 text-xl"></i>
-                <h2 class="text-2xl font-bold text-white tracking-wide">Multiverse Timelines</h2>
-                <span class="text-xs text-gray-500 ml-4 hidden sm:block">Click and drag canvas to pan. Scroll wheel to
-                    zoom. Click a node to
-                    restore that timeline.</span>
-            </div>
-            <div class="flex items-center gap-4">
-                <button onclick="App.resetTreeZoom()" class="text-gray-400 hover:text-white transition tooltip"
-                    title="Reset Zoom"><i class="fa-solid fa-compress text-xl"></i></button>
-                <button onclick="App.closeTreeModal()" class="text-gray-400 hover:text-white transition"><i
-                        class="fa-solid fa-times text-2xl"></i></button>
+    <div id="tree-modal" class="absolute inset-0 z-50 hidden flex-col overflow-hidden" role="dialog" aria-modal="true"
+        aria-labelledby="tree-modal-title">
+        <div class="tree-head">
+            <h2 id="tree-modal-title"><i class="fa-solid fa-network-wired"></i> Multiverse Timelines
+                <span class="hint hidden sm:block">Drag to pan. Scroll to zoom. Arrow keys to navigate, Enter to
+                    restore.</span>
+            </h2>
+            <div class="flex items-center gap-2">
+                <button onclick="App.resetTreeZoom()" class="close" title="Reset Zoom" aria-label="Reset zoom"><i
+                        class="fa-solid fa-compress"></i></button>
+                <button onclick="App.closeTreeModal()" class="close" aria-label="Close multiverse view"><i
+                        class="fa-solid fa-times"></i></button>
             </div>
         </div>
 
         <!-- Draggable Canvas Area -->
-        <div id="tree-viewport" class="flex-1 relative cursor-grab overflow-hidden bg-black/40"
-            style="background-image: radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1px); background-size: 40px 40px;">
+        <div id="tree-viewport" class="flex-1 relative cursor-grab overflow-hidden">
             <div id="tree-canvas"
                 class="absolute inset-0 transform origin-top-left transition-transform duration-75 ease-out">
                 <!-- SVG lines go here -->
@@ -3449,11 +4043,8 @@
     </div>
 
     <!-- Time Jump Flash & Toast -->
-    <div id="time-flash"
-        class="absolute inset-0 bg-purple-500/20 z-40 pointer-events-none opacity-0 transition-opacity duration-300">
-    </div>
-    <div id="toast-container"
-        class="fixed top-8 left-1/2 transform -translate-x-1/2 z-50 flex flex-col gap-2 pointer-events-none"></div>
+    <div id="time-flash"></div>
+    <div id="toast-container" aria-live="polite"></div>
 
     <!-- Main App Container -->
     <div id="app" class="app hidden">
@@ -3863,7 +4454,7 @@
         let cardFuse = null;
         let allSessions = [];
 
-        const APP_VERSION = "v2.7.1"; // Centralized version string (redesign)
+        const APP_VERSION = "v2.8.0"; // Centralized version string (redesign)
 
         // Tweaks panel accent presets (hue values for the OKLCH accent ramp)
         const ACCENT_PRESETS = {
@@ -4049,7 +4640,7 @@
                         document.getElementById('setup-modal').classList.add('hidden');
                         document.getElementById('app').classList.remove('hidden');
 
-                        document.getElementById('timeline-drawer').classList.add('-translate-x-full');
+                        document.getElementById('timeline-drawer').classList.remove('is-open');
                         this.renderAutoSaves();
                         this.renderTree();
                         this.render();
@@ -4151,8 +4742,9 @@
                         name: name,
                         stats: stats,
                         comment: `Branch over. ${winner.name} reached 20 lore.`,
-                        color: typeof bColor === 'string' && !bColor.includes('gradient') ? bColor : '#ffffff', // default border if gradient
+                        color: typeof bColor === 'string' && !bColor.includes('gradient') ? bColor : 'var(--accent)', // victory gold when the edge is a gradient
                         gradient: bColor.includes('gradient') ? bColor : null,
+                        isVictory: true,
                         state: JSON.stringify(this.compressState(this.state, true)),
                         timestamp: Date.now(),
                         isDeckEdit: false
@@ -4161,9 +4753,18 @@
                     this.state.activeBookmarkId = newId;
                     this.saveToLocalStorage();
 
-                    // Show a message on the main screen and dialog to go to multiverse
-                    setTimeout(() => {
-                        if (confirm(`Game Over! ${winner.name} won the branch with ${winner.lore} lore. Would you like to go to the Multiverse View to see other timelines?`)) {
+                    // Celebrate the win in the design system, then offer the multiverse
+                    setTimeout(async () => {
+                        const goToTree = await this.dialog({
+                            title: `${winner.name} wins the branch!`,
+                            message: `${winner.name} reached ${winner.lore} lore. Explore the multiverse to revisit other timelines, or stay here to keep experimenting with this board.`,
+                            stat: `Turn ${this.state.turn}  ·  P1 ${p1.lore} — P2 ${p2.lore} lore`,
+                            icon: 'fa-trophy',
+                            celebrate: true,
+                            confirmText: 'View Multiverse',
+                            cancelText: 'Stay Here'
+                        });
+                        if (goToTree) {
                             this.treePan.zoom = 0.8; // Zoom out
                             this.openTreeModal();
                             // Zoom out and center on current node logic will be in openTreeModal
@@ -4296,8 +4897,8 @@
                     if (hasSavedSession) {
                         // We show the setup screen but add a distinct "Resume Last Auto-Save" option
                         const resumeBtnHtml = `
-                            <button id="btn-resume-storage" onclick="App.loadFromLocalStorage()" class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold py-2.5 px-6 rounded transition-transform hover:scale-[1.02] active:scale-95 flex items-center text-sm shadow-[0_0_15px_rgba(16,185,129,0.4)]">
-                                <i class="fa-solid fa-clock-rotate-left mr-2"></i> Restore Auto-Save
+                            <button id="btn-resume-storage" onclick="App.loadFromLocalStorage()" class="btn btn-primary">
+                                <i class="fa-solid fa-clock-rotate-left" style="margin-right:8px"></i> Restore Auto-Save
                             </button>
                         `;
                         const setupActionsNode = document.getElementById('session-restore-container');
@@ -4648,7 +5249,7 @@
                     const p2 = this.state.players[1];
                     const stats = `Turn ${this.state.turn} | P1: ${p1.lore} - P2: ${p2.lore}`;
 
-                    const bColor = this.state.activePlayer === 0 ? '#a86b32' : '#3f2e70';
+                    const bColor = this.playerBookmarkColor(this.state.activePlayer);
 
                     const newId = this.uuid();
 
@@ -4826,17 +5427,17 @@
                             document.getElementById('app').classList.remove('hidden');
 
                             // Close Drawer if open, render new state
-                            document.getElementById('timeline-drawer').classList.add('-translate-x-full');
+                            document.getElementById('timeline-drawer').classList.remove('is-open');
                             this.renderAutoSaves();
                             this.renderTree(); // Ensure tree is ready if they open it
                             this.render();
                             this.showToast("Session Imported Successfully!");
                         } else {
-                            alert("Invalid session file format.");
+                            this.dialogAlert("This file is missing the session data the Dojo expects. Export a session from the Dojo and try again.", "Invalid session file");
                         }
                     } catch (err) {
                         console.error("Failed to parse timeline file", err);
-                        alert("Failed to read the file. Ensure it is a valid JSON exported from the Dojo.");
+                        this.dialogAlert("That file couldn't be read as a Dojo session. Make sure it's a JSON file exported from the Dojo.", "Couldn't read file");
                     }
                     // Reset file input so the same file can be imported again if needed
                     event.target.value = '';
@@ -5625,7 +6226,7 @@
 
                 document.getElementById('setup-modal').classList.add('hidden');
                 document.getElementById('app').classList.remove('hidden');
-                document.getElementById('timeline-drawer').classList.add('-translate-x-full');
+                document.getElementById('timeline-drawer').classList.remove('is-open');
                 this.renderAutoSaves();
                 this.renderTree();
                 this.render();
@@ -5754,7 +6355,7 @@
                         this.onLogPasteInput();
                     } catch (err) {
                         console.error('Failed to read log file', err);
-                        alert(err.message || 'Could not read that file.');
+                        this.dialogAlert(err.message || 'Could not read that file.', "Couldn't read log file");
                     }
                 };
                 reader.readAsArrayBuffer(file);
@@ -5768,7 +6369,7 @@
                     this.closeImportLogModal();
                 } catch (err) {
                     console.error("Failed to import Duels.ink log", err);
-                    alert(err.message || "Failed to parse the log. Check the browser console for details.");
+                    this.dialogAlert(err.message || "Failed to parse the log. Check the browser console for details.", "Log import failed");
                 }
             },
 
@@ -5829,17 +6430,17 @@
                         document.getElementById('app').classList.remove('hidden');
 
                         // Close Drawer if open, render new state
-                        document.getElementById('timeline-drawer').classList.add('-translate-x-full');
+                        document.getElementById('timeline-drawer').classList.remove('is-open');
                         this.renderAutoSaves();
                         this.renderTree(); // Ensure tree is ready if they open it
                         this.render();
                         this.showToast(`Loaded session successfully!`);
                     } else {
-                        alert("Invalid session payload from Database.");
+                        this.dialogAlert("The cloud returned a session without the data the Dojo expects. It may have been saved by an incompatible version.", "Invalid cloud session");
                     }
                 } catch (err) {
                     console.error("Failed to fetch example session", err);
-                    alert("Failed to fetch the session from Supabase.");
+                    this.dialogAlert("Couldn't reach the cloud to load that session. Check your connection and try again.", "Cloud load failed");
                 } finally {
                     btn.innerHTML = originalText;
                     btn.disabled = false;
@@ -5847,10 +6448,17 @@
                 }
             },
 
-            promptSaveSessionToCloud() {
-                const sessionName = prompt("Enter a name for this session to save to the cloud:");
-                if (sessionName && sessionName.trim() !== "") {
-                    this.saveSessionToCloud(sessionName.trim());
+            async promptSaveSessionToCloud() {
+                const sessionName = await this.dialog({
+                    title: 'Save session to cloud',
+                    message: 'Name this session so you can find it in the load list later.',
+                    icon: 'fa-cloud-arrow-up',
+                    prompt: true,
+                    placeholder: 'e.g. Amber/Steel vs Ruby/Sapphire — turn 8 study',
+                    confirmText: 'Save'
+                });
+                if (sessionName) {
+                    this.saveSessionToCloud(sessionName);
                 }
             },
 
@@ -5879,7 +6487,7 @@
                     this.fetchSessionsFromDatabase();
                 } catch (err) {
                     console.error("Failed to save session to cloud:", err);
-                    alert("Failed to save session to Supabase.");
+                    this.dialogAlert("The session couldn't be uploaded. Your local game is untouched — check your connection and try Save to Cloud again.", "Cloud save failed");
                 }
             },
 
@@ -5894,7 +6502,7 @@
                 const p2 = this.state.players[1];
                 const stats = `Turn ${this.state.turn} | P1: ${p1.lore} - P2: ${p2.lore}`;
 
-                const bColor = this.state.activePlayer === 0 ? '#a86b32' : '#3f2e70';
+                const bColor = this.playerBookmarkColor(this.state.activePlayer);
 
                 const newId = this.uuid();
 
@@ -5960,7 +6568,7 @@
                 // CRUCIAL: If it's a manual tree node, we must explicitly tell the state we are now physically located AT this node.
                 if (!isAuto) {
                     this.state.activeBookmarkId = id;
-                    this.state.activeTimelineColor = bookmark.color || '#3b82f6';
+                    this.state.activeTimelineColor = this.resolveBookmarkColor(bookmark.color);
 
                     // Seed the turn comment textarea with the bookmark's comment if the state
                     // has nothing for this turn yet (covers log-imported nodes and manual bookmark comments).
@@ -5973,7 +6581,7 @@
                 }
 
                 // Close Drawer and Modal, Render, and Flash
-                document.getElementById('timeline-drawer').classList.add('-translate-x-full');
+                document.getElementById('timeline-drawer').classList.remove('is-open');
                 this.closeTreeModal();
                 this.render();
                 this.showToast(`Timeline Restored: ${bookmark.name}`);
@@ -5982,29 +6590,58 @@
             },
 
             deleteTimeline(id, isAuto = false) {
+                // Deletes are guarded by an Undo toast: snapshot the list, delete
+                // immediately, and restore the snapshot if the user taps Undo.
                 if (isAuto) {
+                    const snapshot = [...this.autoSaves];
+                    const target = this.autoSaves.find(b => b.id === id);
+                    if (!target) return;
                     this.autoSaves = this.autoSaves.filter(b => b.id !== id);
                     this.renderAutoSaves();
+                    this.saveToLocalStorage();
+                    this.showToast(`Auto-save deleted`, {
+                        actionLabel: 'Undo',
+                        onAction: () => {
+                            this.autoSaves = snapshot;
+                            this.renderAutoSaves();
+                            this.saveToLocalStorage();
+                        }
+                    });
                 } else {
                     const nodeToDelete = this.bookmarks.find(b => b.id === id);
-                    if (nodeToDelete) {
-                        // Grandparenting algorithm: Find children and attach them to the deleted node's parent
-                        this.bookmarks.forEach(b => {
-                            if (b.parentId === id) {
-                                b.parentId = nodeToDelete.parentId;
-                            }
-                        });
-                        this.bookmarks = this.bookmarks.filter(b => b.id !== id);
-                        this.renderTree(); // Re-draw the canvas
-                    }
+                    if (!nodeToDelete) return;
+
+                    // Snapshot parentIds too — grandparenting rewrites children in place.
+                    const snapshot = this.bookmarks.map(b => ({ ...b }));
+                    const wasActive = this.state.activeBookmarkId === id;
+
+                    // Grandparenting algorithm: Find children and attach them to the deleted node's parent
+                    this.bookmarks.forEach(b => {
+                        if (b.parentId === id) {
+                            b.parentId = nodeToDelete.parentId;
+                        }
+                    });
+                    this.bookmarks = this.bookmarks.filter(b => b.id !== id);
+                    if (wasActive) this.state.activeBookmarkId = nodeToDelete.parentId || null;
+                    this.renderTree(); // Re-draw the canvas
+                    this.saveToLocalStorage();
+
+                    this.showToast(`Deleted "${nodeToDelete.name}"`, {
+                        actionLabel: 'Undo',
+                        onAction: () => {
+                            this.bookmarks = snapshot;
+                            if (wasActive) this.state.activeBookmarkId = id;
+                            this.renderTree();
+                            this.saveToLocalStorage();
+                        }
+                    });
                 }
-                this.saveToLocalStorage();
             },
 
             // --- Multiverse Canvas Drawing (Tree View) ---
 
             openTreeModal() {
-                document.getElementById('timeline-drawer').classList.add('-translate-x-full');
+                document.getElementById('timeline-drawer').classList.remove('is-open');
                 document.getElementById('tree-modal').classList.remove('hidden');
                 document.getElementById('tree-modal').classList.add('flex');
 
@@ -6071,7 +6708,7 @@
 
                 if (this.bookmarks.length === 0) {
                     svgContainer.innerHTML = '';
-                    nodesContainer.innerHTML = `<div class="absolute left-[100px] top-[100px] text-gray-500 italic">The Multiverse is empty. Save a state to begin a timeline.</div>`;
+                    nodesContainer.innerHTML = `<div class="tree-empty">The Multiverse is empty. Save a state to begin a timeline.</div>`;
                     return;
                 }
 
@@ -6133,7 +6770,7 @@
                         const endX = cPos.x;
                         const endY = cPos.y + (CARD_H / 2);
 
-                        svgHtml += `<path d="M ${startX} ${startY} C ${startX + 40} ${startY}, ${endX - 40} ${endY}, ${endX} ${endY}" fill="none" stroke="${b.color || '#4b5563'}" stroke-width="3" opacity="0.6" />`;
+                        svgHtml += `<path d="M ${startX} ${startY} C ${startX + 40} ${startY}, ${endX - 40} ${endY}, ${endX} ${endY}" fill="none" style="stroke: ${this.resolveBookmarkColor(b.color)}" stroke-width="3" opacity="0.6" />`;
                     }
                 });
                 svgContainer.innerHTML = svgHtml;
@@ -6149,92 +6786,67 @@
                     const d = new Date(b.timestamp);
                     const timeStr = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
-                    const icon = b.isDeckEdit ? '<i class="fa-solid fa-layer-group text-blue-400"></i>' : '<i class="fa-solid fa-bookmark text-purple-400"></i>';
+                    // Victory nodes: explicit flag on new saves; gradient presence covers old sessions.
+                    const isVictory = !!(b.isVictory || b.gradient);
+                    const icon = isVictory ? '<i class="fa-solid fa-trophy"></i>'
+                        : b.isDeckEdit ? '<i class="fa-solid fa-layer-group"></i>' : '<i class="fa-solid fa-bookmark"></i>';
 
                     const el = document.createElement('div');
-                    el.className = `tree-node absolute w-[220px] h-[250px] bg-[#1a1a1e] rounded-lg border-2 shadow-lg flex flex-col overflow-hidden transition-transform hover:scale-105 hover:z-20 ${isActive ? 'tree-node-active' : ''} ${isNavActive ? 'ring-4 ring-white shadow-[0_0_20px_rgba(255,255,255,0.5)] z-30' : ''}`;
+                    el.className = `tree-node ${isVictory ? 'is-victory' : ''} ${isActive ? 'is-active' : ''} ${isNavActive ? 'is-nav' : ''}`;
                     el.style.left = `${pos.x}px`;
                     el.style.top = `${pos.y}px`;
-                    el.style.borderColor = isNavActive ? '#ffffff' : (b.color || '#4b5563');
 
-                    // If we have a gradient (like from game over), apply it to the border or a background overlay
-                    if (b.gradient && !isNavActive) {
-                        el.style.borderImage = `${b.gradient} 1`;
-                        el.style.borderWidth = '3px';
-                        el.style.borderStyle = 'solid';
-                    } else if (!b.gradient) {
-                        el.style.borderImage = 'none';
-                    }
+                    // Node identity color: player token (or legacy hex mapped onto it).
+                    el.style.setProperty('--node-c', this.resolveBookmarkColor(b.color));
 
-                    // Apply deck color/gradient to the background of the node at 12% opacity (overlaying on dark theme or active purple theme)
-                    const baseOverlayColor = isActive ? 'rgba(46, 16, 101, 0.5)' : 'rgba(26, 26, 30, 0.5)';
-                    if (b.gradient) {
-                        el.style.backgroundImage = `linear-gradient(0deg, ${baseOverlayColor}, ${baseOverlayColor}), ${b.gradient}`;
-                    } else if (b.color) {
-                        el.style.backgroundImage = `linear-gradient(0deg, ${baseOverlayColor}, ${baseOverlayColor}), linear-gradient(0deg, ${b.color}, ${b.color})`;
-                    } else {
-                        el.style.backgroundImage = 'none';
-                    }
+                    // Multi-ink winners carry a deck-color gradient; mono-ink victories fall
+                    // back to --node-c (the winner's single ink color) via the CSS default.
+                    if (b.gradient) el.style.setProperty('--node-g', b.gradient);
 
                     const isEditing = this.state.editingNodeId === b.id;
 
                     if (isEditing) {
                         el.innerHTML = `
-                            <div class="p-2.5 flex-1 flex flex-col relative h-full bg-[#2a2a2e]">
-                                <input type="text" id="edit-node-name-${b.id}" class="w-full bg-black border border-gray-600 rounded px-1.5 py-0.5 text-[11px] text-white focus:border-purple-500 outline-none mb-1" value="${b.name.replace(/"/g, '&quot;')}">
-                                <textarea id="edit-node-comment-${b.id}" class="w-full flex-1 bg-black border border-gray-600 rounded px-1.5 py-1 text-[10px] text-gray-300 focus:border-purple-500 outline-none resize-none custom-scrollbar mb-1">${b.comment || ''}</textarea>
-                                <div class="flex justify-end gap-2 shrink-0">
-                                    <button onclick="App.toggleEditNode(null)" class="px-2 py-0.5 bg-gray-600 hover:bg-gray-500 text-white text-[10px] rounded transition">Cancel</button>
-                                    <button onclick="App.saveEditNode('${b.id}')" class="px-2 py-0.5 bg-purple-600 hover:bg-purple-500 text-white text-[10px] font-bold rounded transition shadow-lg">Save</button>
+                            <div class="tn-edit-form">
+                                <input type="text" id="edit-node-name-${b.id}" class="input" aria-label="Node name" value="${b.name.replace(/"/g, '&quot;')}">
+                                <textarea id="edit-node-comment-${b.id}" class="input custom-scrollbar" aria-label="Node comment">${b.comment || ''}</textarea>
+                                <div class="tn-edit-actions">
+                                    <button onclick="App.toggleEditNode(null)" class="btn btn-ghost">Cancel</button>
+                                    <button onclick="App.saveEditNode('${b.id}')" class="btn btn-primary">Save</button>
                                 </div>
                             </div>
                         `;
                     } else {
                         el.innerHTML = `
-                             <div class="p-2.5 flex flex-col relative min-h-0" style="flex: 1 1 0; overflow: hidden;">
-                                 <!-- Header Row -->
-                                 <div class="flex items-center justify-between shrink-0">
-                                     <button onclick="App.restoreTimeline('${b.id}', false)"
-                                         class="text-[12px] font-bold text-white truncate pr-6 flex items-center gap-1.5 hover:text-purple-300 transition"
-                                         title="Click to Restore this Timeline Warp">
-                                         ${icon} <span class="group-hover:underline underline-offset-2">${b.name}</span>
-                                     </button>
-                                 </div>
+                             <div class="tn-body">
+                                 <button onclick="App.restoreTimeline('${b.id}', false)" class="tn-title"
+                                     title="Restore this timeline" aria-label="Restore timeline: ${b.name.replace(/"/g, '&quot;')}">
+                                     ${icon} <span>${b.name}</span>
+                                 </button>
+                                 <div class="tn-stats">${b.stats}</div>
+                                 <div class="tn-comment custom-scrollbar markdown-comment">${b.comment ? marked.parse(b.comment) : ''}</div>
 
-                                 <!-- Stats Row -->
-                                 <div class="text-[9px] text-gray-400 font-mono tracking-wider mt-1 flex justify-between items-center shrink-0">
-                                     <span>${b.stats}</span>
-                                 </div>
-
-                                 <!-- Scrollable Comment Area -->
-                                 <div class="text-[11px] text-gray-300 mt-1.5 break-words overflow-y-auto pr-1 min-h-0 custom-scrollbar pb-1 markdown-comment" style="flex: 1 1 0;">${b.comment ? marked.parse(b.comment) : ''}</div>
+                                 <button onclick="App.toggleEditNode('${b.id}')" class="tn-icon-btn tn-edit"
+                                     title="Edit Node" aria-label="Edit node">
+                                     <i class="fa-solid fa-pen"></i>
+                                 </button>
+                                 <button onclick="App.deleteTimeline('${b.id}', false)" class="tn-icon-btn tn-delete"
+                                     title="Delete Node (children reattach to parent; Undo available)" aria-label="Delete node">
+                                     <i class="fa-solid fa-trash"></i>
+                                 </button>
                              </div>
 
                              ${b.cardsPlayedData && b.cardsPlayedData.length > 0 ? `
-                             <div class="bg-[#1a1a1e] border-t border-gray-700 shrink-0">
-                                 <div class="text-[9px] text-white text-center font-bold uppercase tracking-wider bg-gray-600/50 py-0.5" style="text-shadow: 1px 1px 0 #000,-1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000;">Cards Played:</div>
-                                 <div class="flex flex-wrap justify-center gap-1 p-1 max-h-[90px] overflow-y-auto custom-scrollbar">
+                             <div class="tn-cards">
+                                 <div class="tn-cards-label">Cards Played</div>
+                                 <div class="tn-cards-row custom-scrollbar">
                                      ${b.cardsPlayedData.map(cid => {
                             const dbCard = this.cardDB[cid];
-                            return dbCard ? `<div class="w-[35px] h-[50px] bg-cover bg-center rounded drop-shadow" style="background-image: url('${this.getCardImage(dbCard)}')"></div>` : '';
+                            return dbCard ? `<div class="tn-card-thumb" title="${(dbCard.name || '').replace(/"/g, '&quot;')}" style="background-image: url('${this.getCardImage(dbCard)}')"></div>` : '';
                         }).join('')}
                                  </div>
                              </div>
                              ` : ''}
-                             
-                             <!-- Edit Button -->
-                             <button onclick="App.toggleEditNode('${b.id}')" 
-                                 class="absolute top-1.5 right-8 w-6 h-6 flex items-center justify-center bg-gray-800 hover:bg-blue-600 text-gray-400 hover:text-white rounded-md text-[10px] transition z-20" 
-                                 title="Edit Node">
-                                 <i class="fa-solid fa-pen"></i>
-                             </button>
-                             
-                             <!-- Delete Button -->
-                             <button onclick="App.deleteTimeline('${b.id}', false)" 
-                                 class="absolute top-1.5 right-1.5 w-6 h-6 flex items-center justify-center bg-gray-800 hover:bg-red-600 text-gray-400 hover:text-white rounded-md text-[10px] transition z-20" 
-                                 title="Delete Node (Children will automatically attach to parent)">
-                                 <i class="fa-solid fa-trash"></i>
-                             </button>
                         `;
                     }
                     nodesContainer.appendChild(el);
@@ -6243,31 +6855,24 @@
 
             renderAutoSaves() {
                 const buildHtml = (list) => {
-                    if (list.length === 0) return `<div class="text-xs text-gray-600 text-center py-4 italic">No auto-saves available.</div>`;
+                    if (list.length === 0) return `<div class="autosave-empty">No auto-saves available.</div>`;
                     return list.map(b => {
-                        const d = new Date(b.timestamp);
-                        const timeStr = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-
                         return `
-                        <div class="shrink-0 bg-[#1a1a1e] rounded border border-gray-700 hover:border-gray-500 transition shadow-sm flex flex-col overflow-hidden mb-1">
-                           <div class="group relative p-2 cursor-pointer" onclick="App.restoreTimeline('${b.id}', true)">
-                               <div class="text-[11px] font-bold text-gray-300 mb-0.5 truncate">${b.name}</div>
-                               <div class="text-[9px] text-gray-500 font-mono tracking-wider flex justify-between items-center">
-                                   <span>${b.stats}</span>
-                               </div>
-                               ${b.cardsPlayedData && b.cardsPlayedData.length > 0 ? `
-                               <div class="flex gap-0.5 mt-1 overflow-x-hidden opacity-60 group-hover:opacity-100 transition-opacity">
-                                   ${b.cardsPlayedData.slice(0, 5).map(cid => {
+                        <div class="autosave-item" role="button" tabindex="0" onclick="App.restoreTimeline('${b.id}', true)"
+                            onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();App.restoreTimeline('${b.id}', true)}"
+                            aria-label="Restore auto-save: ${b.name.replace(/"/g, '&quot;')}">
+                            <div class="as-name">${b.name}</div>
+                            <div class="as-stats">${b.stats}</div>
+                            ${b.cardsPlayedData && b.cardsPlayedData.length > 0 ? `
+                            <div class="as-cards">
+                                ${b.cardsPlayedData.slice(0, 5).map(cid => {
                             const dbCard = this.cardDB[cid];
-                            return dbCard ? `<div class="w-[18px] h-[25px] bg-cover bg-center rounded-sm shrink-0" style="background-image: url('${this.getCardImage(dbCard)}')"></div>` : '';
+                            return dbCard ? `<div class="tn-card-thumb" style="background-image: url('${this.getCardImage(dbCard)}')"></div>` : '';
                         }).join('')}
-                                   ${b.cardsPlayedData.length > 5 ? `<div class="text-[8px] text-gray-400 flex items-center ml-1">+${b.cardsPlayedData.length - 5}</div>` : ''}
-                               </div>
-                               ` : ''}
-                               <div class="absolute inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10">
-                                   <span class="text-xs font-bold text-white">Restore Auto-Save</span>
-                               </div>
-                           </div>
+                                ${b.cardsPlayedData.length > 5 ? `<div class="as-stats" style="margin-top:0">+${b.cardsPlayedData.length - 5}</div>` : ''}
+                            </div>
+                            ` : ''}
+                            <div class="as-restore">Restore Auto-Save</div>
                         </div>
                         `;
                     }).join('');
@@ -6297,33 +6902,170 @@
 
             triggerTimeFlash() {
                 const flash = document.getElementById('time-flash');
-                flash.classList.remove('opacity-0');
-                flash.classList.add('opacity-100');
-                setTimeout(() => {
-                    flash.classList.remove('opacity-100');
-                    flash.classList.add('opacity-0');
-                }, 300);
+                flash.classList.add('is-on');
+                setTimeout(() => flash.classList.remove('is-on'), 300);
             },
 
-            showToast(msg) {
+            showToast(msg, opts = {}) {
                 const container = document.getElementById('toast-container');
                 const toast = document.createElement('div');
-                toast.className = 'bg-purple-600/90 backdrop-blur-md border border-purple-400 text-white px-6 py-3 rounded-full shadow-[0_10px_30px_rgba(147,51,234,0.4)] font-bold text-sm transform transition-all duration-300 translate-y-[-20px] opacity-0 flex items-center gap-3';
-                toast.innerHTML = `<i class="fa-solid fa-clock-rotate-left animate-spin-reverse" style="animation-duration: 3s;"></i> ${msg}`;
-                container.appendChild(toast);
+                toast.className = 'toast';
+                toast.innerHTML = `<i class="fa-solid fa-clock-rotate-left"></i> <span></span>`;
+                toast.querySelector('span').textContent = msg;
 
-                // Animate in
-                requestAnimationFrame(() => {
-                    toast.classList.remove('translate-y-[-20px]', 'opacity-0');
-                    toast.classList.add('translate-y-0', 'opacity-100');
-                });
-
-                // Animate out and remove
-                setTimeout(() => {
-                    toast.classList.remove('translate-y-0', 'opacity-100');
-                    toast.classList.add('translate-y-[-20px]', 'opacity-0');
+                let dismissed = false;
+                const dismiss = () => {
+                    if (dismissed) return;
+                    dismissed = true;
+                    toast.classList.remove('is-in');
                     setTimeout(() => toast.remove(), 300);
-                }, 2500);
+                };
+
+                // Optional inline action (e.g. Undo after a destructive step)
+                if (opts.actionLabel && typeof opts.onAction === 'function') {
+                    const btn = document.createElement('button');
+                    btn.className = 'toast-action';
+                    btn.textContent = opts.actionLabel;
+                    btn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        dismiss();
+                        opts.onAction();
+                    });
+                    toast.appendChild(btn);
+                }
+
+                container.appendChild(toast);
+                requestAnimationFrame(() => toast.classList.add('is-in'));
+                setTimeout(dismiss, opts.duration || (opts.actionLabel ? 8000 : 2500));
+            },
+
+            // --- Styled dialogs (replace native confirm/prompt/alert) ---
+            // dialog({title, message, stat, icon, confirmText, cancelText, danger,
+            //         celebrate, prompt, placeholder}) -> Promise<boolean|string|null>
+            dialog(opts = {}) {
+                return new Promise((resolve) => {
+                    const backdrop = document.createElement('div');
+                    backdrop.className = 'dlg-backdrop';
+
+                    const card = document.createElement('div');
+                    card.className = 'dlg' + (opts.danger ? ' is-danger' : '') + (opts.celebrate ? ' is-celebrate' : '');
+                    card.setAttribute('role', opts.cancelText === undefined && !opts.prompt ? 'alertdialog' : 'dialog');
+                    card.setAttribute('aria-modal', 'true');
+
+                    const titleId = 'dlg-title-' + Date.now();
+                    const icon = opts.icon || (opts.danger ? 'fa-triangle-exclamation' : 'fa-circle-info');
+
+                    const head = document.createElement('div');
+                    head.className = 'dlg-head';
+                    head.innerHTML = `<div class="dlg-icon"><i class="fa-solid ${icon}"></i></div><h2 id="${titleId}"></h2>`;
+                    head.querySelector('h2').textContent = opts.title || 'Practice Dojo';
+                    card.setAttribute('aria-labelledby', titleId);
+
+                    const body = document.createElement('div');
+                    body.className = 'dlg-body';
+                    if (opts.message) {
+                        const p = document.createElement('div');
+                        p.textContent = opts.message;
+                        body.appendChild(p);
+                    }
+                    if (opts.stat) {
+                        const s = document.createElement('div');
+                        s.className = 'dlg-stat';
+                        s.textContent = opts.stat;
+                        body.appendChild(s);
+                    }
+                    let inputEl = null;
+                    if (opts.prompt) {
+                        inputEl = document.createElement('input');
+                        inputEl.type = 'text';
+                        inputEl.className = 'input';
+                        inputEl.placeholder = opts.placeholder || '';
+                        inputEl.setAttribute('aria-label', opts.title || 'Value');
+                        body.appendChild(inputEl);
+                    }
+
+                    const foot = document.createElement('div');
+                    foot.className = 'dlg-foot';
+
+                    const done = (val) => {
+                        document.removeEventListener('keydown', onKey, true);
+                        backdrop.remove();
+                        resolve(val);
+                    };
+
+                    if (opts.cancelText !== undefined || opts.prompt) {
+                        const cancel = document.createElement('button');
+                        cancel.className = 'btn btn-ghost';
+                        cancel.textContent = opts.cancelText || 'Cancel';
+                        cancel.addEventListener('click', () => done(opts.prompt ? null : false));
+                        foot.appendChild(cancel);
+                    }
+                    const ok = document.createElement('button');
+                    ok.className = 'btn btn-primary';
+                    ok.textContent = opts.confirmText || 'OK';
+                    ok.addEventListener('click', () => {
+                        if (opts.prompt) {
+                            const v = inputEl.value.trim();
+                            if (!v) { inputEl.focus(); return; }
+                            done(v);
+                        } else {
+                            done(true);
+                        }
+                    });
+                    foot.appendChild(ok);
+
+                    // Escape cancels, Enter confirms; capture phase so game hotkeys never fire.
+                    const onKey = (e) => {
+                        if (e.key === 'Escape') {
+                            e.stopPropagation();
+                            e.preventDefault();
+                            done(opts.prompt ? null : (opts.cancelText !== undefined ? false : true));
+                        } else if (e.key === 'Enter') {
+                            e.stopPropagation();
+                            e.preventDefault();
+                            ok.click();
+                        } else if (!inputEl) {
+                            // Swallow single-key game hotkeys while a dialog is up
+                            e.stopPropagation();
+                        }
+                    };
+                    document.addEventListener('keydown', onKey, true);
+                    backdrop.addEventListener('click', (e) => {
+                        if (e.target === backdrop && (opts.cancelText !== undefined || opts.prompt)) {
+                            done(opts.prompt ? null : false);
+                        }
+                    });
+
+                    card.appendChild(head);
+                    card.appendChild(body);
+                    card.appendChild(foot);
+                    backdrop.appendChild(card);
+                    document.body.appendChild(backdrop);
+                    (inputEl || ok).focus();
+                });
+            },
+
+            dialogAlert(message, title = 'Something went wrong') {
+                return this.dialog({ title, message, danger: true, confirmText: 'OK' });
+            },
+
+            // Player-identity color for bookmarks/tree lines. Stored as a var()
+            // reference so saved nodes follow palette tweaks instead of freezing a hex.
+            playerBookmarkColor(playerIndex) {
+                return playerIndex === 0 ? 'var(--p1)' : 'var(--p2)';
+            },
+
+            // Saved sessions may carry the pre-redesign hex colors; map them onto tokens.
+            resolveBookmarkColor(color) {
+                if (!color) return 'var(--border-strong)';
+                const legacy = {
+                    '#a86b32': 'var(--p1)',
+                    '#3f2e70': 'var(--p2)',
+                    '#3b82f6': 'var(--accent)',
+                    '#ffffff': 'var(--accent)', // old game-over nodes stored white alongside their gradient
+                    '#4b5563': 'var(--border-strong)'
+                };
+                return legacy[color.toLowerCase()] || color;
             },
 
             // --- Mulligan Handlers ---
@@ -7163,7 +7905,7 @@
                 const aboveFullName = dbCard ? (dbCard.fullName || "").toLowerCase() : "";
 
                 const isShift = (beneathName && aboveName && (aboveName.includes(beneathName) || aboveFullName.includes(beneathName))) ||
-                                (beneathFullName && aboveFullName && (aboveFullName.includes(beneathFullName) || aboveName.includes(beneathFullName)));
+                    (beneathFullName && aboveFullName && (aboveFullName.includes(beneathFullName) || aboveName.includes(beneathFullName)));
 
                 if (isShift) {
                     if (!this.state.cardsPlayedThisTurn) this.state.cardsPlayedThisTurn = [];
@@ -7345,6 +8087,30 @@
                     this.showContextMenu(e, c.instanceId);
                 });
 
+                // Keyboard access: cards are focusable and Enter/Space opens their menu.
+                el.tabIndex = 0;
+                el.setAttribute('role', 'button');
+                const stateBits = [
+                    c.exerted ? 'exerted' : '',
+                    c.drying ? 'drying' : '',
+                    c.damage > 0 ? `${c.damage} damage` : ''
+                ].filter(Boolean).join(', ');
+                const cardName = (isOpponentHand || (isInkwell && !c.faceUp)) ? 'Face-down card' : (dbCard && dbCard.name) || 'Card';
+                el.setAttribute('aria-label', stateBits ? `${cardName} (${stateBits})` : cardName);
+                el.setAttribute('aria-haspopup', 'menu');
+                el.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        const r = el.getBoundingClientRect();
+                        this.showContextMenu({
+                            clientX: r.left + r.width / 2,
+                            clientY: r.top + r.height / 2,
+                            stopPropagation: () => { }
+                        }, c.instanceId, true);
+                    }
+                });
+
                 wrap.appendChild(el);
 
                 // Hover action chips — only for own, face-up, non-exerted cards
@@ -7434,9 +8200,10 @@
                 }
             },
 
-            showContextMenu(e, instanceId) {
+            showContextMenu(e, instanceId, focusFirst = false) {
                 const menu = document.getElementById('context-menu');
                 menu.innerHTML = '';
+                menu.setAttribute('role', 'menu');
 
                 let found = this.findCard(instanceId);
                 if (!found) return;
@@ -7445,8 +8212,9 @@
                 const isActivePlayerOwned = found.player.id === this.state.activePlayer;
 
                 const addOption = (text, onClick) => {
-                    const item = document.createElement('div');
+                    const item = document.createElement('button');
                     item.className = 'ctx-item';
+                    item.setAttribute('role', 'menuitem');
                     item.innerText = text;
                     item.onclick = (evt) => {
                         evt.stopPropagation();
@@ -7531,6 +8299,10 @@
                     if (top + rect.height > window.innerHeight) top = window.innerHeight - rect.height - 10;
                     menu.style.left = left + 'px';
                     menu.style.top = top + 'px';
+                    if (focusFirst) {
+                        const first = menu.querySelector('button.ctx-item');
+                        if (first) first.focus();
+                    }
                 }
             },
 
@@ -7544,8 +8316,9 @@
                 const p = this.state.players[playerIndex];
 
                 const addOption = (text, onClick) => {
-                    const item = document.createElement('div');
+                    const item = document.createElement('button');
                     item.className = 'ctx-item';
+                    item.setAttribute('role', 'menuitem');
                     item.innerHTML = text;
                     item.onclick = (evt) => {
                         evt.stopPropagation();
@@ -7659,8 +8432,9 @@
                 menu.innerHTML = '';
 
                 const addOption = (text, onClick) => {
-                    const item = document.createElement('div');
+                    const item = document.createElement('button');
                     item.className = 'ctx-item';
+                    item.setAttribute('role', 'menuitem');
                     item.innerHTML = text;
                     item.onclick = (evt) => {
                         evt.stopPropagation();
@@ -7789,8 +8563,9 @@
                 const p = this.state.players[playerIndex];
 
                 const addOption = (text, onClick) => {
-                    const item = document.createElement('div');
+                    const item = document.createElement('button');
                     item.className = 'ctx-item';
+                    item.setAttribute('role', 'menuitem');
                     item.innerHTML = text;
                     item.onclick = (evt) => {
                         evt.stopPropagation();
@@ -7868,8 +8643,8 @@
 
                 this.logAction(`Saved a custom deck order for ${p.id === this.state.activePlayer ? 'your' : "the opponent's"} deck.`);
 
-                // Use the active player's color
-                const bColor = this.state.activePlayer === 0 ? '#a86b32' : '#3f2e70';
+                // Use the active player's identity token
+                const bColor = this.playerBookmarkColor(this.state.activePlayer);
                 const p1 = this.state.players[0];
                 const p2 = this.state.players[1];
                 const ap = this.state.players[this.state.activePlayer];
@@ -8636,6 +9411,27 @@
             document.getElementById('context-menu').style.display = 'none';
         });
 
+        // Context-menu keyboard support: arrows walk the items, Escape closes.
+        document.getElementById('context-menu').addEventListener('keydown', (e) => {
+            const menu = e.currentTarget;
+            const items = [...menu.querySelectorAll('button.ctx-item')];
+            if (!items.length) return;
+            const idx = items.indexOf(document.activeElement);
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                e.stopPropagation();
+                items[(idx + 1) % items.length].focus();
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                e.stopPropagation();
+                items[(idx - 1 + items.length) % items.length].focus();
+            } else if (e.key === 'Escape') {
+                e.preventDefault();
+                e.stopPropagation();
+                menu.style.display = 'none';
+            }
+        });
+
         /* =========================================================================
            Touch → HTML5-drag shim
            -------------------------------------------------------------------------
@@ -8807,6 +9603,37 @@
         document.addEventListener('keydown', (e) => {
             // Disable all hotkeys if we're actively typing in a text input or textarea
             if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') return;
+            // Never hijack browser shortcuts, and stay quiet while a styled dialog is up
+            if (e.ctrlKey || e.metaKey || e.altKey) return;
+            if (document.querySelector('.dlg-backdrop')) return;
+
+            // Escape: close the context menu first, then whichever modal is open
+            if (e.key === 'Escape') {
+                const menu = document.getElementById('context-menu');
+                if (menu.style.display === 'block') {
+                    menu.style.display = 'none';
+                    return;
+                }
+                if (!document.getElementById('tree-modal').classList.contains('hidden')) {
+                    App.closeTreeModal();
+                    return;
+                }
+                // Dismissible overlay modals (mulligan/craft stay open — they gate game state)
+                const escapable = [
+                    ['inspect-deck-modal', () => App.closeInspectDeck()],
+                    ['inspect-discard-modal', () => App.closeInspectDiscard()],
+                    ['import-log-modal', () => App.closeImportLogModal()],
+                    ['card-search-modal', () => App.closeCardSearch()]
+                ];
+                for (const [id, close] of escapable) {
+                    const m = document.getElementById(id);
+                    if (m && !m.classList.contains('hidden')) {
+                        close();
+                        return;
+                    }
+                }
+                return;
+            }
 
             // --- Global Hotkeys ---
             const keyStr = e.key.toLowerCase();
@@ -8827,6 +9654,9 @@
                 return;
             }
             if (e.key === ' ' || e.code === 'Space') {
+                // A focused button keeps its native Space activation (keyboard users
+                // would otherwise end the turn while operating menus/controls).
+                if (document.activeElement.tagName === 'BUTTON') return;
                 e.preventDefault(); // prevent page scrolling
                 App.endTurn();
                 return;
@@ -8884,6 +9714,8 @@
                     document.getElementById('tree-canvas').style.transform = `translate(${App.treePan.translateX}px, ${App.treePan.translateY}px) scale(${App.treePan.zoom})`;
                 }
             } else if (e.key === 'Enter') {
+                // A focused node button handles its own Enter — don't double-restore.
+                if (document.activeElement.tagName === 'BUTTON') return;
                 e.preventDefault();
                 if (App.treeNavActiveId) {
                     App.restoreTimeline(App.treeNavActiveId, false);
