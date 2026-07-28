@@ -1145,6 +1145,29 @@
             transition: opacity .15s ease;
         }
 
+        /* Shown only when the preview artwork fails to load (offline). */
+        .preview-fallback {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            padding: 14px;
+            text-align: center;
+            color: var(--text);
+            font-size: 15px;
+            font-weight: 700;
+            line-height: 1.25;
+        }
+
+        .preview-fallback .cf-version {
+            font-size: 12px;
+            font-weight: 500;
+            opacity: 0.7;
+        }
+
         .preview-metrics {
             display: flex;
             justify-content: space-between;
@@ -1824,6 +1847,67 @@
             user-select: none;
         }
 
+        /* OFFLINE NAME FALLBACK
+           Painted underneath the artwork on every card face. While the image is
+           still loading (or when it can't be fetched at all — no connection on
+           mobile) the card name/version/cost stays readable, so a card is never
+           an anonymous blank rectangle. The <img> sits later in the DOM, so a
+           successfully loaded artwork covers this layer completely. */
+        .card-face {
+            position: relative;
+        }
+
+        .card-fallback {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 0.15em;
+            padding: 14% 6% 8%;
+            overflow: hidden;
+            border-radius: inherit;
+            background: var(--surface-2);
+            color: var(--text);
+            text-align: center;
+            font-size: 9px;
+            line-height: 1.15;
+            font-weight: 600;
+            word-break: break-word;
+            hyphens: auto;
+            pointer-events: none;
+            user-select: none;
+        }
+
+        .card-fallback .cf-version {
+            font-size: 0.85em;
+            font-weight: 400;
+            color: var(--text-dim, inherit);
+            opacity: 0.75;
+        }
+
+        .card-fallback .cf-cost {
+            position: absolute;
+            top: 3%;
+            left: 6%;
+            font-size: 1.15em;
+            font-weight: 700;
+            opacity: 0.8;
+        }
+
+        /* Scale the fallback text to the card it sits in (board card, 60-card
+           inspect tile, 35px timeline thumb ...) instead of a single fixed size. */
+        @supports (container-type: inline-size) {
+            .card-face {
+                container-type: inline-size;
+            }
+
+            .card-fallback {
+                font-size: clamp(5px, 11cqw, 13px);
+            }
+        }
+
         .card.exerted {
             transform: rotate(90deg) scale(0.85);
             filter: brightness(0.85);
@@ -2461,6 +2545,7 @@
             background-size: cover;
             background-position: center;
             border-radius: 4px;
+            overflow: hidden;
             box-shadow: var(--shadow-1);
         }
 
@@ -2595,6 +2680,7 @@
             background-size: cover;
             background-position: center;
             border-radius: 3px;
+            overflow: hidden;
             flex-shrink: 0;
         }
 
@@ -4103,6 +4189,7 @@
             <!-- Card Preview Panel -->
             <div class="preview-pane">
                 <span id="sidebar-preview-placeholder" class="preview-placeholder">Hover a card for details</span>
+                <div id="preview-fallback" class="preview-fallback hidden"></div>
                 <div id="sidebar-preview" class="preview-image opacity-0"
                     style="background-size:100% auto;background-position:bottom center;pointer-events:none"></div>
                 <div id="preview-ink-container" class="opacity-0"
@@ -4454,7 +4541,7 @@
         let cardFuse = null;
         let allSessions = [];
 
-        const APP_VERSION = "v2.8.0"; // Centralized version string (redesign)
+        const APP_VERSION = "v2.9.0"; // Centralized version string (redesign)
 
         // Tweaks panel accent presets (hue values for the OKLCH accent ramp)
         const ACCENT_PRESETS = {
@@ -6842,7 +6929,7 @@
                                  <div class="tn-cards-row custom-scrollbar">
                                      ${b.cardsPlayedData.map(cid => {
                             const dbCard = this.cardDB[cid];
-                            return dbCard ? `<div class="tn-card-thumb" title="${(dbCard.name || '').replace(/"/g, '&quot;')}" style="background-image: url('${this.getCardImage(dbCard)}')"></div>` : '';
+                            return dbCard ? this.cardThumbHtml(dbCard, 'tn-card-thumb') : '';
                         }).join('')}
                                  </div>
                              </div>
@@ -6867,7 +6954,7 @@
                             <div class="as-cards">
                                 ${b.cardsPlayedData.slice(0, 5).map(cid => {
                             const dbCard = this.cardDB[cid];
-                            return dbCard ? `<div class="tn-card-thumb" style="background-image: url('${this.getCardImage(dbCard)}')"></div>` : '';
+                            return dbCard ? this.cardThumbHtml(dbCard, 'tn-card-thumb') : '';
                         }).join('')}
                                 ${b.cardsPlayedData.length > 5 ? `<div class="as-stats" style="margin-top:0">+${b.cardsPlayedData.length - 5}</div>` : ''}
                             </div>
@@ -7094,11 +7181,13 @@
                     el.className = `relative rounded-md bg-cover bg-center cursor-pointer transition-all duration-200 shadow-md border border-white/10`;
                     el.style.width = '140px';
                     el.style.height = '196px';
-                    el.style.backgroundImage = `url('${this.getCardImage(dbCard)}')`;
+                    this.paintCardFace(el, dbCard);
 
                     if (this.mulliganSelection.includes(c.instanceId)) {
                         el.classList.add('ring-4', 'ring-red-500', 'opacity-50', 'scale-95');
-                        el.innerHTML = '<div class="absolute inset-0 flex items-center justify-center"><i class="fa-solid fa-xmark text-6xl text-red-500 drop-shadow-lg"></i></div>';
+                        // insertAdjacentHTML (not innerHTML) so the card face stays put
+                        // and the X overlay lands on top of it.
+                        el.insertAdjacentHTML('beforeend', '<div class="absolute inset-0 flex items-center justify-center"><i class="fa-solid fa-xmark text-6xl text-red-500 drop-shadow-lg"></i></div>');
                     } else {
                         el.classList.add('hover:-translate-y-2', 'hover:shadow-xl', 'hover:z-10');
                     }
@@ -7227,9 +7316,7 @@
                     const wrap = document.createElement('div');
                     wrap.className = 'relative rounded-md overflow-hidden select-none cursor-pointer transition-all duration-150';
                     wrap.style.aspectRatio = '5 / 7';
-                    wrap.style.backgroundImage = `url('${this.getCardImage(dbCard)}')`;
-                    wrap.style.backgroundSize = 'cover';
-                    wrap.style.backgroundPosition = 'center';
+                    this.paintCardFace(wrap, dbCard);
 
                     if (selected > 0) {
                         wrap.classList.add('ring-2', 'ring-green-400', 'shadow-lg');
@@ -7238,10 +7325,11 @@
                         wrap.classList.add('border', 'border-white/10', 'hover:-translate-y-1', 'hover:shadow-xl', 'hover:z-10');
                     }
 
-                    wrap.innerHTML = `
+                    // beforeend, not innerHTML — keeps the card face underneath.
+                    wrap.insertAdjacentHTML('beforeend', `
                         <div class="absolute top-1 right-1 bg-black/70 text-[10px] font-mono text-gray-200 px-1.5 py-0.5 rounded">${selected}/${available}</div>
                         ${selected > 0 ? `<div class="absolute bottom-0 inset-x-0 bg-green-600/90 text-white text-center text-sm font-bold py-0.5">×${selected} in hand</div>` : ''}
-                    `;
+                    `);
 
                     wrap.onclick = () => {
                         if (this._craftSelectedTotal() < 7 && (this.craftSelection[cardId] || 0) < available) {
@@ -8030,9 +8118,61 @@
                 img.loading = 'lazy';
                 img.decoding = 'async';
                 img.draggable = false;
+                // Offline / failed fetch: drop the img (and its broken-image glyph)
+                // so the name fallback painted underneath becomes visible.
+                img.onerror = () => img.remove();
                 img.src = this.getCardImage(dbCard);
                 if (dbCard && dbCard.name) img.alt = dbCard.name;
                 return img;
+            },
+
+            // Text layer drawn under the artwork so a card is still identifiable
+            // when its image can't load (no connection on mobile).
+            makeCardFallback(dbCard) {
+                const box = document.createElement('div');
+                box.className = 'card-fallback';
+
+                const name = document.createElement('span');
+                name.className = 'cf-name';
+                name.textContent = (dbCard && (dbCard.name || dbCard.fullName)) || 'Unknown card';
+                box.appendChild(name);
+
+                if (dbCard && dbCard.version) {
+                    const version = document.createElement('span');
+                    version.className = 'cf-version';
+                    version.textContent = dbCard.version;
+                    box.appendChild(version);
+                }
+
+                if (dbCard && dbCard.cost !== undefined && dbCard.cost !== null) {
+                    const cost = document.createElement('span');
+                    cost.className = 'cf-cost';
+                    cost.textContent = dbCard.cost;
+                    box.appendChild(cost);
+                }
+
+                return box;
+            },
+
+            // Paint a full card face into `host`: name fallback first, artwork on top.
+            paintCardFace(host, dbCard) {
+                host.classList.add('card-face');
+                host.appendChild(this.makeCardFallback(dbCard));
+                host.appendChild(this.makeCardImg(dbCard));
+                return host;
+            },
+
+            // Same face, as an HTML string, for the small thumbnail strips built
+            // via innerHTML (timeline nodes / auto-save rows).
+            cardThumbHtml(dbCard, className) {
+                const esc = (s) => String(s == null ? '' : s).replace(/[&<>"]/g,
+                    (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[ch]));
+                const name = esc((dbCard && (dbCard.name || dbCard.fullName)) || 'Unknown card');
+                return `<div class="${className} card-face" title="${name}">` +
+                    `<div class="card-fallback"><span class="cf-name">${name}</span></div>` +
+                    `<img class="card-img" loading="lazy" decoding="async" draggable="false" ` +
+                    `alt="${name}" src="${esc(this.getCardImage(dbCard))}" onerror="this.remove()">` +
+                    `</div>`;
             },
 
             createCardElement(c, isOpponentHand = false, isInkwell = false, opts = {}) {
@@ -8051,8 +8191,9 @@
                 if (isOpponentHand || (isInkwell && !c.faceUp)) {
                     el.classList.add('card-back');
                 } else {
-                    // Card face as a shared-decode <img> behind the overlays/badges.
-                    el.appendChild(this.makeCardImg(dbCard));
+                    // Card face as a shared-decode <img> behind the overlays/badges,
+                    // over a name fallback that shows if the image can't load.
+                    this.paintCardFace(el, dbCard);
                     // Add Hover Preview Events (no mouseleave — last hovered card stays visible)
                     el.addEventListener('mouseenter', () => this.showPreview(dbCard));
                 }
@@ -8147,6 +8288,31 @@
                 preview.style.backgroundImage = `url('${imgUrl}')`;
                 preview.classList.remove('opacity-0');
                 preview.classList.add('opacity-100');
+
+                // The preview is a background-image, so it can't report a load error.
+                // Probe the same URL: if it can't be fetched (offline) fall back to
+                // showing the card's name in the preview pane.
+                const fallback = document.getElementById('preview-fallback');
+                if (fallback) {
+                    fallback.classList.add('hidden');
+                    const probe = new Image();
+                    this._previewProbe = probe;
+                    probe.onerror = () => {
+                        if (this._previewProbe !== probe) return; // a newer card is hovered
+                        fallback.innerHTML = '';
+                        const name = document.createElement('span');
+                        name.textContent = dbCard.name || dbCard.fullName || 'Unknown card';
+                        fallback.appendChild(name);
+                        if (dbCard.version) {
+                            const version = document.createElement('span');
+                            version.className = 'cf-version';
+                            version.textContent = dbCard.version;
+                            fallback.appendChild(version);
+                        }
+                        fallback.classList.remove('hidden');
+                    };
+                    probe.src = imgUrl;
+                }
 
                 const badge = document.getElementById('preview-ink-container');
                 const cost = document.getElementById('preview-ink-cost');
@@ -8364,7 +8530,7 @@
                     el.className = `relative rounded-md bg-cover bg-center shadow-md border border-white/10 hover:scale-110 hover:z-10 transition-transform cursor-grab`;
                     el.style.width = '100%';
                     el.style.aspectRatio = '2.5 / 3.5';
-                    el.appendChild(this.makeCardImg(dbCard));
+                    this.paintCardFace(el, dbCard);
 
                     if (!dbCard) {
                         // Unknown card placeholder: show label over card back
@@ -8525,7 +8691,7 @@
                     el.className = `relative rounded-md bg-cover bg-center shadow-md border border-gray-600 hover:border-blue-400 hover:scale-105 hover:z-10 transition-transform cursor-pointer`;
                     el.style.width = '100%';
                     el.style.aspectRatio = '2.5 / 3.5';
-                    el.style.backgroundImage = `url('${this.getCardImage(dbCard)}')`;
+                    this.paintCardFace(el, dbCard);
 
                     el.onclick = () => this._searchMode === 'hand' ? this.selectHandReplacementCard(dbCard) : this.selectReplacementCard(dbCard);
                     container.appendChild(el);
@@ -8611,7 +8777,7 @@
                     el.className = `relative rounded-md bg-cover bg-center shadow-md border border-white/10 hover:scale-110 hover:z-10 transition-transform`;
                     el.style.width = '100%';
                     el.style.aspectRatio = '2.5 / 3.5';
-                    el.appendChild(this.makeCardImg(dbCard));
+                    this.paintCardFace(el, dbCard);
 
                     // Show sidebar preview when hovered
                     el.addEventListener('mouseenter', () => this.showPreview(dbCard));

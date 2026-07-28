@@ -358,6 +358,19 @@ As a player, I want the Dojo's high-stakes moments (winning, saving, deleting, e
 - Multiverse tree, toasts, auto-save list ported from legacy Tailwind purple/gray onto the design tokens; bookmark colors stored as `--p1`/`--p2` token refs so they follow palette tweaks; legacy hex colors mapped at render.
 - Victory nodes: trophy icon + winner's deck-ink gradient as a left edge strip and background tint (`is-victory`), replacing the old border-image hack; mono-ink winners use their single ink color.
 
+## Feature 27: Offline card-name fallback
+
+### User Story
+As a player on mobile with a flaky or absent connection, I want every card to still show its name when the artwork can't be downloaded, so I can keep playing a session instead of staring at blank rectangles.
+
+### Details
+- Every face-up card face paints a text layer (card name, version/subtitle, ink cost) **underneath** the artwork. When the image loads it covers the text completely, so nothing changes visually while online.
+- If the image fails to load (offline, blocked, 404) the `<img>` removes itself, revealing the name — no broken-image glyph. The text is also visible during the load, acting as a placeholder.
+- Covers every surface that shows a card: board (hand / field / inkwell / discard / stacks), Inspect Deck, Inspect Discard, mulligan hand, Craft Hand pool, card-search results, the timeline-node and auto-save "Cards Played" thumbnail strips, and the sidebar hover preview.
+- The fallback text auto-scales to the size of the tile it sits in, so it's readable on an 80px board card and on a 35px timeline thumbnail alike.
+- Face-down cards (opponent hand, un-flipped inkwell) are unaffected — no hidden information is leaked.
+- Stays self-contained in the single HTML file.
+
 # Progress
 
 - [x] Feature 1: Manual Lore Scoring
@@ -388,3 +401,4 @@ As a player, I want the Dojo's high-stakes moments (winning, saving, deleting, e
 - [x] Feature 24: auto updating card probabilities
 - [x] Feature 25: Mulligan draw odds
 - [x] Feature 26: Design-system hardening (v2 file — dialogs, delete undo, keyboard access, multiverse token redesign)
+- [x] Feature 27: Offline card-name fallback

@@ -427,11 +427,14 @@ node creation (not decode) is the bottleneck.
 
 ### 10.5 Not converted (intentional)
 
-`background-image` is still used for low-risk / low-count paths where the decode-sharing problem
+`background-image` was left on low-risk / low-count paths where the decode-sharing problem
 doesn't bite: the **mulligan** hand (7 cards, once), the **craft pool** (unique cards only, opened
 rarely), the **card-search** results grid (capped at 18), the tiny thumbnail strips (35×50 / 18×25),
-and `showPreview` (a single full-res sidebar element). Convert with the same `makeCardImg` helper if
-they ever scale up.
+and `showPreview` (a single full-res sidebar element).
+
+> **Superseded in v2.9.0 (§12):** all of those except `showPreview` were converted to `<img>` anyway —
+> not for decode reasons, but because only a real `<img>` can report a load failure and trigger the
+> offline name fallback. `showPreview` is still a `background-image` and uses a probe instead.
 
 ### 10.6 Thumbnails retained
 
@@ -464,5 +467,87 @@ If a shift is detected, the action is formally recorded for the active turn reca
     * Pushes the shifted card ID to `this.state.cardsPlayedThisTurn`.
     * Tracks the action as `'shifted'` via `_trackAction`.
     * Replaces the generic stacking log with a descriptive action log: `You shifted [CardName] onto [BeneathCardName] (cost [Cost]).`
+
+---
+
+## **12\. Feature 27: Offline Card-Name Fallback (v2.9.0)**
+
+### 12.1 The problem
+
+Card artwork is fetched from a remote CDN (`getCardImage` → LorcanaJSON URLs). With no connection —
+the normal mobile case — every card renders as an anonymous rectangle: the board is unreadable and a
+session can't be continued. The card *data* (`allCards.json`) is already in memory at that point, so
+the names are available; only the pixels are missing.
+
+### 12.2 The fix — a text layer under the artwork
+
+Every face-up card face is now two stacked layers inside the same host element:
+
+1. `.card-fallback` — a `position:absolute; inset:0` box with the card **name**, **version**
+   (subtitle) and **ink cost**, on a `var(--surface-2)` background.
+2. `.card-img` — the artwork, appended **after** it, so a successfully loaded image covers the text
+   completely. **Nothing changes visually while online.**
+
+No JS state, no connectivity detection, no retry logic. Two behaviours fall out of the layering:
+
+- **While loading** the (transparent) img shows nothing → the name acts as the placeholder.
+- **On failure** `img.onerror` calls `img.remove()`, which also kills the browser's broken-image
+  glyph → the name is what's left.
+
+Because `render()` rebuilds everything from state (§4.1), a card that failed while offline
+automatically shows its artwork again on the next render once the network is back.
+
+### 12.3 Shared helpers (on `App`, next to `getCardImage`)
+
+| Function | Purpose |
+|---|---|
+| `makeCardImg(dbCard)` | Unchanged from §10.2 **plus** `img.onerror = () => img.remove()`. |
+| `makeCardFallback(dbCard)` | Builds the `.card-fallback` div: `.cf-name`, optional `.cf-version`, optional `.cf-cost`. Null-safe — an unresolved card (`cardId: -999`) reads `Unknown card`. |
+| `paintCardFace(host, dbCard)` | The one call site everything uses: adds `.card-face` to `host`, appends the fallback, then the img. |
+| `cardThumbHtml(dbCard, className)` | Same face as an HTML **string** (with `onerror="this.remove()"`), for the thumbnail strips that are built via `innerHTML`. HTML-escapes the name. |
+
+### 12.4 Call sites
+
+All of these now call `paintCardFace` (or `cardThumbHtml`) — several were still
+`background-image` from §10.5 and had to become real `<img>`s, since only an `<img>` can report a
+load error:
+
+| Path | Was |
+|---|---|
+| `createCardElement` (board: hand/field/inkwell/discard/stacks) | `appendChild(makeCardImg(...))` |
+| `renderInspectGrid` (60-card Inspect Deck) | `appendChild(makeCardImg(...))` |
+| `renderInspectDiscardGrid` | `appendChild(makeCardImg(...))` |
+| `renderMulliganCards` | `style.backgroundImage` |
+| `renderCraftHand` (craft pool) | `style.backgroundImage` |
+| `executeCardSearch` (results grid) | `style.backgroundImage` |
+| `renderTree` + `renderAutoSaves` ("Cards Played" strips) | inline `background-image` in a template string |
+
+`showPreview` (sidebar hover) is the **one exception**: it stays a `background-image` because of its
+`background-size:100% auto; background-position:bottom center` framing. A `background-image` can't
+report an error, so it probes instead — `new Image()` on the same URL, and on `onerror` it reveals
+`#preview-fallback` (name + version). `this._previewProbe` guards against a stale probe resolving
+after the user has hovered a different card.
+
+### 12.5 Text sizing
+
+The same fallback markup has to be legible in an 80px board card, a 140px mulligan card and a 35px
+timeline thumb. `.card-face` is a **container query** context (`container-type: inline-size`) and the
+text is `clamp(5px, 11cqw, 13px)` — it scales with the tile. A flat `9px` is the `@supports` fallback
+for engines without container queries.
+
+### 12.6 Gotchas
+
+- **`innerHTML` wipes the face.** `renderMulliganCards` (the X overlay) and `renderCraftHand` (the
+  count badges) used to assign `el.innerHTML = ...` *after* setting the background. They now use
+  `insertAdjacentHTML('beforeend', ...)` so the face survives and the overlays land on top of it.
+- **DOM order is the z-order.** The fallback is appended first, the img second, everything else after
+  — so damage counters, the `.drying::after` "NEW" pill, hover chips and the `(Unknown)` label all
+  still paint above the artwork. No `z-index` was added to `.card-img`; don't add one.
+- **Face-down cards are untouched.** The `.card-back` branch of `createCardElement` never calls
+  `paintCardFace`, so a peeked opponent hand or an un-flipped inkwell leaks nothing offline. The card
+  back itself is a remote image with a `background-color` fallback → it just goes dark.
+- `.tn-card-thumb` needed `overflow: hidden` so the clipped name doesn't spill out of the 35×50 /
+  18×25 boxes. At 18×25 (auto-save rows) the name is only partially legible — the `title` attribute
+  carries the full name.
 
 
