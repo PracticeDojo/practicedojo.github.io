@@ -824,7 +824,7 @@
         .setup-head .version {
             font-family: var(--font-mono);
             font-size: 11px;
-            color: var(--text-faint);
+            color: var(--text-dim);
         }
 
         .setup-body {
@@ -876,6 +876,25 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
+            gap: 8px;
+            color: var(--text);
+        }
+
+        /* Expand/collapse a decklist — phone layout only */
+        .deck-disclose {
+            display: none;
+            align-items: center;
+            gap: 6px;
+            background: none;
+            border: 0;
+            padding: 0 4px;
+            color: var(--text-dim);
+            font: inherit;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        .deck-disclose:hover {
             color: var(--text);
         }
 
@@ -927,26 +946,145 @@
             line-height: 1.5;
         }
 
-        .session-row {
+        /* "Open from…" — the one row that holds every import path */
+        .open-row {
             display: flex;
-            gap: 10px;
-            align-items: stretch;
+            gap: 8px;
+            align-items: center;
             flex-wrap: wrap;
-            padding: 12px;
-            background: var(--surface-2);
-            border: 1px solid var(--border-soft);
+        }
+
+        .open-row .open-label {
+            font-size: 12px;
+            color: var(--text-dim);
+            flex: 0 0 auto;
+            margin-right: 2px;
+        }
+
+        .open-row .select {
+            width: auto;
+            max-width: 200px;
+            flex: 0 1 auto;
+        }
+
+        /* CONTINUE — the returning player's own session, named so it can be recognised */
+        .continue-card {
+            display: none;
+            gap: 14px;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 16px;
+            background: color-mix(in oklch, var(--accent) 7%, var(--surface-2));
+            border: 1px solid color-mix(in oklch, var(--accent) 26%, transparent);
             border-radius: var(--radius);
         }
 
-        .session-row>.session-group {
+        .continue-card.is-shown {
             display: flex;
-            gap: 6px;
-            align-items: center;
-            flex: 1 1 220px;
+            flex-wrap: wrap;
         }
 
-        .session-row .session-group>.select {
-            max-width: 220px;
+        .continue-card .cc-body {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            min-width: 0;
+            flex: 1 1 260px;
+        }
+
+        .continue-card .cc-matchup {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text);
+            letter-spacing: -0.01em;
+        }
+
+        .continue-card .cc-vs {
+            font-size: 11px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-dim);
+        }
+
+        .continue-card .cc-side {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .continue-card .cc-pips {
+            display: inline-flex;
+            gap: 3px;
+        }
+
+        .continue-card .cc-pip {
+            width: 8px;
+            height: 8px;
+            border-radius: 999px;
+            background: var(--pip, var(--text-faint));
+            box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.35);
+        }
+
+        .continue-card .cc-meta {
+            font-family: var(--font-mono);
+            font-size: 11.5px;
+            color: var(--text-2);
+        }
+
+        .continue-card .cc-meta .cc-sep {
+            color: var(--text-faint);
+            margin: 0 6px;
+        }
+
+        /* Section naming: two jobs on this screen, both named */
+        .setup-section-label {
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.09em;
+            text-transform: uppercase;
+            color: var(--text-dim);
+        }
+
+        .setup-rule {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: var(--text-dim);
+            font-size: 12px;
+        }
+
+        .setup-rule[hidden] {
+            display: none;
+        }
+
+        .setup-rule::before,
+        .setup-rule::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border-soft);
+        }
+
+        /* Decklist parse feedback — replaces the silent 60-random-cards substitution */
+        .deck-note {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            line-height: 1.45;
+            color: var(--text-dim);
+            min-height: 1.45em;
+        }
+
+        .deck-note.is-warn {
+            color: oklch(0.82 0.13 85);
+        }
+
+        .deck-note .dn-unmatched {
+            color: var(--text-2);
         }
 
         .setup-foot {
@@ -959,9 +1097,16 @@
             gap: 14px;
         }
 
+        .setup-foot .foot-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-left: auto;
+        }
+
         .setup-foot .hint {
             font-size: 12px;
-            color: var(--text-faint);
+            color: var(--text-dim);
         }
 
         /* APP SHELL */
@@ -2726,8 +2871,12 @@
             outline-offset: 2px;
         }
 
-        .input:focus-visible {
-            outline: 2px solid var(--accent-soft);
+        .input:focus-visible,
+        .select:focus-visible,
+        .dojo-textarea:focus-visible,
+        .btn:focus-visible,
+        .icon-btn:focus-visible {
+            outline: 2px solid var(--accent);
             outline-offset: 1px;
         }
 
@@ -3773,6 +3922,82 @@
             .deck-pair {
                 grid-template-columns: 1fr;
             }
+
+            /* Setup on a phone: the primary action stays in the thumb zone and
+               survives the software keyboard, so the footer scrolls with nothing. */
+            .setup-card {
+                display: flex;
+                flex-direction: column;
+            }
+
+            .setup-body {
+                padding: 16px 14px;
+                gap: 14px;
+            }
+
+            .setup-head {
+                padding: 14px 16px;
+            }
+
+            .setup-foot {
+                position: sticky;
+                bottom: 0;
+                padding: 12px 14px;
+                padding-bottom: max(12px, env(safe-area-inset-bottom));
+                flex-wrap: wrap;
+                background: var(--surface);
+                box-shadow: 0 -8px 20px -12px rgba(0, 0, 0, 0.9);
+            }
+
+            .setup-foot .hint {
+                flex: 1 1 100%;
+                order: -1;
+            }
+
+            .setup-foot .foot-actions {
+                flex: 1 1 100%;
+                margin-left: 0;
+            }
+
+            .setup-foot .foot-actions .btn-primary {
+                flex: 1;
+                justify-content: center;
+            }
+
+            /* Collapsed decklists: the 140px textareas are why this screen used
+               to be taller than the viewport before you could reach Start. */
+            .deck-card .dojo-textarea {
+                height: 96px !important;
+                min-height: 96px;
+            }
+
+            .deck-card.is-collapsed .dojo-textarea,
+            .deck-card.is-collapsed .deck-note {
+                display: none;
+            }
+
+            .deck-disclose {
+                display: inline-flex;
+            }
+
+            .open-row .select,
+            .open-row .btn {
+                flex: 1 1 auto;
+            }
+
+            /* Touch targets: 44px minimum across every setup control. Scoped to the
+               setup card so the topbar keeps its --topbar-h. */
+            .setup-card .btn,
+            .setup-card .select,
+            .setup-card .deck-disclose {
+                min-height: 44px;
+            }
+
+            .setup-card .select,
+            .setup-card .dojo-textarea {
+                font-size: 16px;
+                /* below 16px iOS Safari zooms the whole page on focus */
+            }
         }
     </style>
 </head>
@@ -3858,73 +4083,107 @@
             <div class="divider-v"></div>
             <button class="icon-btn" onclick="document.getElementById('tweaks-panel').classList.toggle('is-open')"
                 title="Tweaks"><i class="fa-solid fa-sliders"></i></button>
-            <button class="icon-btn" onclick="App.showSetup()" title="Reset / change decks"><i
-                    class="fa-solid fa-rotate-right"></i></button>
+            <button class="icon-btn" onclick="App.confirmShowSetup()" title="Reset / change decks"
+                aria-label="Reset or change decks"><i class="fa-solid fa-rotate-right"></i></button>
         </div>
     </header>
 
     <!-- Deck Setup Overlay -->
-    <div id="setup-modal" class="overlay hidden">
+    <div id="setup-modal" class="overlay hidden" role="dialog" aria-modal="true" aria-labelledby="setup-title">
         <div class="setup-card">
             <div class="setup-head">
-                <h1><span class="brand-mark"></span> Practice Dojo</h1>
+                <h1 id="setup-title"><span class="brand-mark"></span> Practice Dojo</h1>
                 <span class="version" id="app-version-setup"></span>
             </div>
 
             <div class="setup-body">
-                <div class="deck-pair">
-                    <div class="deck-card is-p1">
+                <!-- CONTINUE: rendered from localStorage on every showSetup() call -->
+                <section id="setup-continue" class="continue-card" aria-labelledby="setup-continue-label">
+                    <div class="cc-body">
+                        <span id="setup-continue-label" class="setup-section-label">Continue where you left off</span>
+                        <div class="cc-matchup" id="cc-matchup"></div>
+                        <div class="cc-meta" id="cc-meta"></div>
+                    </div>
+                    <button class="btn btn-primary" id="btn-resume-storage" onclick="App.loadFromLocalStorage()">
+                        <i class="fa-solid fa-clock-rotate-left"></i> Resume match
+                    </button>
+                </section>
+
+                <div class="setup-rule" id="setup-new-rule" hidden>or start a new match</div>
+
+                <section class="deck-pair" aria-label="Start a new match">
+                    <div class="deck-card is-p1" id="deck-card-1">
                         <div class="deck-card-label">
-                            <span class="label-text">Player 1 · You</span>
+                            <label class="label-text" for="deck1-input">Player 1 · You</label>
                             <span class="label-tag">P1</span>
+                            <button type="button" class="deck-disclose" aria-expanded="true" aria-controls="deck1-input"
+                                onclick="App.toggleDeckCard(1)">
+                                <span class="dd-text">Hide list</span>
+                                <i class="fa-solid fa-chevron-up" aria-hidden="true"></i>
+                            </button>
                         </div>
-                        <select id="p1-deck-select" class="select" onchange="App.onDeckSelect(1, this.value)">
+                        <select id="p1-deck-select" class="select" aria-label="Pick Player 1's deck from the cloud"
+                            onchange="App.onDeckSelect(1, this.value)">
                             <option value="">— Pick a deck from cloud —</option>
                         </select>
                         <textarea id="deck1-input" class="dojo-textarea" style="height:140px"
-                            placeholder="Paste decklist&#10;(e.g. 4 Tinker Bell - Giant Fairy)"></textarea>
+                            placeholder="Paste decklist&#10;(e.g. 4 Tinker Bell - Giant Fairy)"
+                            oninput="App.markDeckTouched(1)" onblur="App.checkDeckInput(1)"></textarea>
+                        <div class="deck-note" id="deck1-note" role="status" aria-live="polite"></div>
                     </div>
-                    <div class="deck-card is-p2">
+                    <div class="deck-card is-p2" id="deck-card-2">
                         <div class="deck-card-label">
-                            <span class="label-text">Player 2 · Opponent</span>
+                            <label class="label-text" for="deck2-input">Player 2 · Opponent</label>
                             <span class="label-tag">P2</span>
+                            <button type="button" class="deck-disclose" aria-expanded="true" aria-controls="deck2-input"
+                                onclick="App.toggleDeckCard(2)">
+                                <span class="dd-text">Hide list</span>
+                                <i class="fa-solid fa-chevron-up" aria-hidden="true"></i>
+                            </button>
                         </div>
-                        <select id="p2-deck-select" class="select" onchange="App.onDeckSelect(2, this.value)">
+                        <select id="p2-deck-select" class="select" aria-label="Pick Player 2's deck from the cloud"
+                            onchange="App.onDeckSelect(2, this.value)">
                             <option value="">— Pick a deck from cloud —</option>
                         </select>
                         <textarea id="deck2-input" class="dojo-textarea" style="height:140px"
-                            placeholder="Paste decklist&#10;(e.g. 4 Maui - Hero to All)"></textarea>
+                            placeholder="Paste decklist&#10;(e.g. 4 Maui - Hero to All)"
+                            oninput="App.markDeckTouched(2)" onblur="App.checkDeckInput(2)"></textarea>
+                        <div class="deck-note" id="deck2-note" role="status" aria-live="polite"></div>
                     </div>
-                </div>
+                </section>
 
-                <div class="session-row">
-                    <div class="session-group">
-                        <select id="example-session-select" class="select">
-                            <option value="">— Cloud sessions —</option>
-                        </select>
-                        <button class="btn btn-ghost" id="btn-load-example" onclick="App.loadExampleSession()">
-                            <i class="fa-solid fa-cloud-arrow-down"></i> Load demo
-                        </button>
-                    </div>
-                    <div class="session-group" id="session-restore-container">
-                        <input type="file" id="setup-import-file" class="hidden" accept=".json"
-                            onchange="App.importTimelines(event)">
-                        <button class="btn btn-ghost" onclick="document.getElementById('setup-import-file').click()">
-                            <i class="fa-solid fa-file-import"></i> Upload .json
-                        </button>
-                        <button class="btn btn-ghost" onclick="App.openImportLogModal()">
-                            <i class="fa-solid fa-file-lines"></i> Import Duels.ink log
-                        </button>
-                    </div>
-                </div>
+                <!-- Every "open a match that already exists" path, in one named family -->
+                <section class="open-row" aria-labelledby="setup-open-label">
+                    <span class="open-label" id="setup-open-label">Or open an existing match:</span>
+                    <select id="example-session-select" class="select" aria-label="Choose a cloud demo session"
+                        onchange="App.onExampleSessionChange()">
+                        <option value="">— Cloud demos —</option>
+                    </select>
+                    <button class="btn btn-ghost" id="btn-load-example" onclick="App.loadExampleSession()" disabled>
+                        <i class="fa-solid fa-cloud-arrow-down"></i> Load demo
+                    </button>
+                    <input type="file" id="setup-import-file" class="hidden" accept=".json"
+                        onchange="App.importTimelines(event)">
+                    <button class="btn btn-ghost" onclick="document.getElementById('setup-import-file').click()">
+                        <i class="fa-solid fa-file-import"></i> .json file
+                    </button>
+                    <button class="btn btn-ghost" onclick="App.openImportLogModal()">
+                        <i class="fa-solid fa-file-lines"></i> Duels.ink log
+                    </button>
+                </section>
             </div>
 
             <div class="setup-foot">
-                <span class="hint"><i class="fa-solid fa-circle-info"></i> Leave both decklists empty for random dummy
-                    decks.</span>
-                <button class="btn btn-primary" onclick="App.startGame()">
-                    Start match <i class="fa-solid fa-arrow-right"></i>
-                </button>
+                <span class="hint"><i class="fa-solid fa-circle-info"></i> Leave both decklists empty to play with
+                    random dummy decks.</span>
+                <div class="foot-actions">
+                    <button class="btn btn-ghost hidden" id="btn-setup-back" onclick="App.closeSetup()">
+                        <i class="fa-solid fa-arrow-left"></i> Back to match
+                    </button>
+                    <button class="btn btn-primary" id="btn-start-match" onclick="App.startGame()">
+                        Start match <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -4541,7 +4800,7 @@
         let cardFuse = null;
         let allSessions = [];
 
-        const APP_VERSION = "v2.9.0"; // Centralized version string (redesign)
+        const APP_VERSION = "v2.9.1"; // Centralized version string (redesign)
 
         // Tweaks panel accent presets (hue values for the OKLCH accent ramp)
         const ACCENT_PRESETS = {
@@ -4699,7 +4958,10 @@
                     autoSaves: this.autoSaves,
                     history: this.history,
                     deck1: document.getElementById('deck1-input').value,
-                    deck2: document.getElementById('deck2-input').value
+                    deck2: document.getElementById('deck2-input').value,
+                    // Cheap digest so the setup screen can name what you'd be resuming
+                    // without decompressing the whole state first.
+                    summary: this.buildSessionSummary()
                 };
                 try {
                     localStorage.setItem('lorcana_dojo_session', JSON.stringify(exportData));
@@ -4724,8 +4986,7 @@
                         if (importedData.deck2) document.getElementById('deck2-input').value = importedData.deck2;
 
                         // Ensure user is booted into the app
-                        document.getElementById('setup-modal').classList.add('hidden');
-                        document.getElementById('app').classList.remove('hidden');
+                        this.leaveSetup();
 
                         document.getElementById('timeline-drawer').classList.remove('is-open');
                         this.renderAutoSaves();
@@ -4860,7 +5121,20 @@
                 }
             },
 
+            // Both cloud dropdowns used to sit enabled with a single option while the
+            // request was in flight, and stayed that way forever if it failed.
+            setSelectStatus(ids, label, disabled) {
+                ids.forEach(id => {
+                    const el = document.getElementById(id);
+                    if (!el) return;
+                    el.innerHTML = `<option value="">${this.escapeHtml(label)}</option>`;
+                    el.disabled = !!disabled;
+                });
+            },
+
             async fetchDecksFromDatabase() {
+                const deckSelects = ['p1-deck-select', 'p2-deck-select'];
+                this.setSelectStatus(deckSelects, 'Loading decks…', true);
                 try {
                     const { data, error } = await supabaseClient.from('decks').select('*').order('created_at', { ascending: false });
                     if (error) {
@@ -4871,9 +5145,15 @@
                     }
                     deckFuse = new Fuse(allDecks, { keys: ['name'], includeScore: true, threshold: 0.4 });
 
+                    if (!allDecks.length) {
+                        this.setSelectStatus(deckSelects, 'Cloud unavailable — paste a decklist', true);
+                        return;
+                    }
                     this.populateDeckDropdowns();
                 } catch (err) {
                     console.error("Failed to fetch decks from Supabase:", err);
+                    allDecks = [];
+                    this.setSelectStatus(deckSelects, 'Cloud unavailable — paste a decklist', true);
                 }
             },
 
@@ -4882,33 +5162,30 @@
                 const s2 = document.getElementById('p2-deck-select');
                 if (!s1 || !s2) return;
 
-                let optionsHtml = '<option value="">-- Load from Database --</option>';
+                let optionsHtml = '<option value="">— Pick a deck from cloud —</option>';
                 allDecks.forEach((deck, index) => {
-                    optionsHtml += `<option value="${index}">${deck.name || 'Unnamed Deck'}</option>`;
+                    optionsHtml += `<option value="${index}">${this.escapeHtml(deck.name || 'Unnamed Deck')}</option>`;
                 });
 
                 s1.innerHTML = optionsHtml;
                 s2.innerHTML = optionsHtml;
-
-                // Pre-select the first and second decks automatically
-                if (allDecks.length > 0) {
-                    s1.value = "0";
-                    this.onDeckSelect(1, "0");
-                }
-                if (allDecks.length > 1) {
-                    s2.value = "1";
-                    this.onDeckSelect(2, "1");
-                } else if (allDecks.length === 1) {
-                    // Fallback to the first deck for Player 2 if only 1 deck exists total
-                    s2.value = "0";
-                    this.onDeckSelect(2, "0");
-                }
+                s1.disabled = false;
+                s2.disabled = false;
             },
 
             onDeckSelect(playerNum, deckIndexStr) {
                 if (deckIndexStr === "") return;
                 const deck = allDecks[parseInt(deckIndexStr)];
                 if (!deck) return;
+
+                // Never clobber a list the user typed or pasted. This request lands
+                // asynchronously, so it can otherwise arrive mid-paste.
+                const target = document.getElementById(playerNum === 1 ? 'deck1-input' : 'deck2-input');
+                if (target && target.value.trim() && this._deckTouched && this._deckTouched[playerNum]) {
+                    this.showToast(`Player ${playerNum}'s list was left as you typed it — clear it to load a cloud deck.`);
+                    document.getElementById(playerNum === 1 ? 'p1-deck-select' : 'p2-deck-select').value = '';
+                    return;
+                }
 
                 // Smartly extract the decklist from whatever column name is used
                 let deckText = deck.decklist || deck.deck_list || deck.list || deck.cards || deck.export_string || deck.content || "";
@@ -4922,6 +5199,7 @@
 
                 const inputId = playerNum === 1 ? 'deck1-input' : 'deck2-input';
                 document.getElementById(inputId).value = deckText;
+                this.checkDeckInput(playerNum);
             },
 
             async init() {
@@ -4979,21 +5257,8 @@
 
                     document.getElementById('loading-screen').classList.add('hidden');
 
-                    // Check local storage before showing setup
-                    const hasSavedSession = localStorage.getItem('lorcana_dojo_session');
-                    if (hasSavedSession) {
-                        // We show the setup screen but add a distinct "Resume Last Auto-Save" option
-                        const resumeBtnHtml = `
-                            <button id="btn-resume-storage" onclick="App.loadFromLocalStorage()" class="btn btn-primary">
-                                <i class="fa-solid fa-clock-rotate-left" style="margin-right:8px"></i> Restore Auto-Save
-                            </button>
-                        `;
-                        const setupActionsNode = document.getElementById('session-restore-container');
-                        if (setupActionsNode && !document.getElementById('btn-resume-storage')) {
-                            setupActionsNode.insertAdjacentHTML('beforeend', resumeBtnHtml);
-                        }
-                    }
-
+                    // showSetup() reads localStorage itself and renders the Continue card,
+                    // so a mid-session reset offers the same resume path as a cold start.
                     this.showSetup();
 
                 } catch (e) {
@@ -5130,11 +5395,212 @@
                 document.getElementById('tree-canvas').style.transform = `translate(${this.treePan.translateX}px, ${this.treePan.translateY}px) scale(${this.treePan.zoom})`;
             },
 
+            escapeHtml(str) {
+                return String(str == null ? '' : str)
+                    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+            },
+
+            // A digest of the live match, written on every autosave. Lets the setup
+            // screen show a session you can recognise instead of a filename you can't.
+            buildSessionSummary() {
+                try {
+                    if (!this.state || !this.state.players) return null;
+                    const childCounts = {};
+                    this.bookmarks.forEach(b => {
+                        const key = b.parentId || '__root__';
+                        childCounts[key] = (childCounts[key] || 0) + 1;
+                    });
+                    const leaves = this.bookmarks.filter(b => !childCounts[b.id]).length;
+                    return {
+                        savedAt: Date.now(),
+                        turn: this.state.turn,
+                        lore: [this.state.players[0].lore, this.state.players[1].lore],
+                        nodes: this.bookmarks.length,
+                        lines: Math.max(leaves, this.bookmarks.length ? 1 : 0),
+                        inks: [this.getDeckColors(0), this.getDeckColors(1)]
+                    };
+                } catch (e) {
+                    return null;
+                }
+            },
+
+            relativeTime(ts) {
+                const mins = Math.round((Date.now() - ts) / 60000);
+                if (mins < 1) return 'just now';
+                if (mins < 60) return `${mins} min ago`;
+                const hrs = Math.round(mins / 60);
+                if (hrs < 24) return `${hrs} ${hrs === 1 ? 'hour' : 'hours'} ago`;
+                const days = Math.round(hrs / 24);
+                return `${days} ${days === 1 ? 'day' : 'days'} ago`;
+            },
+
+            inkPairLabel(inks) {
+                if (!inks || !inks.length) return 'Custom deck';
+                return inks.slice(0, 2).map(c => c.charAt(0).toUpperCase() + c.slice(1)).join(' · ');
+            },
+
+            inkPipsHtml(inks) {
+                if (!inks || !inks.length) return '';
+                return `<span class="cc-pips">` + inks.slice(0, 2).map(c =>
+                    `<span class="cc-pip" style="--pip:${this.inkColorMap[c] || 'var(--text-faint)'}"></span>`
+                ).join('') + `</span>`;
+            },
+
+            // Reads localStorage on every call — the previous build injected the resume
+            // button once during init(), so a mid-session reset offered no way back.
+            renderContinueCard() {
+                const card = document.getElementById('setup-continue');
+                const rule = document.getElementById('setup-new-rule');
+                const startBtn = document.getElementById('btn-start-match');
+                if (!card) return false;
+
+                let saved = null;
+                try { saved = JSON.parse(localStorage.getItem('lorcana_dojo_session') || 'null'); } catch (e) { saved = null; }
+                const usable = !!(saved && saved.currentState && saved.bookmarks);
+
+                card.classList.toggle('is-shown', usable);
+                if (rule) rule.hidden = !usable;
+                // Exactly one primary button on screen, chosen by state.
+                if (startBtn) startBtn.classList.toggle('btn-primary', !usable);
+
+                if (!usable) return false;
+
+                const s = saved.summary || null;
+                const matchup = document.getElementById('cc-matchup');
+                const meta = document.getElementById('cc-meta');
+
+                if (s && s.inks) {
+                    matchup.innerHTML =
+                        `<span class="cc-side">${this.inkPipsHtml(s.inks[0])}${this.escapeHtml(this.inkPairLabel(s.inks[0]))}</span>` +
+                        `<span class="cc-vs">vs</span>` +
+                        `<span class="cc-side">${this.inkPipsHtml(s.inks[1])}${this.escapeHtml(this.inkPairLabel(s.inks[1]))}</span>`;
+                    const bits = [`Turn ${s.turn}`, `lore ${s.lore[0]}–${s.lore[1]}`];
+                    if (s.nodes) bits.push(`${s.nodes} ${s.nodes === 1 ? 'node' : 'nodes'}`);
+                    if (s.lines > 1) bits.push(`${s.lines} lines`);
+                    if (s.savedAt) bits.push(this.relativeTime(s.savedAt));
+                    meta.innerHTML = bits.map(b => this.escapeHtml(b)).join('<span class="cc-sep">·</span>');
+                } else {
+                    // Sessions saved before summaries existed still get a real card.
+                    matchup.textContent = 'Your last session';
+                    meta.textContent = 'Saved on this device';
+                }
+                return true;
+            },
+
             showSetup() {
-                document.getElementById('setup-modal').classList.remove('hidden');
+                const modal = document.getElementById('setup-modal');
+                modal.classList.remove('hidden');
                 document.getElementById('app').classList.add('hidden');
                 const tb = document.getElementById('topbar');
                 if (tb) tb.style.display = 'none';
+
+                const hasResume = this.renderContinueCard();
+
+                // "Back to match" only makes sense when there is a match behind the overlay.
+                const back = document.getElementById('btn-setup-back');
+                const liveMatch = !!(this.state && this.state.players && this.state.players[0].deck.length + this.state.players[0].hand.length > 0);
+                if (back) back.classList.toggle('hidden', !liveMatch);
+
+                // Focus lands on the thing you most likely came for. Without this the
+                // trigger button is display:none'd out from under focus and it falls to <body>.
+                const target = hasResume
+                    ? document.getElementById('btn-resume-storage')
+                    : document.getElementById('deck1-input');
+                if (target) setTimeout(() => target.focus(), 0);
+            },
+
+            // "Back to match" — abandons the setup screen without touching state.
+            closeSetup() {
+                this.leaveSetup();
+            },
+
+            // Every path that leaves setup for a live board goes through here, so the
+            // topbar hidden by showSetup() always comes back.
+            leaveSetup() {
+                document.getElementById('setup-modal').classList.add('hidden');
+                document.getElementById('app').classList.remove('hidden');
+                const tb = document.getElementById('topbar');
+                if (tb) tb.style.display = '';
+            },
+
+            async confirmShowSetup() {
+                const liveMatch = !!(this.state && this.state.players && this.state.players[0].hand.length > 0);
+                if (liveMatch) {
+                    const ok = await this.dialog({
+                        title: 'Leave this match?',
+                        message: 'Starting a new match clears the current timeline tree and every auto-save in it. Your last auto-save stays on this device, so you can resume it from the setup screen instead.',
+                        confirmText: 'Change decks',
+                        cancelText: 'Keep playing'
+                    });
+                    if (!ok) return;
+                }
+                this.showSetup();
+            },
+
+            markDeckTouched(playerNum) {
+                this._deckTouched = this._deckTouched || {};
+                this._deckTouched[playerNum] = true;
+            },
+
+            toggleDeckCard(playerNum) {
+                const card = document.getElementById(`deck-card-${playerNum}`);
+                const btn = card.querySelector('.deck-disclose');
+                const collapsed = card.classList.toggle('is-collapsed');
+                btn.setAttribute('aria-expanded', String(!collapsed));
+                btn.querySelector('.dd-text').textContent = collapsed ? 'Show list' : 'Hide list';
+                btn.querySelector('i').className = collapsed ? 'fa-solid fa-chevron-down' : 'fa-solid fa-chevron-up';
+            },
+
+            // Names what the parser actually understood, so a malformed list can no
+            // longer turn into 60 random cards without the user hearing about it.
+            checkDeckInput(playerNum) {
+                const note = document.getElementById(`deck${playerNum}-note`);
+                const text = document.getElementById(`deck${playerNum}-input`).value;
+                if (!note) return;
+
+                if (!text.trim()) {
+                    note.className = 'deck-note';
+                    note.textContent = '';
+                    return;
+                }
+
+                const regex = /^(\d+)\s+(.+)$/;
+                let counted = 0;
+                const unmatched = [];
+                text.split('\n').forEach(line => {
+                    const t = line.trim();
+                    if (!t) return;
+                    const m = t.match(regex);
+                    if (!m) { unmatched.push(t); return; }
+                    const name = m[2].toLowerCase().trim();
+                    const card = this.cardDB[name] || this.allCards.find(c => c.name.toLowerCase() === name || (c.fullName && c.fullName.toLowerCase() === name));
+                    if (card) counted += parseInt(m[1]);
+                    else unmatched.push(m[2].trim());
+                });
+
+                if (counted === 0) {
+                    note.className = 'deck-note is-warn';
+                    note.textContent = 'No cards recognised — this deck will be 60 random cards.';
+                    return;
+                }
+
+                let msg = `${counted} of 60 cards recognised`;
+                if (unmatched.length) {
+                    const shown = unmatched.slice(0, 2).map(u => this.escapeHtml(u)).join(', ');
+                    const more = unmatched.length > 2 ? ` +${unmatched.length - 2} more` : '';
+                    note.className = 'deck-note is-warn';
+                    note.innerHTML = `${msg} · skipped <span class="dn-unmatched">${shown}${more}</span>`;
+                    return;
+                }
+                note.className = counted === 60 ? 'deck-note' : 'deck-note is-warn';
+                note.textContent = msg;
+            },
+
+            onExampleSessionChange() {
+                const sel = document.getElementById('example-session-select');
+                const btn = document.getElementById('btn-load-example');
+                if (btn) btn.disabled = !sel.value;
             },
 
             parseDeck(text) {
@@ -5257,8 +5723,7 @@
                 this.autoSaves = [];
                 this.renderAutoSaves();
 
-                document.getElementById('setup-modal').classList.add('hidden');
-                document.getElementById('app').classList.remove('hidden');
+                this.leaveSetup();
 
                 // Initial Draw
                 this.saveState();
@@ -5501,7 +5966,14 @@
                     try {
                         const importedData = JSON.parse(e.target.result);
                         if (importedData.currentState && importedData.bookmarks) {
-                            this.state = this.decompressState(importedData.currentState);
+                            // Decompress into a local first. Assigning this.state before the
+                            // call succeeds left the app on half-replaced state when a
+                            // truncated file threw mid-way.
+                            const nextState = this.decompressState(importedData.currentState);
+                            if (!nextState || !nextState.players || nextState.players.length < 2) {
+                                throw new Error('Session state is incomplete');
+                            }
+                            this.state = nextState;
                             this.bookmarks = importedData.bookmarks;
                             this.autoSaves = importedData.autoSaves || [];
                             this.history = importedData.history || importedData.currentState.history || [];
@@ -5510,8 +5982,7 @@
                             if (importedData.deck2) document.getElementById('deck2-input').value = importedData.deck2;
 
                             // Ensure user is booted into the app if they imported from setup modal
-                            document.getElementById('setup-modal').classList.add('hidden');
-                            document.getElementById('app').classList.remove('hidden');
+                            this.leaveSetup();
 
                             // Close Drawer if open, render new state
                             document.getElementById('timeline-drawer').classList.remove('is-open');
@@ -6461,6 +6932,7 @@
             },
 
             async fetchSessionsFromDatabase() {
+                this.setSelectStatus(['example-session-select'], 'Loading demos…', true);
                 try {
                     // Only select id, name, and created_at to save bandwidth. session_data is heavy.
                     const { data, error } = await supabaseClient.from('dojo_sessions').select('id, name, created_at').order('created_at', { ascending: false });
@@ -6470,9 +6942,15 @@
                     } else {
                         allSessions = data;
                     }
+                    if (!allSessions.length) {
+                        this.setSelectStatus(['example-session-select'], 'No demos available', true);
+                        return;
+                    }
                     this.populateSessionDropdown();
                 } catch (err) {
                     console.error("Failed to fetch sessions from Supabase:", err);
+                    allSessions = [];
+                    this.setSelectStatus(['example-session-select'], 'Cloud unavailable', true);
                 }
             },
 
@@ -6480,11 +6958,13 @@
                 const selectElement = document.getElementById('example-session-select');
                 if (!selectElement) return;
 
-                let optionsHtml = '<option value="">-- Load from Database --</option>';
+                let optionsHtml = '<option value="">— Cloud demos —</option>';
                 allSessions.forEach(session => {
-                    optionsHtml += `<option value="${session.id}">${session.name}</option>`;
+                    optionsHtml += `<option value="${this.escapeHtml(session.id)}">${this.escapeHtml(session.name)}</option>`;
                 });
                 selectElement.innerHTML = optionsHtml;
+                selectElement.disabled = false;
+                this.onExampleSessionChange();
             },
 
             async loadExampleSession() {
@@ -6513,8 +6993,7 @@
                         if (importedData.deck2) document.getElementById('deck2-input').value = importedData.deck2;
 
                         // Ensure user is booted into the app if they imported from setup modal
-                        document.getElementById('setup-modal').classList.add('hidden');
-                        document.getElementById('app').classList.remove('hidden');
+                        this.leaveSetup();
 
                         // Close Drawer if open, render new state
                         document.getElementById('timeline-drawer').classList.remove('is-open');
@@ -6530,8 +7009,8 @@
                     this.dialogAlert("Couldn't reach the cloud to load that session. Check your connection and try again.", "Cloud load failed");
                 } finally {
                     btn.innerHTML = originalText;
-                    btn.disabled = false;
                     selectElement.value = '';
+                    this.onExampleSessionChange();
                 }
             },
 
@@ -9782,6 +10261,14 @@
                 }
                 if (!document.getElementById('tree-modal').classList.contains('hidden')) {
                     App.closeTreeModal();
+                    return;
+                }
+                // Setup is dismissible only when there is a live match behind it,
+                // otherwise Escape would drop the user onto an empty board.
+                const setupModal = document.getElementById('setup-modal');
+                if (setupModal && !setupModal.classList.contains('hidden')) {
+                    const back = document.getElementById('btn-setup-back');
+                    if (back && !back.classList.contains('hidden')) App.closeSetup();
                     return;
                 }
                 // Dismissible overlay modals (mulligan/craft stay open — they gate game state)
