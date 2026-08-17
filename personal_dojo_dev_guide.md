@@ -550,4 +550,43 @@ for engines without container queries.
   18×25 boxes. At 18×25 (auto-save rows) the name is only partially legible — the `title` attribute
   carries the full name.
 
+---
+
+## **13\. Dynamic Play-Area Card Auto-Scaling & Responsive Fit (v2.10.0)**
+
+### **13.1 Overview**
+
+As players deploy multiple cards to the board across turns, fixed-dimension cards wrap into multiple rows and expand the vertical height of `.board-half`, causing vertical scrolling on `.play`. Feature 28 introduces dynamic responsive auto-scaling for the active field area and dynamic horizontal compression for the hand.
+
+### **13.2 Scoped CSS Custom Properties**
+
+Rather than relying purely on global `:root` dimensions, `#top-field` and `#bottom-field` receive scoped CSS variables on render:
+- `--field-scale`: dynamic scale multiplier computed per player board ($0.44 \le \text{scale} \le 1.0$).
+- `--card-w: calc(80px * var(--card-scale) * var(--field-scale))`
+- `--card-h: calc(112px * var(--card-scale) * var(--field-scale))`
+- `--field-gap`: dynamically calculated gap ($3\text{px} \le \text{gap} \le 12\text{px}$)
+- `padding: calc(4px * var(--field-scale)) calc(8px * var(--field-scale))`
+
+Because `.card`, `.card-wrap`, locations, and stacks consume `var(--card-w)` and `var(--card-h)`, all child cards in that field automatically scale in unison.
+
+### **13.3 Single-Row Priority Auto-Fit Engine (`calcFieldScale`)**
+
+The engine aggressively prioritizes **keeping all field cards on a single row** without wrapping:
+1. **Effective Card Density:** Independent cards ($1.0$ slot, $1.35$ if exerted), locations ($1.35$ slots).
+2. **User's Base Scale:** `getCardScale()` reads the current user slider setting from `lorcana_dojo_tweaks` (default $1.0\times$ on desktop, $0.8\times$ on coarse pointer).
+3. **Progressive Gap Tightening:** As card count increases beyond 5, the gap between cards smoothly tightens from $12\text{px}$ down to $3\text{px}$, leaving maximum horizontal room for card art.
+4. **Single-Row Scaling:** Calculates the exact scale factor to fit all cards horizontally on 1 row across the full container width.
+   - For up to ~18–22 cards on desktop, cards remain strictly on **1 single row** with `flex-wrap: nowrap` ($0.44 \le \text{scale} \le 1.0$).
+   - Only for extreme card counts (>22 cards) does it gracefully wrap to 2 rows while continuing to scale.
+
+### **13.4 Dynamic Hand Overlap (`calcHandOverlap`)**
+
+When a player holds $7+$ cards in hand, `calcHandOverlap` computes a progressive negative margin `--hand-overlap` (scaling from `-32px` up to `-62px`), keeping high-card-count hands contained horizontally without overflowing.
+
+### **13.5 Resizing & Tweaks Synchronization**
+
+- **Tweaks Slider:** Adjusting `tweak-card-size` immediately re-renders the active board so fields re-evaluate their fit relative to the new base scale.
+- **Window Resize:** A `resize` listener on `window` updates field layouts dynamically when the browser window is resized or sidebars toggle.
+
+
 

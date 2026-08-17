@@ -1538,23 +1538,29 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            min-height: calc(var(--card-h) + 12px);
+            min-height: calc(var(--card-h) + 8px);
             position: relative;
             z-index: 2;
             overflow: visible;
+            width: 100%;
         }
 
         .field-strip .field {
-            min-height: calc(var(--card-h) + 24px);
+            --field-scale: 1;
+            --card-w: calc(80px * var(--card-scale) * var(--field-scale));
+            --card-h: calc(112px * var(--card-scale) * var(--field-scale));
+            --field-gap: 10px;
+            min-height: calc(var(--card-h) + 12px);
             display: flex;
-            flex-wrap: wrap;
+            flex-wrap: nowrap;
             align-content: center;
             justify-content: center;
-            gap: 14px;
-            padding: 10px 16px;
+            align-items: center;
+            gap: var(--field-gap);
+            padding: calc(4px * var(--field-scale)) calc(8px * var(--field-scale));
             border-radius: 14px;
             width: 100%;
-            max-width: 1200px;
+            max-width: 100%;
             border: 1px dashed transparent;
             transition: border-color .12s ease, background .12s ease;
         }
@@ -1775,6 +1781,7 @@
         }
 
         .hand {
+            --hand-overlap: -32px;
             min-height: calc(var(--card-h) + 8px);
             display: flex;
             justify-content: center;
@@ -1783,7 +1790,7 @@
         }
 
         .hand .card-wrap {
-            margin-left: -32px;
+            margin-left: var(--hand-overlap, -32px);
             transition: transform .15s ease, margin .15s ease;
         }
 
@@ -3813,7 +3820,7 @@
             }
 
             .hand .card-wrap {
-                margin-left: -40px;
+                margin-left: var(--hand-overlap, -40px);
             }
 
             /* Lore badges: anchor to the LEFT so they never sit over the right-side deck/discard,
@@ -4800,7 +4807,7 @@
         let cardFuse = null;
         let allSessions = [];
 
-        const APP_VERSION = "v2.9.1"; // Centralized version string (redesign)
+        const APP_VERSION = "v2.10.0"; // Centralized version string (redesign)
 
         // Tweaks panel accent presets (hue values for the OKLCH accent ramp)
         const ACCENT_PRESETS = {
@@ -4824,6 +4831,17 @@
                 document.getElementById('prob-pane').classList.add('is-collapsed');
                 App.applyProbPaneToggleIcon(true);
             }
+            // Auto-recalculate play area card fitting on window resize
+            window.addEventListener('resize', () => {
+                if (App.state && App.state.players) {
+                    const tf = document.getElementById('top-field');
+                    const bf = document.getElementById('bottom-field');
+                    const ip = App.state.players[1 - App.state.activePlayer];
+                    const ap = App.state.players[App.state.activePlayer];
+                    if (tf && ip) App.buildField(ip, tf, true);
+                    if (bf && ap) App.buildField(ap, bf);
+                }
+            });
         });
 
         const App = {
@@ -9498,8 +9516,87 @@
                 document.getElementById('top-hand-lvi').innerText = ipHand.lvi.toFixed(1);
             },
 
+            // Helper to get active user base card scale from tweaks (0.7 to 1.4)
+            getCardScale() {
+                const t = this.loadTweaks ? this.loadTweaks() : {};
+                if (t && t.cardSize) return parseFloat(t.cardSize) || 1.0;
+                return (window.matchMedia && window.matchMedia('(pointer: coarse)').matches) ? 0.8 : 1.0;
+            },
+
+            // Feature 28: Dynamic Play-Area Card Auto-Scaling
+            // Aggressively prioritizes keeping all field cards in 1 single row.
+            // Dynamically tightens gaps and downscales card dimensions so cards never wrap or force vertical scroll.
+            calcFieldScale(player, container) {
+                if (!player || !player.field || player.field.length === 0) {
+                    return { scale: 1.0, gap: 12, wrap: false };
+                }
+
+                const locations = player.field.filter(c => this.cardDB[c.cardId] && this.cardDB[c.cardId].type === 'Location');
+                const independentCards = player.field.filter(c => !c.locationId && (!this.cardDB[c.cardId] || this.cardDB[c.cardId].type !== 'Location'));
+
+                // Effective slot count (exerted cards are wider; locations take extra horizontal room)
+                const effectiveCount = independentCards.reduce((sum, c) => sum + (c.exerted ? 1.35 : 1), 0) + (locations.length * 1.35);
+                if (effectiveCount <= 0) return { scale: 1.0, gap: 12, wrap: false };
+
+                const baseCardScale = this.getCardScale();
+                const baseW = 80 * baseCardScale;
+
+                const isMobile = window.matchMedia && window.matchMedia('(max-width: 760px)').matches;
+                const fieldStrip = container.closest ? container.closest('.field-strip') : container.parentElement;
+                const parentW = fieldStrip ? fieldStrip.clientWidth : (container.parentElement ? container.parentElement.clientWidth : 0);
+                const availW = Math.max(260, (parentW || container.clientWidth || (window.innerWidth - (isMobile ? 20 : 300))) - 24);
+
+                // Progressive gap tightening: 12px for low counts, scaling down to 3px for high counts
+                const gap = Math.max(3, Math.min(12, Math.round(12 - Math.max(0, effectiveCount - 5) * 0.75)));
+                const neededGaps = Math.max(0, effectiveCount - 1) * gap;
+                const availForCards = Math.max(80, availW - neededGaps);
+
+                // 1-Row Scale calculation:
+                const scale1Row = availForCards / (effectiveCount * baseW);
+
+                // If 1 row fits at >= 0.44 scale, strictly keep everything in 1 single row (no wrap!)
+                if (scale1Row >= 0.44) {
+                    return {
+                        scale: Math.max(0.44, Math.min(1.0, Number(scale1Row.toFixed(2)))),
+                        gap: gap,
+                        wrap: false
+                    };
+                }
+
+                // Extreme card counts (>22 cards): 2-row fallback with scaled items
+                const itemsPerRow = Math.ceil(effectiveCount / 2);
+                const gaps2Row = Math.max(0, itemsPerRow - 1) * gap;
+                const scale2Row = (availW - gaps2Row) / (itemsPerRow * baseW);
+                return {
+                    scale: Math.max(0.40, Math.min(1.0, Number(scale2Row.toFixed(2)))),
+                    gap: gap,
+                    wrap: true
+                };
+            },
+
+            // Calculates dynamic negative margin overlap for hands with 7+ cards
+            calcHandOverlap(handCount) {
+                if (handCount <= 6) return '-32px';
+                const extra = (handCount - 6) * 3.5;
+                const overlap = Math.min(62, 32 + extra);
+                return `-${overlap}px`;
+            },
+
             buildField(player, container, isOpponent = false) {
                 container.innerHTML = '';
+
+                // Apply dynamic field scale custom properties
+                const fit = this.calcFieldScale(player, container);
+                const scale = fit.scale;
+                const gap = fit.gap;
+                container.style.setProperty('--field-scale', String(scale));
+                container.style.setProperty('--card-w', `calc(80px * var(--card-scale) * ${scale})`);
+                container.style.setProperty('--card-h', `calc(112px * var(--card-scale) * ${scale})`);
+                container.style.setProperty('--field-gap', `${gap}px`);
+                container.style.gap = `${gap}px`;
+                container.style.flexWrap = fit.wrap ? 'wrap' : 'nowrap';
+                container.style.padding = `calc(4px * ${scale}) calc(8px * ${scale})`;
+
                 const locations = player.field.filter(c => this.cardDB[c.cardId].type === 'Location');
                 const charactersAtLocations = player.field.filter(c => c.locationId);
                 const independentCards = player.field.filter(c => !c.locationId && this.cardDB[c.cardId].type !== 'Location');
@@ -9559,7 +9656,8 @@
 
                     if (charsHere.length > 0) {
                         const charContainer = document.createElement('div');
-                        charContainer.className = 'flex flex-wrap justify-center gap-2 z-10 relative mb-[-40px] pointer-events-none';
+                        charContainer.className = 'flex flex-wrap justify-center gap-2 z-10 relative pointer-events-none';
+                        charContainer.style.marginBottom = `calc(-40px * ${scale})`;
                         charsHere.forEach(c => {
                             const el = this.createCardElement(c);
                             el.style.pointerEvents = 'auto'; // Re-enable hover and drag for the characters
@@ -9873,6 +9971,7 @@
                     th.classList.remove('translate-y-[120px]', 'scale-[1.1]', 'z-50');
                     th.classList.add('scale-[0.85]');
                 }
+                th.style.setProperty('--hand-overlap', this.calcHandOverlap(ip.hand.length));
                 ip.hand.forEach(c => th.appendChild(this.createCardElement(c, !this.state.opponentHandRevealed)));
 
                 // Top Field (opponent — Feature 19: isOpponent=true for challenge targeting)
@@ -9924,6 +10023,7 @@
                 // Bottom Hand (Visible)
                 const bh = document.getElementById('bottom-hand');
                 bh.innerHTML = '';
+                bh.style.setProperty('--hand-overlap', this.calcHandOverlap(ap.hand.length));
                 ap.hand.forEach(c => bh.appendChild(this.createCardElement(c, false, false, { chips: true, loc: 'hand' })));
 
                 // Bottom Field
@@ -10040,7 +10140,12 @@
                     });
                 }
                 const cs = this.$('tweak-card-size');
-                if (cs) cs.addEventListener('input', (e) => { t.cardSize = parseFloat(e.target.value); this.saveTweaks(t); this.applyTweaks(t); });
+                if (cs) cs.addEventListener('input', (e) => {
+                    t.cardSize = parseFloat(e.target.value);
+                    this.saveTweaks(t);
+                    this.applyTweaks(t);
+                    if (this.state && this.state.players) this.render();
+                });
                 const lay = this.$('tweak-layout');
                 if (lay) lay.querySelectorAll('button').forEach(b => b.addEventListener('click', () => { t.layout = b.dataset.val; this.saveTweaks(t); this.applyTweaks(t); }));
                 const pal = this.$('tweak-palette');

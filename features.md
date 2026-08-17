@@ -371,6 +371,22 @@ As a player on mobile with a flaky or absent connection, I want every card to st
 - Face-down cards (opponent hand, un-flipped inkwell) are unaffected — no hidden information is leaked.
 - Stays self-contained in the single HTML file.
 
+## Feature 28: Dynamic Play-Area Card Auto-Scaling / Responsive Fit
+
+### User Story
+As a player, when I put more and more cards into the play area (across any base card-size setting), I want the cards to dynamically auto-scale and fit into the available area so that the full board remains visible on a single row without having to scroll down.
+
+### Details
+- Cards on the field (`#top-field` and `#bottom-field`) aggressively prioritize staying in **1 single row** with `flex-wrap: nowrap` for up to ~18–22 cards on desktop.
+- Dynamically tightens the gap between cards ($12\text{px}$ down to $3\text{px}$) as card density grows, maximizing space for card art.
+- Computes an optimal `--field-scale` multiplier ($0.44 \le \text{scale} \le 1.0$) based on active card density (characters, items, locations, exerted states) and container width.
+- Scoped custom properties (`--card-w`, `--card-h`, `--field-gap`, padding) cleanly downscale independent cards, shifted stacks, location cards, and characters stacked at locations in sync.
+- Works seamlessly across all user-selected base size settings in the Tweaks panel (`0.7×` to `1.4×`), scaling down proportionally from the user's chosen base size when density demands it.
+- Dynamically compresses hand overlap (`--hand-overlap`) when a player holds 7+ cards, preventing horizontal hand overflow.
+- Window and viewport resize events automatically recalculate and apply optimal card scaling in real time.
+- Preserves a legible scale floor ($0.44\times$) so card artwork, damage counters, drying badges, and hover action chips remain crisp and clickable.
+- Stays self-contained in the single HTML file.
+
 # Progress
 
 - [x] Feature 1: Manual Lore Scoring
@@ -402,3 +418,5 @@ As a player on mobile with a flaky or absent connection, I want every card to st
 - [x] Feature 25: Mulligan draw odds
 - [x] Feature 26: Design-system hardening (v2 file — dialogs, delete undo, keyboard access, multiverse token redesign)
 - [x] Feature 27: Offline card-name fallback
+- [x] Feature 28: Dynamic Play-Area Card Auto-Scaling / Responsive Fit
+
