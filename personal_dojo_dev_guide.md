@@ -663,5 +663,69 @@ Stored as **text** — a 9 MB string clones through IndexedDB much faster than t
 Effects: offline reload boots a playable session instead of "Error loading database", and warm
 starts skip the download. `idbGet`/`idbSet` swallow their own errors (private mode, quota).
 
+---
+
+## **15\. Feature 30: Offline Text Card in the Preview Pane (v2.12.0)**
+
+The last rung of the preview chain (§14.4: full-res → warmed thumbnail → …) used to be just
+name + version + stats. It now rebuilds the whole card from `cardDB`.
+
+### 15.1 The data is already complete — don't parse `fullText`
+
+Verified against the live DB (3226 cards):
+
+- `abilities[]` is structured: `type` is `keyword` / `triggered` / `activated` / `static`, plus
+  `name`, `effect`, `reminderText`, `costsText`, `keyword`, `keywordValue`.
+- `effects[]` (424 cards) holds Action/Song body text, which is **never** duplicated in `abilities`
+  (checked: 0 overlaps).
+- Together `abilities` + `effects` cover every entry in `fullTextSections` bar 3 cards, where a
+  section merges two keywords onto one printed line (`"Bodyguard, Support"`) that are *also* present
+  individually in `abilities`. So there is **no reason to regex `fullText`** — `buildCardTextView`
+  keeps a `fullTextSections` branch only as a safety net if both structured fields come back empty.
+- Flavour text, artist and set are separate fields, so excluding them is free.
+- Text volume: median 124 chars, p90 238, **max 410** (Fairy Godmother – Magical Benefactor). That's
+  ~10 lines at 11px in a 288px sidebar, which is what sets the pane's height budget.
+
+### 15.2 Symbols must be SVG, not characters
+
+Glyph census over all ability text: `⬡` ink (811), `¤` strength (651), `⟳` exert (419), `◊` lore
+(188), `⛉` willpower (40). `⬡`, `⟳` and `⛉` are absent from plenty of system fonts → tofu.
+`LORCANA_SYMBOLS` maps all five to inline SVG (`currentColor`, `1em` box); `appendSymbolized(host,
+text)` splits on `/([⬡⟳¤⛉◊])/` and appends text nodes or `.lsym` spans. **Any new card text goes
+through `appendSymbolized`, never `textContent`.** `normalizeCardText` collapses the printed line
+breaks — they're wrapping artefacts, not paragraph breaks.
+
+### 15.3 `buildCardTextView(dbCard)`
+
+Returns a `.ctv` node: `.ctv-head` (cost badge — gold circle when `inkwell`, clipped dark hexagon
+when not — plus name/version, with the ink color as a `border-image` edge strip from
+`inkColorMap`, gradient for dual-ink), `.ctv-type`, `.ctv-body` (one `.ctv-ab` per ability, then
+per `effects` entry), `.ctv-foot` (strength / willpower / lore, plus `.ctv-move` for Locations).
+Null-safe. Dry-run over all 3226 cards: zero throws, every card produces a name.
+
+### 15.4 Layout — the pane grows
+
+The artwork is `position:absolute; inset:0`, so it can't size the pane; the text card is **in flow**
+(`#preview-fallback` went from `position:absolute` to `position:relative`). `showPreview` toggles
+`.preview-pane.is-text`, which swaps the fixed `height:192px` for
+`min-height:192px; max-height:34vh; overflow-y:auto`. **Art mode is unchanged.** The floating
+`#preview-ink-container` badge is hidden in text mode (the card draws its own) — `showTextCard`
+looks that element up by id rather than closing over the `const badge` declared further down
+`showPreview`, which would be in the TDZ on the synchronous text-mode path.
+
+### 15.5 The Art/Text toggle
+
+Tweaks → **Card preview**, stored as `previewMode` in `lorcana_dojo_tweaks`. `applyTweaks` caches it
+on `this.previewMode` (so `showPreview` doesn't hit localStorage on every hover) and re-runs
+`showPreview(this._lastPreviewCard)` so the switch is visible immediately. This exists as much for
+**testability** as preference: without it, every change to the text card has to be checked by
+simulating an offline connection.
+
+### 15.6 Known gap
+
+The preview pane lives in the sidebar, which is a mostly-closed drawer on phones — i.e. the text
+card helps least exactly where offline hurts most. A mobile route to it (long-press → sheet) is a
+separate job.
+
 
 

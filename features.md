@@ -401,6 +401,22 @@ As a player on a flaky or absent connection, I want a card whose artwork can't l
 - **The card database is cached in IndexedDB**, so a reload with no connection still boots into a playable session instead of "Error loading database" — and a warm start skips the ~9 MB download. Refreshed in the background for the next launch.
 - Stays self-contained in the single HTML file.
 
+## Feature 30: Offline text card in the preview pane
+
+### User Story
+As a player whose card artwork can't load — or who just prefers reading text — I want the preview pane to recreate the card from the data: full name, version, type, every ability in full, and the complete stat line.
+
+### Details
+- When the full-res art and the thumbnail both fail, the preview pane rebuilds the card as text instead of showing just a name: cost badge (gold circle if inkable, dark hexagon if not), name + version, type/subtype line, **every ability in full**, and a strength / willpower / lore footer (plus move cost for Locations).
+- Abilities are rendered from the structured data, not scraped from the printed text: keyword abilities show as `Singer 5` with their reminder text dimmed and italic, named abilities show the ability name in the accent color followed by its effect, and activated abilities show their cost before the em-dash. Song/Action body text is included.
+- Set, artist, flavour text, rarity and card number are deliberately left out — they don't affect a decision.
+- Lorcana's symbols (ink, exert, strength, willpower, lore) are drawn as inline SVG rather than printed as characters: three of the five are missing from common system fonts and would otherwise show as empty boxes.
+- The card's ink color runs down the left edge of the header; dual-ink cards show both.
+- **Tweaks → Card preview: Art / Text.** Art (default) shows the artwork and only falls back to text when it can't be fetched; Text always shows the text card. Persisted with the other tweaks; switching redraws the currently previewed card immediately.
+- The pane grows to fit a wordy card (up to 34vh) and scrolls beyond that; in Art mode its height is unchanged.
+- Needs no network at all — the card data is already in memory, and cached in IndexedDB since v2.11.0.
+- Stays self-contained in the single HTML file.
+
 # Progress
 
 - [x] Feature 1: Manual Lore Scoring
@@ -434,4 +450,5 @@ As a player on a flaky or absent connection, I want a card whose artwork can't l
 - [x] Feature 27: Offline card-name fallback
 - [x] Feature 28: Dynamic Play-Area Card Auto-Scaling / Responsive Fit
 - [x] Feature 29: Offline hardening — card stats on the fallback + images that stay loaded
+- [x] Feature 30: Offline text card in the preview pane
 

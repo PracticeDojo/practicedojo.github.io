@@ -1290,51 +1290,181 @@
             transition: opacity .15s ease;
         }
 
-        /* Shown only when the preview artwork fails to load (offline). */
+        /* OFFLINE TEXT CARD
+           Shown when the preview artwork can't be fetched, and whenever the user
+           picks Text mode in Tweaks. The card is recreated from cardDB — cost,
+           name, version, type line, every ability, stat line — so it needs no
+           network at all. Unlike the artwork this sits *in flow*, so the pane can
+           grow to fit a wordy card. */
+        .preview-pane.is-text {
+            height: auto;
+            min-height: 192px;
+            max-height: 34vh;
+            overflow-y: auto;
+            align-items: stretch;
+            justify-content: flex-start;
+        }
+
         .preview-fallback {
-            position: absolute;
-            inset: 0;
+            position: relative;
+            width: 100%;
+            align-self: stretch;
+            padding: 10px 12px 12px;
+            text-align: left;
+            color: var(--text);
+            font-size: 11px;
+            line-height: 1.35;
+        }
+
+        .ctv {
             display: flex;
             flex-direction: column;
+            gap: 7px;
+        }
+
+        .ctv-head {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            padding-left: 7px;
+            /* Ink identity as an edge strip; dual-ink cards get a gradient. */
+            border-left: 3px solid transparent;
+            border-image: var(--ctv-ink, linear-gradient(var(--border), var(--border))) 1;
+        }
+
+        .ctv-cost {
+            flex: 0 0 auto;
+            width: 22px;
+            height: 22px;
+            display: flex;
             align-items: center;
             justify-content: center;
-            gap: 4px;
-            padding: 14px;
-            text-align: center;
-            color: var(--text);
-            font-size: 15px;
-            font-weight: 700;
-            line-height: 1.25;
-        }
-
-        .preview-fallback .cf-version {
             font-size: 12px;
-            font-weight: 500;
-            opacity: 0.7;
+            font-weight: 800;
         }
 
-        .preview-fallback .cf-stats {
-            display: flex;
-            gap: 14px;
-            margin-top: 6px;
-            font-size: 14px;
+        .ctv-cost.is-inkable {
+            border-radius: 50%;
+            background: #D4AF37;
+            color: #111;
+            box-shadow: inset 0 0 0 1.5px #fff;
+        }
+
+        .ctv-cost.is-uninkable {
+            background: #33343a;
+            color: #fff;
+            /* clip-path can't take a border, so the hexagon carries its own contrast */
+            clip-path: polygon(50% 2%, 98% 26%, 98% 74%, 50% 98%, 2% 74%, 2% 26%);
+        }
+
+        .ctv-names {
+            flex: 1 1 auto;
+            min-width: 0;
+        }
+
+        .ctv-name {
+            display: block;
+            font-size: 13px;
+            font-weight: 800;
+            line-height: 1.15;
+        }
+
+        .ctv-version {
+            display: block;
+            font-size: 10.5px;
+            font-weight: 500;
+            font-style: normal;
+            opacity: 0.72;
+        }
+
+        .ctv-type {
+            font-size: 9.5px;
             font-weight: 700;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: var(--text-dim, #9a9a9a);
             opacity: 0.85;
         }
 
-        .preview-fallback .cf-stats span::after {
-            font-size: 0.7em;
+        .ctv-body {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .ctv-ab {
+            font-size: 11px;
+            line-height: 1.4;
+        }
+
+        .ctv-kw,
+        .ctv-ab-name {
+            font-weight: 800;
+            letter-spacing: 0.02em;
+            color: var(--accent);
+        }
+
+        .ctv-ab-name {
+            margin-right: 3px;
+        }
+
+        .ctv-ab-cost {
+            font-weight: 700;
+            margin-right: 2px;
+        }
+
+        .ctv-reminder {
+            opacity: 0.62;
+            font-style: italic;
+        }
+
+        .ctv-empty {
+            opacity: 0.5;
+            font-style: italic;
+        }
+
+        .ctv-foot {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding-top: 5px;
+            border-top: 1px solid var(--border-soft);
+            font-size: 12px;
+            font-weight: 800;
+        }
+
+        .ctv-stat {
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+        }
+
+        .ctv-move {
+            margin-left: auto;
+            font-size: 9.5px;
             font-weight: 600;
-            opacity: 0.6;
-            margin-left: 2px;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            opacity: 0.7;
         }
 
-        .preview-fallback .cf-str::after {
-            content: 'S';
+        /* Lorcana glyphs (ink, exert, strength, willpower, lore) drawn as inline
+           SVG instead of printed as characters: U+2B21, U+27F3 and U+26C9 are
+           missing from plenty of system fonts and would render as tofu. */
+        .lsym {
+            display: inline-flex;
+            width: 1em;
+            height: 1em;
+            vertical-align: -0.12em;
         }
 
-        .preview-fallback .cf-wp::after {
-            content: 'W';
+        .lsym svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        .ctv-stat .lsym {
+            opacity: 0.72;
         }
 
         .preview-metrics {
@@ -4849,6 +4979,15 @@
                 </div>
             </div>
             <div class="tweak">
+                <div class="tweak-label"><span>Card preview</span></div>
+                <div class="tweak-radio" id="tweak-preview-mode">
+                    <button data-val="art" class="is-active"
+                        title="Show the card artwork, falling back to text if it can't be fetched">Art</button>
+                    <button data-val="text"
+                        title="Always rebuild the card as text: name, stats and full ability text">Text</button>
+                </div>
+            </div>
+            <div class="tweak">
                 <div class="tweak-label"><span>Player palette</span></div>
                 <div class="tweak-radio" id="tweak-palette">
                     <button data-val="modern" class="is-active">Modern</button>
@@ -4869,7 +5008,7 @@
         let cardFuse = null;
         let allSessions = [];
 
-        const APP_VERSION = "v2.11.0"; // Centralized version string (redesign)
+        const APP_VERSION = "v2.12.0"; // Centralized version string (redesign)
 
         // Tweaks panel accent presets (hue values for the OKLCH accent ramp)
         const ACCENT_PRESETS = {
@@ -9067,54 +9206,243 @@
                 return wrap;
             },
 
+            // --- Offline text card -------------------------------------------
+            // Lorcana prints its symbols as characters that a lot of system fonts
+            // don't carry (⬡ ink, ⟳ exert, ⛉ willpower all tofu somewhere), so
+            // every one is swapped for an inline SVG that inherits currentColor.
+            LORCANA_SYMBOLS: {
+                '⬡': { // ink
+                    label: 'ink',
+                    svg: '<svg viewBox="0 0 24 24" aria-hidden="true"><polygon points="12,2.5 20.5,7.2 20.5,16.8 12,21.5 3.5,16.8 3.5,7.2" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/></svg>'
+                },
+                '⟳': { // exert
+                    label: 'exert',
+                    svg: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.2 12a8.2 8.2 0 1 1-2.7-6.1" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"/><path d="M20.4 3.2v5.2h-5.2" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+                },
+                '¤': { // strength
+                    label: 'strength',
+                    svg: '<svg viewBox="0 0 24 24" aria-hidden="true"><polygon points="12,1.5 14.6,9.4 22.5,12 14.6,14.6 12,22.5 9.4,14.6 1.5,12 9.4,9.4" fill="currentColor"/></svg>'
+                },
+                '⛉': { // willpower
+                    label: 'willpower',
+                    svg: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 1.8l8.4 3.1v6.9c0 5.2-3.5 8.9-8.4 10.4-4.9-1.5-8.4-5.2-8.4-10.4V4.9z" fill="currentColor"/></svg>'
+                },
+                '◊': { // lore
+                    label: 'lore',
+                    svg: '<svg viewBox="0 0 24 24" aria-hidden="true"><polygon points="12,1.8 19.4,12 12,22.2 4.6,12" fill="currentColor"/></svg>'
+                }
+            },
+
+            makeSymbol(ch) {
+                const def = this.LORCANA_SYMBOLS[ch];
+                if (!def) return null;
+                const span = document.createElement('span');
+                span.className = 'lsym';
+                span.innerHTML = def.svg; // constant markup from the table above
+                span.setAttribute('role', 'img');
+                span.setAttribute('aria-label', def.label);
+                return span;
+            },
+
+            // Card text carries the printed line breaks; they're wrapping artefacts,
+            // not paragraph breaks, so they collapse to single spaces.
+            normalizeCardText(text) {
+                return String(text == null ? '' : text).replace(/\s+/g, ' ').trim();
+            },
+
+            // Appends `text` to `host`, replacing Lorcana glyphs with their icons.
+            appendSymbolized(host, text) {
+                this.normalizeCardText(text)
+                    .split(/([⬡⟳¤⛉◊])/)
+                    .forEach(part => {
+                        if (!part) return;
+                        const sym = this.makeSymbol(part);
+                        host.appendChild(sym || document.createTextNode(part));
+                    });
+                return host;
+            },
+
+            // Rebuilds a card from cardDB as readable text: cost, name, version,
+            // type line, every ability, stat line. Set/artist/flavour are dropped —
+            // they're not decision-relevant.
+            buildCardTextView(dbCard) {
+                const view = this.el('div', 'ctv');
+                if (!dbCard) {
+                    view.appendChild(this.el('div', 'ctv-empty', 'Unknown card'));
+                    return view;
+                }
+
+                // Ink identity strip; dual-ink cards get both colors.
+                const inks = (dbCard.colors && dbCard.colors.length ? dbCard.colors : [dbCard.color])
+                    .filter(Boolean)
+                    .map(c => this.inkColorMap[String(c).toLowerCase()])
+                    .filter(Boolean);
+                if (inks.length) {
+                    view.style.setProperty('--ctv-ink', inks.length > 1
+                        ? `linear-gradient(${inks[0]}, ${inks[1]})`
+                        : `linear-gradient(${inks[0]}, ${inks[0]})`);
+                }
+
+                // --- Header: cost badge + name/version
+                const head = this.el('div', 'ctv-head');
+                if (dbCard.cost !== undefined && dbCard.cost !== null) {
+                    const cost = this.el('span', 'ctv-cost ' + (dbCard.inkwell ? 'is-inkable' : 'is-uninkable'));
+                    cost.textContent = dbCard.cost;
+                    cost.title = dbCard.inkwell ? 'Cost (inkable)' : 'Cost (not inkable)';
+                    head.appendChild(cost);
+                }
+                const names = this.el('span', 'ctv-names');
+                const nameEl = this.el('span', 'ctv-name');
+                nameEl.textContent = dbCard.name || dbCard.fullName || 'Unknown card';
+                names.appendChild(nameEl);
+                if (dbCard.version) {
+                    const versionEl = this.el('span', 'ctv-version');
+                    versionEl.textContent = dbCard.version;
+                    names.appendChild(versionEl);
+                }
+                head.appendChild(names);
+                view.appendChild(head);
+
+                // --- Type line
+                const typeBits = [dbCard.type, dbCard.subtypesText].filter(Boolean);
+                if (typeBits.length) {
+                    const type = this.el('div', 'ctv-type');
+                    this.appendSymbolized(type, typeBits.join(' · '));
+                    view.appendChild(type);
+                }
+
+                // --- Abilities. `abilities` + `effects` together cover every
+                // printed text section, so there's no need to parse fullText.
+                const body = this.el('div', 'ctv-body');
+
+                (dbCard.abilities || []).forEach(a => {
+                    const row = this.el('div', 'ctv-ab');
+                    if (a.type === 'keyword') {
+                        const kw = this.el('span', 'ctv-kw');
+                        kw.textContent = a.keyword + (a.keywordValue ? ' ' + a.keywordValue : '');
+                        row.appendChild(kw);
+                        if (a.reminderText) {
+                            row.appendChild(document.createTextNode(' '));
+                            const rem = this.el('span', 'ctv-reminder');
+                            this.appendSymbolized(rem, `(${a.reminderText})`);
+                            row.appendChild(rem);
+                        }
+                    } else {
+                        if (a.name) {
+                            const nm = this.el('span', 'ctv-ab-name');
+                            nm.textContent = a.name;
+                            row.appendChild(nm);
+                            row.appendChild(document.createTextNode(' '));
+                        }
+                        if (a.costsText) {
+                            const c = this.el('span', 'ctv-ab-cost');
+                            this.appendSymbolized(c, `${a.costsText} —`);
+                            row.appendChild(c);
+                            row.appendChild(document.createTextNode(' '));
+                        }
+                        this.appendSymbolized(row, a.effect || a.fullText || '');
+                    }
+                    body.appendChild(row);
+                });
+
+                // Action / Song body text lives outside `abilities`.
+                (dbCard.effects || []).forEach(e => {
+                    this.appendSymbolized(body.appendChild(this.el('div', 'ctv-ab')), e);
+                });
+
+                // Safety net for anything the structured fields missed.
+                if (!body.children.length && (dbCard.fullTextSections || []).length) {
+                    dbCard.fullTextSections.forEach(s => {
+                        this.appendSymbolized(body.appendChild(this.el('div', 'ctv-ab')), s);
+                    });
+                }
+                if (body.children.length) view.appendChild(body);
+
+                // --- Stat line
+                const foot = this.el('div', 'ctv-foot');
+                const stat = (value, symbol, label) => {
+                    const s = this.el('span', 'ctv-stat');
+                    s.title = label;
+                    s.setAttribute('aria-label', `${value} ${label.toLowerCase()}`);
+                    s.appendChild(document.createTextNode(value));
+                    const sym = this.makeSymbol(symbol);
+                    if (sym) s.appendChild(sym);
+                    foot.appendChild(s);
+                };
+                if (dbCard.strength !== undefined && dbCard.strength !== null) stat(dbCard.strength, '¤', 'Strength');
+                if (dbCard.willpower !== undefined && dbCard.willpower !== null) stat(dbCard.willpower, '⛉', 'Willpower');
+                if (dbCard.lore !== undefined && dbCard.lore !== null) stat(dbCard.lore, '◊', 'Lore');
+                if (dbCard.moveCost !== undefined && dbCard.moveCost !== null) {
+                    const move = this.el('span', 'ctv-move');
+                    this.appendSymbolized(move, `Move ${dbCard.moveCost} ⬡`);
+                    foot.appendChild(move);
+                }
+                if (foot.children.length) view.appendChild(foot);
+
+                return view;
+            },
+
             showPreview(dbCard) {
+                this._lastPreviewCard = dbCard;
                 document.getElementById('sidebar-preview-placeholder').classList.add('hidden');
                 const preview = document.getElementById('sidebar-preview');
-                const imgUrl = (dbCard.images && dbCard.images.full) ? dbCard.images.full : this.getCardImage(dbCard);
-                preview.style.backgroundImage = `url('${imgUrl}')`;
-                preview.classList.remove('opacity-0');
-                preview.classList.add('opacity-100');
-
-                // The preview is a background-image, so it can't report a load error.
-                // Probe the same URL: if the full-res art can't be fetched (offline)
-                // drop to the thumbnail — that one is warmed for every card in both
-                // decks, so it's usually still there — and only then to the name.
+                const pane = preview.closest('.preview-pane');
                 const fallback = document.getElementById('preview-fallback');
-                if (fallback) {
+                const imgUrl = (dbCard.images && dbCard.images.full) ? dbCard.images.full : this.getCardImage(dbCard);
+
+                // The text card replaces the artwork wholesale: it brings its own
+                // cost badge, so the floating one is hidden with the image.
+                const showTextCard = () => {
+                    this._previewProbe = null;
+                    fallback.innerHTML = '';
+                    fallback.appendChild(this.buildCardTextView(dbCard));
+                    fallback.classList.remove('hidden');
+                    preview.classList.remove('opacity-100');
+                    preview.classList.add('opacity-0');
+                    if (pane) pane.classList.add('is-text');
+                    // Looked up here rather than closing over the const below: this
+                    // runs synchronously in text mode, before that line executes.
+                    const inkBadge = document.getElementById('preview-ink-container');
+                    if (inkBadge) {
+                        inkBadge.classList.remove('opacity-100');
+                        inkBadge.classList.add('opacity-0');
+                    }
+                };
+
+                const showArt = (url) => {
+                    preview.style.backgroundImage = `url('${url}')`;
+                    preview.classList.remove('opacity-0');
+                    preview.classList.add('opacity-100');
                     fallback.classList.add('hidden');
+                    if (pane) pane.classList.remove('is-text');
+                };
+
+                if (this.previewMode === 'text') {
+                    showTextCard();
+                } else {
+                    showArt(imgUrl);
+
+                    // The preview is a background-image, so it can't report a load
+                    // error. Probe the same URL: if the full-res art can't be fetched
+                    // (offline) drop to the thumbnail — that one is warmed for every
+                    // card in both decks, so it's usually still there — and only then
+                    // to the text card.
                     const thumbUrl = this.getCardImage(dbCard);
-
-                    const showTextFallback = () => {
-                        fallback.innerHTML = '';
-                        const name = document.createElement('span');
-                        name.textContent = dbCard.name || dbCard.fullName || 'Unknown card';
-                        fallback.appendChild(name);
-                        if (dbCard.version) {
-                            const version = document.createElement('span');
-                            version.className = 'cf-version';
-                            version.textContent = dbCard.version;
-                            fallback.appendChild(version);
-                        }
-                        const stats = this.makeCardStats(dbCard, 'cf-stats');
-                        if (stats) fallback.appendChild(stats);
-                        fallback.classList.remove('hidden');
-                    };
-
                     const probe = new Image();
                     this._previewProbe = probe;
                     probe.onerror = () => {
                         if (this._previewProbe !== probe) return; // a newer card is hovered
-                        if (thumbUrl === imgUrl) return showTextFallback();
+                        if (thumbUrl === imgUrl) return showTextCard();
 
                         const thumbProbe = new Image();
                         this._previewProbe = thumbProbe;
                         thumbProbe.onload = () => {
                             if (this._previewProbe !== thumbProbe) return;
-                            preview.style.backgroundImage = `url('${thumbUrl}')`;
+                            showArt(thumbUrl);
                         };
                         thumbProbe.onerror = () => {
                             if (this._previewProbe !== thumbProbe) return;
-                            showTextFallback();
+                            showTextCard();
                         };
                         thumbProbe.src = thumbUrl;
                     };
@@ -9126,7 +9454,9 @@
                 const hex = document.getElementById('preview-ink-hex');
                 const circle = document.getElementById('preview-ink-circle');
 
-                if (dbCard.cost !== undefined && dbCard.cost !== null) {
+                // The text card draws its own cost badge, so the floating one is
+                // only for image mode.
+                if (this.previewMode !== 'text' && dbCard.cost !== undefined && dbCard.cost !== null) {
                     badge.classList.remove('opacity-0');
                     badge.classList.add('opacity-100');
                     cost.innerText = dbCard.cost;
@@ -10430,6 +10760,13 @@
                 }
                 const pal = this.$('tweak-palette');
                 if (pal) pal.querySelectorAll('button').forEach(b => b.classList.toggle('is-active', b.dataset.val === (t.palette || 'modern')));
+
+                // Cached so showPreview doesn't re-read localStorage on every hover.
+                this.previewMode = t.previewMode === 'text' ? 'text' : 'art';
+                const pv = this.$('tweak-preview-mode');
+                if (pv) pv.querySelectorAll('button').forEach(b => b.classList.toggle('is-active', b.dataset.val === this.previewMode));
+                // Redraw whatever is on the pane so the switch is visible immediately.
+                if (this._lastPreviewCard) this.showPreview(this._lastPreviewCard);
             },
             bindTweaks() {
                 const t = this.loadTweaks();
@@ -10438,6 +10775,7 @@
                 if (!t.cardSize) t.cardSize = (window.matchMedia && window.matchMedia('(pointer: coarse)').matches) ? 0.8 : 1;
                 if (!t.layout) t.layout = 'docked';
                 if (!t.palette) t.palette = 'modern';
+                if (!t.previewMode) t.previewMode = 'art';
                 const row = this.$('tweak-accent-row');
                 if (row && !row.children.length) {
                     Object.entries(ACCENT_PRESETS).forEach(([key, def]) => {
@@ -10465,6 +10803,8 @@
                 if (lay) lay.querySelectorAll('button').forEach(b => b.addEventListener('click', () => { t.layout = b.dataset.val; this.saveTweaks(t); this.applyTweaks(t); }));
                 const pal = this.$('tweak-palette');
                 if (pal) pal.querySelectorAll('button').forEach(b => b.addEventListener('click', () => { t.palette = b.dataset.val; this.saveTweaks(t); this.applyTweaks(t); }));
+                const pv = this.$('tweak-preview-mode');
+                if (pv) pv.querySelectorAll('button').forEach(b => b.addEventListener('click', () => { t.previewMode = b.dataset.val; this.saveTweaks(t); this.applyTweaks(t); }));
                 const close = this.$('tweaks-close');
                 if (close) close.addEventListener('click', () => this.$('tweaks-panel').classList.remove('is-open'));
                 this.applyTweaks(t);
