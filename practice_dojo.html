@@ -2363,7 +2363,7 @@
             box-shadow: inset 0 0 0 calc(4px * var(--cs)) oklch(0.30 0.06 70 / 0.4),
                 0 calc(4px * var(--cs)) calc(10px * var(--cs)) calc(-2px * var(--cs)) oklch(0 0 0 / 0.55);
 
-            background-image: url('https://wiki.mushureport.com/images/d/d7/Card_Back_official.png');
+            background-image: url('https://upload.wikimedia.org/wikipedia/en/2/25/Lorcana_Card_Back.png');
             background-color: #1a202c;
 
         }
@@ -5093,7 +5093,7 @@
         let cardFuse = null;
         let allSessions = [];
 
-        const APP_VERSION = "v2.12.3"; // Centralized version string (redesign)
+        const APP_VERSION = "v2.12.4"; // Centralized version string (redesign)
 
         // Tweaks panel accent presets (hue values for the OKLCH accent ramp)
         const ACCENT_PRESETS = {
@@ -8968,10 +8968,10 @@
             // --- UI Rendering ---
 
             getCardImage(dbCard) {
-                if (!dbCard) return 'https://deckbuilder.lorcanajson.org/images/card-back.png';
+                if (!dbCard) return 'https://upload.wikimedia.org/wikipedia/en/2/25/Lorcana_Card_Back.png';
                 if (dbCard.images && dbCard.images.thumbnail) return dbCard.images.thumbnail;
                 if (dbCard.images && dbCard.images.full) return dbCard.images.full;
-                return 'https://deckbuilder.lorcanajson.org/images/card-back.png';
+                return 'https://upload.wikimedia.org/wikipedia/en/2/25/Lorcana_Card_Back.png';
             },
 
             // Build a card-face <img>. Shared across board cards and grids so the
@@ -9035,7 +9035,7 @@
             // Every card image this session can need: both decks, every zone,
             // including cards stacked under others, plus the shared card back.
             collectSessionImageUrls() {
-                const urls = new Set(['https://deckbuilder.lorcanajson.org/images/card-back.png']);
+                const urls = new Set(['https://upload.wikimedia.org/wikipedia/en/2/25/Lorcana_Card_Back.png']);
                 const add = (c) => {
                     if (!c) return;
                     const db = this.cardDB[c.cardId];
