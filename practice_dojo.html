@@ -2123,13 +2123,22 @@
 
         /* CARDS */
         .card {
+            /* Feature 28 auto-scaling shrinks a card via --field-scale, but anything
+               drawn *on* the card (shadow, counters, badges) is in fixed px and would
+               keep its full size — a 0.44-scaled card ended up wearing a full 10px
+               shadow. --cs is the card's total scale; --badge-scale is the same with
+               a floor, so counters stay legible instead of shrinking to nothing.
+               --field-scale only exists inside .field, hence the fallback. */
+            --cs: calc(var(--card-scale, 1) * var(--field-scale, 1));
+            --badge-scale: clamp(0.6, var(--cs), 1);
             width: var(--card-w);
             height: var(--card-h);
             border-radius: 7px;
             background: var(--surface-2);
             background-size: cover;
             background-position: center;
-            box-shadow: 0 4px 10px -2px oklch(0 0 0 / 0.55), 0 1px 0 oklch(1 0 0 / 0.04) inset;
+            box-shadow: 0 calc(4px * var(--cs)) calc(10px * var(--cs)) calc(-2px * var(--cs)) oklch(0 0 0 / 0.55),
+                0 1px 0 oklch(1 0 0 / 0.04) inset;
             cursor: grab;
             position: relative;
             flex-shrink: 0;
@@ -2257,6 +2266,76 @@
             filter: brightness(0.85);
         }
 
+        /* EXERTED CARD GEOMETRY
+           .card-wrap.exerted is card-h × card-w (landscape), but the .card inside is
+           still card-w × card-h and rotates about its own centre — which sits at
+           (card-w/2, card-h/2), not the wrap's centre. The card therefore hung out
+           of its own slot (~9% of card-h below it), and with Feature 28's nowrap
+           tight-gap rows that overlapped its neighbours. Pinning it to the wrap's
+           centre and translating back by half its own box lands it exactly. */
+        .card-wrap.exerted .card {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(90deg) scale(0.85);
+            /* rotate(90deg) maps local +x to screen +y, so the offset has to move to
+               the x slot or the shadow falls sideways instead of down. */
+            box-shadow: calc(4px * var(--cs)) 0 calc(10px * var(--cs)) calc(-2px * var(--cs)) oklch(0 0 0 / 0.55),
+                0 1px 0 oklch(1 0 0 / 0.04) inset;
+        }
+
+        /* A legacy `.card.exerted:hover` rule outranked the redesign one and grew the
+           card from 0.85 to 0.95 on hover — a visible jump, and at small field scales
+           enough to shove neighbouring cards. Exerted cards now hold still. */
+        .card-wrap.exerted .card:hover {
+            transform: translate(-50%, -50%) rotate(90deg) scale(0.85);
+        }
+
+        /* LOCATIONS ARE LANDSCAPE CARDS
+           Lorcana prints Locations in landscape, so on the field they always render
+           rotated — regardless of exert state. (The engine marks a Location exerted
+           when it's played, but that was only ever a way to get this rotation; a
+           Location never actually exerts.) Scale is 1 here, not the 0.85 used for
+           exerted characters: rotated at full size a card fills a card-h × card-w
+           wrap exactly, which is the slot calcFieldScale already reserves for it. */
+        .card-wrap.is-location {
+            width: var(--card-h);
+            height: var(--card-w);
+        }
+
+        .card-wrap.is-location .card,
+        .card-wrap.is-location .card:hover {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(90deg);
+            box-shadow: calc(4px * var(--cs)) 0 calc(10px * var(--cs)) calc(-2px * var(--cs)) oklch(0 0 0 / 0.55),
+                0 1px 0 oklch(1 0 0 / 0.04) inset;
+        }
+
+        /* Characters standing at a Location render a little smaller to read as being
+           "inside" it. Done with real dimensions rather than a transform scale so
+           --cs shrinks in step and the shadow, counters and badges follow. The old
+           approach put a Tailwind `scale-90` plus a fixed `shadow-[...]` on the
+           *wrap* — so the shadow was drawn for the wrap's box, which on a rotated
+           card sits on a different side than the card itself. */
+        .card-wrap.at-location {
+            --loc-shrink: 0.88;
+            width: calc(var(--card-w) * var(--loc-shrink));
+            height: calc(var(--card-h) * var(--loc-shrink));
+        }
+
+        .card-wrap.at-location.exerted {
+            width: calc(var(--card-h) * var(--loc-shrink));
+            height: calc(var(--card-w) * var(--loc-shrink));
+        }
+
+        .card-wrap.at-location .card {
+            --cs: calc(var(--card-scale, 1) * var(--field-scale, 1) * var(--loc-shrink));
+            width: calc(var(--card-w) * var(--loc-shrink));
+            height: calc(var(--card-h) * var(--loc-shrink));
+        }
+
         .card.drying {
             filter: grayscale(70%) brightness(0.78);
         }
@@ -2269,9 +2348,9 @@
             transform: translate(-50%, -50%);
             background: oklch(0 0 0 / 0.7);
             color: var(--text);
-            font-size: 9px;
+            font-size: calc(9px * var(--badge-scale));
             font-weight: 600;
-            padding: 3px 7px;
+            padding: calc(3px * var(--badge-scale)) calc(7px * var(--badge-scale));
             border-radius: 999px;
             letter-spacing: 0.1em;
             border: 1px solid var(--border);
@@ -2281,7 +2360,8 @@
         .card.card-back {
             /* background-image: radial-gradient(ellipse at center, oklch(0.32 0.10 270 / 0.6), transparent 70%), repeating-linear-gradient(135deg, oklch(0.22 0.04 270) 0 6px, oklch(0.18 0.04 270) 6px 12px);
             background-color: oklch(0.18 0.04 270); */
-            box-shadow: inset 0 0 0 4px oklch(0.30 0.06 70 / 0.4), 0 4px 10px -2px oklch(0 0 0 / 0.55);
+            box-shadow: inset 0 0 0 calc(4px * var(--cs)) oklch(0.30 0.06 70 / 0.4),
+                0 calc(4px * var(--cs)) calc(10px * var(--cs)) calc(-2px * var(--cs)) oklch(0 0 0 / 0.55);
 
             background-image: url('https://wiki.mushureport.com/images/d/d7/Card_Back_official.png');
             background-color: #1a202c;
@@ -2301,19 +2381,19 @@
 
         .card .damage-counter {
             position: absolute;
-            top: -8px;
-            right: -8px;
+            top: calc(-8px * var(--badge-scale));
+            right: calc(-8px * var(--badge-scale));
             background: var(--danger);
             color: var(--text);
             border-radius: 999px;
-            width: 22px;
-            height: 22px;
+            width: calc(22px * var(--badge-scale));
+            height: calc(22px * var(--badge-scale));
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: 700;
-            font-size: 11px;
-            border: 1.5px solid var(--bg);
+            font-size: calc(11px * var(--badge-scale));
+            border: calc(1.5px * var(--badge-scale)) solid var(--bg);
             z-index: 3;
         }
 
@@ -3591,9 +3671,14 @@
             margin-right: 0;
         }
 
-        .card-wrap .card:not(.exerted):hover {
+        /* Kills the hover lift so the card can't slide out from under the cursor.
+           It must not reach rotated cards: `transform: none` would undo their
+           rotation on hover. Testing the *wrap* rather than the card lets it skip
+           locations too — they carry `is-location` but no `exerted` class, so the
+           old `.card:not(.exerted)` form matched them and spun them upright. */
+        .card-wrap:not(.exerted):not(.is-location) .card:hover {
             transform: none;
-            box-shadow: 0 8px 18px -4px oklch(0 0 0 / 0.6);
+            box-shadow: 0 calc(8px * var(--cs)) calc(18px * var(--cs)) calc(-4px * var(--cs)) oklch(0 0 0 / 0.6);
         }
 
         .card-actions {
@@ -5008,7 +5093,7 @@
         let cardFuse = null;
         let allSessions = [];
 
-        const APP_VERSION = "v2.12.0"; // Centralized version string (redesign)
+        const APP_VERSION = "v2.12.3"; // Centralized version string (redesign)
 
         // Tweaks panel accent presets (hue values for the OKLCH accent ramp)
         const ACCENT_PRESETS = {
@@ -9102,11 +9187,18 @@
             createCardElement(c, isOpponentHand = false, isInkwell = false, opts = {}) {
                 const dbCard = this.cardDB[c.cardId];
                 // Redesign: a .card-wrap holds the .card so hover-chips + exert sizing work.
+                // A Location on the field is landscape by its own rule, so it never takes
+                // the exerted class — that keeps the two rotations from fighting.
+                const isLocation = !!opts.location;
+                const exerted = !!c.exerted && !isLocation;
                 const wrap = document.createElement('div');
-                wrap.className = 'card-wrap' + (c.exerted ? ' exerted' : '');
+                wrap.className = 'card-wrap'
+                    + (exerted ? ' exerted' : '')
+                    + (isLocation ? ' is-location' : '')
+                    + (opts.atLocation ? ' at-location' : '');
 
                 const el = document.createElement('div');
-                el.className = `card ${c.exerted ? 'exerted' : ''} ${c.drying ? 'drying' : ''}`;
+                el.className = `card ${exerted ? 'exerted' : ''} ${c.drying ? 'drying' : ''}`;
 
                 // Make draggable
                 el.draggable = true;
@@ -9137,7 +9229,9 @@
                 if (c.stackedCards && c.stackedCards.length > 0 && !isOpponentHand && (!isInkwell || c.faceUp)) {
                     const stackBadge = document.createElement('div');
                     stackBadge.className = 'damage-counter';
-                    stackBadge.style.cssText = 'top:auto;bottom:-8px;right:-8px;background:var(--p2);border-color:var(--bg)';
+                    // Offsets track --badge-scale so the badge stays pinned to the
+                    // corner when Feature 28 shrinks the card.
+                    stackBadge.style.cssText = 'top:auto;bottom:calc(-8px * var(--badge-scale));right:calc(-8px * var(--badge-scale));background:var(--p2);border-color:var(--bg)';
                     stackBadge.innerText = c.stackedCards.length;
                     stackBadge.title = `${c.stackedCards.length} cards stacked underneath`;
                     el.appendChild(stackBadge);
@@ -9417,7 +9511,11 @@
                     if (pane) pane.classList.remove('is-text');
                 };
 
-                if (this.previewMode === 'text') {
+                // Locations are landscape cards, and the preview frames art as
+                // `background-size: 100% auto` from the bottom — which crops them
+                // badly. They always get the text card instead.
+                const useTextCard = this.previewMode === 'text' || dbCard.type === 'Location';
+                if (useTextCard) {
                     showTextCard();
                 } else {
                     showArt(imgUrl);
@@ -9456,7 +9554,7 @@
 
                 // The text card draws its own cost badge, so the floating one is
                 // only for image mode.
-                if (this.previewMode !== 'text' && dbCard.cost !== undefined && dbCard.cost !== null) {
+                if (!useTextCard && dbCard.cost !== undefined && dbCard.cost !== null) {
                     badge.classList.remove('opacity-0');
                     badge.classList.add('opacity-100');
                     cost.innerText = dbCard.cost;
@@ -10174,9 +10272,42 @@
                 const locations = player.field.filter(c => this.cardDB[c.cardId] && this.cardDB[c.cardId].type === 'Location');
                 const independentCards = player.field.filter(c => !c.locationId && (!this.cardDB[c.cardId] || this.cardDB[c.cardId].type !== 'Location'));
 
-                // Effective slot count (exerted cards are wider; locations take extra horizontal room)
-                const effectiveCount = independentCards.reduce((sum, c) => sum + (c.exerted ? 1.35 : 1), 0) + (locations.length * 1.35);
+                // Effective slot count, in multiples of one upright card's width.
+                // A rotated card's wrap is --card-h wide, so its slot is exactly
+                // 112/80 = 1.4 — the old 1.35 under-reserved and let dense rows of
+                // exerted characters overflow. Locations always render landscape
+                // (see `.card-wrap.is-location`), so they always take that slot,
+                // whatever their exert state says.
+                const LANDSCAPE_SLOT = 112 / 80;
+                // Keep in step with `--loc-shrink` in `.card-wrap.at-location`.
+                const AT_LOCATION_SHRINK = 0.88;
+
+                // A location group is as wide as its widest row: the location card
+                // itself, or the characters standing at it, whichever is bigger. Two
+                // characters at a location are wider than the location — measuring
+                // only the location let that spill out of the row.
+                const charsAtLocations = player.field.filter(c => c.locationId);
+                const locationGroup = (loc) => {
+                    const chars = charsAtLocations.filter(c => c.locationId === loc.instanceId);
+                    const charSlots = chars.reduce(
+                        (sum, c) => sum + (c.exerted ? LANDSCAPE_SLOT : 1) * AT_LOCATION_SHRINK, 0);
+                    return {
+                        slots: Math.max(LANDSCAPE_SLOT, charSlots),
+                        // `mx-2` + `p-2` on the group, plus the `gap-2` between characters.
+                        chrome: 32 + Math.max(0, chars.length - 1) * 8
+                    };
+                };
+                const locationGroups = locations.map(locationGroup);
+
+                const effectiveCount = independentCards.reduce((sum, c) => sum + (c.exerted ? LANDSCAPE_SLOT : 1), 0)
+                    + locationGroups.reduce((sum, g) => sum + g.slots, 0);
                 if (effectiveCount <= 0) return { scale: 1.0, gap: 12, wrap: false };
+
+                // Fixed per-item chrome that does *not* scale with the cards: each
+                // independent card group carries `m-1` (4px a side). Unaccounted, this
+                // was pure overflow at high card counts.
+                const fixedChrome = independentCards.length * 8
+                    + locationGroups.reduce((sum, g) => sum + g.chrome, 0);
 
                 const baseCardScale = this.getCardScale();
                 const baseW = 80 * baseCardScale;
@@ -10188,27 +10319,35 @@
 
                 // Progressive gap tightening: 12px for low counts, scaling down to 3px for high counts
                 const gap = Math.max(3, Math.min(12, Math.round(12 - Math.max(0, effectiveCount - 5) * 0.75)));
-                const neededGaps = Math.max(0, effectiveCount - 1) * gap;
-                const availForCards = Math.max(80, availW - neededGaps);
+                // Gaps sit between DOM children, so they're counted per item — not per
+                // slot, which over-charged every exerted card for a gap it never had.
+                const itemCount = independentCards.length + locations.length;
+                const neededGaps = Math.max(0, itemCount - 1) * gap;
+                const availForCards = Math.max(80, availW - neededGaps - fixedChrome);
 
                 // 1-Row Scale calculation:
                 const scale1Row = availForCards / (effectiveCount * baseW);
 
+                // Round *down* to 2dp — rounding up is the difference between fitting
+                // and overflowing by a pixel on a full row.
+                const round = (v) => Math.floor(v * 100) / 100;
+
                 // If 1 row fits at >= 0.44 scale, strictly keep everything in 1 single row (no wrap!)
                 if (scale1Row >= 0.44) {
                     return {
-                        scale: Math.max(0.44, Math.min(1.0, Number(scale1Row.toFixed(2)))),
+                        scale: Math.max(0.44, Math.min(1.0, round(scale1Row))),
                         gap: gap,
                         wrap: false
                     };
                 }
 
                 // Extreme card counts (>22 cards): 2-row fallback with scaled items
-                const itemsPerRow = Math.ceil(effectiveCount / 2);
+                const slotsPerRow = effectiveCount / 2;
+                const itemsPerRow = Math.ceil(itemCount / 2);
                 const gaps2Row = Math.max(0, itemsPerRow - 1) * gap;
-                const scale2Row = (availW - gaps2Row) / (itemsPerRow * baseW);
+                const scale2Row = (availW - gaps2Row - fixedChrome / 2) / (slotsPerRow * baseW);
                 return {
-                    scale: Math.max(0.40, Math.min(1.0, Number(scale2Row.toFixed(2)))),
+                    scale: Math.max(0.40, Math.min(1.0, round(scale2Row))),
                     gap: gap,
                     wrap: true
                 };
@@ -10299,15 +10438,16 @@
                         charContainer.className = 'flex flex-wrap justify-center gap-2 z-10 relative pointer-events-none';
                         charContainer.style.marginBottom = `calc(-40px * ${scale})`;
                         charsHere.forEach(c => {
-                            const el = this.createCardElement(c);
+                            // `at-location` shrinks the card through real dimensions, so its
+                            // shadow and badges scale with it — see the CSS note.
+                            const el = this.createCardElement(c, false, false, { atLocation: true });
                             el.style.pointerEvents = 'auto'; // Re-enable hover and drag for the characters
-                            el.classList.add('scale-90', 'hover:scale-95', 'shadow-[0_10px_15px_rgba(0,0,0,0.8)]');
                             charContainer.appendChild(el);
                         });
                         group.appendChild(charContainer);
                     }
 
-                    const locEl = this.createCardElement(loc);
+                    const locEl = this.createCardElement(loc, false, false, { location: true });
                     group.appendChild(locEl);
 
                     container.appendChild(group);

@@ -588,6 +588,82 @@ When a player holds $7+$ cards in hand, `calcHandOverlap` computes a progressive
 - **Tweaks Slider:** Adjusting `tweak-card-size` immediately re-renders the active board so fields re-evaluate their fit relative to the new base scale.
 - **Window Resize:** A `resize` listener on `window` updates field layouts dynamically when the browser window is resized or sidebars toggle.
 
+### **13.6 Exerted-card and width-accounting fixes (v2.12.1)**
+
+Four bugs, all of which surfaced as "exerted cards break the board":
+
+**a) The width budget was wrong, so dense rows overflowed.** Three separate errors compounded:
+- An exerted card's wrap is `--card-h` wide, i.e. exactly `112/80 = 1.4` slots. The estimate used
+  `1.35`, and locations got a flat `1.35` regardless of state (they enter play exerted).
+- Gaps were charged **per slot** (`effectiveCount - 1`), but flex gaps sit between **DOM children**
+  — an exerted card was billed 1.4 gaps. Now `itemCount - 1`.
+- Each independent card group carries Tailwind `m-1` (8px total) and each location group `mx-2` +
+  `p-2` (32px total). This chrome is fixed px, doesn't scale, and was **not counted at all**.
+  Now `fixedChrome = independents*8 + locations*32`, subtracted before the scale solve.
+
+  Measured against a 900px field: 8 exerted characters rendered **971px** (71px over), 2 locations
+  + 10 exerted rendered **1062px** (162px over). After the fix every case lands inside 900px.
+  `Number(x.toFixed(2))` also became a floor-to-2dp — rounding *up* can overflow by a pixel.
+
+**b) Exerted cards sat off-centre in their own slot.** `.card-wrap.exerted` is card-h × card-w, but
+the `.card` inside is still card-w × card-h and `rotate(90deg)` spins it about *its own* centre at
+`(card-w/2, card-h/2)` — not the wrap's centre. The card hung ~9% of card-h below its slot, which
+overlapped neighbours once Feature 28 made rows `nowrap` with 3px gaps. Fixed with
+`position:absolute; top:50%; left:50%; transform: translate(-50%,-50%) rotate(90deg) scale(0.85)`.
+
+**c) Nothing painted *on* a card scaled with it.** `box-shadow`, the damage/stack counters and the
+`NEW` pill were all fixed px, so a 0.44-scaled card wore a full-size 10px shadow and a 22px counter.
+`.card` now defines `--cs` (`--card-scale × --field-scale`, with a fallback since `--field-scale`
+only exists inside `.field`) and `--badge-scale` (same, floored at 0.6 so counters stay legible).
+**Any new fixed-px decoration on a card must be multiplied by one of those two.** Exerted cards also
+need their shadow offset in the **x** slot — `rotate(90deg)` maps local +x to screen +y, so
+`0 4px` fell sideways.
+
+**d) Exerted cards jumped on hover.** A legacy `.card.exerted:hover` rule (specificity 0,3,0) still
+outranked the redesign's `.card.exerted` (0,2,0) and grew the card 0.85 → 0.95 — the redesign's
+`.card-wrap .card:not(.exerted):hover` stabiliser explicitly skips exerted cards. A
+`.card-wrap.exerted .card:hover` rule now pins the transform.
+
+### **13.7 Locations and characters-at-locations (v2.12.2)**
+
+**Locations always render landscape.** Lorcana prints them that way. Rotation is now driven by
+`.card-wrap.is-location`, **not** by exert state: `createCardElement` takes `opts.location`, and a
+location deliberately does **not** get the `exerted` class, so the two rotation rules can't fight.
+The engine still sets `exerted = true` when a Location is played — harmless, and left alone so old
+bookmarks keep deserialising — but nothing renders or measures off it any more. Locations rotate at
+**scale 1**, not the 0.85 used for exerted characters: rotated at full size a card fills a
+`card-h × card-w` wrap exactly, which is the slot `calcFieldScale` reserves. Only field-rendered
+locations get this (`opts.location` is passed from `buildField`); in hand, discard and the inspect
+grids they stay portrait, so those layouts are untouched.
+
+**Characters at a location shrink through dimensions, not a transform.** They used to carry Tailwind
+`scale-90` + `hover:scale-95` + a fixed `shadow-[0_10px_15px_...]` — and that shadow was on the
+**wrap**, so it drew the wrap's box. For a rotated card the wrap's box has a different aspect than
+the card inside it, which is why the shadow appeared on the wrong side. Now `.card-wrap.at-location`
+sets `--loc-shrink: 0.88` and real `width`/`height`, and folds the same factor into `--cs`, so the
+card's own shadow, counters and badges all shrink in step. **`--loc-shrink` and the
+`AT_LOCATION_SHRINK` constant in `calcFieldScale` must stay equal.**
+
+**A location group is measured by its widest row.** Two characters standing at a location are wider
+than the location card itself, and the group is a `flex-col` sized by its widest child — measuring
+only the location let that spill out of the row. `calcFieldScale` now takes
+`max(LANDSCAPE_SLOT, Σ char slots × AT_LOCATION_SHRINK)` per location group, plus its `gap-2`
+between characters in the fixed-chrome term.
+
+**Hover must not un-rotate a rotated card (v2.12.3).** The hover-lift stabiliser was
+`.card-wrap .card:not(.exerted):hover { transform: none }`. A location carries `is-location` but
+deliberately **no** `exerted` class, so that selector matched it — and at 0,4,0 it tied with
+`.card-wrap.is-location .card:hover`, so the later rule won and spun the location upright on hover.
+It's now `.card-wrap:not(.exerted):not(.is-location) .card:hover`, testing the **wrap**, so it can't
+reach any rotated card. **Any future rule that sets `transform` on a hovered `.card` has to exclude
+rotated wraps.**
+
+**Preview pane: Locations always use the text card** (§15), whatever the Art/Text tweak says. The
+preview frames art as `background-size: 100% auto; background-position: bottom center`, which crops
+a landscape card badly. `showPreview` computes one `useTextCard` flag and both the text-card branch
+and the floating cost-badge branch read it — using two separate conditions there re-showed the
+badge over the text card.
+
 ---
 
 ## **14\. Feature 29: Offline Hardening (v2.11.0)**
