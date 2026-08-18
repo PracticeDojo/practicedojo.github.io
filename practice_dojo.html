@@ -2262,7 +2262,7 @@
         }
 
         .card.exerted {
-            transform: rotate(90deg) scale(0.85);
+            transform: rotate(90deg);
             filter: brightness(0.85);
         }
 
@@ -2272,12 +2272,18 @@
            (card-w/2, card-h/2), not the wrap's centre. The card therefore hung out
            of its own slot (~9% of card-h below it), and with Feature 28's nowrap
            tight-gap rows that overlapped its neighbours. Pinning it to the wrap's
-           centre and translating back by half its own box lands it exactly. */
+           centre and translating back by half its own box lands it exactly.
+
+           Rotation only — no scale(). A fractional scale forces the browser to
+           resample the card (and its filter layer), which is what made exerted
+           cards look soft next to upright ones. A plain 90° turn is pixel-exact,
+           and at full size the card fills its card-h × card-w wrap precisely,
+           which is the slot calcFieldScale reserves for it anyway. */
         .card-wrap.exerted .card {
             position: absolute;
             top: 50%;
             left: 50%;
-            transform: translate(-50%, -50%) rotate(90deg) scale(0.85);
+            transform: translate(-50%, -50%) rotate(90deg);
             /* rotate(90deg) maps local +x to screen +y, so the offset has to move to
                the x slot or the shadow falls sideways instead of down. */
             box-shadow: calc(4px * var(--cs)) 0 calc(10px * var(--cs)) calc(-2px * var(--cs)) oklch(0 0 0 / 0.55),
@@ -2285,10 +2291,10 @@
         }
 
         /* A legacy `.card.exerted:hover` rule outranked the redesign one and grew the
-           card from 0.85 to 0.95 on hover — a visible jump, and at small field scales
-           enough to shove neighbouring cards. Exerted cards now hold still. */
+           card on hover — a visible jump, and at small field scales enough to shove
+           neighbouring cards. Exerted cards now hold still. */
         .card-wrap.exerted .card:hover {
-            transform: translate(-50%, -50%) rotate(90deg) scale(0.85);
+            transform: translate(-50%, -50%) rotate(90deg);
         }
 
         /* LOCATIONS ARE LANDSCAPE CARDS
@@ -10396,10 +10402,13 @@
                         this.dropToStack(e, c.instanceId);
                     };
 
-                    // Render stacked cards behind first
+                    // Render stacked cards behind first. A stack is one physical pile,
+                    // so exerting the top card turns the whole thing sideways — the
+                    // cards underneath render with the top card's exert state rather
+                    // than their own (which is stale from before they were stacked).
                     if (c.stackedCards && c.stackedCards.length > 0) {
                         c.stackedCards.forEach((sc, idx) => {
-                            const scEl = this.createCardElement(sc, !sc.faceUp);
+                            const scEl = this.createCardElement({ ...sc, exerted: !!c.exerted }, !sc.faceUp);
                             scEl.style.position = 'absolute';
                             scEl.style.left = `-${(idx + 1) * 4}px`;
                             scEl.style.top = `-${(idx + 1) * 4}px`;

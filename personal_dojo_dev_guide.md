@@ -658,6 +658,19 @@ It's now `.card-wrap:not(.exerted):not(.is-location) .card:hover`, testing the *
 reach any rotated card. **Any future rule that sets `transform` on a hovered `.card` has to exclude
 rotated wraps.**
 
+**Exerted cards rotate at scale 1 (v2.12.4).** They used to be `rotate(90deg) scale(0.85)`. A
+fractional scale makes the browser resample the card *and* its `filter: brightness()` layer, so
+exerted cards read as soft/blurry next to upright ones. A plain 90° turn is pixel-exact, and at full
+size the card fills its `card-h × card-w` wrap precisely — which is the slot `calcFieldScale`
+already reserves, so the fit math is unaffected. **Don't reintroduce a fractional scale on a card
+that also carries a filter.** Locations were already scale 1 for the same reason.
+
+**A stack turns as one pile (v2.12.4).** `shiftOnto`/`dropToStack` store stacked cards as
+`{ cardId, instanceId, faceUp }` with no `exerted`, so the cards underneath stayed portrait while
+the top card rotated. `buildField` now renders them with the *top* card's state —
+`createCardElement({ ...sc, exerted: !!c.exerted }, …)` — a render-time override only; nothing is
+mutated, so `unstackCards` (which deliberately sets `exerted: true` on separation) is unchanged.
+
 **Preview pane: Locations always use the text card** (§15), whatever the Art/Text tweak says. The
 preview frames art as `background-size: 100% auto; background-position: bottom center`, which crops
 a landscape card badly. `showPreview` computes one `useTextCard` flag and both the text-card branch
