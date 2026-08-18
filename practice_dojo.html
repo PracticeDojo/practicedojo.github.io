@@ -1313,6 +1313,30 @@
             opacity: 0.7;
         }
 
+        .preview-fallback .cf-stats {
+            display: flex;
+            gap: 14px;
+            margin-top: 6px;
+            font-size: 14px;
+            font-weight: 700;
+            opacity: 0.85;
+        }
+
+        .preview-fallback .cf-stats span::after {
+            font-size: 0.7em;
+            font-weight: 600;
+            opacity: 0.6;
+            margin-left: 2px;
+        }
+
+        .preview-fallback .cf-str::after {
+            content: 'S';
+        }
+
+        .preview-fallback .cf-wp::after {
+            content: 'W';
+        }
+
         .preview-metrics {
             display: flex;
             justify-content: space-between;
@@ -2046,6 +2070,44 @@
             font-size: 1.15em;
             font-weight: 700;
             opacity: 0.8;
+        }
+
+        /* Strength / willpower along the bottom edge, mirroring where the eye
+           expects them on the real card. Strength sits left, willpower right;
+           a card with only one of the two (e.g. a Location) keeps its side. */
+        .card-fallback .cf-stats {
+            position: absolute;
+            left: 6%;
+            right: 6%;
+            bottom: 3%;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            font-size: 1.15em;
+            font-weight: 700;
+            opacity: 0.85;
+        }
+
+        .card-fallback .cf-wp {
+            margin-left: auto;
+        }
+
+        /* Letter tags rather than sword/shield glyphs: they render in every font,
+           at every tile size, on every platform. */
+        .card-fallback .cf-str::after,
+        .card-fallback .cf-wp::after {
+            font-size: 0.6em;
+            font-weight: 600;
+            opacity: 0.6;
+            margin-left: 0.1em;
+        }
+
+        .card-fallback .cf-str::after {
+            content: 'S';
+        }
+
+        .card-fallback .cf-wp::after {
+            content: 'W';
         }
 
         /* Scale the fallback text to the card it sits in (board card, 60-card
@@ -4807,7 +4869,7 @@
         let cardFuse = null;
         let allSessions = [];
 
-        const APP_VERSION = "v2.10.0"; // Centralized version string (redesign)
+        const APP_VERSION = "v2.11.0"; // Centralized version string (redesign)
 
         // Tweaks panel accent presets (hue values for the OKLCH accent ramp)
         const ACCENT_PRESETS = {
@@ -4826,6 +4888,10 @@
             if (setupVer) setupVer.innerText = APP_VERSION;
             if (sidebarVer) sidebarVer.innerText = APP_VERSION;
             try { App.bindTweaks(); } catch (e) { console.warn('Tweaks init failed', e); }
+            // Reconnecting retries every card image that never made it down.
+            window.addEventListener('online', () => {
+                try { App.onBackOnline(); } catch (e) { console.warn('Image re-warm failed', e); }
+            });
             // Restore draw-odds pane collapsed state (Feature 24)
             if (localStorage.getItem('lorcana_dojo_prob_pane') === 'collapsed') {
                 document.getElementById('prob-pane').classList.add('is-collapsed');
@@ -5220,6 +5286,84 @@
                 this.checkDeckInput(playerNum);
             },
 
+            // --- Card database cache (IndexedDB) ------------------------------
+            // allCards.json is ~9 MB and is the one thing the app cannot start
+            // without. jsdelivr allows CORS, so unlike the card art it *can* be
+            // fetched and stored: keeping a copy here means a reload with no
+            // connection still boots into a playable session, and a warm start
+            // skips the download entirely.
+            CARD_DB_URL: 'https://cdn.jsdelivr.net/gh/heavenideas/similcana@main/database/allCards.json',
+            CARD_DB_CACHE_KEY: 'allCardsText',
+
+            _openCacheDb() {
+                if (!this._cacheDbPromise) {
+                    this._cacheDbPromise = new Promise((resolve, reject) => {
+                        const req = indexedDB.open('lorcana_dojo_cache', 1);
+                        req.onupgradeneeded = () => {
+                            if (!req.result.objectStoreNames.contains('kv')) req.result.createObjectStore('kv');
+                        };
+                        req.onsuccess = () => resolve(req.result);
+                        req.onerror = () => reject(req.error);
+                    });
+                }
+                return this._cacheDbPromise;
+            },
+
+            async idbGet(key) {
+                try {
+                    const db = await this._openCacheDb();
+                    return await new Promise((resolve, reject) => {
+                        const r = db.transaction('kv', 'readonly').objectStore('kv').get(key);
+                        r.onsuccess = () => resolve(r.result);
+                        r.onerror = () => reject(r.error);
+                    });
+                } catch (e) {
+                    return undefined;
+                }
+            },
+
+            async idbSet(key, value) {
+                try {
+                    const db = await this._openCacheDb();
+                    await new Promise((resolve, reject) => {
+                        const tx = db.transaction('kv', 'readwrite');
+                        tx.objectStore('kv').put(value, key);
+                        tx.oncomplete = resolve;
+                        tx.onerror = () => reject(tx.error);
+                    });
+                } catch (e) {
+                    console.warn('Card DB cache write failed', e);
+                }
+            },
+
+            // Cached copy wins for startup speed and offline; a background refresh
+            // keeps the next launch current. Falls back to the cache if the network
+            // fetch fails, so a cold start with no connection still has a shot.
+            async loadCardDatabase() {
+                // Stored as text: strings clone in and out of IndexedDB far faster
+                // than a 9 MB object graph does.
+                const refresh = () => fetch(this.CARD_DB_URL)
+                    .then(r => (r.ok ? r.text() : null))
+                    .then(text => { if (text) this.idbSet(this.CARD_DB_CACHE_KEY, text); return text; });
+
+                const cached = await this.idbGet(this.CARD_DB_CACHE_KEY);
+                if (cached) {
+                    try {
+                        const data = JSON.parse(cached);
+                        if (data && data.cards) {
+                            refresh().catch(() => { }); // offline here is harmless — we already booted
+                            return data;
+                        }
+                    } catch (e) {
+                        console.warn('Cached card DB was unreadable, refetching', e);
+                    }
+                }
+
+                const text = await refresh();
+                if (!text) throw new Error('Card database unavailable');
+                return JSON.parse(text);
+            },
+
             async init() {
                 try {
                     // Keep the loading screen up long enough for the intro animation
@@ -5231,9 +5375,8 @@
                     this.fetchDecksFromDatabase();
                     this.fetchSessionsFromDatabase();
 
-                    // 1. Fetch Cards
-                    const res = await fetch('https://cdn.jsdelivr.net/gh/heavenideas/similcana@main/database/allCards.json');
-                    const data = await res.json();
+                    // 1. Fetch Cards (IndexedDB-cached: instant warm start, works offline)
+                    const data = await this.loadCardDatabase();
 
                     // Filter out alternate/promo rarities to only use the default standard versions
                     this.allCards = data.cards.filter(c => {
@@ -8609,18 +8752,128 @@
 
             // Build a card-face <img>. Shared across board cards and grids so the
             // browser decodes each unique src once and reuses the bitmap everywhere.
-            makeCardImg(dbCard) {
+            makeCardImg(dbCard, opts = {}) {
                 const img = document.createElement('img');
                 img.className = 'card-img';
-                img.loading = 'lazy';
+                // Board cards are on screen the moment they're built, so lazy loading
+                // only delays them. It still pays off in the big grids (Inspect Deck).
+                if (opts.lazy !== false) img.loading = 'lazy';
                 img.decoding = 'async';
                 img.draggable = false;
-                // Offline / failed fetch: drop the img (and its broken-image glyph)
-                // so the name fallback painted underneath becomes visible.
-                img.onerror = () => img.remove();
+                img.dataset.attempt = '0';
+                // Offline / failed fetch: hide the img (and its broken-image glyph)
+                // so the name fallback painted underneath shows through. The element
+                // is kept — see _onCardImgError — so it can recover on its own.
+                img.onerror = () => this._onCardImgError(img);
+                img.onload = () => { img.style.visibility = ''; };
                 img.src = this.getCardImage(dbCard);
                 if (dbCard && dbCard.name) img.alt = dbCard.name;
                 return img;
+            },
+
+            // A dropped image used to be removed outright, so a single flaky request
+            // blanked that card until the next full render. Instead we hide it and
+            // retry a couple of times; `online` re-renders everything after that.
+            _onCardImgError(img) {
+                img.style.visibility = 'hidden';
+                const attempt = Number(img.dataset.attempt || 0) + 1;
+                img.dataset.attempt = String(attempt);
+                if (attempt > 2) return;
+
+                const src = img.src;
+                setTimeout(() => {
+                    if (!img.isConnected) return;
+                    // Re-assigning the same src is a no-op; the attribute has to go first.
+                    img.removeAttribute('src');
+                    img.src = src;
+                }, 500 * attempt);
+            },
+
+            // --- Offline image warming ---------------------------------------
+            // Card art comes from a host that sends `Cache-Control: public,
+            // max-age=604800` but no CORS headers, so the bytes can only be pulled
+            // through an <img>: a fetch() is refused, which rules out storing blobs
+            // in IndexedDB or a Cache Storage entry. What does work is keeping a
+            // *live* Image object per URL for the whole session — while it is
+            // referenced the browser holds the resource in its in-memory cache, so
+            // every <img> a later render() builds resolves with no network at all.
+            // That is what stops loaded cards from dropping out mid-session, and
+            // pre-warming every card in both decks (not just the ones on screen)
+            // is what makes the rest of the session survive going offline.
+            imgWarmPool: new Map(),   // url -> live HTMLImageElement, held on purpose
+            imgWarmSeen: new Set(),   // url -> already queued; don't re-enqueue per render
+            imgWarmFails: new Map(),  // url -> consecutive failures
+            imgWarmQueue: [],
+            imgWarmActive: 0,
+            IMG_WARM_CONCURRENCY: 6,
+            IMG_WARM_MAX_ATTEMPTS: 3,
+
+            // Every card image this session can need: both decks, every zone,
+            // including cards stacked under others, plus the shared card back.
+            collectSessionImageUrls() {
+                const urls = new Set(['https://deckbuilder.lorcanajson.org/images/card-back.png']);
+                const add = (c) => {
+                    if (!c) return;
+                    const db = this.cardDB[c.cardId];
+                    if (db) urls.add(this.getCardImage(db));
+                    if (c.stackedCards) c.stackedCards.forEach(add);
+                };
+                if (this.state && this.state.players) {
+                    this.state.players.forEach(p => {
+                        ['deck', 'hand', 'field', 'inkwell', 'discard']
+                            .forEach(zone => (p[zone] || []).forEach(add));
+                    });
+                }
+                return urls;
+            },
+
+            warmImages(urls) {
+                (urls || this.collectSessionImageUrls()).forEach(url => {
+                    if (!url || this.imgWarmSeen.has(url)) return;
+                    this.imgWarmSeen.add(url);
+                    this.imgWarmQueue.push(url);
+                });
+                this._pumpImageWarm();
+            },
+
+            _pumpImageWarm() {
+                while (this.imgWarmActive < this.IMG_WARM_CONCURRENCY && this.imgWarmQueue.length) {
+                    const url = this.imgWarmQueue.shift();
+                    this.imgWarmActive++;
+
+                    const img = new Image();
+                    img.decoding = 'async';
+                    img.onload = () => {
+                        this.imgWarmActive--;
+                        this.imgWarmFails.delete(url);
+                        this.imgWarmPool.set(url, img); // keep the reference => keep the cache entry
+                        this._pumpImageWarm();
+                    };
+                    img.onerror = () => {
+                        this.imgWarmActive--;
+                        const fails = (this.imgWarmFails.get(url) || 0) + 1;
+                        this.imgWarmFails.set(url, fails);
+                        // Back off rather than hammering a dead connection; a real
+                        // reconnect is picked up by the `online` handler below.
+                        if (fails < this.IMG_WARM_MAX_ATTEMPTS) {
+                            setTimeout(() => {
+                                this.imgWarmQueue.push(url);
+                                this._pumpImageWarm();
+                            }, 1000 * fails);
+                        }
+                        this._pumpImageWarm();
+                    };
+                    img.src = url;
+                }
+            },
+
+            // Coming back online: forget the give-ups, re-warm everything that never
+            // landed, and re-render so any hidden <img> gets a fresh request.
+            onBackOnline() {
+                this.imgWarmFails.clear();
+                this.imgWarmSeen = new Set(this.imgWarmPool.keys());
+                this.warmImages();
+                if (this.state && this.state.players) this.render();
             },
 
             // Text layer drawn under the artwork so a card is still identifiable
@@ -8648,14 +8901,48 @@
                     box.appendChild(cost);
                 }
 
+                const stats = this.makeCardStats(dbCard, 'cf-stats');
+                if (stats) box.appendChild(stats);
+
                 return box;
             },
 
+            // Strength / willpower row for the offline card face. Returns null for
+            // cards that have neither (Actions, Songs, Items, unknown placeholders).
+            makeCardStats(dbCard, className) {
+                if (!dbCard) return null;
+                const hasStr = dbCard.strength !== undefined && dbCard.strength !== null;
+                const hasWp = dbCard.willpower !== undefined && dbCard.willpower !== null;
+                if (!hasStr && !hasWp) return null;
+
+                const row = document.createElement('span');
+                row.className = className;
+
+                if (hasStr) {
+                    const str = document.createElement('span');
+                    str.className = 'cf-str';
+                    str.textContent = dbCard.strength;
+                    str.setAttribute('aria-label', `${dbCard.strength} strength`);
+                    row.appendChild(str);
+                }
+
+                if (hasWp) {
+                    const wp = document.createElement('span');
+                    wp.className = 'cf-wp';
+                    wp.textContent = dbCard.willpower;
+                    wp.setAttribute('aria-label', `${dbCard.willpower} willpower`);
+                    row.appendChild(wp);
+                }
+
+                return row;
+            },
+
             // Paint a full card face into `host`: name fallback first, artwork on top.
-            paintCardFace(host, dbCard) {
+            // `opts` is forwarded to makeCardImg (e.g. `{ lazy: false }` for board cards).
+            paintCardFace(host, dbCard, opts = {}) {
                 host.classList.add('card-face');
                 host.appendChild(this.makeCardFallback(dbCard));
-                host.appendChild(this.makeCardImg(dbCard));
+                host.appendChild(this.makeCardImg(dbCard, opts));
                 return host;
             },
 
@@ -8668,7 +8955,8 @@
                 return `<div class="${className} card-face" title="${name}">` +
                     `<div class="card-fallback"><span class="cf-name">${name}</span></div>` +
                     `<img class="card-img" loading="lazy" decoding="async" draggable="false" ` +
-                    `alt="${name}" src="${esc(this.getCardImage(dbCard))}" onerror="this.remove()">` +
+                    `alt="${name}" src="${esc(this.getCardImage(dbCard))}" ` +
+                    `onerror="this.style.visibility='hidden'" onload="this.style.visibility=''">` +
                     `</div>`;
             },
 
@@ -8690,7 +8978,8 @@
                 } else {
                     // Card face as a shared-decode <img> behind the overlays/badges,
                     // over a name fallback that shows if the image can't load.
-                    this.paintCardFace(el, dbCard);
+                    // Board cards are visible immediately, so they load eagerly.
+                    this.paintCardFace(el, dbCard, { lazy: false });
                     // Add Hover Preview Events (no mouseleave — last hovered card stays visible)
                     el.addEventListener('mouseenter', () => this.showPreview(dbCard));
                 }
@@ -8787,15 +9076,15 @@
                 preview.classList.add('opacity-100');
 
                 // The preview is a background-image, so it can't report a load error.
-                // Probe the same URL: if it can't be fetched (offline) fall back to
-                // showing the card's name in the preview pane.
+                // Probe the same URL: if the full-res art can't be fetched (offline)
+                // drop to the thumbnail — that one is warmed for every card in both
+                // decks, so it's usually still there — and only then to the name.
                 const fallback = document.getElementById('preview-fallback');
                 if (fallback) {
                     fallback.classList.add('hidden');
-                    const probe = new Image();
-                    this._previewProbe = probe;
-                    probe.onerror = () => {
-                        if (this._previewProbe !== probe) return; // a newer card is hovered
+                    const thumbUrl = this.getCardImage(dbCard);
+
+                    const showTextFallback = () => {
                         fallback.innerHTML = '';
                         const name = document.createElement('span');
                         name.textContent = dbCard.name || dbCard.fullName || 'Unknown card';
@@ -8806,7 +9095,28 @@
                             version.textContent = dbCard.version;
                             fallback.appendChild(version);
                         }
+                        const stats = this.makeCardStats(dbCard, 'cf-stats');
+                        if (stats) fallback.appendChild(stats);
                         fallback.classList.remove('hidden');
+                    };
+
+                    const probe = new Image();
+                    this._previewProbe = probe;
+                    probe.onerror = () => {
+                        if (this._previewProbe !== probe) return; // a newer card is hovered
+                        if (thumbUrl === imgUrl) return showTextFallback();
+
+                        const thumbProbe = new Image();
+                        this._previewProbe = thumbProbe;
+                        thumbProbe.onload = () => {
+                            if (this._previewProbe !== thumbProbe) return;
+                            preview.style.backgroundImage = `url('${thumbUrl}')`;
+                        };
+                        thumbProbe.onerror = () => {
+                            if (this._previewProbe !== thumbProbe) return;
+                            showTextFallback();
+                        };
+                        thumbProbe.src = thumbUrl;
                     };
                     probe.src = imgUrl;
                 }
@@ -9927,6 +10237,11 @@
                 this.updateLog();
                 this.updateMetrics();
                 this.updateProbPane();
+
+                // Pull every card image in both decks into (and keep it in) the
+                // browser cache, so the session survives losing the connection.
+                // Only URLs never seen before do any work, so this is cheap here.
+                this.warmImages();
 
                 // Update Timeline Board Divider Color
                 const divider = document.getElementById('board-divider');

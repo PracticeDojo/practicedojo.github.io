@@ -588,5 +588,80 @@ When a player holds $7+$ cards in hand, `calcHandOverlap` computes a progressive
 - **Tweaks Slider:** Adjusting `tweak-card-size` immediately re-renders the active board so fields re-evaluate their fit relative to the new base scale.
 - **Window Resize:** A `resize` listener on `window` updates field layouts dynamically when the browser window is resized or sidebars toggle.
 
+---
+
+## **14\. Feature 29: Offline Hardening (v2.11.0)**
+
+Extends §12 (offline name fallback). Two parts: more info on the fallback, and making the artwork
+that *did* load stop disappearing.
+
+### 14.1 Strength / willpower on the card fallback
+
+`makeCardStats(dbCard, className)` (next to `makeCardFallback`) returns a `.cf-stats` row, or `null`
+for cards with neither stat (Actions, Songs, Items, `cardId: -999`). Appended by `makeCardFallback`
+and by `showPreview`'s text fallback.
+
+- Layout: absolute along the bottom edge, `justify-content: space-between`, strength left / willpower
+  right. `.cf-wp { margin-left: auto }` keeps willpower on the right when there's no strength (a
+  Location has `willpower` but no `strength`).
+- Tags are CSS `::after` letters `S` / `W`, **deliberately not** ⚔/🛡 glyphs — those are missing or
+  render as color emoji depending on platform, at every tile size from 18px to 140px.
+- Inherits the §12.5 container-query sizing, so no extra scaling work.
+
+### 14.2 Why the images were dropping — and what's possible
+
+Measured against the real hosts:
+
+| Host | Headers |
+|---|---|
+| `api.lorcana.ravensburger.com` (card art) | `Cache-Control: public, max-age=604800`, **no** `access-control-allow-origin`; a request carrying an `Origin` header gets **403**. |
+| `cdn.jsdelivr.net` (allCards.json) | `access-control-allow-origin: *`, `max-age=604800`. |
+
+Consequence: card art **cannot** be `fetch()`ed, so **blob caching in IndexedDB, canvas→dataURL, and
+Cache Storage are all off the table** for it. Only an `<img>` (which sends no `Origin`) can pull it.
+A Service Worker could cache opaque responses, but that needs a second file and would break the
+single-file rule (§5.1). Don't re-litigate this without re-checking those headers.
+
+So the failures were: (a) `img.onerror = () => img.remove()` was permanent — one flaky request
+blanked a card until the next full render; (b) `loading="lazy"` meant off-screen cards were never
+fetched, so they weren't in the cache when the connection died; (c) nothing kept cache entries alive
+under mobile memory pressure.
+
+### 14.3 The fix — a live-reference warm pool
+
+Keeping a **live `Image` object** per URL for the session keeps that resource in the browser's
+in-memory cache, so every `<img>` a later `render()` builds resolves with **no network**.
+
+| Member | Purpose |
+|---|---|
+| `imgWarmPool` | `url -> HTMLImageElement`. Held on purpose — this Map *is* the cache pin. Never clear it mid-session. |
+| `imgWarmSeen` | URLs already queued; stops `render()` re-enqueueing every time. |
+| `imgWarmFails` | Consecutive failures per URL; gives up at `IMG_WARM_MAX_ATTEMPTS` (3). |
+| `collectSessionImageUrls()` | Every card image in **both decks, all 5 zones, plus `stackedCards`**, plus the card back. |
+| `warmImages(urls?)` / `_pumpImageWarm()` | Queue + drain at `IMG_WARM_CONCURRENCY` (6), with 1s×attempt backoff. |
+| `onBackOnline()` | `online` listener (bound in `DOMContentLoaded`): clears fails, re-warms, re-renders. |
+
+`render()` calls `warmImages()` at its tail — cheap, since only unseen URLs do work.
+
+### 14.4 Per-`<img>` changes
+
+- `makeCardImg(dbCard, opts)` — `opts.lazy === false` drops `loading="lazy"`. `createCardElement`
+  passes it (board cards are on screen already); grids keep lazy.
+- `_onCardImgError(img)` replaces `img.remove()`: sets `visibility: hidden` (kills the broken-image
+  glyph, reveals the fallback) and retries twice via `removeAttribute('src')` then re-assign —
+  re-assigning the *same* `src` is a no-op, the attribute has to be removed first. `onload` clears
+  the visibility. `cardThumbHtml`'s inline handlers do the same.
+- `showPreview` now probes full-res → **thumbnail** (which *is* warmed) → text. `_previewProbe` is
+  reassigned to the second probe so the stale-hover guard still holds.
+
+### 14.5 Card DB cached in IndexedDB
+
+`allCards.json` is the one thing the app can't start without, and jsdelivr allows CORS, so it *can*
+be stored. `loadCardDatabase()` (used by `init()`): read `lorcana_dojo_cache` → `kv` →
+`allCardsText`; if present, boot from it and refresh in the background; else fetch, boot, store.
+Stored as **text** — a 9 MB string clones through IndexedDB much faster than the object graph.
+Effects: offline reload boots a playable session instead of "Error loading database", and warm
+starts skip the download. `idbGet`/`idbSet` swallow their own errors (private mode, quota).
+
 
 

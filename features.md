@@ -387,6 +387,20 @@ As a player, when I put more and more cards into the play area (across any base 
 - Preserves a legible scale floor ($0.44\times$) so card artwork, damage counters, drying badges, and hover action chips remain crisp and clickable.
 - Stays self-contained in the single HTML file.
 
+## Feature 29: Offline hardening — card stats on the fallback + images that stay loaded
+
+### User Story
+As a player on a flaky or absent connection, I want a card whose artwork can't load to still tell me its strength and willpower, and I want the artwork that *did* load to stay loaded instead of dropping out mid-session.
+
+### Details
+- The offline card-name fallback (Feature 27) now also prints **strength** (bottom-left) and **willpower** (bottom-right), tagged `S` / `W`. Cards without those stats (Actions, Songs, Items) show nothing extra; a Location shows just its willpower. Scales with the tile like the rest of the fallback text, and appears in the sidebar hover preview fallback too.
+- **Images stop dropping once loaded.** A failed image used to remove itself permanently, so one flaky request blanked that card until the next full render. It now hides (revealing the name) and retries twice, and reconnecting re-renders the board.
+- **Both decks are pre-warmed, not just what's on screen.** Every card image across both decks and every zone is pulled into the browser cache in the background (6 at a time) and held by a live `Image` reference for the session, so later renders resolve from memory with no network — the reason cards survive going offline mid-session.
+- Board cards load eagerly (they're visible immediately); lazy loading is kept for the big grids.
+- The hover preview falls back to the (pre-warmed) thumbnail when the full-res art can't be fetched, and only then to text.
+- **The card database is cached in IndexedDB**, so a reload with no connection still boots into a playable session instead of "Error loading database" — and a warm start skips the ~9 MB download. Refreshed in the background for the next launch.
+- Stays self-contained in the single HTML file.
+
 # Progress
 
 - [x] Feature 1: Manual Lore Scoring
@@ -419,4 +433,5 @@ As a player, when I put more and more cards into the play area (across any base 
 - [x] Feature 26: Design-system hardening (v2 file — dialogs, delete undo, keyboard access, multiverse token redesign)
 - [x] Feature 27: Offline card-name fallback
 - [x] Feature 28: Dynamic Play-Area Card Auto-Scaling / Responsive Fit
+- [x] Feature 29: Offline hardening — card stats on the fallback + images that stay loaded
 
