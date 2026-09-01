@@ -2819,7 +2819,10 @@
         .tree-node {
             position: absolute;
             width: 220px;
-            height: 250px;
+            /* --tn-h is set on #tree-nodes by renderTree(): 250px compact, taller in the
+               full view so the Played / Inked / Banished sections fit. Nodes stay a fixed
+               height either way — the comment box (flex:1) absorbs the difference. */
+            height: var(--tn-h, 250px);
             display: flex;
             flex-direction: column;
             overflow: hidden;
@@ -2943,40 +2946,108 @@
             min-height: 0;
         }
 
+        /* --- Multiverse node card sections (Feature 31) ---
+           One .tn-sec per entry in App.TREE_SECTIONS. The full view stacks all of them;
+           the compact view renders only "Cards Played" and restores the pre-31 look. */
         .tn-cards {
             border-top: 1px solid var(--border-soft);
             background: color-mix(in oklch, var(--bg) 55%, transparent);
             flex-shrink: 0;
         }
 
-        .tn-cards-label {
-            font-size: 9px;
+        .tn-sec {
+            --sec-c: var(--text-dim);
+            border-top: 1px solid var(--border-soft);
+        }
+
+        .tn-sec:first-child {
+            border-top: none;
+        }
+
+        .tn-sec-label {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 8.5px;
             font-weight: 600;
             letter-spacing: 0.08em;
             text-transform: uppercase;
             color: var(--text-dim);
-            text-align: center;
-            padding: 3px 0 1px;
+            padding: 3px 6px 1px;
         }
 
-        .tn-cards-row {
+        .tn-sec-label::before {
+            content: '';
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            background: var(--sec-c);
+            flex-shrink: 0;
+        }
+
+        .tn-sec-n {
+            margin-left: auto;
+            font-family: var(--font-mono);
+            font-size: 8.5px;
+            color: var(--sec-c);
+        }
+
+        .tn-sec.is-empty .tn-sec-label,
+        .tn-sec.is-empty .tn-sec-n {
+            color: var(--text-faint);
+        }
+
+        .tn-sec.is-empty .tn-sec-label::before {
+            background: var(--text-faint);
+            opacity: 0.5;
+        }
+
+        /* Full view: one non-wrapping row per section, so node height stays predictable. */
+        .tn-sec-row {
             display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 4px;
-            padding: 4px;
-            max-height: 90px;
-            overflow-y: auto;
+            flex-wrap: nowrap;
+            gap: 3px;
+            padding: 2px 6px 5px;
+            overflow-x: auto;
+            overflow-y: hidden;
         }
 
-        .tn-cards-row .tn-card-thumb {
-            width: 35px;
-            height: 50px;
+        .tn-sec-row .tn-card-thumb {
+            width: 28px;
+            height: 39px;
+            flex-shrink: 0;
             background-size: cover;
             background-position: center;
             border-radius: 4px;
             overflow: hidden;
             box-shadow: var(--shadow-1);
+        }
+
+        /* Compact view: identical to the pre-Feature-31 "Cards Played" strip. */
+        .tn-cards.is-compact .tn-sec-label {
+            justify-content: center;
+            font-size: 9px;
+            padding: 3px 0 1px;
+        }
+
+        .tn-cards.is-compact .tn-sec-label::before,
+        .tn-cards.is-compact .tn-sec-n {
+            display: none;
+        }
+
+        .tn-cards.is-compact .tn-sec-row {
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 4px;
+            padding: 4px;
+            max-height: 90px;
+            overflow-x: hidden;
+            overflow-y: auto;
+        }
+
+        .tn-cards.is-compact .tn-sec-row .tn-card-thumb {
+            width: 35px;
+            height: 50px;
         }
 
         .tn-icon-btn {
@@ -4658,6 +4729,9 @@
                     restore.</span>
             </h2>
             <div class="flex items-center gap-2">
+                <button onclick="App.toggleTreeNodeView()" class="close" id="tree-view-toggle"
+                    title="Switch to compact nodes" aria-label="Switch to compact nodes"><i
+                        class="fa-solid fa-list-ul"></i></button>
                 <button onclick="App.resetTreeZoom()" class="close" title="Reset Zoom" aria-label="Reset zoom"><i
                         class="fa-solid fa-compress"></i></button>
                 <button onclick="App.closeTreeModal()" class="close" aria-label="Close multiverse view"><i
@@ -5099,7 +5173,7 @@
         let cardFuse = null;
         let allSessions = [];
 
-        const APP_VERSION = "v2.12.4"; // Centralized version string (redesign)
+        const APP_VERSION = "v2.13.1"; // Centralized version string (redesign)
 
         // Tweaks panel accent presets (hue values for the OKLCH accent ramp)
         const ACCENT_PRESETS = {
@@ -6051,13 +6125,33 @@
                 this.state.log.push({ text: msg, isSystem, player: this.state.activePlayer });
             },
 
-            // Track a structured per-turn action (inked / played / banished / shifted) so the
-            // auto-save timeline node can summarise the turn (Duels.ink-style recap).
+            _emptyTurnActions() {
+                return { drawn: [], inked: [], played: [], shifted: [], discarded: [], banished: [] };
+            },
+
+            // Track a structured per-turn action (drawn / inked / played / shifted /
+            // discarded / banished) so the auto-save timeline node can summarise the turn
+            // (Duels.ink-style recap) and fill its card sections.
             _trackAction(type, cardId) {
-                if (!this.state.turnActions) this.state.turnActions = { inked: [], played: [], banished: [], shifted: [] };
+                if (!this.state.turnActions) this.state.turnActions = this._emptyTurnActions();
                 if (!this.state.turnActions[type]) this.state.turnActions[type] = [];
                 this.state.turnActions[type].push(cardId);
             },
+            // Snapshot the turn's tracked actions into the card sections a multiverse node
+            // displays (Feature 31). Shifted cards count as plays. Called BEFORE endTurn()
+            // clears the buffers.
+            _buildNodeSections() {
+                const ta = this.state.turnActions || {};
+                const arr = (x) => Array.isArray(x) ? x.slice() : [];
+                return {
+                    played: arr(ta.played).concat(arr(ta.shifted)),
+                    inked: arr(ta.inked),
+                    drawn: arr(ta.drawn),
+                    discarded: arr(ta.discarded),
+                    banished: arr(ta.banished)
+                };
+            },
+
             // Build a markdown recap of the actions taken during the turn that just ended.
             _formatTurnActions() {
                 const ta = this.state.turnActions || {};
@@ -6068,9 +6162,11 @@
                     return Object.entries(counts).map(([n, c]) => c > 1 ? `${n} ×${c}` : n).join(', ');
                 };
                 const lines = [];
+                const drawn = fmt(ta.drawn); if (drawn) lines.push(`- **Drew:** ${drawn}`);
                 const inked = fmt(ta.inked); if (inked) lines.push(`- **Inked:** ${inked}`);
                 const played = fmt(ta.played); if (played) lines.push(`- **Played:** ${played}`);
                 const shifted = fmt(ta.shifted); if (shifted) lines.push(`- **Shifted:** ${shifted}`);
+                const discarded = fmt(ta.discarded); if (discarded) lines.push(`- **Discarded:** ${discarded}`);
                 const banished = fmt(ta.banished); if (banished) lines.push(`- **Banished:** ${banished}`);
                 if (!lines.length) return '';
                 return `\n\n**Turn recap**\n${lines.join('\n')}`;
@@ -6097,7 +6193,7 @@
                     activeBookmarkId: null,
                     turn: 1, activePlayer: 0, inactivePlayer: 1, opponentHandRevealed: false, log: [], turnComments: {},
                     cardsPlayedThisTurn: [],
-                    turnActions: { inked: [], played: [], banished: [], shifted: [] },
+                    turnActions: this._emptyTurnActions(),
                     activeTimelineColor: null,
                     players: [
                         { id: 0, name: "Player 1", deck: [], hand: [], field: [], inkwell: [], discard: [], lore: 0, inkTotal: 0, inkReady: 0, hasMulliganed: false },
@@ -6128,16 +6224,21 @@
                 this.saveToLocalStorage();
             },
 
-            _internalDraw(playerIndex) {
+            // Returns the drawn CardInstance (or null). `track` records it in the turn's
+            // "Cards Drawn" section — off for opening hands and mulligan redraws, which
+            // aren't turn actions.
+            _internalDraw(playerIndex, track = false) {
                 const p = this.state.players[playerIndex];
-                if (p.deck.length > 0) {
-                    p.hand.push(p.deck.shift());
-                }
+                if (p.deck.length === 0) return null;
+                const c = p.deck.shift();
+                p.hand.push(c);
+                if (track) this._trackAction('drawn', c.cardId);
+                return c;
             },
 
             drawCard(playerIndex) {
                 this.saveState();
-                this._internalDraw(playerIndex);
+                this._internalDraw(playerIndex, true);
                 if (playerIndex === this.state.activePlayer) {
                     this.logAction(`You drew a card.`);
                 } else {
@@ -6179,7 +6280,11 @@
                 p.inkReady = p.inkTotal;
 
                 this.logAction(`Draw step`, true);
-                this._internalDraw(this.state.activePlayer);
+                // The draw step belongs to the turn that is STARTING, but the auto-save node
+                // below records the turn that just ENDED — so hold it aside and re-seed the
+                // (cleared) buffer with it afterwards.
+                const drawStepCard = this._internalDraw(this.state.activePlayer, false);
+                const drawStepIds = drawStepCard ? [drawStepCard.cardId] : [];
 
                 // Feature 8: Auto-save timeline on turn start
                 const autoSaveCheckbox = document.getElementById('auto-save-turn');
@@ -6226,18 +6331,22 @@
                         comment: finalComment,
                         color: bColor,
                         cardsPlayedData: [...(this.state.cardsPlayedThisTurn || [])],
+                        sections: this._buildNodeSections(),
                         state: JSON.stringify(this.compressState(this.state, true)),
                         timestamp: Date.now(),
                         isDeckEdit: false
                     });
 
-                    // Clear the buffers now that the previous turn's actions are saved
-                    this.state.cardsPlayedThisTurn = [];
-                    this.state.turnActions = { inked: [], played: [], banished: [], shifted: [] };
-
                     this.state.activeBookmarkId = newId;
                     this.showToast("Auto-Saved Timeline");
                 }
+
+                // Clear the per-turn buffers. This runs whether or not auto-save is on —
+                // otherwise they accumulate across the whole game and a manual bookmark
+                // shows every card played since turn 1.
+                this.state.cardsPlayedThisTurn = [];
+                this.state.turnActions = this._emptyTurnActions();
+                this.state.turnActions.drawn = drawStepIds; // the draw that opened this turn
 
                 this.render();
             },
@@ -6680,10 +6789,19 @@
                     const nodeName = `Turn ${t.turnNumber} – ${p === 0 ? 'P1' : 'P2'} Active`;
 
                     // Build cardsPlayedData: resolve played card names → cardIds
-                    const cardsPlayedData = t.played.map(name => {
+                    const resolveIds = (names) => (names || []).map(name => {
                         const dbCard = this.resolveCardName(name);
                         return dbCard ? dbCard.id : null;
                     }).filter(id => id !== null);
+                    const cardsPlayedData = resolveIds(t.played);
+                    // Feature 31 node sections
+                    const nodeSections = {
+                        played: cardsPlayedData.slice(),
+                        inked: resolveIds(t.inked),
+                        drawn: resolveIds(t.draws),
+                        discarded: [], // the .md log has no discard lines to parse
+                        banished: resolveIds(t.banished)
+                    };
 
                     // Filter rawLines down to meaningful actions only
                     const SKIP_PATTERNS = [
@@ -6715,7 +6833,8 @@
                         state: JSON.stringify(this.compressState(snapshot, true)),
                         timestamp: Date.now(),
                         isDeckEdit: false,
-                        cardsPlayedData
+                        cardsPlayedData,
+                        sections: nodeSections
                     });
                     previousNodeId = nodeId;
 
@@ -7055,6 +7174,7 @@
 
                 // Segment = one player-turn. Snapshot at its start; comment = actions during it.
                 let segSnapshot = null, segTurn = 0, segActiveIdx = 0, segActions = [], segPlayed = [];
+                let segInked = [], segBanished = [];
 
                 const openSegment = () => {
                     playerTurnSeq++;
@@ -7063,6 +7183,8 @@
                     segActiveIdx = (virtual.currentPlayer || 1) - 1;
                     segActions = [];
                     segPlayed = [];
+                    segInked = [];
+                    segBanished = [];
                 };
 
                 const closeSegment = () => {
@@ -7091,7 +7213,13 @@
                         state: JSON.stringify(this.compressState(segSnapshot, true)),
                         timestamp: Date.now(),
                         isDeckEdit: false,
-                        cardsPlayedData: segPlayed.slice()
+                        cardsPlayedData: segPlayed.slice(),
+                        // drawn/discarded: a replay has no semantic frame for either (draws
+                        // ride inside the END_TURN patch, and the opponent's are hidden).
+                        sections: {
+                            played: segPlayed.slice(), inked: segInked.slice(),
+                            drawn: [], discarded: [], banished: segBanished.slice()
+                        }
                     });
                     previousNodeId = nodeId;
                     segSnapshot = null;
@@ -7126,6 +7254,22 @@
                     if (type === 'PLAY_CARD' && frame.takenAction && frame.takenAction.cardId) {
                         const db = this.resolveCardName(frame.takenAction.cardId);
                         if (db) segPlayed.push(db.id);
+                    }
+                    // Feature 31 sections: inks and challenge banishes for this player-turn.
+                    const ta31 = frame.takenAction;
+                    if (ta31 && ta31.type === 'ADD_TO_INK' && ta31.cardId) {
+                        const db = this.resolveCardName(ta31.cardId);
+                        if (db) segInked.push(db.id);
+                    }
+                    if (ta31 && (ta31.type === 'CHALLENGE' || ta31.type === 'ATTACK')) {
+                        if (ta31.defenderBanished && ta31.defenderCardId) {
+                            const db = this.resolveCardName(ta31.defenderCardId);
+                            if (db) segBanished.push(db.id);
+                        }
+                        if (ta31.attackerBanished && ta31.attackerCardId) {
+                            const db = this.resolveCardName(ta31.attackerCardId);
+                            if (db) segBanished.push(db.id);
+                        }
                     }
                     if (frame.patch) this.applyJsonPatch(virtual, frame.patch);
                     currentSeq = frame.seq || currentSeq;
@@ -7470,6 +7614,8 @@
                     stats: stats,
                     comment: commentInput,
                     color: bColor,
+                    cardsPlayedData: [...(this.state.cardsPlayedThisTurn || [])],
+                    sections: this._buildNodeSections(),
                     state: JSON.stringify(this.compressState(this.state, true)),
                     timestamp: Date.now(),
                     isDeckEdit: false
@@ -7638,9 +7784,10 @@
                     const vWidth = viewport.clientWidth;
                     const vHeight = viewport.clientHeight;
 
-                    // CARD_W = 220, CARD_H = 220 used in renderTree
-                    const nodeCenterX = targetPos.x + (220 / 2);
-                    const nodeCenterY = targetPos.y + (220 / 2);
+                    // Node box as renderTree just laid it out (height varies with the view mode)
+                    const dims = this.treeNodeDims || { w: 220, h: 250 };
+                    const nodeCenterX = targetPos.x + (dims.w / 2);
+                    const nodeCenterY = targetPos.y + (dims.h / 2);
 
                     this.treePan.translateX = (vWidth / 2) - (nodeCenterX * this.treePan.zoom);
                     this.treePan.translateY = (vHeight / 2) - (nodeCenterY * this.treePan.zoom);
@@ -7659,9 +7806,93 @@
                 if (this.state) this.state.editingNodeId = null; // Clear edit state on close
             },
 
+            // --- Feature 31: multiverse node card sections ---
+            // Adding a section = add an entry here, then fill it in _buildNodeSections()
+            // (live play) and in the two importers. Nothing else needs to change.
+            TREE_SECTIONS: [
+                { key: 'played', label: 'Cards Played', color: 'var(--accent)', legacy: 'cardsPlayedData' },
+                { key: 'inked', label: 'Cards Inked', color: 'var(--p2-hi)' },
+                { key: 'drawn', label: 'Cards Drawn', color: 'var(--bcr)' },
+                { key: 'discarded', label: 'Cards Discarded', color: 'var(--lvi)' },
+                { key: 'banished', label: 'Cards Banished', color: 'var(--danger)' }
+            ],
+            // 'full' (default) = every section; 'compact' = pre-31 look, Cards Played only.
+            treeNodeView: 'full',
+            // full = body + one label row (13px) and one thumb row (46px) per section.
+            TREE_NODE_H: { compact: 250, full: 410 },
+
+            // A node saved before Feature 31 has no `sections`, so its cardsPlayedData is
+            // the Played section. A node that HAS sections is authoritative, even if empty.
+            nodeSectionIds(b, sec) {
+                if (b.sections && Array.isArray(b.sections[sec.key])) return b.sections[sec.key];
+                if (!b.sections && sec.legacy && Array.isArray(b[sec.legacy])) return b[sec.legacy];
+                return [];
+            },
+
+            buildNodeSectionsHtml(b) {
+                const isFull = this.treeNodeView !== 'compact';
+                const secs = isFull ? this.TREE_SECTIONS : this.TREE_SECTIONS.filter(s => s.key === 'played');
+                let inner = '';
+                for (const sec of secs) {
+                    const ids = this.nodeSectionIds(b, sec);
+                    // Compact keeps the old behaviour: nothing played, nothing rendered.
+                    // Full always shows the row so sections sit in the same place on every node.
+                    if (!isFull && !ids.length) continue;
+                    const thumbs = ids.map(cid => {
+                        const dbCard = this.cardDB[cid];
+                        return dbCard ? this.cardThumbHtml(dbCard, 'tn-card-thumb') : '';
+                    }).join('');
+                    inner += `
+                        <div class="tn-sec ${ids.length ? '' : 'is-empty'}" style="--sec-c: ${sec.color}">
+                            <div class="tn-sec-label"><span>${sec.label}</span><span class="tn-sec-n">${ids.length || '—'}</span></div>
+                            ${ids.length ? `<div class="tn-sec-row custom-scrollbar">${thumbs}</div>` : ''}
+                        </div>`;
+                }
+                if (!inner) return '';
+                return `<div class="tn-cards ${isFull ? 'is-full' : 'is-compact'}">${inner}</div>`;
+            },
+
+            toggleTreeNodeView() {
+                this.treeNodeView = this.treeNodeView === 'compact' ? 'full' : 'compact';
+                const t = this.loadTweaks();
+                t.treeNodeView = this.treeNodeView;
+                this.saveTweaks(t);
+                this.syncTreeViewToggle();
+                this.renderTree();
+                // Node heights changed, so every position moved — keep the focused node put.
+                this.centerTreeOnNode(this.treeNavActiveId || (this.state && this.state.activeBookmarkId));
+            },
+
+            syncTreeViewToggle() {
+                const btn = document.getElementById('tree-view-toggle');
+                if (!btn) return;
+                const isFull = this.treeNodeView !== 'compact';
+                const label = isFull ? 'Switch to compact nodes' : 'Switch to full nodes';
+                btn.title = label;
+                btn.setAttribute('aria-label', label);
+                btn.innerHTML = `<i class="fa-solid ${isFull ? 'fa-list-ul' : 'fa-grip-lines'}"></i>`;
+            },
+
+            // Pan the tree viewport so a node sits in the middle (zoom untouched).
+            centerTreeOnNode(id) {
+                const pos = id && this.nodePositions ? this.nodePositions[id] : null;
+                const viewport = document.getElementById('tree-viewport');
+                const canvas = document.getElementById('tree-canvas');
+                if (!pos || !viewport || !canvas) return;
+                const dims = this.treeNodeDims || { w: 220, h: 250 };
+                this.treePan.translateX = (viewport.clientWidth / 2) - ((pos.x + dims.w / 2) * this.treePan.zoom);
+                this.treePan.translateY = (viewport.clientHeight / 2) - ((pos.y + dims.h / 2) * this.treePan.zoom);
+                canvas.style.transform = `translate(${this.treePan.translateX}px, ${this.treePan.translateY}px) scale(${this.treePan.zoom})`;
+            },
+
             renderTree() {
                 const svgContainer = document.getElementById('tree-svg');
                 const nodesContainer = document.getElementById('tree-nodes');
+
+                // Node height drives both the CSS box and the layout math below.
+                const NODE_H = this.TREE_NODE_H[this.treeNodeView === 'compact' ? 'compact' : 'full'];
+                this.treeNodeDims = { w: 220, h: NODE_H };
+                nodesContainer.style.setProperty('--tn-h', `${NODE_H}px`);
 
                 if (this.bookmarks.length === 0) {
                     svgContainer.innerHTML = '';
@@ -7693,9 +7924,9 @@
                 let currentY = 0;
                 const nodePositions = {}; // id -> {x, y}
                 const CARD_W = 220;
-                const CARD_H = 220;
+                const CARD_H = NODE_H;
                 const X_SPACING = 300; // 220 card + 80 gap
-                const Y_SPACING = 260; // 220 card + 40 gap
+                const Y_SPACING = NODE_H + 40; // node height + gap
 
                 const assignCoords = (node, depth) => {
                     const children = childrenMap[node.id] || [];
@@ -7793,17 +8024,7 @@
                                  </button>
                              </div>
 
-                             ${b.cardsPlayedData && b.cardsPlayedData.length > 0 ? `
-                             <div class="tn-cards">
-                                 <div class="tn-cards-label">Cards Played</div>
-                                 <div class="tn-cards-row custom-scrollbar">
-                                     ${b.cardsPlayedData.map(cid => {
-                            const dbCard = this.cardDB[cid];
-                            return dbCard ? this.cardThumbHtml(dbCard, 'tn-card-thumb') : '';
-                        }).join('')}
-                                 </div>
-                             </div>
-                             ` : ''}
+                             ${this.buildNodeSectionsHtml(b)}
                         `;
                     }
                     nodesContainer.appendChild(el);
@@ -8352,6 +8573,19 @@
                     this._trackAction('played', found.card.cardId);
                 }
 
+                // Feature 31: the drag-and-drop paths need the same action tracking the
+                // context-menu ones (playToInkwell / banish) already do, otherwise inking or
+                // discarding by dragging never reaches the timeline node sections.
+                if (targetZone === 'inkwell' && found.loc !== 'inkwell') {
+                    if (!this.state.cardsPlayedThisTurn) this.state.cardsPlayedThisTurn = [];
+                    this.state.cardsPlayedThisTurn.push(found.card.cardId);
+                    this._trackAction('inked', found.card.cardId);
+                }
+                if (targetZone === 'discard' && found.loc !== 'discard') {
+                    // From the field it's a banish; from anywhere else it's a discard.
+                    this._trackAction(found.loc === 'field' ? 'banished' : 'discarded', found.card.cardId);
+                }
+
                 // Remove from old location
                 found.player[found.loc].splice(found.idx, 1);
 
@@ -8596,7 +8830,9 @@
                 });
 
                 this.logAction(`${dbCard.name}${cardsToMove.length > 1 ? ` and its stack (${cardsToMove.length} cards)` : ''} was banished.`);
-                this._trackAction('banished', found.card.cardId);
+                // Same call handles the "Discard" context option on hand / inkwell cards —
+                // only a card leaving the field is a banish.
+                this._trackAction(found.loc === 'field' ? 'banished' : 'discarded', found.card.cardId);
                 this.render();
             },
 
@@ -10910,6 +11146,10 @@
                 const pal = this.$('tweak-palette');
                 if (pal) pal.querySelectorAll('button').forEach(b => b.classList.toggle('is-active', b.dataset.val === (t.palette || 'modern')));
 
+                // Multiverse node density (Feature 31) — toggled from the tree modal header.
+                this.treeNodeView = t.treeNodeView === 'compact' ? 'compact' : 'full';
+                this.syncTreeViewToggle();
+
                 // Cached so showPreview doesn't re-read localStorage on every hover.
                 this.previewMode = t.previewMode === 'text' ? 'text' : 'art';
                 const pv = this.$('tweak-preview-mode');
@@ -10925,6 +11165,7 @@
                 if (!t.layout) t.layout = 'docked';
                 if (!t.palette) t.palette = 'modern';
                 if (!t.previewMode) t.previewMode = 'art';
+                if (!t.treeNodeView) t.treeNodeView = 'full';
                 const row = this.$('tweak-accent-row');
                 if (row && !row.children.length) {
                     Object.entries(ACCENT_PRESETS).forEach(([key, def]) => {

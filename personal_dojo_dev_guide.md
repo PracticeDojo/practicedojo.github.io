@@ -818,3 +818,105 @@ separate job.
 
 
 
+
+---
+
+## **16\. Feature 31: Multiverse Node Sections (v2.13.1)**
+
+### 16.1 What changed
+
+A multiverse tree node used to show one strip, "Cards Played", built from `bookmark.cardsPlayedData`.
+It now shows a **stack of sections** — **Cards Played / Cards Inked / Cards Drawn / Cards Discarded /
+Cards Banished** — in that order, and that's the **default (full) view**. A **compact** view
+reproduces the pre-31 node exactly (Played only, 35×50 thumbs, wrapped, centred label).
+
+### 16.2 Data — `bookmark.sections`
+
+Nodes gained one field:
+
+```js
+sections: { played: […], inked: […], drawn: […], discarded: […], banished: […] }
+```
+
+`cardsPlayedData` is **still written** (unchanged) — the sidebar auto-save rows and old sessions read
+it. Resolution rule in `nodeSectionIds(b, sec)`:
+
+1. `b.sections[key]` exists → use it, **even when empty** (a turn with no banishes really has none).
+2. No `b.sections` at all (pre-31 node) → fall back to `b[sec.legacy]`, which only `played` defines
+   (`cardsPlayedData`).
+
+> **Played no longer includes inks.** `inkCard()` pushes to *both* `cardsPlayedThisTurn` and
+> `turnActions.inked`, so the old strip listed inked cards as "played". `sections.played` comes from
+> `turnActions.played` + `turnActions.shifted`, so no card appears in two sections. Legacy nodes keep
+> their old (ink-inclusive) strip because they fall back to `cardsPlayedData`.
+
+Written at four sites, all from data that already existed:
+- `endTurn()` auto-save node and `saveTimeline()` manual node → `_buildNodeSections()` (reads
+  `state.turnActions`, must run **before** the buffers are cleared).
+- `.md` importer → `resolveIds(t.played / t.inked / t.draws / t.banished)`; the log has no
+  discard lines, so `discarded` is empty.
+- Replay importer → `segPlayed` / `segInked` (`ADD_TO_INK.cardId`) / `segBanished`
+  (`CHALLENGE`/`ATTACK` with `defenderBanished` → `defenderCardId`, `attackerBanished` →
+  `attackerCardId`). Reset in `openSegment()`, emitted in `closeSegment()`. `drawn`/`discarded`
+  are empty: a replay has no semantic frame for either (draws ride inside the `END_TURN` patch,
+  and the opponent's are hidden anyway).
+
+Deck-edit nodes write no sections and render as empty rows in full view — they aren't a turn.
+
+### 16.2.1 Tracking gaps this exposed (fixed here)
+
+`_trackAction` was only wired to the **context-menu** paths, so the sections started out
+half-empty:
+
+| Path | Was | Now |
+|---|---|---|
+| Drag a card into the inkwell (`moveCard`, `targetZone==='inkwell'`) | tracked nothing — **this is why Cards Inked looked broken**, most inking is drag-and-drop | `_trackAction('inked')` + pushed to `cardsPlayedThisTurn`, matching `playToInkwell()` |
+| Drag a card onto the discard pile | tracked nothing | `banished` if it came from the **field**, else `discarded` |
+| `banish(instanceId)` | always `banished` — but the hand/inkwell context option is labelled *Discard* and calls the same function | `found.loc === 'field' ? 'banished' : 'discarded'` |
+| Drawing | not tracked at all | `_internalDraw(playerIndex, track)` returns the instance; `drawCard()` passes `track = true` |
+
+**Draw-step ordering.** `endTurn()` draws for the player whose turn is *starting*, but the auto-save
+node it then writes describes the turn that just *ended*. So the draw-step card is held in a local
+(`drawStepIds`) and re-seeded into the freshly cleared `turnActions.drawn` after the node is pushed.
+Opening hands and mulligan redraws pass `track = false` — they aren't turn actions.
+
+**Buffer clearing moved out of the auto-save `if`.** `cardsPlayedThisTurn` / `turnActions` were only
+reset when the Feature 8 auto-save checkbox was on; with it off they accumulated for the whole game,
+so a manual bookmark would list every card played since turn 1. They now reset on **every**
+`endTurn()`. `_emptyTurnActions()` is the single place the shape is defined.
+
+### 16.3 Adding a section later (the modular bit)
+
+`App.TREE_SECTIONS` is the single list:
+
+```js
+TREE_SECTIONS: [
+  { key: 'played',    label: 'Cards Played',    color: 'var(--accent)', legacy: 'cardsPlayedData' },
+  { key: 'inked',     label: 'Cards Inked',     color: 'var(--p2-hi)' },
+  { key: 'drawn',     label: 'Cards Drawn',     color: 'var(--bcr)' },
+  { key: 'discarded', label: 'Cards Discarded', color: 'var(--lvi)' },
+  { key: 'banished',  label: 'Cards Banished',  color: 'var(--danger)' }
+]
+```
+
+Add an entry, fill the key in `_buildNodeSections()` (plus a `_trackAction` call wherever the action
+happens) and the two importers, then bump `TREE_NODE_H.full` by ~60px. `buildNodeSectionsHtml()`,
+the CSS and the layout math need no edits.
+
+### 16.4 Node height is now a variable, not a constant
+
+`.tree-node` is `height: var(--tn-h, 250px)`; `renderTree()` sets `--tn-h` on `#tree-nodes` from
+`TREE_NODE_H` (compact 250 / full 410 — body + ~59px per section) and feeds the **same** number into `CARD_H` and
+`Y_SPACING = NODE_H + 40`. Before this, layout used `CARD_H = 220` against a 250px CSS box — the two
+are now the same number by construction. `this.treeNodeDims` carries it to `openTreeModal()` and
+`centerTreeOnNode(id)` (new helper) so centring is correct in both modes.
+
+Each section is **one non-wrapping row** (`overflow-x: auto`), which is what keeps the node height
+fixed regardless of how many cards a turn touched. Compact overrides that back to wrap + 90px cap.
+
+### 16.5 The toggle
+
+Header button in the tree modal (`#tree-view-toggle`, left of Reset Zoom) → `toggleTreeNodeView()`.
+Persisted as `treeNodeView` in `localStorage['lorcana_dojo_tweaks']`, read by `applyTweaks` (which
+also calls `syncTreeViewToggle()` to set the icon/label). After toggling, `centerTreeOnNode()` keeps
+the focused node under the cursor — every node moved, since heights changed.

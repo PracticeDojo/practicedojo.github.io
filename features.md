@@ -426,8 +426,14 @@ As a player whose card artwork can't load — or who just prefers reading text �
 
 ### Details
 - the nodes should still have a fixes height. in this new default view they should be higher to display the different sections
-- the sections in order should be: Cards played, Cards Inked, Cards Banished. 
+- the sections in order should be: Cards played, Cards Inked, Cards Drawn, Cards Discarded, Cards Banished.
 - we should implement this in a modular way so that if in the future we want to add new section it's trivial
+
+### Notes
+- "Cards Played" no longer repeats inked cards — inking a card now only fills the Inked section (both by drag-and-drop and by the right-click menu, which previously disagreed).
+- A card leaving the **field** to the discard counts as Banished; from hand/inkwell/deck it counts as Discarded.
+- Cards Drawn covers the turn's draw step and any manual deck click/draw; opening hands and mulligan redraws are excluded (not turn actions).
+- Imported Duels.ink `.md` logs fill Played / Inked / Drawn / Banished (the log has no discard lines). Replays fill Played / Inked / Banished (draws ride inside the state patch and the opponent's are hidden).
 
 
 # Progress
@@ -464,5 +470,5 @@ As a player whose card artwork can't load — or who just prefers reading text �
 - [x] Feature 28: Dynamic Play-Area Card Auto-Scaling / Responsive Fit
 - [x] Feature 29: Offline hardening — card stats on the fallback + images that stay loaded
 - [x] Feature 30: Offline text card in the preview pane
-- [ ] Feature 31: New display section in Multiverse Tree view Nodes
+- [x] Feature 31: New display section in Multiverse Tree view Nodes
 
