@@ -3138,6 +3138,25 @@
             opacity: 0.5;
         }
 
+        /* Wrapping section (Turn Starting Hand): a whole hand should be readable at once,
+           so the row flows onto a second line rather than scrolling sideways. Thumbs are
+           a size smaller here so a normal 7-card opener still fits on ONE line
+           (7 × 24px + 6 × 3px gap = 186px inside the 208px content box).
+           The node keeps its fixed height because the section is `flex-shrink: 0` while
+           `.tn-comment` is `flex: 1` — a second row eats into the comment, not the box.
+           Past two rows it scrolls vertically so a freak 20-card hand can't blow it out. */
+        .tn-sec.is-wrap .tn-sec-row {
+            flex-wrap: wrap;
+            overflow-x: hidden;
+            overflow-y: auto;
+            max-height: 78px;
+        }
+
+        .tn-sec.is-wrap .tn-sec-row .tn-card-thumb {
+            width: 24px;
+            height: 34px;
+        }
+
         /* Full view: one non-wrapping row per section, so node height stays predictable. */
         .tn-sec-row {
             display: flex;
@@ -3146,6 +3165,29 @@
             padding: 2px 6px 5px;
             overflow-x: auto;
             overflow-y: hidden;
+        }
+
+        /* "Left the hand this turn" (Turn Starting Hand section). The card itself is
+           greyed and dimmed so the cards still held read as the live ones, and a single
+           crisp corner-to-corner rule crosses it out. The filter is on the artwork/text
+           layers rather than the tile, so the slash keeps its colour. */
+        .tn-card-thumb.is-left .card-img,
+        .tn-card-thumb.is-left .card-fallback {
+            filter: grayscale(1);
+            opacity: 0.5;
+        }
+
+        .tn-card-thumb.is-left::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            background: linear-gradient(to top right,
+                    transparent calc(50% - 0.8px),
+                    var(--danger) calc(50% - 0.8px),
+                    var(--danger) calc(50% + 0.8px),
+                    transparent calc(50% + 0.8px));
+            pointer-events: none;
         }
 
         .tn-sec-row .tn-card-thumb {
@@ -5320,7 +5362,7 @@
         let cardFuse = null;
         let allSessions = [];
 
-        const APP_VERSION = "v2.15.2"; // Centralized version string (redesign)
+        const APP_VERSION = "v2.16.1"; // Centralized version string (redesign)
 
         // Tweaks panel accent presets (hue values for the OKLCH accent ramp)
         const ACCENT_PRESETS = {
@@ -5409,6 +5451,7 @@
                     opponentHandRevealed: stateObj.opponentHandRevealed,
                     activeTimelineColor: stateObj.activeTimelineColor,
                     turnComments: stateObj.turnComments,
+                    turnStartHand: stateObj.turnStartHand,
                     players: stateObj.players.map(p => ({
                         id: p.id,
                         name: p.name,
@@ -5440,6 +5483,7 @@
                     opponentHandRevealed: compressed.opponentHandRevealed || false,
                     activeTimelineColor: compressed.activeTimelineColor || null,
                     turnComments: compressed.turnComments || {},
+                    turnStartHand: compressed.turnStartHand || null,
                     log: compressed.log !== undefined ? [...compressed.log] : currentLog.slice(0, compressed.logLength || 0),
                     players: compressed.players.map(p => ({
                         id: p.id,
@@ -6273,7 +6317,35 @@
             },
 
             _emptyTurnActions() {
-                return { drawn: [], inked: [], played: [], shifted: [], discarded: [], banished: [] };
+                return { drawn: [], inked: [], played: [], shifted: [], discarded: [], banished: [], quested: [] };
+            },
+
+            // Snapshot the active player's hand for the "Turn Starting Hand" node section.
+            // Called at the point a turn's hand is settled: after the draw step in endTurn,
+            // after the opening draw in startGame, and after a mulligan / crafted hand
+            // replaces it. instanceIds are kept alongside the cardIds so the node can tell
+            // exactly which of THOSE copies left the hand, not just "a copy of that card".
+            _captureTurnStartHand(playerIndex) {
+                const idx = (playerIndex === undefined) ? this.state.activePlayer : playerIndex;
+                const p = this.state.players[idx];
+                if (!p) return;
+                this.state.turnStartHand = {
+                    player: idx,
+                    cards: p.hand.map(c => ({ id: c.cardId, iid: c.instanceId }))
+                };
+            },
+
+            // Turn Starting Hand entries: { id, left }. `left` = that exact copy is no
+            // longer in the player's hand (played, inked, discarded, put back — the node's
+            // other sections say which). Returns [] when there's no capture to compare
+            // against, e.g. the first save after restoring a bookmark mid-turn.
+            _buildStartingHandSection() {
+                const snap = this.state.turnStartHand;
+                if (!snap || !Array.isArray(snap.cards) || !snap.cards.length) return [];
+                const p = this.state.players[snap.player];
+                if (!p) return [];
+                const stillHeld = new Set(p.hand.map(c => c.instanceId));
+                return snap.cards.map(c => ({ id: c.id, left: !stillHeld.has(c.iid) }));
             },
 
             // Track a structured per-turn action (drawn / inked / played / shifted /
@@ -6295,7 +6367,9 @@
                     inked: arr(ta.inked),
                     drawn: arr(ta.drawn),
                     discarded: arr(ta.discarded),
-                    banished: arr(ta.banished)
+                    banished: arr(ta.banished),
+                    quested: arr(ta.quested),
+                    startingHand: this._buildStartingHandSection()
                 };
             },
 
@@ -6314,6 +6388,7 @@
                 const played = fmt(ta.played); if (played) lines.push(`- **Played:** ${played}`);
                 const shifted = fmt(ta.shifted); if (shifted) lines.push(`- **Shifted:** ${shifted}`);
                 const discarded = fmt(ta.discarded); if (discarded) lines.push(`- **Discarded:** ${discarded}`);
+                const quested = fmt(ta.quested); if (quested) lines.push(`- **Quested:** ${quested}`);
                 const banished = fmt(ta.banished); if (banished) lines.push(`- **Banished:** ${banished}`);
                 if (!lines.length) return '';
                 return `\n\n**Turn recap**\n${lines.join('\n')}`;
@@ -6365,6 +6440,9 @@
                     this._internalDraw(0);
                     this._internalDraw(1);
                 }
+
+                // Turn 1's starting hand is the opening 7 (Feature 34).
+                this._captureTurnStartHand(this.state.activePlayer);
 
                 this.logAction(`--- Turn 1 Begins ---`, true);
                 this.render();
@@ -6432,6 +6510,13 @@
                 // (cleared) buffer with it afterwards.
                 const drawStepCard = this._internalDraw(this.state.activePlayer, false);
                 const drawStepIds = drawStepCard ? [drawStepCard.cardId] : [];
+                // The hand this player will act from — captured now, compared against
+                // their hand at the end of this turn when the next node is written.
+                const turnStartHandSnap = {
+                    player: this.state.activePlayer,
+                    cards: this.state.players[this.state.activePlayer].hand
+                        .map(c => ({ id: c.cardId, iid: c.instanceId }))
+                };
 
                 // Feature 8: Auto-save timeline on turn start
                 const autoSaveCheckbox = document.getElementById('auto-save-turn');
@@ -6494,6 +6579,9 @@
                 this.state.cardsPlayedThisTurn = [];
                 this.state.turnActions = this._emptyTurnActions();
                 this.state.turnActions.drawn = drawStepIds; // the draw that opened this turn
+                // Swap in the new turn's starting hand only now — the node above still
+                // needed the previous turn's capture to compute what left that hand.
+                this.state.turnStartHand = turnStartHandSnap;
 
                 this.render();
             },
@@ -6947,7 +7035,24 @@
                         inked: resolveIds(t.inked),
                         drawn: resolveIds(t.draws),
                         discarded: [], // the .md log has no discard lines to parse
-                        banished: resolveIds(t.banished)
+                        banished: resolveIds(t.banished),
+                        // `t.quested` entries are objects: { name, loreBefore, loreAfter, playerIdx }
+                        quested: resolveIds((t.quested || []).map(q => q.name)),
+                        // Starting hand = the hand at the snapshot (pre-draw, since the
+                        // draw is one of this turn's events) plus this turn's draws.
+                        // The log has no instanceIds, so "left" is inferred by cardId
+                        // against what was played or inked this turn — an import is a
+                        // reconstruction, not a live capture.
+                        startingHand: (() => {
+                            const startIds = resolveIds(hands[p]).concat(resolveIds(t.draws));
+                            const gone = {};
+                            resolveIds(t.played).concat(resolveIds(t.inked))
+                                .forEach(id => { gone[id] = (gone[id] || 0) + 1; });
+                            return startIds.map(id => {
+                                if (gone[id]) { gone[id]--; return { id, left: true }; }
+                                return { id, left: false };
+                            });
+                        })()
                     };
 
                     // Filter rawLines down to meaningful actions only
@@ -7321,7 +7426,7 @@
 
                 // Segment = one player-turn. Snapshot at its start; comment = actions during it.
                 let segSnapshot = null, segTurn = 0, segActiveIdx = 0, segActions = [], segPlayed = [];
-                let segInked = [], segBanished = [];
+                let segInked = [], segBanished = [], segQuested = [];
 
                 const openSegment = () => {
                     playerTurnSeq++;
@@ -7332,6 +7437,7 @@
                     segPlayed = [];
                     segInked = [];
                     segBanished = [];
+                    segQuested = [];
                 };
 
                 const closeSegment = () => {
@@ -7365,7 +7471,21 @@
                         // ride inside the END_TURN patch, and the opponent's are hidden).
                         sections: {
                             played: segPlayed.slice(), inked: segInked.slice(),
-                            drawn: [], discarded: [], banished: segBanished.slice()
+                            drawn: [], discarded: [], banished: segBanished.slice(),
+                            quested: segQuested.slice(),
+                            // The replay snapshot is taken after ready+draw, so its hand
+                            // IS the turn's starting hand. "Left" is inferred by cardId
+                            // from what this segment played or inked (the opponent's hand
+                            // is itself inferred — see §7.6 — so this is a best effort).
+                            startingHand: (() => {
+                                const hand = (segSnapshot.players[segActiveIdx] || {}).hand || [];
+                                const gone = {};
+                                segPlayed.concat(segInked).forEach(id => { gone[id] = (gone[id] || 0) + 1; });
+                                return hand.map(c => {
+                                    if (gone[c.cardId]) { gone[c.cardId]--; return { id: c.cardId, left: true }; }
+                                    return { id: c.cardId, left: false };
+                                });
+                            })()
                         }
                     });
                     previousNodeId = nodeId;
@@ -7404,6 +7524,10 @@
                     }
                     // Feature 31 sections: inks and challenge banishes for this player-turn.
                     const ta31 = frame.takenAction;
+                    if (ta31 && ta31.type === 'QUEST' && ta31.cardId) {
+                        const db = this.resolveCardName(ta31.cardId);
+                        if (db) segQuested.push(db.id);
+                    }
                     if (ta31 && ta31.type === 'ADD_TO_INK' && ta31.cardId) {
                         const db = this.resolveCardName(ta31.cardId);
                         if (db) segInked.push(db.id);
@@ -7961,12 +8085,18 @@
                 { key: 'inked', label: 'Cards Inked', color: 'var(--p2-hi)' },
                 { key: 'drawn', label: 'Cards Drawn', color: 'var(--bcr)' },
                 { key: 'discarded', label: 'Cards Discarded', color: 'var(--lvi)' },
-                { key: 'banished', label: 'Cards Banished', color: 'var(--danger)' }
+                { key: 'banished', label: 'Cards Banished', color: 'var(--danger)' },
+                { key: 'quested', label: 'Cards Quested', color: 'var(--lvi)' },
+                // Entries here are `{ id, left }` objects rather than bare cardIds —
+                // buildNodeSectionsHtml normalises both shapes. `wrap` makes the row flow
+                // onto a second line instead of scrolling sideways: a whole hand should be
+                // visible at once, and it's the one section where the count is unbounded.
+                { key: 'startingHand', label: 'Turn Starting Hand', color: 'var(--text-dim)', marksLeft: true, wrap: true }
             ],
             // 'full' (default) = every section; 'compact' = pre-31 look, Cards Played only.
             treeNodeView: 'full',
-            // full = body + one label row (13px) and one thumb row (46px) per section.
-            TREE_NODE_H: { compact: 250, full: 410 },
+            // full = body + one label row (16px) and one thumb row (46px) per section.
+            TREE_NODE_H: { compact: 250, full: 510 },
 
             // A node saved before Feature 31 has no `sections`, so its cardsPlayedData is
             // the Played section. A node that HAS sections is authoritative, even if empty.
@@ -7985,14 +8115,23 @@
                     // Compact keeps the old behaviour: nothing played, nothing rendered.
                     // Full always shows the row so sections sit in the same place on every node.
                     if (!isFull && !ids.length) continue;
-                    const thumbs = ids.map(cid => {
-                        const dbCard = this.cardDB[cid];
-                        return dbCard ? this.cardThumbHtml(dbCard, 'tn-card-thumb') : '';
+                    // An entry is either a bare cardId or `{ id, left }` (Turn Starting Hand).
+                    const entries = ids.map(e => (e && typeof e === 'object') ? e : { id: e });
+                    const leftCount = entries.filter(e => e.left).length;
+                    const thumbs = entries.map(e => {
+                        const dbCard = this.cardDB[e.id];
+                        if (!dbCard) return '';
+                        return this.cardThumbHtml(dbCard, 'tn-card-thumb' + (e.left ? ' is-left' : ''));
                     }).join('');
+                    const count = sec.marksLeft && leftCount
+                        ? `${entries.length} · −${leftCount}`
+                        : (entries.length || '—');
+                    const countTitle = sec.marksLeft && leftCount
+                        ? ` title="${leftCount} of ${entries.length} left the hand this turn"` : '';
                     inner += `
-                        <div class="tn-sec ${ids.length ? '' : 'is-empty'}" style="--sec-c: ${sec.color}">
-                            <div class="tn-sec-label"><span>${sec.label}</span><span class="tn-sec-n">${ids.length || '—'}</span></div>
-                            ${ids.length ? `<div class="tn-sec-row custom-scrollbar">${thumbs}</div>` : ''}
+                        <div class="tn-sec ${entries.length ? '' : 'is-empty'} ${sec.wrap ? 'is-wrap' : ''}" style="--sec-c: ${sec.color}">
+                            <div class="tn-sec-label"><span>${sec.label}</span><span class="tn-sec-n"${countTitle}>${count}</span></div>
+                            ${entries.length ? `<div class="tn-sec-row custom-scrollbar">${thumbs}</div>` : ''}
                         </div>`;
                 }
                 if (!inner) return '';
@@ -8496,6 +8635,7 @@
                 this.shuffle(p.deck);
 
                 p.hasMulliganed = true; // Mark as mulliganed
+                this._captureTurnStartHand(this.state.activePlayer); // the post-mulligan hand is the real opener
                 this.logAction(`You mulliganed ${cardsToReplace.length} cards.`);
 
                 this.closeMulligan();
@@ -8641,6 +8781,7 @@
                 p.inkTotal = 0;
                 p.inkReady = 0;
                 p.hasMulliganed = true; // Locks both Mulligan and Craft Hand for this player
+                this._captureTurnStartHand(this.state.activePlayer); // crafted hand is the real opener
 
                 this.logAction(`You crafted a starting hand of ${newHand.length} cards.`);
                 this.closeCraftHand();
@@ -8933,6 +9074,7 @@
                 found.player.lore += loreVal;
 
                 this.logAction(`You quested with ${dbCard.name} for ${loreVal} lore.`);
+                this._trackAction('quested', found.card.cardId);
                 this.render();
                 this.checkBranchOver();
             },
@@ -8949,6 +9091,7 @@
                         c.exerted = true;
                         totalLore += dbCard.lore;
                         count++;
+                        this._trackAction('quested', c.cardId);
                     }
                 });
 

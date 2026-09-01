@@ -461,6 +461,32 @@ As a player, I want a grayscale palette option in Tweaks that desaturates the wh
 - Stays self-contained in the single HTML file.
 
 
+## Feature 34: Turn Starting Hand section on multiverse nodes
+
+### User Story
+- As a player I want each multiverse node to show the hand I started that turn with, after my draw.
+- I want to see at a glance which of those cards left my hand by the time I passed the turn.
+
+### Details
+- New section at the **bottom** of the node's section stack: **Turn Starting Hand**.
+- Contents = the active player's hand at the start of that turn, captured **after the draw step** (and after a mulligan or crafted hand on turn 1).
+- Cards that left the hand during the turn — played, inked, discarded, put back on the deck, anything — are **greyed out and crossed with a diagonal rule**; the cards still held stay in full colour. The section count reads e.g. `7 · −4`, with a tooltip spelling it out.
+- Matching is by card instance, so a second copy of the same card isn't wrongly marked.
+- The starting-hand row **wraps onto a second line** instead of scrolling sideways, so a whole hand is visible at once. Its thumbnails are one size smaller so a normal 7-card opener still fits on one line.
+- Imported Duels.ink logs and replays fill the section from the reconstructed hand, inferring "left" by card id from what was played or inked that turn.
+
+## Feature 35: Cards Quested section on multiverse nodes
+
+### User Story
+- As a player I want each multiverse node to show which characters quested during that turn.
+
+### Details
+- New **Cards Quested** section, between Cards Banished and Turn Starting Hand.
+- Filled by both quest paths: questing a single character and the "quest with everything" action.
+- Also appears in the node's turn recap text as a `- **Quested:**` line.
+- Imported Duels.ink logs and replays fill it from their quest events.
+
+
 # Progress
 
 - [x] Feature 1: Manual Lore Scoring
@@ -498,4 +524,6 @@ As a player, I want a grayscale palette option in Tweaks that desaturates the wh
 - [x] Feature 31: New display section in Multiverse Tree view Nodes
 - [x] Feature 32: Text only mode
 - [x] Feature 33: Grayscale (Mono) player palette
+- [x] Feature 34: Turn Starting Hand section on multiverse nodes
+- [x] Feature 35: Cards Quested section on multiverse nodes
 

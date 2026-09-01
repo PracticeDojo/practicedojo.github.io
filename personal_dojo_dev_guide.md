@@ -1050,3 +1050,87 @@ The accent swatch row in Tweaks is inside `<body>`, so the swatches render grey 
 Their `title` tooltips and the `#tweak-accent-name` label still identify them. Un-filtering a
 descendant of a filtered element isn't possible in CSS; fixing it would mean moving the filter off
 body, which costs the guarantee in §18.2.
+
+---
+
+## **19\. Feature 34/35: Turn Starting Hand + Cards Quested node sections (v2.16.1)**
+
+Sixth and last entry in `TREE_SECTIONS`: the hand the active player began that turn with (after their
+draw), with every card that left the hand during the turn crossed out.
+
+### 19.1 Entries are objects, not cardIds
+
+This is the first section whose items carry state, so a section array may now hold **either** a bare
+cardId **or** `{ id, left }`. `buildNodeSectionsHtml` normalises with
+`ids.map(e => (e && typeof e === 'object') ? e : { id: e })` — every existing section is unaffected,
+and a future section can carry per-card state the same way. `TREE_SECTIONS` entries gained an
+optional `marksLeft: true`, which only turns on the `N · −M` count and its tooltip.
+
+### 19.2 Capture points, and the one ordering trap
+
+`state.turnStartHand = { player, cards: [{ id, iid }] }` — **instanceIds are the point**: matching by
+cardId would mark both copies of a 2-of when only one was played.
+
+Captured by `_captureTurnStartHand(playerIndex)` at every moment a turn's opening hand becomes final:
+
+| Where | Why |
+|---|---|
+| `startGame()`, after the opening 7 | turn 1 has no `endTurn` to capture it |
+| `confirmMulligan()` | the post-mulligan hand is the real opener |
+| `confirmCraftHand()` | same, for a crafted hand |
+| `endTurn()`, after the draw step | every subsequent turn |
+
+**The trap:** `endTurn()` writes the node for the turn that just *ended*, but it has already flipped
+players and drawn for the *new* one. So the new capture is held in a local (`turnStartHandSnap`) and
+only assigned to `state.turnStartHand` **after** the node is pushed — alongside the buffer reset.
+Write it earlier and every node shows the next turn's hand. The comparison in
+`_buildStartingHandSection()` reads `players[snap.player]`, not the active player, for the same
+reason: at node-write time the ending player is `inactivePlayer`, and `endTurn` doesn't touch their
+hand, so it's still exactly what they finished with.
+
+`turnStartHand` was added to `compressState`/`decompressState` so a restored bookmark keeps it. When
+it's missing (an old save, or a manual bookmark taken right after restoring mid-turn) the section
+renders empty rather than guessing.
+
+### 19.3 The "left" mark
+
+`.tn-card-thumb.is-left` greys and dims the **artwork/text layers** (`.card-img`, `.card-fallback`)
+and draws a corner-to-corner rule as a `::after` gradient. The filter deliberately sits on the inner
+layers, not the tile: a filter on the tile would grey its own pseudo-element and the slash would lose
+its colour.
+
+### 19.4 Importers
+
+Both fill the section, but by **cardId inference** — neither format carries the instance identity
+needed for an exact answer:
+- `.md`: hand at the snapshot (which is *pre-draw* there, since the draw is one of the turn's parsed
+  events) **plus** `t.draws`; "left" = a cardId present in `t.played` / `t.inked`, decremented per
+  match so duplicates behave.
+- Replay: the segment snapshot is already post-ready+draw, so its hand is used as-is; "left" from
+  `segPlayed`/`segInked` the same way. The opponent's hand is itself inferred (§7.6), so treat this
+  as indicative.
+
+### 19.5 A wrapping section
+
+`TREE_SECTIONS` entries gained `wrap: true` (Turn Starting Hand is the only user today). It emits
+`.tn-sec.is-wrap`, which turns the row from `nowrap` + horizontal scroll into `flex-wrap: wrap` and
+drops its thumbs to **24×34** — 7 × 24 + 6 × 3 gap = 186px inside the 208px content box, so a normal
+7-card opener still lands on **one** line and only a bigger hand takes a second.
+
+The node keeps its fixed height for free: `.tn-cards` is `flex-shrink: 0` and `.tn-comment` is
+`flex: 1; min-height: 0`, so a second row eats into the comment area, not the node box. Past two rows
+the section scrolls vertically (`max-height: 78px`) so a freak 20-card hand can't blow it out.
+
+### 19.6 Cards Quested (Feature 35)
+
+`_trackAction('quested', cardId)` from **both** quest paths — `quest(instanceId)` and the
+quest-with-everything loop (easy to miss: the second one exerts characters inline and never calls the
+first). Also added to `_formatTurnActions` as a `- **Quested:**` line. Importers: `.md` reads
+`t.quested`, whose entries are objects (`{ name, loreBefore, loreAfter, playerIdx }`) not strings, so
+it maps `.name` first; the replay reads `takenAction.type === 'QUEST'`.
+
+### 19.7 Height
+
+Seven sections put `TREE_NODE_H.full` at **510** (label 16px + row 46px each, plus the body). Empty
+sections still collapse to their label row, so a typical turn node is far shorter than the worst
+case. Compact view is unchanged at 250.
