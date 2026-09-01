@@ -920,3 +920,74 @@ Header button in the tree modal (`#tree-view-toggle`, left of Reset Zoom) → `t
 Persisted as `treeNodeView` in `localStorage['lorcana_dojo_tweaks']`, read by `applyTweaks` (which
 also calls `syncTreeViewToggle()` to set the icon/label). After toggling, `centerTreeOnNode()` keeps
 the focused node under the cursor — every node moved, since heights changed.
+
+---
+
+## **17\. Feature 32: Text-Only Card Mode (v2.14.2)**
+
+### 17.1 It's the offline face, made deliberate
+
+Feature 27/29 already built a full text face for every card — `.card-fallback` (name, version, cost,
+strength/willpower) painted **under** the artwork, on every surface that shows a card. Text-only mode
+is therefore not a new renderer: it is **"don't append the `<img>`"**.
+
+```js
+paintCardFace(host, dbCard, opts) {
+    host.classList.add('card-face');
+    host.appendChild(this.makeCardFallback(dbCard));
+    if (!this.isTextCardMode()) host.appendChild(this.makeCardImg(dbCard, opts));
+}
+```
+
+Because §12.4 already routed **every** card surface through `paintCardFace` or `cardThumbHtml`
+(board, hand, inkwell, discard, stacks, Inspect Deck, Inspect Discard, mulligan, craft pool, card
+search, timeline "Cards …" thumb strips), those two edits cover the whole app. No call site changed.
+
+### 17.2 What else stops loading
+
+| Surface | In text mode |
+|---|---|
+| `cardThumbHtml` | emits the fallback div only, no `<img>` tag |
+| `warmImages()` | early-returns — the §14.3 warm pool never starts, so a text-mode session makes **no** card-art requests |
+| `.card-back` (opponent hand / un-flipped ink) | `body.cards-text .card.card-back` replaces the remote Wikipedia card-back with a CSS stripe pattern |
+| `showPreview` | `useTextCard = isTextCardMode() \|\| type === 'Location'`, so the sidebar builds the §15 `buildCardTextView` — the "details section works for all cards like we did for Locations" requirement |
+
+### 17.3 The face got dressed up (affects offline mode too)
+
+`makeCardFallback` now also paints an **ink identity strip** down the left edge: `--cf-ink` (a
+`linear-gradient` for dual-ink cards) and `--cf-ink-1` (first color, kept plain so `color-mix()`
+works). `cardInkColors()` / `cardInkStripValue()` sit next to `getCardImage` and read the same
+`inkColorMap` as the text card. The strip is 5% wide and the face's left padding went 6% → 9%, so it
+scales identically from a 140px mulligan card to an 18px timeline thumb.
+
+In text mode only, `body.cards-text .card-fallback` adds a faint ink-tinted gradient and a hairline
+inset ring.
+
+**Inkability is a shape, not a colour.** `.cf-cost` carries `.is-inkable` / `.is-uninkable` and
+copies the §15 text card's badge language: a **gold disc** with a thin white inner ring vs. a **dark
+hexagon** (`clip-path`, which can't take a border, so the fill carries the contrast). Both are sized
+in `em`, so they ride the §12.5 container-query font from a 140px mulligan card down to a board tile.
+A second, redundant cue survives past the size where the badge shape is legible: the fallback box
+itself gets `.is-uninkable`, which flattens the ink tint and thins the edge strip. Colour alone was
+not enough — v2.14.1 tinted the number gold and the two states still read as identical.
+
+> These changes are visible **offline in Art mode too** — that path renders the same element. That's
+> intended: it's the same information either way.
+
+### 17.4 The tweak
+
+**Tweaks → Card display: Art / Text**, stored as `cardMode` in `lorcana_dojo_tweaks`. `applyTweaks`
+caches `this.cardMode` (read on every card paint, so never localStorage) and mirrors it onto
+`document.body.classList.toggle('cards-text', …)` for the CSS-only pieces. The button handler
+re-runs `render()` + `renderTree()` + `renderAutoSaves()`, since faces are built during render.
+
+**There is exactly one text mode.** Feature 30's separate *Card preview: Art / Text* row and its
+`previewMode` setting are **gone** (v2.14.2): two adjacent Art/Text rows in the same panel just meant
+the wrong one got clicked, and the board appeared not to respond. `cardMode` now governs board,
+grids and preview together. `showPreview`'s own offline chain (full-res → warmed thumb → text) is
+untouched in Art mode, and Locations still always use the text card. **Don't reintroduce a
+preview-only toggle.**
+
+`isTextCardMode()` **self-seeds** from `loadTweaks()` when `this.cardMode` is still `undefined`, so a
+render that beats `applyTweaks` (restored session, an importer path) can't paint artwork in text
+mode.

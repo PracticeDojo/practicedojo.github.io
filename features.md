@@ -426,15 +426,27 @@ As a player whose card artwork can't load — or who just prefers reading text �
 
 ### Details
 - the nodes should still have a fixes height. in this new default view they should be higher to display the different sections
-- the sections in order should be: Cards played, Cards Inked, Cards Drawn, Cards Discarded, Cards Banished.
+- the sections in order should be: Cards played, Cards Inked, Cards Banished. 
 - we should implement this in a modular way so that if in the future we want to add new section it's trivial
+- we need to make sure that this works with logs imported from duels.ink as well as the normal logs creted by the dojo.
+
+
+## Feature 32: Text only mode
+
+### User Story
+- As a player, I want to have a text only mode for the game
+- I want to have a text only mode for the game that removes all card images and only displays the card text
+
+### Details
+- This should use the existing card text functionality from Feature 30
+- the card should be displayed using the card text
+- it should be possible to switch between the two modes using the tweaks menu
+- We should make sure that the cards details section works with this mode as well for all cards like we implemented for locations
 
 ### Notes
-- "Cards Played" no longer repeats inked cards — inking a card now only fills the Inked section (both by drag-and-drop and by the right-click menu, which previously disagreed).
-- A card leaving the **field** to the discard counts as Banished; from hand/inkwell/deck it counts as Discarded.
-- Cards Drawn covers the turn's draw step and any manual deck click/draw; opening hands and mulligan redraws are excluded (not turn actions).
-- Imported Duels.ink `.md` logs fill Played / Inked / Drawn / Banished (the log has no discard lines). Replays fill Played / Inked / Banished (draws ride inside the state patch and the opponent's are hidden).
-
+- **One toggle only**: Tweaks → Card display: Art / Text governs the board, every card grid and the preview pane together. The separate preview-only Art/Text row from Feature 30 was removed — two near-identical rows just meant the wrong one got clicked.
+- Inkable vs uninkable is shown on the text face the way the card prints it: a gold disc for inkable, a dark hexagon for uninkable, plus a flatter face tint on uninkable cards so the two stay distinguishable at the smallest card sizes.
+- Text mode makes no card-image requests at all: the image warm pool is skipped and the face-down card back becomes a CSS pattern instead of a remote image.
 
 # Progress
 
@@ -471,4 +483,5 @@ As a player whose card artwork can't load — or who just prefers reading text �
 - [x] Feature 29: Offline hardening — card stats on the fallback + images that stay loaded
 - [x] Feature 30: Offline text card in the preview pane
 - [x] Feature 31: New display section in Multiverse Tree view Nodes
+- [x] Feature 32: Text only mode
 
