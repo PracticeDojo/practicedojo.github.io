@@ -448,6 +448,19 @@ As a player whose card artwork can't load — or who just prefers reading text �
 - Inkable vs uninkable is shown on the text face the way the card prints it: a gold disc for inkable, a dark hexagon for uninkable, plus a flatter face tint on uninkable cards so the two stay distinguishable at the smallest card sizes.
 - Text mode makes no card-image requests at all: the image warm pool is skipped and the face-down card back becomes a CSS pattern instead of a remote image.
 
+## Feature 33: Grayscale (Mono) player palette
+
+### User Story
+As a player, I want a grayscale palette option in Tweaks that desaturates the whole interface, while still letting me tell the two players apart.
+
+### Details
+- Third option in **Tweaks → Player palette**: Modern / Classic / **Mono**.
+- No colour anywhere in the interface: chrome, badges, metric bars, timeline nodes, the ink identity strips on cards, and the card artwork itself.
+- The two players stay distinguishable by **lightness** rather than hue — P1 reads bright, P2 reads heavy. (Desaturating the normal palette alone would collapse amber P1 and blue P2 into nearly the same gray.)
+- Persisted with the other tweaks and applied instantly.
+- Stays self-contained in the single HTML file.
+
+
 # Progress
 
 - [x] Feature 1: Manual Lore Scoring
@@ -484,4 +497,5 @@ As a player whose card artwork can't load — or who just prefers reading text �
 - [x] Feature 30: Offline text card in the preview pane
 - [x] Feature 31: New display section in Multiverse Tree view Nodes
 - [x] Feature 32: Text only mode
+- [x] Feature 33: Grayscale (Mono) player palette
 

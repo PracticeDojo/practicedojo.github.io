@@ -991,3 +991,62 @@ preview-only toggle.**
 `isTextCardMode()` **self-seeds** from `loadTweaks()` when `this.cardMode` is still `undefined`, so a
 render that beats `applyTweaks` (restored session, an importer path) can't paint artwork in text
 mode.
+
+---
+
+## **18\. Feature 33: Mono (Grayscale) Palette (v2.15.1)**
+
+Third option in **Tweaks → Player palette**: Modern / Classic / **Mono**. Stored in the existing
+`palette` tweak — no new key.
+
+### 18.1 Why it takes two layers
+
+A single `filter: saturate(0)` would have been one line, and it would have been wrong: P1 is amber
+(`oklch(0.74 0.14 60)`) and P2 is blue (`oklch(0.72 0.13 200)`). Desaturated, those are **L .74 vs
+L .72** — indistinguishable. The whole point of the player colours is telling the two boards apart.
+
+So `body.palette-mono` does both:
+
+1. **Restates every token at chroma 0**, and re-separates the players by *lightness*: P1
+   `oklch(0.93 0 0)` (near-white), P2 `oklch(0.50 0 0)` (mid), with `-hi/-soft/-faint` widened to
+   match. Metrics (`--bcr` .70 / `--lvi` .86 / `--rds` .58 / `--ctl` .95) keep distinct steps so the
+   tug-of-war bars stay readable.
+2. **`filter: saturate(0)` on `<body>`** as the catch-all for colour the tokens don't own: the ~25
+   leftover Tailwind hues in older modals, every ink hex JS writes inline (`--cf-ink` card strips,
+   `--pip` deck pips, `getDeckGradient` victory gradients, `--ctv-ink` on the text card) and the card
+   artwork.
+
+Layer 2 runs *after* paint, so layer 1's greys pass through untouched — the ordering is what lets a
+crude filter and a careful palette coexist.
+
+### 18.2 Why the filter is on `<body>` specifically
+
+`body` is `height:100%; overflow:hidden` — a viewport-sized, non-scrolling box. A `filter` makes an
+element the containing block for `position:fixed` descendants, and there are **12** of those in this
+file (context menu, modals, drawers, toasts). Because body's box *is* the viewport, none of them
+move. **Putting this filter on a smaller element means re-checking all 12.**
+
+### 18.3 Cascade note
+
+`applyTweaks` writes Classic's `--p1`/`--p2` inline on `<html>`. Mono's tokens live on
+`body.palette-mono`, which redefines them one level lower — so for everything inside `<body>` (i.e.
+the entire UI) mono wins regardless of what's inline on the root. Mono still calls
+`removeProperty` on those four, same as Modern, so switching back is clean.
+
+### 18.4 The v2.15.0 miss — watch the selector list
+
+The rule was first inserted directly above `body { margin:0; height:100% … }` — but that rule is
+actually `html,
+body { … }`. Inserting between the two lines produced `html, body.palette-mono`,
+so `html` matched unconditionally and **every** palette rendered as Mono. Fixed in v2.15.1 by
+restoring `html, body` and standing the mono block on its own.
+
+Cheap guard when editing this file's CSS: `grep -B1` the anchor for a trailing comma, and after any
+insert check that `{` and `}` still balance inside `<style>` (597/597 as of v2.15.1).
+
+### 18.5 Known trade-off
+
+The accent swatch row in Tweaks is inside `<body>`, so the swatches render grey while Mono is on.
+Their `title` tooltips and the `#tweak-accent-name` label still identify them. Un-filtering a
+descendant of a filtered element isn't possible in CSS; fixing it would mean moving the filter off
+body, which costs the guarantee in §18.2.
