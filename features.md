@@ -417,6 +417,19 @@ As a player whose card artwork can't load — or who just prefers reading text �
 - Needs no network at all — the card data is already in memory, and cached in IndexedDB since v2.11.0.
 - Stays self-contained in the single HTML file.
 
+## Feature 31: New display section in Multiverse Tree view Nodes
+
+### User Story
+- I want to have more information visually displayed on the multiverse tree view
+- I want the individual nodes to show cards inked, banished in a similar fashion to how currently we have "Cards Played"
+- I want to have this view be the default but have a compact view where the nodes are displayed like now, only displaying cards played
+
+### Details
+- the nodes should still have a fixes height. in this new default view they should be higher to display the different sections
+- the sections in order should be: Cards played, Cards Inked, Cards Banished. 
+- we should implement this in a modular way so that if in the future we want to add new section it's trivial
+
+
 # Progress
 
 - [x] Feature 1: Manual Lore Scoring
@@ -451,4 +464,5 @@ As a player whose card artwork can't load — or who just prefers reading text �
 - [x] Feature 28: Dynamic Play-Area Card Auto-Scaling / Responsive Fit
 - [x] Feature 29: Offline hardening — card stats on the fallback + images that stay loaded
 - [x] Feature 30: Offline text card in the preview pane
+- [ ] Feature 31: New display section in Multiverse Tree view Nodes
 
