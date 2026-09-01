@@ -5320,7 +5320,7 @@
         let cardFuse = null;
         let allSessions = [];
 
-        const APP_VERSION = "v2.15.1"; // Centralized version string (redesign)
+        const APP_VERSION = "v2.15.2"; // Centralized version string (redesign)
 
         // Tweaks panel accent presets (hue values for the OKLCH accent ramp)
         const ACCENT_PRESETS = {
@@ -8413,7 +8413,25 @@
                 container.innerHTML = '';
                 const p = this.state.players[this.state.activePlayer];
 
-                p.hand.forEach(c => {
+                // Cheapest-first, so the opening curve is readable at a glance. Only the
+                // first 7 are mulliganable, so only those are sorted; anything the sandbox
+                // added beyond them (drawing before opening this modal) keeps its place at
+                // the end. Display order only — `p.hand` itself is never reordered, and
+                // selection is by instanceId, so nothing downstream cares.
+                const MULLIGAN_LIMIT = 7;
+                const cardCost = (c) => {
+                    const db = this.cardDB[c.cardId];
+                    return (db && db.cost !== undefined && db.cost !== null) ? db.cost : 99;
+                };
+                const cardName = (c) => {
+                    const db = this.cardDB[c.cardId];
+                    return String((db && (db.name || db.fullName)) || '');
+                };
+                const displayHand = p.hand.slice(0, MULLIGAN_LIMIT)
+                    .sort((a, b) => cardCost(a) - cardCost(b) || cardName(a).localeCompare(cardName(b)))
+                    .concat(p.hand.slice(MULLIGAN_LIMIT));
+
+                displayHand.forEach(c => {
                     const dbCard = this.cardDB[c.cardId];
                     const el = document.createElement('div');
                     el.className = `relative rounded-md bg-cover bg-center cursor-pointer transition-all duration-200 shadow-md border border-white/10`;

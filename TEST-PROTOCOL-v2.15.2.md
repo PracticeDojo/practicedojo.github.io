@@ -1,4 +1,4 @@
-# Test Protocol — v2.15.1 (Feature 33: Mono / Grayscale Palette)
+# Test Protocol — v2.15.2 (Feature 33: Mono palette + mulligan card order)
 
 File under test: `practice_dojo/practice_dojo.html`
 A/B baseline: `git show HEAD:practice_dojo/practice_dojo.html`.
@@ -11,7 +11,7 @@ untouched.
 
 ## 0. Smoke
 
-- [ ] Loading screen, setup modal and sidebar all read **v2.15.1**. If not, hard-refresh (Ctrl+F5).
+- [ ] Loading screen, setup modal and sidebar all read **v2.15.2**. If not, hard-refresh (Ctrl+F5).
 - [ ] Start a game. Palette starts on whatever you had before (Modern by default).
 
 ## 1. Modern / Classic unchanged — **the v2.15.0 bug**
@@ -75,6 +75,21 @@ A CSS filter can shift `position: fixed` elements. Check each while Mono is on:
 - [ ] At 360px in Mono, the board halves are still tellable apart and text contrast is comfortable.
 - [ ] No visible performance drop when playing cards / opening the tree (the page-wide filter is the
       thing to watch here — report any sluggishness).
+
+## 7. Mulligan hand is ordered by ink cost (v2.15.2)
+
+- [ ] Start a new game and open the **mulligan** screen. The 7 cards are laid out **cheapest on the
+      left, most expensive on the right**.
+- [ ] Cards that cost the same sit next to each other, in alphabetical order (stable — reopening the
+      modal gives the same layout).
+- [ ] Marking / unmarking cards for mulligan still works, and the marked card stays in place (the X
+      overlay lands on the card you clicked).
+- [ ] The mulligan **odds panel** still updates as you mark cards.
+- [ ] Confirm the mulligan → the replacement cards are drawn correctly and the hand on the board is
+      normal.
+- [ ] Sandbox check: before opening the mulligan, click your deck a few times so the hand is 9 cards,
+      then open it. The **first 7** are sorted by cost; the extra cards sit after them in draw order.
+- [ ] The board hand itself is **not** reordered by this — only the mulligan screen.
 
 ---
 
