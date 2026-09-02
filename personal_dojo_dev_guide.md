@@ -205,6 +205,14 @@ Both importers share the **same modal and the same loader tail** (`_applyDojoLog
 
 LorcanaJSON indexes cards by numeric `id`; duels uses `"setCode-number"`. On card load we build `App.setNumberIndex["<setCode>-<number>"] = cardDB entry` (e.g. `"10-57"` → the Olaf card whose numeric id is `2246`). `resolveCardName` checks this index for any `setCode-number`-shaped string, so **both** importers benefit and there is one resolution path.
 
+**Variant printings (v2.16.2 fix).** `App.allCards` deliberately excludes `Enchanted` / `Promo` / `Special` rarities (deck building and search should only offer standard versions), but players *do* run them, so replays reference ids like `"10-227"` (Enchanted Demona) or `"9-P3-8"` (a P3 promo). A second pass over the **unfiltered** `data.cards` bridges those:
+
+- Every variant id (`<set>-<number>`, plus `<set>-<promoGroup>-<number>` derived from the `fullIdentifier` token `P#`/`C#`/`PD#`/`D23`) maps to the **standard printing of the same `fullName`**.
+- The ~67 variants with no standard twin (Q1/Q2 quest cards, promo-only cards) are registered in `cardDB` **by numeric id only** — renderable, but still absent from `allCards`/Fuse search.
+- `resolveCardName` now looks the string up in `setNumberIndex` directly and, if a duels-shaped id (`^\w+-[\w-]*\d+$`) misses, returns `null` instead of falling through to the fuzzy name search (which would have matched an arbitrary card).
+
+> **Symptom this fixed:** importing a replay containing an Enchanted card produced `cardId: -999` placeholders on the field, and `buildField` / the quest counter dereferenced `this.cardDB[c.cardId].type` / `.lore` unguarded → `TypeError: Cannot read properties of undefined`. Those three call sites are now null-guarded, so genuinely unknown cards degrade instead of crashing the render.
+
 ### **7.5 State Mapping (duels → Dojo)**
 
 - Duels player **N → Dojo index N-1** (player 1 → `players[0]`, player 2 → `players[1]`), regardless of perspective. `myPlayer` maps to `players[perspective-1]`, `opponent` to the other.

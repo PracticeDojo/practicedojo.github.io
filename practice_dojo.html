@@ -5362,7 +5362,7 @@
         let cardFuse = null;
         let allSessions = [];
 
-        const APP_VERSION = "v2.16.1"; // Centralized version string (redesign)
+        const APP_VERSION = "v2.16.2"; // Centralized version string (redesign)
 
         // Tweaks panel accent presets (hue values for the OKLCH accent ramp)
         const ACCENT_PRESETS = {
@@ -5891,6 +5891,28 @@
                             const snKey = `${c.setCode}-${c.number}`;
                             if (!this.setNumberIndex[snKey]) this.setNumberIndex[snKey] = c;
                         }
+                    });
+
+                    // Variant bridge (Enchanted / Promo / Special printings).
+                    // These are excluded from allCards on purpose (deck building + search should only
+                    // offer standard versions), but real decks play them, so duels.ink replays reference
+                    // them by their own set/number ids (e.g. "10-227" = Enchanted Demona, "9-P3-8" = a P3
+                    // promo). Without this bridge those ids resolve to nothing and import as unknown cards.
+                    // Each variant id is mapped to the standard printing of the same card; variants with no
+                    // standard twin are registered in cardDB by id only (still renderable, still out of search).
+                    data.cards.forEach(c => {
+                        const r = (c.rarity || '').toLowerCase();
+                        if (r !== 'enchanted' && r !== 'promo' && r !== 'special') return;
+                        const standard = c.fullName ? this.cardDB[c.fullName.toLowerCase()] : null;
+                        const target = standard || c;
+                        if (!standard) this.cardDB[c.id] = c;
+                        if (c.setCode == null || c.number == null) return;
+                        const keys = [`${c.setCode}-${c.number}`];
+                        // Promo printings carry a group token in their identifier ("8/P3 • EN • 9"),
+                        // which duels.ink splices into the id as "<set>-<group>-<number>".
+                        const promoGroup = /\b(P\d+|C\d+|PD\d+|D23)\b/.exec(c.fullIdentifier || '');
+                        if (promoGroup) keys.push(`${c.setCode}-${promoGroup[1]}-${c.number}`);
+                        keys.forEach(k => { if (!this.setNumberIndex[k]) this.setNumberIndex[k] = target; });
                     });
 
                     cardFuse = new Fuse(this.allCards, { keys: ['name', 'simpleName'], threshold: 0.3 });
@@ -6742,9 +6764,12 @@
 
             resolveCardName(name) {
                 if (!name) return null;
-                // duels.ink "setCode-number" format (e.g. "10-57") — resolve via the set/number index
-                if (typeof name === 'string' && /^\w+-\d+$/.test(name) && this.setNumberIndex[name]) {
-                    return this.setNumberIndex[name];
+                // duels.ink id format (e.g. "10-57", or "9-P3-8" for promos) — resolve via the set/number index
+                if (typeof name === 'string') {
+                    if (this.setNumberIndex[name]) return this.setNumberIndex[name];
+                    // A duels-shaped id that the index doesn't know is genuinely unknown; falling through
+                    // to the fuzzy name search below would match an arbitrary card.
+                    if (/^\w+-[\w-]*\d+$/.test(name)) return null;
                 }
                 const lower = name.toLowerCase().trim();
                 if (this.cardDB[lower]) return this.cardDB[lower];
@@ -9480,7 +9505,7 @@
                     faceUp: false
                 });
 
-                this.logAction(`Slipped top card of deck underneath ${this.cardDB[targetFound.card.cardId].name}.`);
+                this.logAction(`Slipped top card of deck underneath ${(this.cardDB[targetFound.card.cardId] || {}).name || 'an unknown card'}.`);
                 this.render();
             },
 
@@ -10975,9 +11000,9 @@
                 container.style.flexWrap = fit.wrap ? 'wrap' : 'nowrap';
                 container.style.padding = `calc(4px * ${scale}) calc(8px * ${scale})`;
 
-                const locations = player.field.filter(c => this.cardDB[c.cardId].type === 'Location');
+                const locations = player.field.filter(c => this.cardDB[c.cardId] && this.cardDB[c.cardId].type === 'Location');
                 const charactersAtLocations = player.field.filter(c => c.locationId);
-                const independentCards = player.field.filter(c => !c.locationId && this.cardDB[c.cardId].type !== 'Location');
+                const independentCards = player.field.filter(c => !c.locationId && (!this.cardDB[c.cardId] || this.cardDB[c.cardId].type !== 'Location'));
 
                 // Render independent cards
                 independentCards.forEach(c => {
@@ -11291,7 +11316,7 @@
                 // Quest Count & Mulligan Visibility
                 let readyLoreChars = 0;
                 // Update quest counter to exclude drying characters
-                ap.field.forEach(c => { if (!c.exerted && !c.drying && this.cardDB[c.cardId].lore > 0) readyLoreChars++; });
+                ap.field.forEach(c => { const db = this.cardDB[c.cardId]; if (!c.exerted && !c.drying && db && db.lore > 0) readyLoreChars++; });
                 document.getElementById('quest-count').innerText = readyLoreChars;
                 const questCountMobile = document.getElementById('quest-count-mobile');
                 if (questCountMobile) questCountMobile.innerText = readyLoreChars;
