@@ -487,6 +487,18 @@ As a player, I want a grayscale palette option in Tweaks that desaturates the wh
 - Imported Duels.ink logs and replays fill it from their quest events.
 
 
+## Feature 36: "Competition" player palette
+
+### User Story
+- I want the default palette to be a new palette Called: Competition 
+- I want this palette to take into account the 2 colors of each deck the 2 players are playing and shade their player corresponding areas in the gui in those 2 corresponding colors
+
+### Details
+
+- the player areas should follow this color scheme 
+- the nodes in the multiverse should also follow this color scheme. we should make sure that the node left spine that currently is one color has the 2 colors. we should give it 2 different patterns in the spine to differentiate the two different players if they are playing the same colours
+- for example player 1 spine should just be split in 2 and have the two colours. while player 2 spine should have a "barber shop 💈" pattern almond the spine of the node displaying it's corresponding 2 colors.
+
 # Progress
 
 - [x] Feature 1: Manual Lore Scoring
@@ -526,4 +538,5 @@ As a player, I want a grayscale palette option in Tweaks that desaturates the wh
 - [x] Feature 33: Grayscale (Mono) player palette
 - [x] Feature 34: Turn Starting Hand section on multiverse nodes
 - [x] Feature 35: Cards Quested section on multiverse nodes
+- [ ] Feature 36: "Competition" player palette
 
