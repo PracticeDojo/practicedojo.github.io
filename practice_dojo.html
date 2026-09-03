@@ -592,6 +592,134 @@
             --ok: oklch(0.70 0 0);
         }
 
+        /* ===================================================================
+           COMPETITION PALETTE · Feature 36 — the default.
+
+           The interface takes its colours from what the two players actually
+           brought: each side's chrome is shaded in that deck's two inks.
+
+           Token model: --p1 / --p2 stay the deck's FIRST ink, so every rule
+           already reading them keeps working untouched; --p1-2 / --p2-2 carry
+           the second ink. Both pairs are written onto <html> by
+           applyCompetitionPalette() from the live decks — no ink is hardcoded
+           here, and with no game loaded the tokens fall back to Modern.
+
+           Where two inks share one surface they are WOVEN, not blended, and the
+           two players get different weaves — a hard split for P1, a barber pole
+           for P2. That is what keeps a mirror match readable: when both decks
+           run the same ink pair, colour can't tell the two sides apart. Pattern
+           can. Learn the two weaves once and they mean the same thing on the
+           board, in the sidebar, and on every node in the multiverse. */
+        :root {
+            --p1-2: var(--p1);
+            --p1-2-hi: var(--p1-hi);
+            --p2-2: var(--p2);
+            --p2-2-hi: var(--p2-hi);
+        }
+
+        body.palette-competition {
+            /* Along a vertical spine. */
+            --weave-p1: linear-gradient(180deg, var(--p1) 0 50%, var(--p1-2) 50% 100%);
+            --weave-p2: repeating-linear-gradient(45deg, var(--p2) 0 12px, var(--p2-2) 12px 24px);
+            /* Along a horizontal rule. The barber pole is direction-agnostic. */
+            --weave-p1-h: linear-gradient(90deg, var(--p1) 0 50%, var(--p1-2) 50% 100%);
+            --weave-p2-h: var(--weave-p2);
+        }
+
+        /* --- Board halves: the wash runs from ink A at the player's own edge to
+               ink B toward the centre line, so each half reads as its deck pair. */
+        body.palette-competition .board-half.is-p1 {
+            --half-1: color-mix(in oklch, var(--p1-2) 16%, var(--bg));
+            --half-2: color-mix(in oklch, var(--p1) 30%, var(--bg));
+            --half-glow: color-mix(in oklch, var(--p1) 45%, transparent);
+        }
+
+        body.palette-competition .board-half.is-p2 {
+            --half-1: color-mix(in oklch, var(--p2-2) 16%, var(--bg));
+            --half-2: color-mix(in oklch, var(--p2) 30%, var(--bg));
+            --half-glow: color-mix(in oklch, var(--p2) 45%, transparent);
+        }
+
+        /* The weave as a hairline along each player's outer edge — the board's
+           copy of the same identity mark the multiverse nodes carry. */
+        body.palette-competition .board-half::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            right: 0;
+            height: 3px;
+            pointer-events: none;
+            z-index: 0;
+            opacity: 0.85;
+        }
+
+        body.palette-competition .board-half.top::after {
+            top: 0;
+        }
+
+        body.palette-competition .board-half.bottom::after {
+            bottom: 0;
+        }
+
+        body.palette-competition .board-half.is-p1::after {
+            background-image: var(--weave-p1-h);
+        }
+
+        body.palette-competition .board-half.is-p2::after {
+            background-image: var(--weave-p2-h);
+        }
+
+        /* Pile rows pick up both inks so the hand / ink / discard strip belongs
+           to the same deck as the half it sits in. */
+        body.palette-competition .board-half.is-p1 .pile-row {
+            background: linear-gradient(100deg,
+                    color-mix(in oklch, var(--p1) 17%, var(--bg)),
+                    color-mix(in oklch, var(--p1-2) 17%, var(--bg)));
+        }
+
+        body.palette-competition .board-half.is-p2 .pile-row {
+            background: linear-gradient(100deg,
+                    color-mix(in oklch, var(--p2) 17%, var(--bg)),
+                    color-mix(in oklch, var(--p2-2) 17%, var(--bg)));
+        }
+
+        /* --- Sidebar player rows: the 3px identity border becomes the weave.
+               The border is dropped and the space it held is handed back as
+               padding, so nothing on the row shifts. */
+        body.palette-competition .player-row {
+            position: relative;
+            border-left-width: 0;
+            padding-left: 13px;
+        }
+
+        body.palette-competition .player-row::before,
+        body.palette-competition .autosave-item.is-p1::before,
+        body.palette-competition .autosave-item.is-p2::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            border-radius: var(--radius-sm) 0 0 var(--radius-sm);
+        }
+
+        /* Auto-saves are turn nodes too, so they carry the same mark. */
+        body.palette-competition .player-row.is-p1::before,
+        body.palette-competition .autosave-item.is-p1::before {
+            background-image: var(--weave-p1);
+        }
+
+        body.palette-competition .player-row.is-p2::before,
+        body.palette-competition .autosave-item.is-p2::before {
+            background-image: var(--weave-p2);
+        }
+
+        body.palette-competition .autosave-item.is-p1,
+        body.palette-competition .autosave-item.is-p2 {
+            padding-left: 13px;
+        }
+
         html,
         body {
             margin: 0;
@@ -3016,6 +3144,72 @@
             color: var(--accent-hi);
         }
 
+        /* Competition palette · Feature 36 — the node spine carries BOTH of that
+           player's inks, and each player weaves them differently: P1 a hard split
+           down the middle, P2 a barber pole. In a mirror match the two decks are
+           the same two colours, so the weave is the only thing left that says
+           whose turn a node is. Widened to 6px so a stripe survives zooming out. */
+        body.palette-competition .tree-node.tn-p1,
+        body.palette-competition .tree-node.tn-p2 {
+            border-left-width: 1px;
+            border-left-color: var(--border);
+        }
+
+        /* The node BODY carries the ink pair too, not just the spine. The base rule
+           veils a single flat --node-c behind 82% surface, which at that strength
+           reads as "slightly warm grey" vs "slightly cool grey" — not enough to sort
+           two players apart while scanning a tree. Here the veil thins to 70% and the
+           tint becomes a diagonal wash across BOTH of that deck's inks, so a node is
+           legible as its player from across the canvas.
+
+           The wash runs the opposite way for each player (P1 down-right, P2 up-right,
+           matching the barber pole's 45°), which keeps some separation in a mirror
+           match even before you read the spine. */
+        body.palette-competition .tree-node.tn-p1 {
+            background:
+                linear-gradient(0deg, color-mix(in oklch, var(--surface-2) 70%, transparent), color-mix(in oklch, var(--surface-2) 70%, transparent)),
+                linear-gradient(135deg, var(--p1), var(--p1-2));
+        }
+
+        body.palette-competition .tree-node.tn-p2 {
+            background:
+                linear-gradient(0deg, color-mix(in oklch, var(--surface-2) 70%, transparent), color-mix(in oklch, var(--surface-2) 70%, transparent)),
+                linear-gradient(45deg, var(--p2), var(--p2-2));
+        }
+
+        /* A victory node keeps the winner's full-strength deck gradient. */
+        body.palette-competition .tree-node.is-victory.tn-p1,
+        body.palette-competition .tree-node.is-victory.tn-p2 {
+            background:
+                linear-gradient(0deg, color-mix(in oklch, var(--surface-2) 76%, transparent), color-mix(in oklch, var(--surface-2) 76%, transparent)),
+                var(--node-g);
+        }
+
+        body.palette-competition .tree-node.tn-p1::before,
+        body.palette-competition .tree-node.tn-p2::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 6px;
+            z-index: 2;
+        }
+
+        body.palette-competition .tree-node.tn-p1::before {
+            background-image: var(--weave-p1);
+        }
+
+        body.palette-competition .tree-node.tn-p2::before {
+            background-image: var(--weave-p2);
+        }
+
+        /* An active node keeps its ring; the spine is the identity, not the state. */
+        body.palette-competition .tree-node.is-active.tn-p1,
+        body.palette-competition .tree-node.is-active.tn-p2 {
+            border-left-color: var(--accent);
+        }
+
         .tn-body {
             padding: 10px;
             display: flex;
@@ -3742,6 +3936,38 @@
         .tweak-radio button.is-active {
             background: var(--surface-hi);
             color: var(--text);
+        }
+
+        /* Four palettes don't fit one 280px row; 2×2 keeps every label whole
+           down to a 360px phone. */
+        #tweak-palette {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .tweak-inks {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 7px;
+            font-size: 11px;
+            color: var(--text-dim);
+        }
+
+        .tweak-inks:empty {
+            display: none;
+        }
+
+        .tweak-inks .ink-pair {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .tweak-inks .ink-chip {
+            width: 22px;
+            height: 8px;
+            border-radius: 999px;
+            border: 1px solid var(--border);
         }
 
         input[type="range"] {
@@ -5342,11 +5568,14 @@
             <div class="tweak">
                 <div class="tweak-label"><span>Player palette</span></div>
                 <div class="tweak-radio" id="tweak-palette">
-                    <button data-val="modern" class="is-active" title="Amber P1 / blue P2">Modern</button>
+                    <button data-val="competition" class="is-active"
+                        title="Each side is shaded in its own deck's two inks. P1's node spine is split in two, P2's is a barber pole, so a mirror match still reads">Competition</button>
+                    <button data-val="modern" title="Amber P1 / blue P2">Modern</button>
                     <button data-val="classic" title="The original orange P1 / purple P2">Classic</button>
                     <button data-val="mono"
                         title="Grayscale: no colour anywhere. Players are told apart by lightness — P1 bright, P2 heavy">Mono</button>
                 </div>
+                <div class="tweak-inks" id="tweak-palette-inks"></div>
             </div>
         </div>
     </div>
@@ -5362,7 +5591,7 @@
         let cardFuse = null;
         let allSessions = [];
 
-        const APP_VERSION = "v2.16.2"; // Centralized version string (redesign)
+        const APP_VERSION = "v2.17.2"; // Centralized version string (redesign)
 
         // Tweaks panel accent presets (hue values for the OKLCH accent ramp)
         const ACCENT_PRESETS = {
@@ -5609,19 +5838,33 @@
                 return Math.random().toString(36).substr(2, 9);
             },
 
+            // Every ink present across a player's whole card pool.
+            //
+            // Two things this has to get right, and both were wrong before v2.17.1:
+            //  1. Zones hold card OBJECTS ({instanceId, cardId, …}), not bare ids —
+            //     only `field` was being mapped, so deck/hand/discard/inkwell all
+            //     looked up `cardDB[object]` and found nothing. Raw ids are still
+            //     accepted because the importers leave some behind.
+            //  2. A dual-ink card prints `color` as "Amber-Steel". Lowercasing that
+            //     yields a key no ink map has. `colors` is the array to prefer, with
+            //     a split on the hyphen as the fallback.
             getDeckColors(playerId) {
-                const p = this.state.players[playerId];
+                const p = this.state && this.state.players && this.state.players[playerId];
+                if (!p) return [];
                 const colors = new Set();
-                const allCards = [
-                    ...p.deck,
-                    ...p.hand,
-                    ...p.field.map(c => c.cardId),
-                    ...p.discard,
-                    ...p.inkwell
-                ];
-                allCards.forEach(cid => {
-                    const card = this.cardDB[cid];
-                    if (card && card.color) colors.add(card.color.toLowerCase());
+                const idOf = (c) => (c && typeof c === 'object') ? c.cardId : c;
+                [p.deck, p.hand, p.field, p.discard, p.inkwell].forEach(zone => {
+                    (zone || []).forEach(entry => {
+                        const card = this.cardDB[idOf(entry)];
+                        if (!card) return;
+                        const inks = (card.colors && card.colors.length)
+                            ? card.colors
+                            : (card.color ? String(card.color).split('-') : []);
+                        inks.forEach(c => {
+                            const k = String(c).trim().toLowerCase();
+                            if (k) colors.add(k);
+                        });
+                    });
                 });
                 return Array.from(colors);
             },
@@ -5633,6 +5876,100 @@
                 'ruby': '#ef4444',
                 'sapphire': '#3b82f6',
                 'steel': '#6b7280'
+            },
+
+            // Feature 36 · Competition palette.
+            // The interface palette is derived from the decks, so the six inks need
+            // UI-grade values, not the card-art hexes in inkColorMap. Two reasons:
+            // OKLCH so the -hi / -soft / -faint ramps and every color-mix() stay
+            // predictable, and a common lightness band (~0.68–0.79) so a Steel deck
+            // isn't unreadably dark on the dark shell while an Amber one glares.
+            // Steel keeps near-zero chroma — that IS its identity.
+            inkTokenMap: {
+                amber: { l: 0.79, c: 0.145, h: 78 },
+                amethyst: { l: 0.70, c: 0.155, h: 305 },
+                emerald: { l: 0.74, c: 0.135, h: 158 },
+                ruby: { l: 0.68, c: 0.175, h: 22 },
+                sapphire: { l: 0.72, c: 0.125, h: 245 },
+                steel: { l: 0.78, c: 0.028, h: 250 }
+            },
+
+            // Canonical ink order, so "which ink is primary" never depends on the
+            // order cards happen to sit in the deck — a re-render must not repaint
+            // the board. Also matches how players name a deck ("Amber/Steel").
+            inkOrder: ['amber', 'amethyst', 'emerald', 'ruby', 'sapphire', 'steel'],
+
+            // The (up to) two inks a player brought, in canonical order.
+            // Returns [] when the deck isn't loaded yet.
+            competitionInks(playerId) {
+                try {
+                    if (!this.state || !this.state.players || !this.state.players[playerId]) return [];
+                    return this.getDeckColors(playerId)
+                        .filter(c => this.inkTokenMap[c])
+                        .sort((a, b) => this.inkOrder.indexOf(a) - this.inkOrder.indexOf(b))
+                        .slice(0, 2);
+                } catch (e) {
+                    return [];
+                }
+            },
+
+            // Write one player's ink pair onto <html> as the --pN token family.
+            // --pN stays the primary ink so every existing rule keeps working;
+            // --pN-2 is the second ink, read only by the competition rules.
+            _setPlayerInkTokens(root, n, inks) {
+                const ink = this.inkTokenMap[inks[0]];
+                const ink2 = this.inkTokenMap[inks[1]] || ink;
+                const at = (t, dl = 0, a = null) => {
+                    const l = Math.min(0.94, t.l + dl);
+                    return `oklch(${l.toFixed(3)} ${t.c} ${t.h}${a === null ? '' : ' / ' + a})`;
+                };
+                root.style.setProperty(`--p${n}`, at(ink));
+                root.style.setProperty(`--p${n}-hi`, at(ink, 0.08));
+                root.style.setProperty(`--p${n}-soft`, at(ink, 0, 0.20));
+                root.style.setProperty(`--p${n}-faint`, at(ink, 0, 0.08));
+                root.style.setProperty(`--p${n}-2`, at(ink2));
+                root.style.setProperty(`--p${n}-2-hi`, at(ink2, 0.08));
+            },
+
+            _clearPlayerInkTokens(root) {
+                ['--p1', '--p1-hi', '--p1-soft', '--p1-faint', '--p1-2', '--p1-2-hi',
+                    '--p2', '--p2-hi', '--p2-soft', '--p2-faint', '--p2-2', '--p2-2-hi']
+                    .forEach(v => root.style.removeProperty(v));
+            },
+
+            // Re-derive the Competition tokens from the live decks. Cheap and
+            // idempotent, so render() can call it on every frame — decks change
+            // when a session is loaded, a log is imported or a deck is edited.
+            applyCompetitionPalette() {
+                const root = document.documentElement;
+                if (!document.body.classList.contains('palette-competition')) return;
+
+                const inks = [this.competitionInks(0), this.competitionInks(1)];
+                // No decks yet (setup screen, mid-load): fall through to Modern's
+                // stylesheet values rather than painting a half-derived palette.
+                if (!inks[0].length || !inks[1].length) {
+                    this._clearPlayerInkTokens(root);
+                } else {
+                    this._setPlayerInkTokens(root, 1, inks[0]);
+                    this._setPlayerInkTokens(root, 2, inks[1]);
+                }
+                this.renderPaletteInks(inks);
+            },
+
+            // The Tweaks readout: which pair the palette picked up for each side.
+            renderPaletteInks(inks) {
+                const host = this.$('tweak-palette-inks');
+                if (!host) return;
+                if (!inks || !inks[0] || !inks[0].length || !inks[1] || !inks[1].length) {
+                    host.innerHTML = '';
+                    host.title = '';
+                    return;
+                }
+                const label = (arr) => arr.map(c => c.charAt(0).toUpperCase() + c.slice(1)).join(' / ');
+                host.innerHTML = [0, 1].map(i => `
+                    <span class="ink-pair" title="Player ${i + 1}: ${label(inks[i])}">
+                        <span class="ink-chip" style="background-image:var(--weave-p${i + 1}-h)"></span>P${i + 1}
+                    </span>`).join('');
             },
 
             getDeckGradient(colors) {
@@ -5672,6 +6009,9 @@
                         color: typeof bColor === 'string' && !bColor.includes('gradient') ? bColor : 'var(--accent)', // victory gold when the edge is a gradient
                         gradient: bColor.includes('gradient') ? bColor : null,
                         isVictory: true,
+                        // A victory node's colour is the winner's deck ink, so the
+                        // player can't be read back off it (Feature 36). Store it.
+                        playerIdx: winnerId,
                         state: JSON.stringify(this.compressState(this.state, true)),
                         timestamp: Date.now(),
                         isDeckEdit: false
@@ -8290,8 +8630,12 @@
                     const icon = isVictory ? '<i class="fa-solid fa-trophy"></i>'
                         : b.isDeckEdit ? '<i class="fa-solid fa-layer-group"></i>' : '<i class="fa-solid fa-bookmark"></i>';
 
+                    // Feature 36: which player owns the node, so the Competition
+                    // palette can weave its spine in that deck's two inks.
+                    const pIdx = this.bookmarkPlayerIndex(b);
+
                     const el = document.createElement('div');
-                    el.className = `tree-node ${isVictory ? 'is-victory' : ''} ${isActive ? 'is-active' : ''} ${isNavActive ? 'is-nav' : ''}`;
+                    el.className = `tree-node ${isVictory ? 'is-victory' : ''} ${isActive ? 'is-active' : ''} ${isNavActive ? 'is-nav' : ''} ${pIdx === null ? '' : 'tn-p' + (pIdx + 1)}`;
                     el.style.left = `${pos.x}px`;
                     el.style.top = `${pos.y}px`;
 
@@ -8346,8 +8690,12 @@
                 const buildHtml = (list) => {
                     if (list.length === 0) return `<div class="autosave-empty">No auto-saves available.</div>`;
                     return list.map(b => {
+                        // Feature 36: an auto-save is a turn node, so it wears the
+                        // same player weave the multiverse node does.
+                        const pIdx = this.bookmarkPlayerIndex(b);
+                        const pCls = pIdx === null ? '' : ` is-p${pIdx + 1}`;
                         return `
-                        <div class="autosave-item" role="button" tabindex="0" onclick="App.restoreTimeline('${b.id}', true)"
+                        <div class="autosave-item${pCls}" role="button" tabindex="0" onclick="App.restoreTimeline('${b.id}', true)"
                             onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();App.restoreTimeline('${b.id}', true)}"
                             aria-label="Restore auto-save: ${b.name.replace(/"/g, '&quot;')}">
                             <div class="as-name">${b.name}</div>
@@ -8542,6 +8890,20 @@
             // reference so saved nodes follow palette tweaks instead of freezing a hex.
             playerBookmarkColor(playerIndex) {
                 return playerIndex === 0 ? 'var(--p1)' : 'var(--p2)';
+            },
+
+            // Which player a saved node belongs to, or null. Nodes store a colour,
+            // not an index — every writer (autosave, manual save, deck edit, both
+            // Duels.ink importers) funnels through playerBookmarkColor or the legacy
+            // hexes, so resolving the colour recovers the player. Victory nodes carry
+            // an explicit playerIdx because their colour is the winner's deck ink.
+            bookmarkPlayerIndex(b) {
+                if (!b) return null;
+                if (b.playerIdx === 0 || b.playerIdx === 1) return b.playerIdx;
+                const c = this.resolveBookmarkColor(b.color);
+                if (c === 'var(--p1)') return 0;
+                if (c === 'var(--p2)') return 1;
+                return null;
             },
 
             // Saved sessions may carry the pre-redesign hex colors; map them onto tokens.
@@ -11331,6 +11693,10 @@
                     craftHandBtn.classList.add('hidden');
                 }
 
+                // Feature 36: the palette is derived from the decks, and the decks
+                // arrive late (session load, log import) and change (deck edits).
+                this.applyCompetitionPalette();
+
                 this.updateLog();
                 this.updateMetrics();
                 this.updateProbPane();
@@ -11515,6 +11881,7 @@
                     }
                 }
                 if (t.palette === 'classic') {
+                    this._clearPlayerInkTokens(root);
                     root.style.setProperty('--p1', '#a86b32');
                     root.style.setProperty('--p1-hi', '#d18a45');
                     root.style.setProperty('--p2', '#3f2e70');
@@ -11523,14 +11890,17 @@
                     // modern + mono both use the stylesheet's values. Mono's live on
                     // `body.palette-mono`, which outranks anything inline on <html>
                     // for everything inside <body> — i.e. the entire UI.
-                    root.style.removeProperty('--p1');
-                    root.style.removeProperty('--p1-hi');
-                    root.style.removeProperty('--p2');
-                    root.style.removeProperty('--p2-hi');
+                    // Competition writes its own tokens back on, just below.
+                    this._clearPlayerInkTokens(root);
                 }
                 document.body.classList.toggle('palette-mono', t.palette === 'mono');
+                // Feature 36: derived from the live decks, so it has to be
+                // recomputed here AND on every render (decks change mid-session).
+                document.body.classList.toggle('palette-competition', t.palette === 'competition');
+                if (t.palette === 'competition') this.applyCompetitionPalette();
+                else this.renderPaletteInks(null);
                 const pal = this.$('tweak-palette');
-                if (pal) pal.querySelectorAll('button').forEach(b => b.classList.toggle('is-active', b.dataset.val === (t.palette || 'modern')));
+                if (pal) pal.querySelectorAll('button').forEach(b => b.classList.toggle('is-active', b.dataset.val === (t.palette || 'competition')));
 
                 // Multiverse node density (Feature 31) — toggled from the tree modal header.
                 this.treeNodeView = t.treeNodeView === 'compact' ? 'compact' : 'full';
@@ -11555,7 +11925,15 @@
                 // Smaller default cards on touch devices so the board fits a phone screen.
                 if (!t.cardSize) t.cardSize = (window.matchMedia && window.matchMedia('(pointer: coarse)').matches) ? 0.8 : 1;
                 if (!t.layout) t.layout = 'docked';
-                if (!t.palette) t.palette = 'modern';
+                // Feature 36 made Competition the default palette. A browser that has
+                // played before already has `palette: 'modern'` written to localStorage,
+                // which would silently defeat that — so move existing installs across
+                // once, stamped so a later switch back to Modern is never undone.
+                if (!t.paletteV) {
+                    t.palette = 'competition';
+                    t.paletteV = 36;
+                }
+                if (!t.palette) t.palette = 'competition';
                 if (!t.cardMode) t.cardMode = 'art';
                 if (!t.treeNodeView) t.treeNodeView = 'full';
                 const row = this.$('tweak-accent-row');

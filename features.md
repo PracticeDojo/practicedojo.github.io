@@ -499,6 +499,18 @@ As a player, I want a grayscale palette option in Tweaks that desaturates the wh
 - the nodes in the multiverse should also follow this color scheme. we should make sure that the node left spine that currently is one color has the 2 colors. we should give it 2 different patterns in the spine to differentiate the two different players if they are playing the same colours
 - for example player 1 spine should just be split in 2 and have the two colours. while player 2 spine should have a "barber shop 💈" pattern almond the spine of the node displaying it's corresponding 2 colors.
 
+### Notes
+- **Competition is now the default palette** (Modern / Classic / Mono remain). Anyone with a palette already saved in Tweaks keeps it.
+- The palette is *derived*, not fixed: `applyCompetitionPalette()` reads each player's inks off the live decks and writes them onto `<html>` as `--p1`/`--p2` (the deck's first ink, canonical ink order) plus new `--p1-2`/`--p2-2` (the second ink). Every rule that already read `--p1`/`--p2` therefore picks up the deck colour for free — HUD, lore badges, metric bars, log entries, turn pill, tree connector lines.
+- Inks get UI-grade OKLCH values (`inkTokenMap`), not the card-art hexes in `inkColorMap`, so the `-hi`/`-soft`/`-faint` ramps and every `color-mix()` behave, and a Steel deck stays readable on the dark shell. Steel keeps near-zero chroma.
+- Re-derived on every `render()`, so loading a session, importing a Duels.ink log or editing a deck repaints the palette. With no game loaded it falls back to Modern rather than painting half a palette.
+- **Two weaves, one per player.** Where both inks share a surface they are woven, not blended: **P1 = hard 50/50 split**, **P2 = 45° barber pole**. Colour alone can't tell a mirror match apart — pattern can. The same two weaves appear on the multiverse node spine (6px), the auto-save rows, the sidebar player rows and a hairline along each board half's outer edge, so the mark means the same thing everywhere.
+- Board halves wash from the player's first ink at their own edge to the second ink toward the centre line; pile rows carry both.
+- Nodes recover their owner via `bookmarkPlayerIndex()` (stored colour → player). Victory nodes store an explicit `playerIdx`, since their colour is the winner's deck ink; pre-existing victory nodes keep their old gradient spine.
+- Tweaks shows which pair was picked up for each side, with the player's weave in the chip.
+- **v2.17.1 fix:** `getDeckColors()` was already broken and made the palette look inert. Zone arrays hold card *objects* (`{instanceId, cardId, …}`) but only `field` was mapped to ids, so deck/hand/discard/inkwell looked up `cardDB[object]` and found nothing; and a dual-ink card prints `color` as `"Amber-Steel"`, which lowercases to a key no ink map has. Both fixed (`colors` array preferred, hyphen split as fallback). This also repairs the victory-node deck gradient (Feature 15) and the setup-screen ink pair (session summary), which had the same defect.
+- **v2.17.1:** one-time migration flips installs that already had `palette: "modern"` in localStorage over to Competition, stamped so a later deliberate switch back is never undone.
+
 # Progress
 
 - [x] Feature 1: Manual Lore Scoring
@@ -538,5 +550,5 @@ As a player, I want a grayscale palette option in Tweaks that desaturates the wh
 - [x] Feature 33: Grayscale (Mono) player palette
 - [x] Feature 34: Turn Starting Hand section on multiverse nodes
 - [x] Feature 35: Cards Quested section on multiverse nodes
-- [ ] Feature 36: "Competition" player palette
+- [x] Feature 36: "Competition" player palette
 
