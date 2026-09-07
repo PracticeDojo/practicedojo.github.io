@@ -3,12 +3,26 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Practice Dojo — restore in progress</title>
-  <style>body{font-family:system-ui,sans-serif;max-width:40rem;margin:3rem auto;padding:0 1rem;line-height:1.5}code{background:#f4f4f4;padding:.1em .3em;border-radius:4px}</style>
+  <title>Practice Dojo</title>
 </head>
 <body>
-  <h1>Practice Dojo — restore in progress</h1>
-  <p>The app file was accidentally overwritten with a placeholder during an MCP push attempt. Last good tree: commit <code>7ec5fcd1188ca68a70458e0b6123c87d943ba690</code> (APP_VERSION v2.17.2). Target restore: local <code>/tmp/practice_dojo.html</code> (APP_VERSION v2.17.3, 542730 chars).</p>
-  <p>Do not use this page as the app. Parent agent must re-push the full HTML via user-Github MCP <code>create_or_update_file</code> / <code>push_files</code> with a channel that can carry ~558KB tool args, or restore from git then apply v2.17.3.</p>
+<script>
+(async function () {
+  const PARTS = 31;
+  const base = new URL('./_bundle/', window.location.href);
+  let html = '';
+  for (let i = 0; i < PARTS; i++) {
+    const name = 'part-' + String(i).padStart(3, '0') + '.txt';
+    const res = await fetch(new URL(name, base));
+    if (!res.ok) throw new Error('Failed to load ' + name + ' (' + res.status + ')');
+    html += await res.text();
+  }
+  document.open();
+  document.write(html);
+  document.close();
+})().catch(function (err) {
+  document.body.innerHTML = '<main style="font-family:system-ui;max-width:36rem;margin:3rem auto;padding:0 1rem"><h1>Practice Dojo failed to load</h1><pre>' + String(err) + '</pre></main>';
+});
+</script>
 </body>
 </html>
