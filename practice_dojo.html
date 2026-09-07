@@ -3,25 +3,22 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Practice Dojo</title>
+  <title>Lorcana Practice Dojo</title>
 </head>
 <body>
 <script>
 (async function () {
-  const PARTS = 68;
-  const base = new URL('./_bundle/', window.location.href);
-  let html = '';
-  for (let i = 0; i < PARTS; i++) {
-    const name = 'part-' + String(i).padStart(3, '0') + '.txt';
-    const res = await fetch(new URL(name, base));
-    if (!res.ok) throw new Error('Failed to load ' + name + ' (' + res.status + ')');
-    html += await res.text();
-  }
+  // Revert pin: last good monolithic app before Botty's broken push attempts.
+  // Commit 7ec5fcd1188ca68a70458e0b6123c87d943ba690 == v2.17.2 (same bytes as pre-touch main).
+  var url = 'https://cdn.jsdelivr.net/gh/heavenideas/heavenideas.github.io@7ec5fcd1188ca68a70458e0b6123c87d943ba690/practice_dojo/practice_dojo.html';
+  var res = await fetch(url);
+  if (!res.ok) throw new Error('Failed to load reverted Practice Dojo (' + res.status + ')');
+  var html = await res.text();
   document.open();
   document.write(html);
   document.close();
 })().catch(function (err) {
-  document.body.innerHTML = '<main style="font-family:system-ui;max-width:36rem;margin:3rem auto;padding:0 1rem"><h1>Practice Dojo failed to load</h1><pre>' + String(err) + '</pre></main>';
+  document.body.innerHTML = '<main style="font-family:system-ui;max-width:36rem;margin:3rem auto;padding:0 1rem"><h1>Practice Dojo revert failed</h1><pre>' + String(err) + '</pre></main>';
 });
 </script>
 </body>
