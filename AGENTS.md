@@ -1,6 +1,11 @@
-# Gemini Context and Instructions
+# AI Agents Context and Instructions
 
-This file provides system instructions and context for Gemini (or other AI assistants) working in this directory.
+This file provides system instructions and context for AI agents working in this directory.
+
+## Read the main context files
+1. **`features.md`**: This document is the single source of truth for current and planned features, user stories, and progress. Always refer to this file when working on a feature, and ensure its progress checkboxes are updated when a feature is completed.
+2. **`personal_dojo_dev_guide.md`**: This document is a dev guide that you should read to understand how the tool works.
+3. **`practice_dojo/practice_dojo.html#`**: This is where the whole tool lives and where the user is going to be asking for changes. Treat it with respect. Don't change anything that isn't specificially asked for
 
 ## Versioning Convention
 
