@@ -4785,6 +4785,1484 @@
                 /* below 16px iOS Safari zooms the whole page on focus */
             }
         }
+
+        /* =====================================================================
+           Feature 37 · Card interaction redesign
+           Option A field controls (damage stepper, willpower track, lethal),
+           challenge mode + forecast, touch card drawer, phone hand fan, ink
+           counter + inkwell panel, and the short card animations.
+           ===================================================================== */
+
+        /* Things drawn on the wrap (outside .card) need the card's scale too. */
+        .card-wrap {
+            --cs: calc(var(--card-scale, 1) * var(--field-scale, 1));
+            --badge-scale: clamp(0.6, var(--cs), 1);
+        }
+
+        /* ----- Option A: hover controls on field cards ----- */
+        .card-ctrl {
+            position: absolute;
+            inset: 0;
+            /* above `.card:hover` (z-index 20) so the hovered card can't swallow the clicks */
+            z-index: 22;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity .12s ease .04s;
+        }
+
+        .card-wrap:hover .card-ctrl,
+        .card-wrap.is-hovered .card-ctrl,
+        .card-wrap:focus-within .card-ctrl {
+            opacity: 1;
+            transition-delay: 0s;
+        }
+
+        .card-wrap:hover .card-ctrl>*,
+        .card-wrap.is-hovered .card-ctrl>*,
+        .card-wrap:focus-within .card-ctrl>* {
+            pointer-events: auto;
+        }
+
+        .dmg-step {
+            position: absolute;
+            left: 50%;
+            top: calc(5px * var(--badge-scale));
+            transform: translateX(-50%);
+            display: flex;
+            align-items: center;
+            height: calc(26px * var(--badge-scale));
+            padding: 0 2px;
+            border-radius: 999px;
+            background: oklch(0.13 0.008 60 / 0.94);
+            border: 1px solid var(--border-strong);
+            box-shadow: 0 6px 14px -6px oklch(0 0 0 / 0.9);
+            white-space: nowrap;
+        }
+
+        .dmg-step button {
+            width: calc(24px * var(--badge-scale));
+            height: calc(22px * var(--badge-scale));
+            padding: 0;
+            border: 0;
+            border-radius: 999px;
+            background: none;
+            color: var(--text);
+            font: 600 calc(15px * var(--badge-scale)) / 1 var(--font-mono);
+            cursor: pointer;
+        }
+
+        .dmg-step button:hover {
+            background: var(--danger);
+            color: #fff;
+        }
+
+        .dmg-step button.heal:hover {
+            background: var(--ok);
+            color: oklch(0.16 0.02 155);
+        }
+
+        .dmg-step .rd {
+            min-width: calc(30px * var(--badge-scale));
+            text-align: center;
+            font: 700 calc(11px * var(--badge-scale)) var(--font-mono);
+            color: var(--text);
+        }
+
+        .dmg-step .rd small {
+            font-size: 0.8em;
+            font-weight: 500;
+            color: var(--text-dim);
+        }
+
+        /* Verbs are small icon buttons in a column down the right edge (a row along
+           the bottom on landscape cards), so most of the face stays free to click
+           and drag — dojo cards are ~80px wide, too narrow for text chips. */
+        .card-verbs {
+            position: absolute;
+            right: calc(3px * var(--badge-scale));
+            top: calc(34px * var(--badge-scale));
+            display: flex;
+            flex-direction: column;
+            gap: calc(3px * var(--badge-scale));
+        }
+
+        .card-wrap.exerted .card-verbs,
+        .card-wrap.is-location .card-verbs {
+            top: auto;
+            right: 0;
+            left: 0;
+            bottom: calc(3px * var(--badge-scale));
+            flex-direction: row;
+            justify-content: center;
+        }
+
+        .card-verbs .chip {
+            width: calc(20px * var(--badge-scale));
+            height: calc(20px * var(--badge-scale));
+            padding: 0;
+            display: grid;
+            place-items: center;
+            background: oklch(0.13 0.008 60 / 0.92);
+            color: var(--text);
+            border: 1px solid var(--border-strong);
+            border-radius: calc(6px * var(--badge-scale));
+            box-shadow: 0 4px 10px -4px oklch(0 0 0 / 0.9);
+            cursor: pointer;
+            transition: background .1s ease, color .1s ease, border-color .1s ease;
+        }
+
+        .card-verbs .chip svg {
+            width: calc(12px * var(--badge-scale));
+            height: calc(12px * var(--badge-scale));
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 2.4;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .card-verbs .chip:hover {
+            background: var(--accent);
+            color: oklch(0.16 0.02 60);
+            border-color: var(--accent-hi);
+        }
+
+        .card-verbs .chip.is-danger:hover {
+            background: var(--danger);
+            color: #fff;
+            border-color: var(--danger);
+        }
+
+        .card-verbs .chip.is-challenge {
+            background: color-mix(in oklch, var(--danger) 45%, var(--surface-2));
+            border-color: var(--danger);
+        }
+
+        .card-verbs .chip.is-challenge:hover {
+            background: var(--danger);
+            color: #fff;
+        }
+
+        /* willpower track: one segment per point, click a segment to set damage */
+        .dmg-track {
+            position: absolute;
+            left: 2px;
+            right: 2px;
+            top: calc(100% + 2px);
+            height: calc(12px * var(--badge-scale));
+            display: flex;
+            gap: 2px;
+            z-index: 21;
+        }
+
+        .dmg-pip {
+            position: relative;
+            flex: 1;
+            min-width: 0;
+            padding: 0;
+            border: 0;
+            background: none;
+            cursor: pointer;
+        }
+
+        .dmg-pip::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: 50%;
+            height: calc(4px * var(--badge-scale));
+            transform: translateY(-50%);
+            border-radius: 2px;
+            background: oklch(1 0 0 / 0.16);
+            transition: background .2s ease, height .15s ease;
+        }
+
+        .dmg-pip.on::before {
+            background: var(--danger);
+        }
+
+        .dmg-pip.last::before {
+            box-shadow: inset 0 0 0 1px color-mix(in oklch, var(--danger) 75%, transparent);
+        }
+
+        .dmg-pip.ghost::before {
+            height: calc(6px * var(--badge-scale));
+            background: repeating-linear-gradient(135deg, var(--danger) 0 3px, oklch(0.3 0.05 25) 3px 6px);
+        }
+
+        .dmg-pip:hover::before {
+            height: calc(7px * var(--badge-scale));
+            background: color-mix(in oklch, var(--danger) 70%, var(--surface-3));
+        }
+
+        .dmg-pip:focus-visible {
+            outline: 2px solid var(--accent-hi);
+            outline-offset: 1px;
+            border-radius: 2px;
+        }
+
+        /* lethal: damage ≥ willpower — pulse + a one-tap Banish on the bottom edge */
+        .card-wrap.is-lethal .card {
+            animation: cardLethal 1.5s ease-in-out infinite;
+        }
+
+        @keyframes cardLethal {
+
+            0%,
+            100% {
+                box-shadow: 0 0 0 2px oklch(0.62 0.22 25 / 0.95), 0 calc(4px * var(--cs)) calc(10px * var(--cs)) calc(-2px * var(--cs)) oklch(0 0 0 / 0.55);
+            }
+
+            50% {
+                box-shadow: 0 0 0 4px oklch(0.62 0.22 25 / 0.3), 0 0 22px 2px oklch(0.62 0.22 25 / 0.45);
+            }
+        }
+
+        .lethal-pill {
+            position: absolute;
+            left: 50%;
+            bottom: 0;
+            transform: translate(-50%, 50%);
+            z-index: 23;
+            padding: calc(3px * var(--badge-scale)) calc(9px * var(--badge-scale));
+            border-radius: 999px;
+            border: 1px solid oklch(0.66 0.21 25);
+            background: oklch(0.2 0.05 25);
+            color: oklch(0.86 0.13 25);
+            font: 700 calc(9.5px * var(--badge-scale)) var(--font-mono);
+            letter-spacing: 0.08em;
+            white-space: nowrap;
+            cursor: pointer;
+        }
+
+        .lethal-pill:hover {
+            background: var(--danger);
+            color: #fff;
+        }
+
+        .card-wrap:hover .lethal-pill,
+        .card-wrap.is-hovered .lethal-pill {
+            display: none;
+        }
+
+        /* inline damage stepper inside the field-card context menu */
+        .ctx-stepper {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            padding: 3px 4px 3px 10px;
+            font-size: 12.5px;
+            color: var(--text-2);
+        }
+
+        .ctx-step-box {
+            display: inline-flex;
+            align-items: center;
+            gap: 2px;
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            background: var(--bg);
+            padding: 1px;
+        }
+
+        .ctx-stepper .ctx-step-btn {
+            width: 30px;
+            height: 26px;
+            padding: 0;
+            justify-content: center;
+            border-radius: 999px;
+            font: 600 15px var(--font-mono);
+            color: var(--text);
+        }
+
+        .ctx-step-val {
+            min-width: 38px;
+            text-align: center;
+            font: 700 12px var(--font-mono);
+            color: var(--text);
+        }
+
+        /* ----- short card animations (state changes re-render the board, so
+           each effect is a class the next build applies once) ----- */
+        .fx-float {
+            position: absolute;
+            left: 50%;
+            top: 30%;
+            z-index: 12;
+            pointer-events: none;
+            font: 700 calc(18px * var(--badge-scale)) var(--font-mono);
+            text-shadow: 0 2px 8px oklch(0 0 0 / 0.9);
+            white-space: nowrap;
+            transform: translate(-50%, 0);
+            opacity: 0;
+            animation: fxFloat .95s ease-out;
+        }
+
+        .fx-float.is-hit {
+            color: oklch(0.74 0.2 25);
+        }
+
+        .fx-float.is-heal {
+            color: oklch(0.82 0.15 155);
+        }
+
+        .fx-float.is-quest {
+            color: var(--lvi);
+        }
+
+        .fx-float.is-info {
+            color: var(--text);
+            font-size: calc(13px * var(--badge-scale));
+        }
+
+        @keyframes fxFloat {
+            0% {
+                opacity: 0;
+                transform: translate(-50%, 10px) scale(0.7);
+            }
+
+            15% {
+                opacity: 1;
+                transform: translate(-50%, 0) scale(1.1);
+            }
+
+            100% {
+                opacity: 0;
+                transform: translate(-50%, -46px) scale(1);
+            }
+        }
+
+        .card-wrap.fx-hit .card {
+            animation: fxShake .42s cubic-bezier(.36, .07, .19, .97);
+        }
+
+        .card-wrap.exerted.fx-hit .card,
+        .card-wrap.is-location.fx-hit .card {
+            animation: fxShakeRot .42s cubic-bezier(.36, .07, .19, .97);
+        }
+
+        /* a real element, not ::after — drying cards already use .card::after */
+        .fx-flash {
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            pointer-events: none;
+            z-index: 4;
+            opacity: 0;
+            animation: fxFlash .5s ease-out;
+        }
+
+        .fx-flash.is-hit {
+            background: oklch(0.62 0.22 25);
+        }
+
+        .fx-flash.is-heal {
+            background: oklch(0.75 0.15 155);
+        }
+
+        @keyframes fxFlash {
+            from {
+                opacity: 0.55;
+            }
+
+            to {
+                opacity: 0;
+            }
+        }
+
+        @keyframes fxShake {
+
+            0%,
+            100% {
+                translate: 0 0;
+            }
+
+            20% {
+                translate: -5px 0;
+            }
+
+            40% {
+                translate: 4px 0;
+            }
+
+            60% {
+                translate: -3px 0;
+            }
+
+            80% {
+                translate: 2px 0;
+            }
+        }
+
+        @keyframes fxShakeRot {
+
+            0%,
+            100% {
+                translate: 0 0;
+            }
+
+            20% {
+                translate: 0 -5px;
+            }
+
+            40% {
+                translate: 0 4px;
+            }
+
+            60% {
+                translate: 0 -3px;
+            }
+
+            80% {
+                translate: 0 2px;
+            }
+        }
+
+        .card-wrap.fx-hit .damage-counter,
+        .card-wrap.fx-heal .damage-counter {
+            animation: fxPop .45s cubic-bezier(.3, 1.6, .5, 1);
+        }
+
+        @keyframes fxPop {
+            from {
+                scale: 1.7;
+            }
+
+            to {
+                scale: 1;
+            }
+        }
+
+        .card-wrap.fx-exert .card {
+            animation: fxExert .34s cubic-bezier(.3, 1.35, .5, 1);
+        }
+
+        @keyframes fxExert {
+            from {
+                transform: translate(-50%, -50%) rotate(0deg);
+            }
+
+            to {
+                transform: translate(-50%, -50%) rotate(90deg);
+            }
+        }
+
+        .card-wrap.fx-ready .card {
+            animation: fxReady .34s cubic-bezier(.3, 1.35, .5, 1);
+        }
+
+        @keyframes fxReady {
+            from {
+                transform: rotate(90deg);
+            }
+
+            to {
+                transform: none;
+            }
+        }
+
+        .card-wrap.fx-quest {
+            animation: fxQuest .55s cubic-bezier(.3, 1.4, .5, 1);
+        }
+
+        @keyframes fxQuest {
+
+            0%,
+            100% {
+                translate: 0 0;
+            }
+
+            35% {
+                translate: 0 -14px;
+            }
+        }
+
+        .card-wrap.fx-arrive,
+        .card-wrap.fx-shift {
+            animation: fxArrive .45s cubic-bezier(.3, 1.4, .5, 1);
+        }
+
+        @keyframes fxArrive {
+            from {
+                opacity: 0;
+                translate: 0 40px;
+                scale: 0.85;
+            }
+
+            to {
+                opacity: 1;
+                translate: 0 0;
+                scale: 1;
+            }
+        }
+
+        .card-wrap.fx-leave {
+            animation: fxLeave .26s ease-in forwards;
+            pointer-events: none;
+        }
+
+        @keyframes fxLeave {
+            to {
+                opacity: 0;
+                translate: 0 18px;
+                scale: 0.85;
+                filter: grayscale(1);
+            }
+        }
+
+        /* ----- Challenge mode ----- */
+        body.challenge-mode .card-ctrl,
+        body.challenge-mode .lethal-pill {
+            display: none;
+        }
+
+        body.challenge-mode .dmg-track {
+            pointer-events: none;
+        }
+
+        body.challenge-mode .board-half {
+            box-shadow: inset 0 0 0 2px oklch(0.62 0.21 25 / 0.45);
+        }
+
+        body.challenge-mode .card-wrap.cm-mine .card {
+            cursor: grab;
+        }
+
+        body.challenge-mode .card-wrap.cm-mine:hover .card {
+            box-shadow: 0 0 0 2px oklch(0.95 0.01 60 / 0.75), 0 10px 20px -8px oklch(0 0 0 / 0.8);
+        }
+
+        .card-wrap.cm-attacker {
+            translate: 0 -8px;
+            z-index: 25;
+        }
+
+        .card-wrap.cm-attacker .card {
+            box-shadow: 0 0 0 2px oklch(0.97 0.01 60), 0 16px 30px -8px oklch(0 0 0 / 0.9) !important;
+        }
+
+        .card-wrap.cm-target .card {
+            cursor: crosshair;
+            box-shadow: 0 0 0 2px oklch(0.62 0.21 25 / 0.75), 0 0 16px 0 oklch(0.6 0.22 25 / 0.3);
+        }
+
+        .card-wrap.cm-target.is-hovered .card,
+        .card-wrap.cm-target:hover .card {
+            box-shadow: 0 0 0 3px oklch(0.7 0.22 25), 0 0 28px 2px oklch(0.6 0.22 25 / 0.55);
+        }
+
+        .card-wrap.cm-wait .card {
+            filter: brightness(0.62);
+        }
+
+        .card-wrap.cm-doom .card::before {
+            content: 'BANISHED';
+            position: absolute;
+            inset: 0;
+            z-index: 5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: inherit;
+            background: repeating-linear-gradient(135deg, oklch(0.55 0.2 25 / 0.42) 0 8px, oklch(0.2 0.05 25 / 0.35) 8px 16px);
+            box-shadow: inset 0 0 0 2px oklch(0.65 0.21 25);
+            font: 700 calc(10px * var(--badge-scale)) var(--font-mono);
+            letter-spacing: 0.12em;
+            color: oklch(0.9 0.1 25);
+            text-shadow: 0 1px 4px oklch(0 0 0 / 0.9);
+        }
+
+        .cm-badge {
+            position: absolute;
+            left: 50%;
+            bottom: calc(100% + 8px);
+            transform: translateX(-50%);
+            z-index: 30;
+            min-width: calc(96px * var(--badge-scale));
+            padding: 4px 8px 5px;
+            border-radius: 8px;
+            background: oklch(0.13 0.008 60 / 0.97);
+            border: 1px solid var(--border-strong);
+            display: flex;
+            flex-direction: column;
+            gap: 1px;
+            text-align: center;
+            pointer-events: none;
+            white-space: nowrap;
+            box-shadow: 0 10px 22px -10px oklch(0 0 0 / 0.9);
+        }
+
+        .cm-badge b {
+            font: 700 calc(10.5px * var(--badge-scale)) var(--font-mono);
+        }
+
+        .cm-badge span {
+            font: 500 calc(10px * var(--badge-scale)) var(--font-mono);
+            color: var(--text-2);
+        }
+
+        .cm-badge i {
+            font: 500 calc(9px * var(--badge-scale)) var(--font-mono);
+            font-style: normal;
+            color: var(--lvi);
+        }
+
+        .cm-badge.is-win,
+        .chal-fc.is-win {
+            border-color: oklch(0.62 0.12 155);
+        }
+
+        .cm-badge.is-win b,
+        .chal-fc.is-win .o {
+            color: oklch(0.82 0.14 155);
+        }
+
+        .cm-badge.is-trade,
+        .chal-fc.is-trade {
+            border-color: oklch(0.7 0.14 70);
+        }
+
+        .cm-badge.is-trade b,
+        .chal-fc.is-trade .o {
+            color: oklch(0.86 0.14 70);
+        }
+
+        .cm-badge.is-lose,
+        .chal-fc.is-lose {
+            border-color: oklch(0.62 0.21 25);
+        }
+
+        .cm-badge.is-lose b,
+        .chal-fc.is-lose .o {
+            color: oklch(0.8 0.17 25);
+        }
+
+        .chal-banner {
+            position: fixed;
+            left: 50%;
+            top: calc(var(--topbar-h, 52px) + 8px);
+            transform: translateX(-50%);
+            z-index: 60;
+            display: none;
+            align-items: center;
+            gap: 12px;
+            max-width: calc(100vw - 16px);
+            padding: 5px 5px 5px 14px;
+            border-radius: 999px;
+            background: var(--surface);
+            border: 1px solid oklch(0.62 0.21 25 / 0.65);
+            box-shadow: var(--shadow-3);
+            font-size: 13px;
+            color: var(--text-2);
+        }
+
+        body.challenge-mode .chal-banner {
+            display: flex;
+        }
+
+        .chal-banner .cb-key {
+            font: 700 10px var(--font-mono);
+            letter-spacing: 0.14em;
+            color: oklch(0.78 0.17 25);
+            white-space: nowrap;
+        }
+
+        .chal-banner .cb-text b {
+            color: var(--text);
+            font-weight: 600;
+        }
+
+        .chal-banner .cb-seg {
+            display: flex;
+            align-items: center;
+            gap: 2px;
+            padding: 2px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: var(--bg);
+        }
+
+        .chal-banner .cb-seg span {
+            font: 600 9.5px var(--font-mono);
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--text-faint);
+            padding: 0 5px;
+        }
+
+        .chal-banner .cb-seg button {
+            height: 26px;
+            padding: 0 9px;
+            border: 0;
+            border-radius: 6px;
+            background: none;
+            color: var(--text-2);
+            font: 500 12px var(--font-sans);
+            cursor: pointer;
+        }
+
+        .chal-banner .cb-seg button.is-active {
+            background: var(--surface-3);
+            color: var(--text);
+        }
+
+        .chal-banner .cb-done {
+            height: 32px;
+            padding: 0 12px;
+            border-radius: 999px;
+            border: 1px solid var(--border);
+            background: var(--surface-2);
+            color: var(--text);
+            font: 500 12.5px var(--font-sans);
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .chal-banner .cb-done:hover {
+            background: var(--surface-3);
+        }
+
+        #btn-challenge-mode.is-active {
+            background: oklch(0.55 0.2 25);
+            border-color: oklch(0.66 0.21 25);
+            color: #fff;
+        }
+
+        /* the forecast: Light = one pill over the target, Full = a card beside it */
+        .chal-fc {
+            position: fixed;
+            z-index: 9998;
+            display: none;
+            pointer-events: none;
+            background: oklch(0.13 0.008 60 / 0.97);
+            border: 1px solid var(--border-strong);
+            box-shadow: 0 14px 30px -12px oklch(0 0 0 / 0.9);
+            color: var(--text-2);
+        }
+
+        .chal-fc.is-light {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 5px 11px;
+            border-radius: 999px;
+            transform: translate(-50%, -100%);
+            white-space: nowrap;
+            font: 600 11.5px var(--font-mono);
+        }
+
+        .chal-fc.is-full {
+            display: flex;
+            flex-direction: column;
+            gap: 7px;
+            width: 236px;
+            padding: 10px 12px 12px;
+            border-radius: 12px;
+            border-color: oklch(0.62 0.21 25 / 0.7);
+        }
+
+        .chal-fc .o {
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .chal-fc .w {
+            color: var(--lvi);
+            font-weight: 500;
+        }
+
+        .chal-fc .fk {
+            font: 600 9.5px var(--font-mono);
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            color: oklch(0.78 0.17 25);
+        }
+
+        .chal-fc .frow {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto;
+            gap: 2px 8px;
+            align-items: baseline;
+        }
+
+        .chal-fc .fname {
+            font: 650 13px var(--font-sans);
+            color: var(--text);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .chal-fc .fnum {
+            font: 600 12px var(--font-mono);
+            color: var(--text);
+        }
+
+        .chal-fc .ftag {
+            grid-column: 1 / -1;
+            font: 700 10px var(--font-mono);
+            letter-spacing: 0.1em;
+        }
+
+        .chal-fc .ftag.dies {
+            color: oklch(0.74 0.19 25);
+        }
+
+        .chal-fc .ftag.lives {
+            color: oklch(0.78 0.12 155);
+        }
+
+        .chal-fc .fwarn {
+            font-size: 11.5px;
+            line-height: 1.4;
+            color: var(--lvi);
+        }
+
+        /* ----- Bottom sheets: card drawer (touch) + inkwell panel on phones ----- */
+        .sheet-scrim {
+            position: fixed;
+            inset: 0;
+            z-index: 70;
+            background: oklch(0.05 0.005 60 / 0.5);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity .2s ease;
+        }
+
+        .sheet-scrim.is-open {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .card-sheet {
+            position: fixed;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 71;
+            max-width: 560px;
+            margin: 0 auto;
+            max-height: 86vh;
+            overflow: auto;
+            padding: 8px 16px calc(18px + env(safe-area-inset-bottom, 0px));
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            border-radius: 18px 18px 0 0;
+            background: var(--surface);
+            border-top: 1px solid var(--border-strong);
+            box-shadow: 0 -16px 40px -12px oklch(0 0 0 / 0.9);
+            transform: translateY(105%);
+            visibility: hidden;
+            transition: transform .3s cubic-bezier(.2, 1.05, .4, 1), visibility 0s linear .3s;
+        }
+
+        .card-sheet.is-open {
+            transform: none;
+            visibility: visible;
+            transition: transform .3s cubic-bezier(.2, 1.05, .4, 1), visibility 0s;
+        }
+
+        .cs-grab {
+            align-self: center;
+            width: 40px;
+            height: 4px;
+            border-radius: 2px;
+            background: var(--border-strong);
+            flex: none;
+        }
+
+        .cs-head {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .cs-titles {
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 1px;
+        }
+
+        .cs-title {
+            font-size: 17px;
+            font-weight: 650;
+            color: var(--text);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .cs-sub {
+            font: 500 11.5px var(--font-mono);
+            color: var(--text-dim);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .cs-icon {
+            width: 44px;
+            height: 44px;
+            flex: none;
+            border: 0;
+            border-radius: 10px;
+            background: none;
+            color: var(--text-2);
+            font-size: 17px;
+            cursor: pointer;
+        }
+
+        .cs-label {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            font: 600 9.5px var(--font-mono);
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--text-faint);
+        }
+
+        .cs-label b {
+            font: 700 14px var(--font-mono);
+            letter-spacing: 0;
+            text-transform: none;
+            color: var(--text);
+        }
+
+        .cs-label b.is-lethal {
+            color: oklch(0.78 0.18 25);
+        }
+
+        .cs-segs {
+            display: flex;
+            gap: 4px;
+        }
+
+        .cs-seg {
+            flex: 1;
+            min-width: 0;
+            height: 44px;
+            padding: 0;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: var(--surface-2);
+            color: var(--text-dim);
+            font: 600 13px var(--font-mono);
+            cursor: pointer;
+        }
+
+        .cs-seg.on {
+            background: var(--danger);
+            border-color: var(--danger);
+            color: #fff;
+        }
+
+        .cs-seg.last {
+            border-color: color-mix(in oklch, var(--danger) 80%, transparent);
+        }
+
+        .cs-row {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 8px;
+        }
+
+        .cs-acts {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 6px;
+        }
+
+        .cs-btn {
+            min-height: 48px;
+            padding: 0 6px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            background: var(--surface-2);
+            color: var(--text);
+            font: 600 13px var(--font-sans);
+            cursor: pointer;
+        }
+
+        .cs-btn.big {
+            font: 600 16px var(--font-mono);
+        }
+
+        .cs-btn.is-challenge {
+            background: color-mix(in oklch, var(--danger) 40%, var(--surface-2));
+            border-color: var(--danger);
+        }
+
+        .cs-btn.is-danger {
+            color: oklch(0.8 0.16 25);
+        }
+
+        .cs-btn.is-primary {
+            background: var(--accent);
+            border-color: var(--accent-hi);
+            color: oklch(0.16 0.02 60);
+        }
+
+        .cs-btn.is-short {
+            background: oklch(0.45 0.13 50);
+            border-color: oklch(0.55 0.13 50);
+            color: #fff;
+        }
+
+        .cs-btn:disabled {
+            opacity: 0.35;
+            cursor: default;
+        }
+
+        .cs-more {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .cs-more .cs-btn {
+            flex: 1 1 auto;
+            min-height: 40px;
+            border-radius: 999px;
+            background: none;
+            font-weight: 500;
+            font-size: 12.5px;
+            color: var(--text-2);
+        }
+
+        /* ----- Ink counter + inkwell panel ----- */
+        .ink-cluster.is-counter {
+            cursor: pointer;
+            gap: 10px;
+        }
+
+        .ink-cluster.is-counter .ink-readout {
+            font-size: 16px;
+            font-weight: 700;
+            padding: 6px 12px;
+            position: relative;
+        }
+
+        .ink-cluster.is-counter:hover .ink-readout {
+            border-color: var(--accent-dim);
+        }
+
+        .inkwell.is-counter {
+            display: flex;
+            flex-wrap: wrap;
+            align-content: center;
+            align-items: center;
+            gap: 4px;
+            overflow: visible;
+        }
+
+        .ink-pip {
+            width: 11px;
+            height: 12px;
+            flex: none;
+            background: var(--bcr);
+            clip-path: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%);
+        }
+
+        .ink-pip.used {
+            background: oklch(1 0 0 / 0.16);
+        }
+
+        .ink-new {
+            position: absolute;
+            top: -8px;
+            right: -10px;
+            padding: 1px 6px;
+            border-radius: 999px;
+            background: var(--bcr);
+            color: oklch(0.16 0.02 240);
+            font: 700 9.5px var(--font-mono);
+        }
+
+        .ink-hint {
+            font: 500 10.5px var(--font-mono);
+            color: var(--text-faint);
+            white-space: nowrap;
+        }
+
+        .ink-panel {
+            position: fixed;
+            z-index: 72;
+            width: 360px;
+            max-height: 70vh;
+            overflow: auto;
+            padding: 12px;
+            display: none;
+            flex-direction: column;
+            gap: 10px;
+            border-radius: 14px;
+            background: var(--surface);
+            border: 1px solid var(--border-strong);
+            box-shadow: var(--shadow-3);
+        }
+
+        .ink-panel.is-open {
+            display: flex;
+        }
+
+        .ip-head {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .ip-head b {
+            flex: 1;
+            font-size: 15px;
+            font-weight: 650;
+            color: var(--text);
+        }
+
+        .ip-head span {
+            font: 500 11px var(--font-mono);
+            color: var(--text-dim);
+        }
+
+        .ip-acts {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 6px;
+        }
+
+        .ip-list {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .ip-row {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto auto auto;
+            gap: 5px;
+            align-items: center;
+            padding: 5px 5px 5px 10px;
+            border-radius: 9px;
+            background: var(--surface-2);
+            border: 1px solid var(--border-soft);
+        }
+
+        .ip-row.is-exerted {
+            opacity: 0.7;
+        }
+
+        .ip-name {
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+        }
+
+        .ip-name b {
+            font-size: 12.5px;
+            font-weight: 600;
+            color: var(--text);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .ip-name span {
+            font: 500 10px var(--font-mono);
+            color: var(--text-dim);
+        }
+
+        .ip-btn {
+            min-height: 32px;
+            padding: 0 9px;
+            border-radius: 7px;
+            border: 1px solid var(--border);
+            background: var(--surface-3);
+            color: var(--text);
+            font: 600 11.5px var(--font-sans);
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .ip-btn.is-ready {
+            border-color: color-mix(in oklch, var(--bcr) 70%, transparent);
+            color: var(--bcr);
+        }
+
+        .ip-btn:disabled {
+            opacity: 0.35;
+            cursor: default;
+        }
+
+        .ip-empty {
+            font-size: 12.5px;
+            color: var(--text-dim);
+        }
+
+        /* ----- Phone hand focus (one card large, every hand action) ----- */
+        .hand-focus {
+            position: fixed;
+            inset: 0;
+            z-index: 74;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 12px;
+            padding: 70px 18px 18px;
+            background: oklch(0.06 0.005 60 / 0.72);
+        }
+
+        .hand-focus.is-open {
+            display: flex;
+            animation: handFocusIn .24s cubic-bezier(.2, 1.3, .4, 1);
+        }
+
+        @keyframes handFocusIn {
+            from {
+                opacity: 0;
+                transform: translateY(40px) scale(0.92);
+            }
+
+            to {
+                opacity: 1;
+                transform: none;
+            }
+        }
+
+        .hf-card {
+            position: relative;
+            width: 180px;
+            height: 252px;
+            border-radius: 12px;
+            overflow: hidden;
+            flex: none;
+            font-size: 15px;
+            box-shadow: 0 0 0 1px var(--border-strong), 0 24px 50px -14px oklch(0 0 0 / 0.95);
+            background: var(--surface-2);
+        }
+
+        .hf-meta {
+            font: 500 12px var(--font-mono);
+            color: var(--text-2);
+            text-align: center;
+        }
+
+        .hf-meta .warn {
+            color: oklch(0.8 0.15 25);
+        }
+
+        .hf-acts {
+            width: 100%;
+            max-width: 380px;
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 8px;
+        }
+
+        .hf-more {
+            width: 100%;
+            max-width: 380px;
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 6px;
+        }
+
+        .hf-more .cs-btn {
+            min-height: 42px;
+            border-radius: 999px;
+            background: var(--surface);
+            font-weight: 500;
+            font-size: 12px;
+        }
+
+        .hand-scrim {
+            display: none;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+
+            .fx-float,
+            .card-wrap.fx-hit .card,
+            .fx-flash,
+            .card-wrap.fx-exert .card,
+            .card-wrap.fx-ready .card,
+            .card-wrap.fx-quest,
+            .card-wrap.fx-arrive,
+            .card-wrap.fx-shift,
+            .card-wrap.is-lethal .card,
+            .card-wrap .damage-counter {
+                animation: none !important;
+            }
+
+            .fx-float,
+            .fx-flash {
+                display: none;
+            }
+        }
+
+        /* Touch: no hover, so the card drawer replaces the hover controls. */
+        @media (hover: none) {
+            .card-ctrl {
+                display: none;
+            }
+
+            .dmg-track {
+                pointer-events: none;
+            }
+
+            .chal-fc.is-light,
+            .chal-fc.is-full {
+                display: none;
+            }
+        }
+
+        /* ----- Phones: inkwell panel becomes a bottom sheet; the hand becomes a fan ----- */
+        @media (max-width: 760px) {
+            .ink-panel {
+                left: 0 !important;
+                right: 0 !important;
+                top: auto !important;
+                bottom: 0 !important;
+                width: auto;
+                max-height: 80vh;
+                border-radius: 18px 18px 0 0;
+                padding: 12px 14px calc(18px + env(safe-area-inset-bottom, 0px));
+            }
+
+            .ink-panel .ip-btn,
+            .ink-panel .cs-btn {
+                min-height: 44px;
+            }
+
+            .chal-banner {
+                top: auto;
+                bottom: 112px;
+                border-radius: 14px;
+                flex-wrap: wrap;
+                justify-content: center;
+                width: calc(100vw - 24px);
+                padding: 8px 10px;
+                gap: 8px;
+            }
+
+            .chal-banner .cb-seg {
+                display: none;
+            }
+
+            .chal-banner .cb-done {
+                height: 44px;
+            }
+
+            .play {
+                padding-bottom: 104px;
+            }
+
+            .mobile-quick-actions {
+                bottom: 104px;
+            }
+
+            /* The hand leaves the board flow and peeks up from the bottom edge. */
+            #bottom-board .hand-wrap {
+                position: fixed;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                z-index: 36;
+                padding: 0;
+                pointer-events: none;
+            }
+
+            #bottom-board .hand-wrap::before {
+                content: 'Hand · ' attr(data-count) ' — tap or drag up';
+                position: absolute;
+                left: 50%;
+                bottom: 70px;
+                transform: translateX(-50%);
+                font: 600 10px var(--font-mono);
+                letter-spacing: 0.08em;
+                color: var(--text-dim);
+                background: oklch(0.13 0.008 60 / 0.85);
+                padding: 2px 8px;
+                border-radius: 999px;
+                white-space: nowrap;
+                pointer-events: none;
+            }
+
+            body.hand-open #bottom-board .hand-wrap::before {
+                display: none;
+            }
+
+            #bottom-board .hand {
+                pointer-events: auto;
+                min-height: 0;
+                height: 64px;
+                align-items: flex-start;
+                overflow: visible;
+                padding: 0;
+            }
+
+            #bottom-board #bottom-hand {
+                align-items: flex-start;
+            }
+
+            #bottom-board .hand .card-wrap {
+                --card-w: 64px;
+                --card-h: 90px;
+                margin-left: var(--fan-ml, -30px);
+                rotate: calc(var(--fan-off, 0) * 6deg);
+                translate: 0 calc(var(--fan-arc, 0) * 2px);
+                transform-origin: 50% 130%;
+                transition: translate .25s cubic-bezier(.3, 1.2, .5, 1), rotate .25s ease, margin .25s ease;
+            }
+
+            #bottom-board .hand .card-wrap:first-child {
+                margin-left: 0;
+            }
+
+            #bottom-board .hand .card-wrap:hover {
+                transform: none;
+            }
+
+            #bottom-board .hand .card-actions {
+                display: none;
+            }
+
+            body.hand-open #bottom-board .hand {
+                height: 160px;
+            }
+
+            body.hand-open #bottom-board .hand .card-wrap {
+                --card-w: 96px;
+                --card-h: 134px;
+                margin-left: var(--fan-ml-open, -46px);
+                rotate: calc(var(--fan-off, 0) * 3deg);
+                translate: 0 calc(var(--fan-arc, 0) * 2px - 4px);
+            }
+
+            body.hand-open #bottom-board .hand .card-wrap:first-child {
+                margin-left: 0;
+            }
+
+            .hand-scrim {
+                display: block;
+                position: fixed;
+                inset: 0;
+                z-index: 35;
+                background: oklch(0.06 0.005 60 / 0.6);
+                opacity: 0;
+                pointer-events: none;
+                transition: opacity .2s ease;
+            }
+
+            body.hand-open .hand-scrim {
+                opacity: 1;
+                pointer-events: auto;
+            }
+        }
     </style>
 </head>
 
@@ -4860,6 +6338,9 @@
             </div>
         </div>
         <div class="topbar-right">
+            <button class="icon-btn" id="btn-challenge-mode" onclick="App.toggleChallengeMode()"
+                title="Challenge mode (C) — drag or tap one of your characters, then an opponent"
+                aria-pressed="false"><i class="fa-solid fa-hand-fist"></i> <span>Challenge</span></button>
             <button class="icon-btn" onclick="App.undo()" title="Undo last action"><i
                     class="fa-solid fa-rotate-left"></i> <span>Undo</span></button>
             <button class="icon-btn" onclick="App.toggleTimelines()" title="Timelines &amp; bookmarks (T)"><i
@@ -5384,11 +6865,15 @@
 
                 <!-- pile row (ink + discard + deck) -->
                 <div class="pile-row">
-                    <div class="ink-cluster drop-zone" ondragover="App.allowDrop(event)"
+                    <div class="ink-cluster is-counter drop-zone" ondragover="App.allowDrop(event)"
                         ondragenter="App.dragEnter(event)" ondragleave="App.dragLeave(event)"
-                        ondrop="App.drop(event, 'inkwell', 'top')">
-                        <div class="ink-readout"><span class="ink-icon"></span><span id="top-ink">0/0</span></div>
-                        <div class="inkwell" id="top-inkwell-cards" style="overflow:visible"></div>
+                        ondrop="App.drop(event, 'inkwell', 'top')" role="button" tabindex="0"
+                        aria-haspopup="dialog" title="Inkwell — click to manage, drop a card to ink it"
+                        onclick="App.openInkPanel(App.state.inactivePlayer, event)"
+                        onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();App.openInkPanel(App.state.inactivePlayer, event)}">
+                        <div class="ink-readout"><span class="ink-icon"></span><span id="top-ink">0/0</span><span
+                                class="ink-new" id="top-ink-new" hidden>+1</span></div>
+                        <div class="inkwell is-counter" id="top-inkwell-cards"></div>
                     </div>
                     <div class="pile-cluster">
                         <div class="pile drop-zone" id="top-discard" ondragover="App.allowDrop(event)"
@@ -5456,13 +6941,15 @@
 
                 <!-- pile row -->
                 <div class="pile-row">
-                    <div class="ink-cluster drop-zone" ondragover="App.allowDrop(event)"
+                    <div class="ink-cluster is-counter drop-zone" ondragover="App.allowDrop(event)"
                         ondragenter="App.dragEnter(event)" ondragleave="App.dragLeave(event)"
-                        ondrop="App.drop(event, 'inkwell', 'bottom')">
-                        <div class="ink-readout" title="Click ink below to exert one"><span
-                                class="ink-icon"></span><span id="bottom-ink">0/0</span></div>
-                        <div class="inkwell" id="bottom-inkwell-cards" onclick="App.exertInk()"
-                            style="overflow:visible"></div>
+                        ondrop="App.drop(event, 'inkwell', 'bottom')" role="button" tabindex="0"
+                        aria-haspopup="dialog" title="Inkwell — click to manage, drop a card to ink it"
+                        onclick="App.openInkPanel(App.state.activePlayer, event)"
+                        onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();App.openInkPanel(App.state.activePlayer, event)}">
+                        <div class="ink-readout"><span class="ink-icon"></span><span id="bottom-ink">0/0</span><span
+                                class="ink-new" id="bottom-ink-new" hidden>+1</span></div>
+                        <div class="inkwell is-counter" id="bottom-inkwell-cards"></div>
                     </div>
                     <div class="pile-cluster">
                         <div class="pile drop-zone" id="bottom-discard" ondragover="App.allowDrop(event)"
@@ -5543,6 +7030,31 @@
     <!-- Context Menu -->
     <div id="context-menu"></div>
 
+    <!-- Feature 37: challenge mode banner + forecast -->
+    <div id="challenge-banner" class="chal-banner" role="status" aria-live="polite"
+        onclick="event.stopPropagation()">
+        <span class="cb-key">CHALLENGE MODE</span>
+        <span class="cb-text" id="challenge-banner-text"></span>
+        <div class="cb-seg" role="group" aria-label="Forecast detail">
+            <span>Forecast</span>
+            <button type="button" data-fc="off" onclick="App.setChallengeForecast('off')">Off</button>
+            <button type="button" data-fc="light" onclick="App.setChallengeForecast('light')">Light</button>
+            <button type="button" data-fc="full" onclick="App.setChallengeForecast('full')">Full</button>
+        </div>
+        <button type="button" class="cb-done" onclick="App.exitChallengeMode()">Done · Esc</button>
+    </div>
+    <div id="challenge-forecast" class="chal-fc" aria-hidden="true"></div>
+
+    <!-- Feature 37: card drawer (touch), inkwell panel, phone hand focus -->
+    <div id="sheet-scrim" class="sheet-scrim" onclick="App.closeCardSheet(); App.closeInkPanel()"></div>
+    <div id="card-sheet" class="card-sheet" role="dialog" aria-label="Card actions" aria-hidden="true"
+        onclick="event.stopPropagation()"></div>
+    <div id="ink-panel" class="ink-panel" role="dialog" aria-label="Inkwell" aria-hidden="true"
+        onclick="event.stopPropagation()"></div>
+    <div id="hand-scrim" class="hand-scrim" onclick="App.setHandFan(false)"></div>
+    <div id="hand-focus" class="hand-focus" role="dialog" aria-label="Card in hand" aria-hidden="true"
+        onclick="if(event.target===this) App.closeHandFocus()"></div>
+
     <!-- ============ TWEAKS PANEL ============ -->
     <div class="tweaks-panel" id="tweaks-panel">
         <div class="tweaks-head">
@@ -5580,6 +7092,17 @@
                     pane.</div>
             </div>
             <div class="tweak">
+                <div class="tweak-label"><span>Challenge forecast</span></div>
+                <div class="tweak-radio" id="tweak-chal-forecast">
+                    <button data-val="off" title="No outcome preview — just the arrow">Off</button>
+                    <button data-val="light" class="is-active"
+                        title="One line over the target: who gets banished, damage after">Light</button>
+                    <button data-val="full"
+                        title="Forecast card, striped ghost damage and outcome badges on every opponent">Full</button>
+                </div>
+                <div class="tweak-hint">Shown while dragging onto, or aiming at, an opponent.</div>
+            </div>
+            <div class="tweak">
                 <div class="tweak-label"><span>Player palette</span></div>
                 <div class="tweak-radio" id="tweak-palette">
                     <button data-val="competition" class="is-active"
@@ -5605,7 +7128,7 @@
         let cardFuse = null;
         let allSessions = [];
 
-        const APP_VERSION = "v2.17.3"; // Centralized version string (redesign)
+        const APP_VERSION = "v2.18.0"; // Centralized version string (redesign)
 
         // Tweaks panel accent presets (hue values for the OKLCH accent ramp)
         const ACCENT_PRESETS = {
@@ -9223,6 +10746,7 @@
                 ev.dataTransfer.setData("text/plain", instanceId);
                 ev.dataTransfer.effectAllowed = "move";
                 this._draggingEl = ev.target;
+                this._dragIid = instanceId; // Feature 37: drag-challenge forecast
             },
 
             dragStartTopCard(ev, position) {
@@ -9324,6 +10848,7 @@
                     } else {
                         found.card.drying = false;
                     }
+                    if (targetZone === 'field') this.markFx(instanceId, 'arrive'); // Feature 37
                 } else if (targetZone === 'field') {
                     found.card.locationId = null; // Moving within field (but not onto a location drop zone) un-locates it
                 }
@@ -9435,6 +10960,7 @@
                 found.card.drying = (dbCard.type === 'Character'); // Characters enter drying
 
                 found.player.field.push(found.card);
+                this.markFx(instanceId, 'arrive'); // Feature 37
 
                 if (found.loc === 'discard') {
                     this.logAction(`You played ${dbCard.name} from the discard pile (cost ${dbCard.cost}).`);
@@ -9452,6 +10978,7 @@
                 let found = this.findCard(instanceId);
                 if (!found) return;
                 found.card.exerted = !found.card.exerted;
+                if (found.loc === 'field') this.markFx(instanceId, found.card.exerted ? 'exert' : 'ready'); // Feature 37
 
                 // Adjust inkReady if toggling an inkwell card manually
                 if (found.loc === 'inkwell') {
@@ -9473,6 +11000,7 @@
                 found.card.exerted = true;
                 const loreVal = dbCard.lore || 0;
                 found.player.lore += loreVal;
+                this.markFx(instanceId, 'quest', `+${loreVal} ◆`); // Feature 37
 
                 this.logAction(`You quested with ${dbCard.name} for ${loreVal} lore.`);
                 this._trackAction('quested', found.card.cardId);
@@ -9490,6 +11018,7 @@
                     // Only quest if the character is NOT exerted, NOT drying, and has lore
                     if (!c.exerted && !c.drying && dbCard.lore > 0) {
                         c.exerted = true;
+                        this.markFx(c.instanceId, 'quest', `+${dbCard.lore} ◆`); // Feature 37
                         totalLore += dbCard.lore;
                         count++;
                         this._trackAction('quested', c.cardId);
@@ -9508,8 +11037,11 @@
                 this.saveState();
                 let found = this.findCard(instanceId);
                 if (!found) return;
+                const before = found.card.damage || 0;
                 found.card.damage = (found.card.damage || 0) + amount;
                 if (found.card.damage < 0) found.card.damage = 0;
+                const delta = found.card.damage - before; // Feature 37
+                if (delta) this.markFx(instanceId, delta > 0 ? 'hit' : 'heal', (delta > 0 ? '+' : '−') + Math.abs(delta));
                 this.render();
             },
 
@@ -9764,8 +11296,9 @@
                     && targetFound.player.id === this.state.inactivePlayer) {
                     const startRect = this._draggingEl ? this._draggingEl.getBoundingClientRect() : null;
                     const endRect = ev.currentTarget ? ev.currentTarget.getBoundingClientRect() : null;
-                    this.showChallengeArrow(startRect, endRect);
-                    this.performChallenge(draggedInstanceId, targetInstanceId);
+                    // Feature 37: same resolution path as tap-to-target (arrow, hit
+                    // effects, sandbox notes). The card was dragged, so no lunge.
+                    this.resolveChallenge(draggedInstanceId, targetInstanceId, { fromDrag: true, startRect, endRect });
                 } else {
                     this.shiftOnto(draggedInstanceId, targetInstanceId);
                 }
@@ -9852,6 +11385,7 @@
                     draggedFound.loc = 'field';
                 }
 
+                this.markFx(draggedInstanceId, 'shift'); // Feature 37
                 if (isShift) {
                     this.logAction(`You shifted ${dbCard.name} onto ${beneathDb ? beneathDb.name : 'Unknown card'} (cost ${dbCard.cost}).`);
                 } else {
@@ -10183,6 +11717,705 @@
                 return `<div class="${className} card-face" title="${name}">${face}${img}</div>`;
             },
 
+            // =====================================================================
+            // Feature 37 · Card interaction redesign
+            // Option A field controls, challenge mode + forecast, the touch card
+            // drawer, the inkwell counter/panel and the phone hand fan. Every game
+            // change still goes through the existing engine functions (saveState →
+            // mutate → render); this block only decides *how* they're reached.
+            // =====================================================================
+            // Stroke icons for the field-card verbs (inline SVG — no font dependency).
+            VERB_ICONS: {
+                challenge: 'M4 20l9-9M14 4h6v6M20 4l-9 9M6 14l4 4M3 21l3-3',
+                quest: 'M12 3l7 9-7 9-7-9z',
+                exert: 'M20 12a8 8 0 1 1-2.34-5.66M20 4v5h-5',
+                ready: 'M4 12a8 8 0 1 0 2.34-5.66M4 4v5h5',
+                banish: 'M6 6l12 12M18 6L6 18'
+            },
+            isTouchUI() { return !!(window.matchMedia && window.matchMedia('(hover: none)').matches); },
+            isPhoneUI() { return !!(window.matchMedia && window.matchMedia('(max-width: 760px)').matches); },
+            reducedMotion() { return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); },
+            _esc(s) {
+                return String(s == null ? '' : s).replace(/[&<>"]/g,
+                    (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[ch]));
+            },
+            fieldWrap(instanceId) {
+                if (!instanceId) return null;
+                return document.querySelector(`.card-wrap[data-iid="${CSS.escape(instanceId)}"]`);
+            },
+
+            // --- Short-lived card effects ---------------------------------------
+            // render() rebuilds the board, so an animation is a class the next build
+            // of that card applies once (consumed on read).
+            markFx(instanceId, kind, text) {
+                if (!this._fx) this._fx = {};
+                this._fx[instanceId] = { kind, text: text || '', t: Date.now() };
+            },
+            takeFx(instanceId) {
+                const fx = this._fx && this._fx[instanceId];
+                if (!fx) return null;
+                delete this._fx[instanceId];
+                return (Date.now() - fx.t < 900) ? fx : null;
+            },
+            applyFx(wrap, cardEl, fx) {
+                wrap.classList.add('fx-' + fx.kind);
+                if (fx.kind === 'hit' || fx.kind === 'heal') {
+                    const flash = document.createElement('span');
+                    flash.className = 'fx-flash is-' + fx.kind;
+                    cardEl.appendChild(flash);
+                }
+                if (fx.text) {
+                    const f = document.createElement('span');
+                    f.className = 'fx-float is-' + fx.kind;
+                    f.textContent = fx.text;
+                    f.setAttribute('aria-hidden', 'true');
+                    wrap.appendChild(f);
+                }
+            },
+            animateOut(instanceId, then) {
+                const w = this.fieldWrap(instanceId);
+                if (!w || this.reducedMotion()) { then(); return; }
+                w.classList.add('fx-leave');
+                setTimeout(then, 240);
+            },
+            banishAnimated(instanceId) {
+                this.animateOut(instanceId, () => this.banish(instanceId));
+            },
+
+            // Set a card's damage to an exact value (track segments, stepper, 0–9 keys).
+            setDamage(instanceId, value) {
+                const f = this.findCard(instanceId);
+                if (!f) return;
+                const cur = f.card.damage || 0;
+                const v = Math.max(0, Math.round(value));
+                if (v === cur) return;
+                this.saveState();
+                f.card.damage = v;
+                this.markFx(instanceId, v > cur ? 'hit' : 'heal', (v > cur ? '+' : '−') + Math.abs(v - cur));
+                this.render();
+            },
+
+            // --- Option A controls (built per field card) -------------------------
+            buildDamageStepper(c, wp) {
+                const id = c.instanceId, dmg = c.damage || 0;
+                const box = document.createElement('div');
+                box.className = 'dmg-step';
+                const btn = (txt, cls, label, fn) => {
+                    const b = document.createElement('button');
+                    b.type = 'button';
+                    if (cls) b.className = cls;
+                    b.textContent = txt;
+                    b.title = label;
+                    b.setAttribute('aria-label', label);
+                    b.addEventListener('click', (e) => { e.stopPropagation(); fn(); });
+                    return b;
+                };
+                box.appendChild(btn('−', 'heal', 'Remove 1 damage (−)', () => this.setDamage(id, dmg - 1)));
+                const rd = document.createElement('span');
+                rd.className = 'rd';
+                rd.innerHTML = `${dmg}<small>/${wp}</small>`;
+                box.appendChild(rd);
+                box.appendChild(btn('+', '', 'Add 1 damage (+)', () => this.setDamage(id, dmg + 1)));
+                return box;
+            },
+            buildDamageTrack(c, wp) {
+                const id = c.instanceId, dmg = c.damage || 0;
+                const track = document.createElement('div');
+                track.className = 'dmg-track';
+                track.setAttribute('role', 'group');
+                track.setAttribute('aria-label', `Damage ${dmg} of ${wp} willpower`);
+                for (let i = 1; i <= wp; i++) {
+                    const target = dmg === i ? i - 1 : i;
+                    const pip = document.createElement('button');
+                    pip.type = 'button';
+                    pip.className = 'dmg-pip' + (i <= dmg ? ' on' : '') + (i === wp ? ' last' : '');
+                    pip.dataset.i = String(i);
+                    pip.title = `Set damage to ${target}`;
+                    pip.setAttribute('aria-label', `Set damage to ${target}`);
+                    pip.addEventListener('click', (e) => { e.stopPropagation(); this.setDamage(id, target); });
+                    track.appendChild(pip);
+                }
+                return track;
+            },
+
+            // A tap on a card: challenge mode and touch devices take it before the
+            // context menu. Returns true when handled.
+            handleCardTap(e, c, onField, opts) {
+                if (this.challengeMode && onField) { this.challengeClick(c.instanceId); return true; }
+                if (onField && this.isTouchUI()) { this.openCardSheet(c.instanceId); return true; }
+                if (opts.loc === 'hand' && opts.chips && this.isPhoneUI()) { this.handFanTap(c.instanceId); return true; }
+                return false;
+            },
+
+            // Hover-card hotkeys: + − 0–9 set damage, E exert/ready, B banish, C
+            // challenge. Q / T / M / Space stay global. Returns true when handled.
+            handleCardHotkey(e) {
+                const k = e.key;
+                if (k === 'c' || k === 'C') {
+                    if (this.challengeMode) { this.exitChallengeMode(); return true; }
+                    const f = this._hoverIid ? this.findCard(this._hoverIid) : null;
+                    const mine = f && f.loc === 'field' && f.player.id === this.state.activePlayer
+                        && this.cardDB[f.card.cardId] && this.cardDB[f.card.cardId].type === 'Character';
+                    this.enterChallengeMode(mine ? this._hoverIid : null);
+                    return true;
+                }
+                if (this.challengeMode || !this._hoverIid) return false;
+                const f = this.findCard(this._hoverIid);
+                if (!f || f.loc !== 'field') return false;
+                const id = this._hoverIid, dmg = f.card.damage || 0;
+                if (k === '+' || k === '=') this.setDamage(id, dmg + 1);
+                else if (k === '-' || k === '_') this.setDamage(id, dmg - 1);
+                else if (/^[0-9]$/.test(k)) this.setDamage(id, Number(k));
+                else if (k === 'e' || k === 'E') this.toggleExert(id);
+                else if (k === 'b' || k === 'B') this.banishAnimated(id);
+                else return false;
+                return true;
+            },
+
+            // --- Challenge mode ----------------------------------------------------
+            getChallengeForecast() {
+                if (!this._chalForecast) {
+                    let v = null;
+                    try { v = localStorage.getItem('lorcana_dojo_chal_forecast'); } catch (e) { }
+                    this._chalForecast = (v === 'off' || v === 'full') ? v : 'light';
+                }
+                return this._chalForecast;
+            },
+            setChallengeForecast(v) {
+                this._chalForecast = (v === 'off' || v === 'full') ? v : 'light';
+                try { localStorage.setItem('lorcana_dojo_chal_forecast', this._chalForecast); } catch (e) { }
+                this.hideForecast();
+                if (this.state && this.state.players && this.state.players.length && this.cardDB) this.render();
+                else this.updateChallengeBanner();
+            },
+            toggleChallengeMode() {
+                if (this.challengeMode) this.exitChallengeMode();
+                else this.enterChallengeMode(null);
+            },
+            enterChallengeMode(pickIid) {
+                this.challengeMode = true;
+                this.challengePick = pickIid || null;
+                document.getElementById('context-menu').style.display = 'none';
+                this.closeCardSheet();
+                this.closeInkPanel();
+                this.setHandFan(false);
+                this.render();
+            },
+            exitChallengeMode() {
+                if (!this.challengeMode) return;
+                this.challengeMode = false;
+                this.challengePick = null;
+                this.hideForecast();
+                this.clearAimArrow();
+                this.render();
+            },
+            updateChallengeBanner() {
+                const on = !!this.challengeMode;
+                document.body.classList.toggle('challenge-mode', on);
+                const btn = document.getElementById('btn-challenge-mode');
+                if (btn) {
+                    btn.classList.toggle('is-active', on);
+                    btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+                }
+                const fcNow = this.getChallengeForecast();
+                const tw = document.getElementById('tweak-chal-forecast');
+                if (tw) tw.querySelectorAll('button').forEach(b => b.classList.toggle('is-active', b.dataset.val === fcNow));
+                const banner = document.getElementById('challenge-banner');
+                if (!banner || !on) return;
+                const pick = this.challengePick ? this.findCard(this.challengePick) : null;
+                const pdb = pick ? this.cardDB[pick.card.cardId] : null;
+                const verb = this.isTouchUI() ? 'tap' : 'tap or hover';
+                document.getElementById('challenge-banner-text').innerHTML = pdb
+                    ? `<b>${this._esc(pdb.name)}</b> → ${verb} an opponent`
+                    : `Drag or tap <b>any of your characters</b>, then an opponent`;
+                const fc = this.getChallengeForecast();
+                banner.querySelectorAll('[data-fc]').forEach(b => {
+                    const act = b.dataset.fc === fc;
+                    b.classList.toggle('is-active', act);
+                    b.setAttribute('aria-pressed', act ? 'true' : 'false');
+                });
+            },
+            // In challenge mode a tap on your character picks it; a tap on an
+            // opponent's card resolves the challenge. Rules are never enforced —
+            // anything off-book is noted in the log.
+            challengeClick(instanceId) {
+                const f = this.findCard(instanceId);
+                if (!f || f.loc !== 'field') return;
+                const db = this.cardDB[f.card.cardId];
+                if (f.player.id === this.state.activePlayer) {
+                    if (!db || db.type !== 'Character') return;
+                    this.challengePick = this.challengePick === instanceId ? null : instanceId;
+                    this.hideForecast();
+                    this.clearAimArrow();
+                    this.render();
+                    return;
+                }
+                if (!this.challengePick) {
+                    const t = document.getElementById('challenge-banner-text');
+                    if (t) t.innerHTML = '<b>Pick one of your characters first</b> (or drag from it)';
+                    return;
+                }
+                this.resolveChallenge(this.challengePick, instanceId);
+            },
+            challengeOutcome(aIid, dIid) {
+                const a = this.findCard(aIid), d = this.findCard(dIid);
+                if (!a || !d) return null;
+                const aDb = this.cardDB[a.card.cardId], dDb = this.cardDB[d.card.cardId];
+                if (!aDb || !dDb) return null;
+                // Same arithmetic as performChallenge.
+                const toDef = Math.max(0, (aDb.strength || 0) + this.getKeywordBonus(aDb, 'Challenger') - this.getKeywordBonus(dDb, 'Resist'));
+                const toAtt = Math.max(0, (dDb.strength || 0) - this.getKeywordBonus(aDb, 'Resist'));
+                const aW = aDb.willpower || 0, dW = dDb.willpower || 0;
+                const aDmg = a.card.damage || 0, dDmg = d.card.damage || 0;
+                const notes = [];
+                if (a.card.exerted) notes.push(`${aDb.name} is exerted`);
+                if (a.card.drying) notes.push(`${aDb.name} is drying`);
+                if (dDb.type === 'Character' && !d.card.exerted) notes.push(`${dDb.name} is ready`);
+                return {
+                    aName: aDb.name, dName: dDb.name, toDef, toAtt, aW, dW, aDmg, dDmg,
+                    aAfter: aDmg + toAtt, dAfter: dDmg + toDef,
+                    aDies: aW > 0 && aDmg + toAtt >= aW, dDies: dW > 0 && dDmg + toDef >= dW, notes
+                };
+            },
+            outcomeLabel(o) {
+                const first = (n) => String(n).split(' ')[0];
+                if (o.dDies && o.aDies) return { cls: 'is-trade', head: '⇄ Trade', rest: 'both banished' };
+                if (o.dDies) return { cls: 'is-win', head: '✕ Banishes ' + o.dName, rest: `${first(o.aName)} ${o.aAfter}/${o.aW}` };
+                if (o.aDies) return { cls: 'is-lose', head: '✕ You lose ' + first(o.aName), rest: `${o.dName} ${o.dAfter}/${o.dW}` };
+                return { cls: '', head: `${o.dName} ${o.dAfter}/${o.dW}`, rest: `${first(o.aName)} ${o.aAfter}/${o.aW}` };
+            },
+            resolveChallenge(aIid, dIid, opts = {}) {
+                const o = this.challengeOutcome(aIid, dIid);
+                if (!o) return;
+                this.hideForecast();
+                this.clearAimArrow();
+                const aEl = this.fieldWrap(aIid), dEl = this.fieldWrap(dIid);
+                const go = () => {
+                    this.markFx(aIid, o.toAtt ? 'hit' : 'info', '+' + o.toAtt);
+                    this.markFx(dIid, o.toDef ? 'hit' : 'info', '+' + o.toDef);
+                    this.challengePick = null;
+                    this.performChallenge(aIid, dIid);
+                    if (o.notes.length) this.logAction(`(${o.notes.join(', ')} — allowed in the sandbox.)`, true);
+                };
+                const ar = opts.startRect || (aEl && aEl.getBoundingClientRect());
+                const dr = opts.endRect || (dEl && dEl.getBoundingClientRect());
+                if (ar && dr) this.showChallengeArrow(ar, dr);
+                if (aEl && dEl && !opts.fromDrag && !this.reducedMotion() && aEl.animate) {
+                    const dx = ((dr.left + dr.width / 2) - (ar.left + ar.width / 2)) * 0.55;
+                    const dy = ((dr.top + dr.height / 2) - (ar.top + ar.height / 2)) * 0.55;
+                    aEl.style.zIndex = '40';
+                    const anim = aEl.animate([{ transform: 'translate(0, 0)' }, { transform: `translate(${dx}px, ${dy}px)` }],
+                        { duration: 190, easing: 'cubic-bezier(.5, 0, .75, 0)' });
+                    anim.onfinish = go;
+                } else {
+                    go();
+                }
+            },
+            // Light = one pill over the target; Full = a forecast card + striped
+            // ghost damage on both tracks + a hatch on anything that would leave.
+            showForecast(aIid, dIid) {
+                this.hideForecast();
+                const mode = this.getChallengeForecast();
+                if (mode === 'off' || this.isTouchUI()) return;
+                const o = this.challengeOutcome(aIid, dIid);
+                const tw = this.fieldWrap(dIid);
+                if (!o || !tw) return;
+                const r = tw.getBoundingClientRect();
+                const box = document.getElementById('challenge-forecast');
+                const lbl = this.outcomeLabel(o);
+                const esc = (s) => this._esc(s);
+                if (mode === 'light') {
+                    box.className = 'chal-fc is-light ' + lbl.cls;
+                    box.innerHTML = `<span class="o">${esc(lbl.head)}</span><span>· ${esc(lbl.rest)}</span>`
+                        + (o.notes.length ? `<span class="w">· ${esc(o.notes.join(' · '))}</span>` : '');
+                    box.style.left = (r.left + r.width / 2) + 'px';
+                    box.style.top = Math.max(8, r.top - 10) + 'px';
+                } else {
+                    const tag = (dies) => `<span class="ftag ${dies ? 'dies' : 'lives'}">${dies ? '✕ BANISHED' : 'SURVIVES'}</span>`;
+                    box.className = 'chal-fc is-full';
+                    box.innerHTML = `<span class="fk">Challenge · forecast</span>`
+                        + `<div class="frow"><span class="fname">${esc(o.dName)}</span><span class="fnum">${o.dDmg} → ${o.dAfter} / ${o.dW}</span>${tag(o.dDies)}</div>`
+                        + `<div class="frow"><span class="fname">${esc(o.aName)}</span><span class="fnum">${o.aDmg} → ${o.aAfter} / ${o.aW}</span>${tag(o.aDies)}</div>`
+                        + (o.notes.length ? `<span class="fwarn">Allowed: ${esc(o.notes.join(' · '))}</span>` : '');
+                    let left = r.right + 14;
+                    if (left + 240 > window.innerWidth - 8) left = r.left - 250;
+                    box.style.left = Math.max(8, left) + 'px';
+                    box.style.top = Math.max(8, Math.min(window.innerHeight - 170, r.top)) + 'px';
+                    this.ghostTrack(dIid, o.dDmg, o.dAfter);
+                    this.ghostTrack(aIid, o.aDmg, o.aAfter);
+                    if (o.dDies) tw.classList.add('cm-doom');
+                    const aw = this.fieldWrap(aIid);
+                    if (o.aDies && aw) aw.classList.add('cm-doom');
+                }
+                this._fcKey = aIid + '>' + dIid;
+            },
+            ghostTrack(instanceId, from, to) {
+                const w = this.fieldWrap(instanceId);
+                if (!w) return;
+                w.querySelectorAll('.dmg-pip').forEach(p => {
+                    const i = Number(p.dataset.i);
+                    p.classList.toggle('ghost', i > from && i <= to);
+                });
+            },
+            hideForecast() {
+                this._fcKey = null;
+                const box = document.getElementById('challenge-forecast');
+                if (box) { box.className = 'chal-fc'; box.innerHTML = ''; }
+                document.querySelectorAll('.card-wrap.cm-doom').forEach(w => w.classList.remove('cm-doom'));
+                document.querySelectorAll('.dmg-pip.ghost').forEach(p => p.classList.remove('ghost'));
+            },
+            // Persistent aim arrow while hovering a target with an attacker picked.
+            showAimArrow(aIid, dIid) {
+                const a = this.fieldWrap(aIid), d = this.fieldWrap(dIid);
+                const svg = document.getElementById('challenge-arrow-svg');
+                if (!a || !d || !svg) return;
+                const ar = a.getBoundingClientRect(), dr = d.getBoundingClientRect();
+                const x1 = ar.left + ar.width / 2, y1 = ar.top + 6, x2 = dr.left + dr.width / 2, y2 = dr.bottom - 6;
+                svg.innerHTML = `<defs><marker id="aim-arrow" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                        <polygon points="0 0, 10 3.5, 0 7" fill="#ef4444"/></marker></defs>
+                    <line class="aim-line" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#ef4444" stroke-width="4"
+                        stroke-linecap="round" marker-end="url(#aim-arrow)" opacity="0.85"/>
+                    <circle class="aim-line" cx="${x1}" cy="${y1}" r="6" fill="#ef4444"/>`;
+            },
+            clearAimArrow() {
+                const svg = document.getElementById('challenge-arrow-svg');
+                if (svg && svg.querySelector('.aim-line')) svg.innerHTML = '';
+            },
+            // Pointer moved onto a card (document-level mouseover).
+            onCardHover(instanceId) {
+                if (!this.challengeMode || !this.challengePick) return;
+                const f = instanceId ? this.findCard(instanceId) : null;
+                if (f && f.loc === 'field' && f.player.id !== this.state.activePlayer) {
+                    this.showForecast(this.challengePick, instanceId);
+                    this.showAimArrow(this.challengePick, instanceId);
+                } else {
+                    this.hideForecast();
+                    this.clearAimArrow();
+                }
+            },
+            // While a field card is dragged over an opponent's card (drag challenge).
+            dragForecast(targetIid) {
+                const a = this._dragIid;
+                if (!a) return;
+                if (this._fcKey === a + '>' + targetIid) return;
+                const af = this.findCard(a), df = this.findCard(targetIid);
+                if (!af || !df || af.loc !== 'field' || df.loc !== 'field') return;
+                if (af.player.id !== this.state.activePlayer || df.player.id === this.state.activePlayer) return;
+                this.showForecast(a, targetIid);
+            },
+            endCardDrag() {
+                this._dragIid = null;
+                this.hideForecast();
+            },
+            // Outcome badge on every opponent card once an attacker is picked
+            // (Full forecast, and always on touch where there's no hover).
+            challengeBadge(c) {
+                if (!this.challengeMode || !this.challengePick) return null;
+                const fc = this.getChallengeForecast();
+                if (fc === 'off' || (fc === 'light' && !this.isTouchUI())) return null;
+                const o = this.challengeOutcome(this.challengePick, c.instanceId);
+                if (!o) return null;
+                const lbl = this.outcomeLabel(o);
+                const b = document.createElement('div');
+                b.className = 'cm-badge ' + lbl.cls;
+                b.setAttribute('aria-hidden', 'true');
+                const notes = o.notes.filter(n => n.indexOf(o.dName) === 0).length ? 'target is ready' : '';
+                b.innerHTML = `<b>${this._esc(lbl.head)}</b><span>${this._esc(lbl.rest)}</span>${notes ? `<i>${notes}</i>` : ''}`;
+                return b;
+            },
+
+            // --- Card drawer (touch devices) --------------------------------------
+            openCardSheet(instanceId) {
+                document.getElementById('context-menu').style.display = 'none';
+                this.closeInkPanel();
+                this._sheetIid = instanceId;
+                this.renderCardSheet();
+                document.getElementById('card-sheet').classList.add('is-open');
+                document.getElementById('card-sheet').setAttribute('aria-hidden', 'false');
+                document.getElementById('sheet-scrim').classList.add('is-open');
+            },
+            closeCardSheet() {
+                if (!this._sheetIid) return;
+                this._sheetIid = null;
+                const sh = document.getElementById('card-sheet');
+                sh.classList.remove('is-open');
+                sh.setAttribute('aria-hidden', 'true');
+                if (this._inkPanelPlayer == null) document.getElementById('sheet-scrim').classList.remove('is-open');
+            },
+            renderCardSheet() {
+                const id = this._sheetIid;
+                const f = id ? this.findCard(id) : null;
+                if (!f || f.loc !== 'field') { this.closeCardSheet(); return; }
+                const db = this.cardDB[f.card.cardId] || {};
+                const sh = document.getElementById('card-sheet');
+                const mine = f.player.id === this.state.activePlayer;
+                const isChar = db.type === 'Character';
+                const wp = db.willpower || 0, dmg = f.card.damage || 0;
+                const esc = (s) => this._esc(s);
+                const stats = [];
+                if (isChar) stats.push(`S${db.strength || 0} W${wp} L${db.lore || 0}`);
+                else if (wp) stats.push(`W${wp}`);
+                if (f.card.exerted) stats.push('exerted');
+                if (f.card.drying) stats.push('drying');
+                if (f.card.stackedCards && f.card.stackedCards.length) stats.push(`${f.card.stackedCards.length} under`);
+                sh.innerHTML = '';
+                const add = (html) => { const d = document.createElement('div'); d.innerHTML = html; while (d.firstChild) sh.appendChild(d.firstChild); };
+                add(`<span class="cs-grab"></span>
+                    <div class="cs-head"><div class="cs-titles"><span class="cs-title">${esc(db.name || 'Card')}</span>
+                    <span class="cs-sub">${esc([db.version, db.type].filter(Boolean).join(' · '))}${stats.length ? ' · ' + esc(stats.join(' · ')) : ''}</span></div>
+                    <button class="cs-icon" data-act="preview" aria-label="Preview card"><i class="fa-solid fa-eye"></i></button>
+                    <button class="cs-icon" data-act="close" aria-label="Close"><i class="fa-solid fa-xmark"></i></button></div>`);
+                if (wp > 0) {
+                    let segs = '';
+                    for (let i = 1; i <= wp; i++) {
+                        const target = dmg === i ? i - 1 : i;
+                        segs += `<button class="cs-seg${i <= dmg ? ' on' : ''}${i === wp ? ' last' : ''}" data-set="${target}" aria-label="Set damage to ${target}">${i}</button>`;
+                    }
+                    add(`<div class="cs-label"><span>Damage · tap a segment to set</span><b class="${dmg >= wp ? 'is-lethal' : ''}">${dmg} / ${wp}${dmg >= wp ? ' · lethal' : ''}</b></div>
+                        <div class="cs-segs">${segs}</div>
+                        <div class="cs-row"><button class="cs-btn big" data-set="${dmg - 1}" aria-label="Remove 1 damage">− 1</button>
+                        <button class="cs-btn big" data-set="${dmg + 1}" aria-label="Add 1 damage">+ 1</button></div>`);
+                }
+                const canQuest = mine && isChar && !f.card.exerted && !f.card.drying && (db.lore || 0) > 0;
+                add(`<div class="cs-acts">
+                    <button class="cs-btn is-challenge" data-act="challenge" ${mine && isChar ? '' : 'disabled'}>Challenge</button>
+                    <button class="cs-btn" data-act="quest" ${canQuest ? '' : 'disabled'}>Quest</button>
+                    <button class="cs-btn" data-act="exert">${f.card.exerted ? 'Ready' : 'Exert'}</button>
+                    <button class="cs-btn is-danger" data-act="banish">Banish</button></div>`);
+                let more = `<button class="cs-btn" data-act="hand">To hand</button>
+                    <button class="cs-btn" data-act="top">Deck top</button>
+                    <button class="cs-btn" data-act="bottom">Deck bottom</button>`;
+                if (mine) more += `<button class="cs-btn" data-act="under">Put under</button>`;
+                if (f.card.locationId) more += `<button class="cs-btn" data-act="leave">Leave location</button>`;
+                if (mine && f.card.stackedCards && f.card.stackedCards.length) more += `<button class="cs-btn" data-act="separate">Separate stack</button>`;
+                add(`<div class="cs-more">${more}</div>`);
+
+                const pos = mine ? 'bottom' : 'top';
+                sh.onclick = (e) => {
+                    e.stopPropagation();
+                    const b = e.target.closest('button');
+                    if (!b || b.disabled) return;
+                    if (b.dataset.set !== undefined) { this.setDamage(id, Number(b.dataset.set)); return; }
+                    const act = b.dataset.act;
+                    const close = (fn) => { this.closeCardSheet(); fn(); };
+                    if (act === 'close') this.closeCardSheet();
+                    else if (act === 'preview') { this.closeCardSheet(); this.showPreview(db); this.toggleSidebar(true); }
+                    else if (act === 'challenge') close(() => this.enterChallengeMode(id));
+                    else if (act === 'quest') this.quest(id);
+                    else if (act === 'exert') this.toggleExert(id);
+                    else if (act === 'banish') close(() => this.banishAnimated(id));
+                    else if (act === 'hand') close(() => this.returnToHand(id));
+                    else if (act === 'top') close(() => this.moveCard(id, 'deck', pos, 'top'));
+                    else if (act === 'bottom') close(() => this.moveCard(id, 'deck', pos, 'bottom'));
+                    else if (act === 'under') this.slideUnderFromDeck(id);
+                    else if (act === 'separate') close(() => this.unstackCards(id));
+                    else if (act === 'leave') {
+                        this.saveState();
+                        f.card.locationId = null;
+                        this.render();
+                    }
+                };
+            },
+
+            // --- Inkwell: counter + panel -------------------------------------------
+            renderInkCounter(player, pipsEl, newEl) {
+                pipsEl.innerHTML = '';
+                const total = player.inkTotal || 0, ready = Math.min(total, player.inkReady || 0);
+                for (let i = 0; i < total; i++) {
+                    const pip = document.createElement('span');
+                    pip.className = 'ink-pip' + (i < ready ? '' : ' used');
+                    pip.setAttribute('aria-hidden', 'true');
+                    pipsEl.appendChild(pip);
+                }
+                if (!total) {
+                    const hint = document.createElement('span');
+                    hint.className = 'ink-hint';
+                    hint.textContent = 'drop a card to ink it';
+                    pipsEl.appendChild(hint);
+                }
+                if (newEl) newEl.hidden = !player.inkwell.some(c => c.faceUp);
+            },
+            openInkPanel(playerIndex, ev) {
+                if (ev && ev.stopPropagation) ev.stopPropagation();
+                if (this._inkPanelPlayer === playerIndex) { this.closeInkPanel(); return; }
+                document.getElementById('context-menu').style.display = 'none';
+                this.closeCardSheet();
+                this._inkPanelPlayer = playerIndex;
+                const panel = document.getElementById('ink-panel');
+                this.renderInkPanel();
+                panel.classList.add('is-open');
+                panel.setAttribute('aria-hidden', 'false');
+                // Desktop: anchored to the counter (above it for the bottom board);
+                // phones get a bottom sheet from the stylesheet instead.
+                const anchor = ev && ev.currentTarget && ev.currentTarget.getBoundingClientRect ? ev.currentTarget : null;
+                if (anchor) {
+                    const r = anchor.getBoundingClientRect();
+                    panel.style.left = Math.max(8, Math.min(window.innerWidth - 372, r.left)) + 'px';
+                    if (playerIndex === this.state.activePlayer) {
+                        panel.style.top = 'auto';
+                        panel.style.bottom = Math.max(8, window.innerHeight - r.top + 8) + 'px';
+                    } else {
+                        panel.style.bottom = 'auto';
+                        panel.style.top = (r.bottom + 8) + 'px';
+                    }
+                }
+                if (this.isPhoneUI()) document.getElementById('sheet-scrim').classList.add('is-open');
+                const first = panel.querySelector('button:not([disabled])');
+                if (first && ev && ev.detail === 0) first.focus();
+            },
+            closeInkPanel() {
+                if (this._inkPanelPlayer == null) return;
+                this._inkPanelPlayer = null;
+                const panel = document.getElementById('ink-panel');
+                panel.classList.remove('is-open');
+                panel.setAttribute('aria-hidden', 'true');
+                if (!this._sheetIid) document.getElementById('sheet-scrim').classList.remove('is-open');
+            },
+            renderInkPanel() {
+                const pi = this._inkPanelPlayer;
+                const p = pi == null ? null : this.state.players[pi];
+                if (!p) { this.closeInkPanel(); return; }
+                const panel = document.getElementById('ink-panel');
+                const esc = (s) => this._esc(s);
+                const ready = Math.min(p.inkTotal, p.inkReady);
+                const inkedNow = p.inkwell.some(c => c.faceUp);
+                let rows = '';
+                p.inkwell.forEach(c => {
+                    const db = this.cardDB[c.cardId];
+                    const name = c.faceUp && db ? db.name : 'Face-down card';
+                    rows += `<div class="ip-row${c.exerted ? ' is-exerted' : ''}">
+                        <span class="ip-name"><b>${esc(name)}</b><span>${c.faceUp ? 'inked this turn · face up' : 'face down'}</span></span>
+                        <button class="ip-btn${c.exerted ? '' : ' is-ready'}" data-act="toggle" data-id="${esc(c.instanceId)}">${c.exerted ? 'Exerted' : 'Ready'}</button>
+                        <button class="ip-btn" data-act="hand" data-id="${esc(c.instanceId)}">To hand</button>
+                        <button class="ip-btn" data-act="discard" data-id="${esc(c.instanceId)}">Discard</button></div>`;
+                });
+                panel.innerHTML = `<div class="ip-head"><b>${esc(p.name)} · inkwell</b><span>${ready} of ${p.inkTotal} ready${inkedNow ? ' · inked this turn' : ''}</span>
+                        <button class="cs-icon" data-act="close" aria-label="Close inkwell"><i class="fa-solid fa-xmark"></i></button></div>
+                    <div class="ip-acts">
+                        <button class="ip-btn" data-act="spend" ${ready > 0 ? '' : 'disabled'}>Spend 1</button>
+                        <button class="ip-btn" data-act="ready1" ${ready < p.inkTotal ? '' : 'disabled'}>Ready 1</button>
+                        <button class="ip-btn" data-act="readyall" ${ready < p.inkTotal ? '' : 'disabled'}>Ready all</button></div>
+                    <div class="ip-list">${rows || '<span class="ip-empty">No ink yet — drag a card onto the counter to ink it.</span>'}</div>`;
+                const pos = pi === this.state.activePlayer ? 'bottom' : 'top';
+                panel.onclick = (e) => {
+                    e.stopPropagation();
+                    const b = e.target.closest('button');
+                    if (!b || b.disabled) return;
+                    const act = b.dataset.act, cid = b.dataset.id;
+                    if (act === 'close') this.closeInkPanel();
+                    else if (act === 'spend') this.inkSpend(pi);
+                    else if (act === 'ready1') this.inkReadyOne(pi);
+                    else if (act === 'readyall') this.inkReadyAll(pi);
+                    else if (act === 'toggle') this.toggleExert(cid);
+                    else if (act === 'hand') this.moveCard(cid, 'hand', pos);
+                    else if (act === 'discard') this.moveCard(cid, 'discard', pos);
+                };
+            },
+            inkSpend(pi) {
+                const p = this.state.players[pi];
+                if (!p || p.inkReady <= 0) return;
+                this.saveState();
+                p.inkReady--;
+                const k = p.inkwell.find(c => !c.exerted);
+                if (k) k.exerted = true;
+                this.render();
+            },
+            inkReadyOne(pi) {
+                const p = this.state.players[pi];
+                if (!p || p.inkReady >= p.inkTotal) return;
+                this.saveState();
+                p.inkReady++;
+                const k = p.inkwell.find(c => c.exerted);
+                if (k) k.exerted = false;
+                this.render();
+            },
+            inkReadyAll(pi) {
+                const p = this.state.players[pi];
+                if (!p) return;
+                this.saveState();
+                p.inkReady = p.inkTotal;
+                p.inkwell.forEach(c => { c.exerted = false; });
+                this.render();
+            },
+
+            // --- Phone hand: fan + focus ------------------------------------------
+            setHandFan(open) {
+                document.body.classList.toggle('hand-open', !!open);
+                if (!open) this.closeHandFocus();
+            },
+            handFanTap(instanceId) {
+                if (!document.body.classList.contains('hand-open')) { this.setHandFan(true); return; }
+                this.openHandFocus(instanceId);
+            },
+            openHandFocus(instanceId) {
+                this._handFocusIid = instanceId;
+                this.renderHandFocus();
+            },
+            closeHandFocus() {
+                if (!this._handFocusIid) return;
+                this._handFocusIid = null;
+                const hf = document.getElementById('hand-focus');
+                hf.classList.remove('is-open');
+                hf.setAttribute('aria-hidden', 'true');
+                hf.innerHTML = '';
+            },
+            renderHandFocus() {
+                const id = this._handFocusIid;
+                const f = id ? this.findCard(id) : null;
+                const hf = document.getElementById('hand-focus');
+                if (!f || f.loc !== 'hand') { this.closeHandFocus(); return; }
+                const db = this.cardDB[f.card.cardId] || {};
+                const ready = f.player.inkReady || 0, cost = db.cost || 0;
+                const short = cost > ready;
+                const esc = (s) => this._esc(s);
+                hf.innerHTML = '';
+                const face = document.createElement('div');
+                face.className = 'hf-card';
+                this.paintCardFace(face, db, { lazy: false });
+                hf.appendChild(face);
+                const rest = document.createElement('div');
+                rest.style.cssText = 'display:contents';
+                rest.innerHTML = `<span class="hf-meta">${esc(db.name || '')}${db.version ? ' · ' + esc(db.version) : ''}<br>${esc(db.type || '')} · cost ${cost}${db.inkwell ? ' · inkable' : ' · not inkable'}${short ? ` <span class="warn">· ${ready} ink ready</span>` : ''}</span>
+                    <div class="hf-acts">
+                        <button class="cs-btn ${short ? 'is-short' : 'is-primary'}" data-act="play">${short ? `Play anyway · ${cost - ready} short` : `Play · −${cost} ink`}</button>
+                        <button class="cs-btn" data-act="ink" ${db.inkwell ? '' : 'disabled'}>${db.inkwell ? 'Ink' : 'No ink'}</button></div>
+                    <div class="hf-more">
+                        <button class="cs-btn" data-act="swap">Swap</button>
+                        <button class="cs-btn" data-act="discard">Discard</button>
+                        <button class="cs-btn" data-act="top">Deck top</button>
+                        <button class="cs-btn" data-act="bottom">Deck btm</button></div>`;
+                hf.appendChild(rest);
+                hf.classList.add('is-open');
+                hf.setAttribute('aria-hidden', 'false');
+                const pos = f.player.id === this.state.activePlayer ? 'bottom' : 'top';
+                rest.onclick = (e) => {
+                    e.stopPropagation();
+                    const b = e.target.closest('button');
+                    if (!b || b.disabled) return;
+                    const act = b.dataset.act;
+                    this.setHandFan(false);
+                    if (act === 'play') this.playCard(id);
+                    else if (act === 'ink') this.playToInkwell(id);
+                    else if (act === 'swap') this.openHandCardSearch(id);
+                    else if (act === 'discard') this.banish(id);
+                    else if (act === 'top') this.moveCard(id, 'deck', pos, 'top');
+                    else if (act === 'bottom') this.moveCard(id, 'deck', pos, 'bottom');
+                };
+            },
+            // Fan geometry for the phone hand (CSS reads these; desktop ignores them).
+            layoutHandFan(container, n) {
+                const vw = window.innerWidth || 390;
+                const closedSpan = n > 1 ? Math.min(34, (Math.min(vw, 420) - 150) / (n - 1)) : 0;
+                const openSpan = n > 1 ? Math.min(56, (vw - 24 - 96) / (n - 1)) : 0;
+                container.style.setProperty('--fan-ml', `${Math.min(-8, -(64 - closedSpan))}px`);
+                container.style.setProperty('--fan-ml-open', `${Math.min(-8, -(96 - openSpan))}px`);
+                Array.from(container.children).forEach((w, i) => {
+                    const off = i - (n - 1) / 2;
+                    w.style.setProperty('--fan-off', off.toFixed(2));
+                    w.style.setProperty('--fan-arc', (off * off).toFixed(2));
+                });
+            },
+
             createCardElement(c, isOpponentHand = false, isInkwell = false, opts = {}) {
                 const dbCard = this.cardDB[c.cardId];
                 // Redesign: a .card-wrap holds the .card so hover-chips + exert sizing work.
@@ -10236,15 +12469,41 @@
                     el.appendChild(stackBadge);
                 }
 
-                // Context menu trigger (left-click and right-click, matching original)
+                // Feature 37: a field card is any card on either board — plain, standing
+                // at a Location, or a Location itself. Those get the Option A controls.
+                const onField = opts.loc === 'field' || !!opts.atLocation || isLocation;
+                const owner = onField ? this.findCard(c.instanceId) : null;
+                const isMine = !!(owner && owner.player.id === this.state.activePlayer);
+                const isChar = !!(dbCard && dbCard.type === 'Character');
+                const wp = (dbCard && dbCard.willpower) || 0;
+                if (onField && owner) {
+                    wrap.dataset.iid = c.instanceId;
+                    if (this._hoverIid === c.instanceId) wrap.classList.add('is-hovered');
+                    if (wp > 0 && (c.damage || 0) >= wp) wrap.classList.add('is-lethal');
+                    if (this.challengeMode) {
+                        if (isMine && isChar) wrap.classList.add('cm-mine');
+                        if (this.challengePick === c.instanceId) wrap.classList.add('cm-attacker');
+                        if (!isMine) wrap.classList.add(this.challengePick ? 'cm-target' : 'cm-wait');
+                        const badge = !isMine ? this.challengeBadge(c) : null;
+                        if (badge) wrap.appendChild(badge);
+                    }
+                }
+                const fx = this.takeFx(c.instanceId);
+                if (fx) this.applyFx(wrap, el, fx);
+
+                // Context menu trigger (left-click and right-click, matching original).
+                // Challenge mode, touch devices and the phone hand claim the tap first.
                 el.addEventListener('click', (e) => {
                     e.stopPropagation();
+                    if (this.handleCardTap(e, c, onField, opts)) return;
                     this.showContextMenu(e, c.instanceId);
                 });
                 el.addEventListener('contextmenu', (e) => {
                     e.preventDefault();
+                    if (this.challengeMode && onField) { e.stopPropagation(); return; }
                     this.showContextMenu(e, c.instanceId);
                 });
+                el.ondragend = () => this.endCardDrag();
 
                 // Keyboard access: cards are focusable and Enter/Space opens their menu.
                 el.tabIndex = 0;
@@ -10261,6 +12520,7 @@
                     if (e.key === 'Enter' || e.key === ' ') {
                         e.preventDefault();
                         e.stopPropagation();
+                        if (this.challengeMode && onField) { this.challengeClick(c.instanceId); return; }
                         const r = el.getBoundingClientRect();
                         this.showContextMenu({
                             clientX: r.left + r.width / 2,
@@ -10272,8 +12532,47 @@
 
                 wrap.appendChild(el);
 
-                // Hover action chips — only for own, face-up, non-exerted cards
-                const showChips = opts.chips && dbCard && !c.exerted && !isOpponentHand && (!isInkwell || c.faceUp);
+                // Feature 37 · Option A: hover controls for every field card (both
+                // boards, exerted or not) — damage stepper on top, verbs below, the
+                // willpower track underneath and a one-tap Banish when lethal.
+                if (onField && owner && dbCard) {
+                    const ctrl = document.createElement('div');
+                    ctrl.className = 'card-ctrl';
+                    if (wp > 0) ctrl.appendChild(this.buildDamageStepper(c, wp));
+                    const verbs = document.createElement('div');
+                    verbs.className = 'card-verbs';
+                    const verb = (icon, title, fn, cls) => {
+                        const b = document.createElement('button');
+                        b.type = 'button';
+                        b.className = 'chip' + (cls ? ' ' + cls : '');
+                        b.innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="${this.VERB_ICONS[icon]}"/></svg>`;
+                        b.title = title;
+                        b.setAttribute('aria-label', title);
+                        b.addEventListener('click', (e) => { e.stopPropagation(); fn(); });
+                        verbs.appendChild(b);
+                    };
+                    if (isMine && isChar) verb('challenge', 'Challenge — pick a target (C)', () => this.enterChallengeMode(c.instanceId), 'is-challenge');
+                    if (isMine && isChar && !c.exerted && !c.drying && (dbCard.lore || 0) > 0) verb('quest', `Quest for ${dbCard.lore} lore`, () => this.quest(c.instanceId));
+                    if (!isLocation) verb(c.exerted ? 'ready' : 'exert', c.exerted ? 'Ready (E)' : 'Exert (E)', () => this.toggleExert(c.instanceId));
+                    verb('banish', 'Banish (B)', () => this.banishAnimated(c.instanceId), 'is-danger');
+                    ctrl.appendChild(verbs);
+                    wrap.appendChild(ctrl);
+                    if (wp > 0) {
+                        wrap.appendChild(this.buildDamageTrack(c, wp));
+                        if ((c.damage || 0) >= wp) {
+                            const pill = document.createElement('button');
+                            pill.type = 'button';
+                            pill.className = 'lethal-pill';
+                            pill.textContent = 'LETHAL · BANISH';
+                            pill.title = `${dbCard.name} has ${c.damage}/${wp} damage — banish it`;
+                            pill.addEventListener('click', (e) => { e.stopPropagation(); this.banishAnimated(c.instanceId); });
+                            wrap.appendChild(pill);
+                        }
+                    }
+                }
+
+                // Hover action chips — hand cards (PLAY / INK)
+                const showChips = !onField && opts.chips && dbCard && !c.exerted && !isOpponentHand && (!isInkwell || c.faceUp);
                 if (showChips) {
                     const chips = document.createElement('div');
                     chips.className = 'card-actions';
@@ -10287,11 +12586,6 @@
                     if (opts.loc === 'hand') {
                         chip('PLAY', () => this.playCard(c.instanceId));
                         if (dbCard.inkwell) chip('INK', () => this.playToInkwell(c.instanceId));
-                    } else if (opts.loc === 'field') {
-                        if (!c.drying && (dbCard.lore || 0) > 0) chip('QUEST', () => this.quest(c.instanceId));
-                        chip(c.exerted ? 'READY' : 'EXERT', () => this.toggleExert(c.instanceId));
-                        chip('+DMG', () => this.addDamage(c.instanceId, 1));
-                        chip('BANISH', () => this.banish(c.instanceId), true);
                     }
                     if (chips.children.length) wrap.appendChild(chips);
                 }
@@ -10612,11 +12906,20 @@
                 const dbCard = this.cardDB[found.card.cardId];
                 const isActivePlayerOwned = found.player.id === this.state.activePlayer;
 
-                const addOption = (text, onClick) => {
+                // `key` shows a hover-hotkey hint; `cls` e.g. 'is-danger' (Feature 37).
+                const addOption = (text, onClick, key, cls) => {
                     const item = document.createElement('button');
-                    item.className = 'ctx-item';
+                    item.className = 'ctx-item' + (cls ? ' ' + cls : '');
                     item.setAttribute('role', 'menuitem');
-                    item.innerText = text;
+                    const label = document.createElement('span');
+                    label.textContent = text;
+                    item.appendChild(label);
+                    if (key) {
+                        const k = document.createElement('span');
+                        k.className = 'ctx-key';
+                        k.textContent = key;
+                        item.appendChild(k);
+                    }
                     item.onclick = (evt) => {
                         evt.stopPropagation();
                         menu.style.display = 'none';
@@ -10629,6 +12932,46 @@
                     const d = document.createElement('div');
                     d.className = 'ctx-divider';
                     menu.appendChild(d);
+                };
+
+                const addSection = (text) => {
+                    const d = document.createElement('div');
+                    d.className = 'ctx-section';
+                    d.textContent = text;
+                    menu.appendChild(d);
+                };
+
+                // Inline damage stepper: stays open so damage can be adjusted repeatedly.
+                const addDamageRow = (wp) => {
+                    const row = document.createElement('div');
+                    row.className = 'ctx-stepper';
+                    const lbl = document.createElement('span');
+                    lbl.textContent = 'Damage';
+                    const box = document.createElement('span');
+                    box.className = 'ctx-step-box';
+                    const val = document.createElement('span');
+                    val.className = 'ctx-step-val';
+                    const paint = () => { val.textContent = `${found.card.damage || 0}${wp ? '/' + wp : ''}`; };
+                    const step = (txt, label, delta) => {
+                        const b = document.createElement('button');
+                        b.className = 'ctx-item ctx-step-btn';
+                        b.setAttribute('role', 'menuitem');
+                        b.setAttribute('aria-label', label);
+                        b.textContent = txt;
+                        b.onclick = (evt) => {
+                            evt.stopPropagation();
+                            this.setDamage(instanceId, (found.card.damage || 0) + delta);
+                            paint();
+                        };
+                        return b;
+                    };
+                    paint();
+                    box.appendChild(step('−', 'Remove 1 damage', -1));
+                    box.appendChild(val);
+                    box.appendChild(step('+', 'Add 1 damage', 1));
+                    row.appendChild(lbl);
+                    row.appendChild(box);
+                    menu.appendChild(row);
                 };
 
                 // Touch devices have no hover preview, so offer it explicitly. Opening the
@@ -10651,29 +12994,32 @@
                     addOption('Put on Top of Deck', () => this.moveCard(instanceId, 'deck', isActivePlayerOwned ? 'bottom' : 'top', 'top'));
                     addOption('Put on Bottom of Deck', () => this.moveCard(instanceId, 'deck', isActivePlayerOwned ? 'bottom' : 'top', 'bottom'));
                 } else if (found.loc === 'field') {
+                    // Feature 37: grouped, with hover-hotkey hints and an inline damage stepper.
+                    const isChar = dbCard && dbCard.type === 'Character';
+                    addSection('Card');
                     if (found.card.locationId) {
                         addOption('Leave Location', () => {
                             this.saveState();
                             found.card.locationId = null;
                             this.render();
                         });
-                        addDivider();
                     }
-                    addOption(found.card.exerted ? 'Ready' : 'Exert', () => this.toggleExert(instanceId));
+                    addOption(found.card.exerted ? 'Ready' : 'Exert', () => this.toggleExert(instanceId), 'E');
                     // Prevent individual questing if the character is drying
                     if (isActivePlayerOwned && !found.card.exerted && !found.card.drying && dbCard.lore > 0) {
                         addOption(`Quest (+${dbCard.lore} Lore)`, () => this.quest(instanceId));
                     }
-                    addDivider();
-                    addOption('Add 1 Damage', () => this.addDamage(instanceId, 1));
-                    if (found.card.damage > 0) addOption('Remove 1 Damage', () => this.addDamage(instanceId, -1));
-                    addDivider();
-                    addOption('Banish (To Discard)', () => this.banish(instanceId));
+                    if (isActivePlayerOwned && isChar) {
+                        addOption('Challenge…', () => this.enterChallengeMode(instanceId), 'C');
+                    }
+                    addDamageRow((dbCard && dbCard.willpower) || 0);
+                    addSection('Move');
+                    addOption('Banish (To Discard)', () => this.banishAnimated(instanceId), 'B', 'is-danger');
                     addOption('Return to Hand', () => this.returnToHand(instanceId));
                     addOption('Put on Top of Deck', () => this.moveCard(instanceId, 'deck', isActivePlayerOwned ? 'bottom' : 'top', 'top'));
                     addOption('Put on Bottom of Deck', () => this.moveCard(instanceId, 'deck', isActivePlayerOwned ? 'bottom' : 'top', 'bottom'));
-                    addDivider();
                     if (isActivePlayerOwned) {
+                        addSection('Stack');
                         addOption('Put Top Card of Deck Under', () => this.slideUnderFromDeck(instanceId));
                         if (found.card.stackedCards && found.card.stackedCards.length > 0) {
                             addOption('Separate Stacked Cards', () => this.unstackCards(instanceId));
@@ -11380,7 +13726,8 @@
                 container.style.setProperty('--field-gap', `${gap}px`);
                 container.style.gap = `${gap}px`;
                 container.style.flexWrap = fit.wrap ? 'wrap' : 'nowrap';
-                container.style.padding = `calc(4px * ${scale}) calc(8px * ${scale})`;
+                // Feature 37: extra room at the bottom for each card's willpower track.
+                container.style.padding = `calc(4px * ${scale}) calc(8px * ${scale}) calc(16px * ${scale})`;
 
                 const locations = player.field.filter(c => this.cardDB[c.cardId] && this.cardDB[c.cardId].type === 'Location');
                 const charactersAtLocations = player.field.filter(c => c.locationId);
@@ -11393,8 +13740,15 @@
 
                     // Feature 19: opponent cards get a red challenge highlight; own cards get the default purple
                     const highlightClass = isOpponent ? 'drop-target-challenge' : 'drop-target-active';
-                    group.ondragover = (e) => { e.preventDefault(); e.stopPropagation(); group.classList.add(highlightClass); };
-                    group.ondragleave = (e) => { e.preventDefault(); e.stopPropagation(); group.classList.remove(highlightClass); };
+                    // Feature 37: dragging your character over an opponent shows the forecast.
+                    group.ondragover = (e) => {
+                        e.preventDefault(); e.stopPropagation(); group.classList.add(highlightClass);
+                        if (isOpponent) this.dragForecast(c.instanceId);
+                    };
+                    group.ondragleave = (e) => {
+                        e.preventDefault(); e.stopPropagation(); group.classList.remove(highlightClass);
+                        if (isOpponent && !group.contains(e.relatedTarget)) this.hideForecast();
+                    };
                     group.ondrop = (e) => {
                         e.preventDefault();
                         e.stopPropagation();
@@ -11419,7 +13773,8 @@
                     }
 
                     // Render main card on top
-                    const mainEl = this.createCardElement(c, false, false, isOpponent ? {} : { chips: true, loc: 'field' });
+                    // Feature 37: both boards get the Option A controls (owner decides the verbs).
+                    const mainEl = this.createCardElement(c, false, false, { chips: true, loc: 'field' });
                     group.appendChild(mainEl);
 
                     container.appendChild(group);
@@ -11676,6 +14031,13 @@
                 const ap = this.state.players[this.state.activePlayer];
                 const ip = this.state.players[this.state.inactivePlayer];
 
+                // Feature 37: an attacker that left the field / changed sides is dropped
+                // before the cards are built (they read it for their challenge styling).
+                if (this.challengePick) {
+                    const pf = this.findCard(this.challengePick);
+                    if (!pf || pf.loc !== 'field' || pf.player.id !== this.state.activePlayer) this.challengePick = null;
+                }
+
                 // Update Sidebar
                 document.getElementById('p0-cards').innerText = `${this.state.players[0].deck.length} deck | ${this.state.players[0].hand.length} hand`;
                 document.getElementById('p1-cards').innerText = `${this.state.players[1].deck.length} deck | ${this.state.players[1].hand.length} hand`;
@@ -11776,16 +14138,8 @@
                 const tf = document.getElementById('top-field');
                 this.buildField(ip, tf, true);
 
-                // Top Inkwell
-                const ti = document.getElementById('top-inkwell-cards');
-                ti.innerHTML = '';
-                ip.inkwell.forEach((c, i) => {
-                    const el = this.createCardElement(c, false, true);
-                    el.style.position = 'absolute';
-                    el.style.left = (i * 20) + 'px';
-                    el.style.top = '0px';
-                    ti.appendChild(el);
-                });
+                // Top Inkwell — Feature 37: a ready/total counter with one pip per ink
+                this.renderInkCounter(ip, document.getElementById('top-inkwell-cards'), document.getElementById('top-ink-new'));
 
                 // Top Discard
                 const td = document.getElementById('top-discard');
@@ -11826,21 +14180,18 @@
                 bh.innerHTML = '';
                 bh.style.setProperty('--hand-overlap', this.calcHandOverlap(ap.hand.length));
                 ap.hand.forEach(c => bh.appendChild(this.createCardElement(c, false, false, { chips: true, loc: 'hand' })));
+                // Feature 37: phone hand fan (geometry vars + the count label)
+                this.layoutHandFan(bh, ap.hand.length);
+                const bhWrap = bh.closest('.hand-wrap');
+                if (bhWrap) bhWrap.dataset.count = String(ap.hand.length);
+                if (!ap.hand.length) this.setHandFan(false);
 
                 // Bottom Field
                 const bf = document.getElementById('bottom-field');
                 this.buildField(ap, bf);
 
-                // Bottom Inkwell
-                const bi = document.getElementById('bottom-inkwell-cards');
-                bi.innerHTML = '';
-                ap.inkwell.forEach((c, i) => {
-                    const el = this.createCardElement(c, false, true);
-                    el.style.position = 'absolute';
-                    el.style.left = (i * 20) + 'px';
-                    el.style.top = '0px';
-                    bi.appendChild(el);
-                });
+                // Bottom Inkwell — Feature 37: counter (manage it from the inkwell panel)
+                this.renderInkCounter(ap, document.getElementById('bottom-inkwell-cards'), document.getElementById('bottom-ink-new'));
 
                 // Bottom Discard
                 const bd = document.getElementById('bottom-discard');
@@ -11854,6 +14205,16 @@
                     el.style.zIndex = i;
                     bd.appendChild(el);
                 });
+
+                // Feature 37: keep the open overlays in step with the new state.
+                this.renderFeature37Overlays();
+            },
+
+            renderFeature37Overlays() {
+                this.updateChallengeBanner();
+                if (this._sheetIid) this.renderCardSheet();
+                if (this._inkPanelPlayer != null) this.renderInkPanel();
+                if (this._handFocusIid) this.renderHandFocus();
             },
 
             // --- Helpers used by the tweaks panel ---
@@ -11996,6 +14357,10 @@
                     if (this.state && this.state.players) this.render();
                     if (this.bookmarks) { this.renderTree(); this.renderAutoSaves(); }
                 }));
+                const cf = this.$('tweak-chal-forecast');
+                if (cf) cf.querySelectorAll('button').forEach(b => b.addEventListener('click', () => {
+                    this.setChallengeForecast(b.dataset.val);
+                }));
                 const close = this.$('tweaks-close');
                 if (close) close.addEventListener('click', () => this.$('tweaks-panel').classList.remove('is-open'));
                 this.applyTweaks(t);
@@ -12005,7 +14370,25 @@
         // Close context menu on external click
         document.addEventListener('click', () => {
             document.getElementById('context-menu').style.display = 'none';
+            // Feature 37: the desktop inkwell popover closes the same way
+            // (its own clicks stop propagation; phones close it via the scrim).
+            if (!App.isPhoneUI()) App.closeInkPanel();
         });
+
+        // Feature 37: which field card the pointer is over. Kept on App (not in
+        // :hover alone) so the Option A controls survive render() rebuilding the
+        // card under a still pointer, and so the hover hotkeys know their target.
+        document.addEventListener('mouseover', (e) => {
+            const w = e.target && e.target.closest ? e.target.closest('.card-wrap[data-iid]') : null;
+            const id = w ? w.dataset.iid : null;
+            if (id === App._hoverIid) return;
+            const prev = App.fieldWrap(App._hoverIid);
+            if (prev) prev.classList.remove('is-hovered');
+            App._hoverIid = id;
+            if (w) w.classList.add('is-hovered');
+            App.onCardHover(id);
+        });
+        document.addEventListener('dragend', () => App.endCardDrag());
 
         // Context-menu keyboard support: arrows walk the items, Escape closes.
         document.getElementById('context-menu').addEventListener('keydown', (e) => {
@@ -12210,6 +14593,16 @@
                     menu.style.display = 'none';
                     return;
                 }
+                // Feature 37 overlays, innermost first
+                if (App._handFocusIid) { App.closeHandFocus(); return; }
+                if (App._sheetIid) { App.closeCardSheet(); return; }
+                if (App._inkPanelPlayer != null) { App.closeInkPanel(); return; }
+                if (App.challengeMode) {
+                    if (App.challengePick) { App.challengePick = null; App.hideForecast(); App.clearAimArrow(); App.render(); }
+                    else App.exitChallengeMode();
+                    return;
+                }
+                if (document.body.classList.contains('hand-open')) { App.setHandFan(false); return; }
                 if (!document.getElementById('tree-modal').classList.contains('hidden')) {
                     App.closeTreeModal();
                     return;
@@ -12236,6 +14629,16 @@
                         return;
                     }
                 }
+                return;
+            }
+
+            // Feature 37: hover-card hotkeys (+ − 0–9 E B) and C for challenge mode.
+            // Only while no modal is up, so they never fire behind the tree or a dialog.
+            const anyModal = ['tree-modal', 'setup-modal', 'inspect-deck-modal', 'inspect-discard-modal',
+                'import-log-modal', 'card-search-modal', 'mulligan-modal', 'craft-hand-modal']
+                .some(id => { const m = document.getElementById(id); return m && !m.classList.contains('hidden'); });
+            if (!anyModal && App.state && App.state.players && App.handleCardHotkey(e)) {
+                e.preventDefault();
                 return;
             }
 

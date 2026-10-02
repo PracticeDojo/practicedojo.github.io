@@ -511,6 +511,26 @@ As a player, I want a grayscale palette option in Tweaks that desaturates the wh
 - **v2.17.1 fix:** `getDeckColors()` was already broken and made the palette look inert. Zone arrays hold card *objects* (`{instanceId, cardId, …}`) but only `field` was mapped to ids, so deck/hand/discard/inkwell looked up `cardDB[object]` and found nothing; and a dual-ink card prints `color` as `"Amber-Steel"`, which lowercases to a key no ink map has. Both fixed (`colors` array preferred, hyphen split as fallback). This also repairs the victory-node deck gradient (Feature 15) and the setup-screen ink pair (session summary), which had the same defect.
 - **v2.17.1:** one-time migration flips installs that already had `palette: "modern"` in localStorage over to Competition, stamped so a later deliberate switch back is never undone.
 
+## Feature 37: Card interaction redesign (Option A, challenge mode, phone hand & card drawer, ink counter)
+
+### User Story
+- As a player I want damage counters and the common card actions to be fast and obvious, without digging through a long menu.
+- As a player I want challenging to be reliable — not a fiddly drag between hover controls — and to see the outcome before I commit.
+- As a player on a phone I want every card action reachable with a thumb, and a hand that doesn't eat the screen.
+
+### Details
+Chosen from the head-to-head prototypes (Option A + "Challenge mode" + "A on phone" + "Hand 1 · Fan" + "Inkwell as a counter").
+- **Option A field controls** (both boards, exerted cards too): hover shows a −/+ damage stepper on top and icon verbs down the right edge (Challenge, Quest, Exert/Ready, Banish). A willpower track sits under every card — click a segment to set damage exactly. Damage ≥ willpower pulses the card and shows a one-tap *LETHAL · BANISH* pill.
+- **Hover hotkeys** (pointer over a field card): `+` / `−`, `0–9` set damage, `E` exert/ready, `B` banish, `C` challenge. Global `Q` / `T` / `M` / `Space` are unchanged.
+- **Context menu** for field cards is grouped (Card / Move / Stack) with key hints, a *Challenge…* entry and an inline damage stepper that stays open.
+- **Challenge mode** (top-bar *Challenge*, the card's challenge verb, or `C`): hover controls step aside so the whole card is the drag handle; any of the active player's characters can challenge any opposing card, by dragging or by tapping yours then theirs. Rules are not enforced (sandbox) — exerted / drying / ready targets are noted in the log. You stay in the mode to chain challenges; leave with *Done* or `Esc`.
+- **Forecast** setting *Off / Light / Full* (banner + Tweaks): Light = one line over the target; Full = forecast card, striped ghost damage on both tracks, a hatch on anything that would be banished and an outcome badge on every opponent. Also shown when dragging a character onto an opponent outside the mode.
+- **Touch devices**: tapping a field card opens the **card drawer** — damage segments, ±1, Challenge / Quest / Exert / Banish, then To hand / Deck top / Deck bottom / Put under (+ Leave location / Separate stack when they apply, and Preview). Challenge from the drawer uses tap-to-target with outcome badges.
+- **Phone hand (≤760px)**: the hand is a fan peeking up from the bottom edge. Tap to fan it out, tap a card for a large view with Play / Ink / Swap / Discard / Deck top / Deck bottom, or drag a card straight up onto the field, the ink counter or a matching character (shift).
+- **Inkwell as a counter**: ready / total (`4/5`), one pip per ink, a `+1` tag once inked this turn. Still a drop target. Click/tap it for the inkwell panel (popover on desktop, bottom sheet on phones): Spend 1, Ready 1, Ready all, and each ink card with Ready↔Exerted, To hand, Discard.
+- **Animations**: exert/ready rotate, damage shakes + flashes + floats the amount, quest lifts the card, played/shifted cards arrive, banished cards fade; challenge lunges the attacker. All off under *prefers-reduced-motion*.
+
+
 # Progress
 
 - [x] Feature 1: Manual Lore Scoring
@@ -551,4 +571,5 @@ As a player, I want a grayscale palette option in Tweaks that desaturates the wh
 - [x] Feature 34: Turn Starting Hand section on multiverse nodes
 - [x] Feature 35: Cards Quested section on multiverse nodes
 - [x] Feature 36: "Competition" player palette
+- [x] Feature 37: Card interaction redesign (Option A, challenge mode, phone hand & card drawer, ink counter)
 
