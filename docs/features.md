@@ -531,6 +531,29 @@ Chosen from the head-to-head prototypes (Option A + "Challenge mode" + "A on pho
 - **Animations**: exert/ready rotate, damage shakes + flashes + floats the amount, quest lifts the card, played/shifted cards arrive, banished cards fade; challenge lunges the attacker. All off under *prefers-reduced-motion*.
 
 
+## Feature 38: Deck & session library on this device (ARCH Phase 1, v2.19.0)
+
+### User Story
+- As a player I want every match I play to be kept on my device, so I can come back to any of them, not just the last one, and without signing in.
+- As a player I want my own decks and a set of default decks one click away when I start a match.
+- As a player I want the sessions I import or share to be safe to open, even when they come from someone else.
+
+### Details
+Phase 1 of `docs/ARCH-accounts-and-library.md`. Nothing here needs an account or Supabase.
+- **`app/js/library.js` (`DojoLibrary`)**: IndexedDB database `practice_dojo` with stores `decks`, `sessions` (metadata), `session_blobs` (gzipped file) and `kv` (prefs: `lastSessionId`, `lastDecks`). The card DB cache (`lorcana_dojo_cache`) is untouched.
+- **Every match is a session.** Start match, opening a file, a Duels.ink log/replay import and opening a demo each create one. Every change autosaves it (debounced ~1 s, flushed when the tab is hidden). A failed device save now shows a toast instead of failing silently.
+- **Home screen** replaces the setup overlay: Continue card (the last session) plus tabs **New match**, **My sessions**, **Decks**, **Demos**.
+  - New match: deck pickers list *My decks* and *Default · Set N*; a pasted list gets **Save to My decks**; last match's picks are preselected.
+  - My sessions: ink pips, title, turn, lore, nodes, lines, updated time. Open, Rename, Duplicate, Export, Delete.
+  - Decks: My decks (P1 / P2 / Edit / Delete) and Default decks (P1 / P2 / Copy to My decks). New deck, Import .txt, From Duels.ink replay (the replay's exact `decklist`). Ink pips and counts are computed from the card DB.
+  - Demos: from `app/defaults/demos/manifest.json`. Opening one makes a device copy.
+- **Topbar**: editable session title, **Save** and **Save as copy**. The Timelines drawer's cloud *Save* became *Copy*.
+- **Session file v2** (`.dojo.json.gz`): `{format, version: 2, app, id, title, savedAt, summary, data}` where `data` is the unchanged v1 payload. Import reads gzipped v2, plain v2 and plain v1.
+- **Defaults in the repo**: `app/defaults/decks/manifest.json` (+ one `.txt` per deck) and `app/defaults/demos/manifest.json`.
+- **One-time migration**: the old `localStorage['lorcana_dojo_session']` Continue slot becomes a library session and the key is removed. Big multiverses that used to hit the ~5 MB localStorage cap now save.
+- **Security (§9.4)**: node names, stats, comments, turn notes and player names from session files are escaped; node comments go through `marked` and then **DOMPurify**; node ids that aren't plain tokens are re-issued on load (they sit inside inline handlers); node colours with `url()` are dropped.
+- **No Supabase at startup.** The old project's decks and cloud demos are no longer read or written (D10), and supabase-js is no longer loaded. Phase 2 brings Supabase back in `app/js/cloud.js` for share links.
+
 ## Refactor 2: Own repository (v2.18.1)
 
 ### Details
@@ -582,3 +605,4 @@ Chosen from the head-to-head prototypes (Option A + "Challenge mode" + "A on pho
 - [x] Feature 36: "Competition" player palette
 - [x] Feature 37: Card interaction redesign (Option A, challenge mode, phone hand & card drawer, ink counter)
 - [x] Refactor 2: Own repository
+- [x] Feature 38: Deck & session library on this device (ARCH Phase 1)

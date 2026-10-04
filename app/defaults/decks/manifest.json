@@ -1,0 +1,15 @@
+{
+  "groups": [
+    {
+      "title": "Set 12",
+      "decks": [
+        {
+          "id": "s12-amethyst-ruby",
+          "name": "Amethyst/Ruby",
+          "file": "set-12/amethyst-ruby.txt",
+          "notes": "The list from the sample Duels.ink replay in docs/samples"
+        }
+      ]
+    }
+  ]
+}

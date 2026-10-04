@@ -15,10 +15,13 @@
         href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap"
         rel="stylesheet">
 
-    <!-- Supabase & Fuse Libraries -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Fuse, marked, and DOMPurify (marked passes raw HTML through; comments come from session files) -->
     <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.6.2"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.2.4/purify.min.js"></script>
+
+    <!-- Device library: IndexedDB decks & sessions, session file codec, repo defaults -->
+    <script src="js/library.js"></script>
 
     <!-- Unified Win Probability Utilities Library -->
     <script
@@ -1298,6 +1301,288 @@
         .setup-foot .hint {
             font-size: 12px;
             color: var(--text-dim);
+        }
+
+        /* HOME SCREEN · library tabs (ARCH §7) */
+        .continue-card .cc-title {
+            font-size: 13px;
+            color: var(--text-2);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .continue-card .cc-title:empty {
+            display: none;
+        }
+
+        /* The body scrolls; its children keep their height (a scrolling flex
+           child like the tab bar would otherwise shrink to nothing on a phone). */
+        .setup-body > * {
+            flex-shrink: 0;
+        }
+
+        .home-tabs {
+            display: flex;
+            gap: 4px;
+            border-bottom: 1px solid var(--border-soft);
+            overflow-x: auto;
+            scrollbar-width: none;
+        }
+
+        .home-tab {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            background: none;
+            border: 0;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -1px;
+            padding: 9px 12px;
+            color: var(--text-dim);
+            font: inherit;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .home-tab:hover {
+            color: var(--text);
+        }
+
+        .home-tab.is-active {
+            color: var(--text);
+            border-bottom-color: var(--accent);
+        }
+
+        .home-tab i {
+            font-size: 12px;
+            color: var(--text-faint);
+        }
+
+        .home-tab.is-active i {
+            color: var(--accent-hi);
+        }
+
+        .home-tab .ht-count {
+            font-family: var(--font-mono);
+            font-size: 10.5px;
+            color: var(--text-dim);
+            padding: 1px 6px;
+            border: 1px solid var(--border-soft);
+            border-radius: 999px;
+        }
+
+        .home-tab .ht-count:empty {
+            display: none;
+        }
+
+        .home-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .home-panel[hidden] {
+            display: none;
+        }
+
+        .lib-toolbar {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .lib-toolbar .lib-hint {
+            font-size: 12px;
+            color: var(--text-dim);
+            margin-right: auto;
+        }
+
+        .lib-list {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .lib-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 12px;
+            background: var(--surface-2);
+            border: 1px solid var(--border-soft);
+            border-radius: var(--radius-sm);
+        }
+
+        .lib-row.is-live {
+            border-color: color-mix(in oklch, var(--accent) 35%, transparent);
+        }
+
+        .lib-main {
+            flex: 1 1 auto;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .lib-title {
+            font-size: 13.5px;
+            font-weight: 600;
+            color: var(--text);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .lib-title .lib-badge {
+            font-family: var(--font-mono);
+            font-size: 10px;
+            font-weight: 500;
+            color: var(--accent-hi);
+            margin-left: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+        }
+
+        .lib-meta {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 4px 6px;
+            font-family: var(--font-mono);
+            font-size: 11px;
+            color: var(--text-dim);
+        }
+
+        .lib-meta .cc-pips {
+            display: inline-flex;
+            gap: 3px;
+        }
+
+        .lib-meta .cc-pip {
+            width: 7px;
+            height: 7px;
+            border-radius: 999px;
+            background: var(--pip, var(--text-faint));
+            box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.35);
+        }
+
+        .lib-meta .cc-sep {
+            color: var(--text-faint);
+        }
+
+        .lib-meta .is-warn {
+            color: oklch(0.82 0.13 85);
+        }
+
+        .lib-actions {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            flex: 0 0 auto;
+        }
+
+        .lib-actions .icon-btn {
+            padding: 6px 8px;
+        }
+
+        .lib-empty {
+            padding: 18px 12px;
+            text-align: center;
+            font-size: 12.5px;
+            color: var(--text-dim);
+            border: 1px dashed var(--border-soft);
+            border-radius: var(--radius-sm);
+        }
+
+        .lib-group-title {
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.09em;
+            text-transform: uppercase;
+            color: var(--text-dim);
+            margin-top: 4px;
+        }
+
+        #home-defaultdecks {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .deck-editor {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            padding: 14px;
+            background: var(--surface-2);
+            border: 1px solid color-mix(in oklch, var(--accent) 26%, transparent);
+            border-radius: var(--radius);
+        }
+
+        .deck-editor[hidden] {
+            display: none;
+        }
+
+        .deck-editor .de-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+        }
+
+        .deck-save-opt {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            font-size: 12px;
+            color: var(--text-2);
+            cursor: pointer;
+        }
+
+        .deck-save-opt[hidden] {
+            display: none;
+        }
+
+        .deck-save-opt input {
+            accent-color: var(--accent);
+        }
+
+        /* Topbar session title (rename in place) */
+        .session-ctl {
+            display: flex;
+            align-items: center;
+            gap: 2px;
+            min-width: 0;
+            margin-left: 6px;
+        }
+
+        .session-title {
+            width: 220px;
+            min-width: 60px;
+            flex: 0 1 auto;
+            background: transparent;
+            border: 1px solid transparent;
+            border-radius: var(--radius-sm);
+            color: var(--text-2);
+            font: inherit;
+            font-size: 12.5px;
+            padding: 5px 8px;
+            text-overflow: ellipsis;
+            outline: none;
+        }
+
+        .session-title:hover {
+            border-color: var(--border-soft);
+        }
+
+        .session-title:focus {
+            border-color: var(--accent-dim);
+            background: var(--surface-2);
+            color: var(--text);
         }
 
         /* APP SHELL */
@@ -4771,6 +5056,47 @@
                 flex: 1 1 auto;
             }
 
+            /* Library rows: actions drop under the title on a phone */
+            .lib-row {
+                flex-wrap: wrap;
+            }
+
+            .lib-main {
+                flex-basis: 100%;
+            }
+
+            .lib-actions {
+                flex-wrap: wrap;
+                width: 100%;
+                justify-content: flex-end;
+            }
+
+            .lib-actions .icon-btn {
+                min-height: 40px;
+                min-width: 40px;
+                justify-content: center;
+            }
+
+            .setup-card .home-tab {
+                min-height: 44px;
+            }
+
+            .setup-card .input {
+                font-size: 16px;
+                min-height: 44px;
+            }
+
+            /* Topbar on a phone: keep Save, drop the title field and Copy
+               (rename lives in My sessions, Copy in the Timelines drawer) */
+            .session-ctl .session-title,
+            .session-ctl .session-copy {
+                display: none;
+            }
+
+            .session-ctl {
+                margin-left: 0;
+            }
+
             /* Touch targets: 44px minimum across every setup control. Scoped to the
                setup card so the topbar keeps its --topbar-h. */
             .setup-card .btn,
@@ -6328,6 +6654,17 @@
                 <span class="brand-name">Practice Dojo</span>
                 <span class="brand-tag">sandbox</span>
             </div>
+            <!-- The live session: rename in place; Save / Save as copy write to the device library -->
+            <div class="session-ctl">
+                <input type="text" id="session-title" class="session-title" maxlength="120" spellcheck="false"
+                    aria-label="Session title" placeholder="Untitled session" title="Rename this session"
+                    onchange="App.renameCurrentSession(this.value)"
+                    onkeydown="if(event.key==='Enter'){this.blur()}else if(event.key==='Escape'){this.value=App.session?App.session.title:'';this.blur()}">
+                <button class="icon-btn ghost" id="btn-session-save" onclick="App.saveSessionNow()"
+                    title="Save to this device" aria-label="Save session"><i class="fa-solid fa-floppy-disk"></i></button>
+                <button class="icon-btn ghost session-copy" onclick="App.saveSessionAsCopy()"
+                    title="Save as copy" aria-label="Save session as a copy"><i class="fa-regular fa-copy"></i></button>
+            </div>
         </div>
         <div class="topbar-center">
             <div class="turn-pill" id="turn-pill">
@@ -6355,7 +6692,7 @@
         </div>
     </header>
 
-    <!-- Deck Setup Overlay -->
+    <!-- Home screen (replaces the old deck setup overlay; ARCH §7) -->
     <div id="setup-modal" class="overlay hidden" role="dialog" aria-modal="true" aria-labelledby="setup-title">
         <div class="setup-card">
             <div class="setup-head">
@@ -6364,84 +6701,164 @@
             </div>
 
             <div class="setup-body">
-                <!-- CONTINUE: rendered from localStorage on every showSetup() call -->
+                <!-- CONTINUE: the device library's last session, re-read on every showSetup() -->
                 <section id="setup-continue" class="continue-card" aria-labelledby="setup-continue-label">
                     <div class="cc-body">
                         <span id="setup-continue-label" class="setup-section-label">Continue where you left off</span>
+                        <div class="cc-title" id="cc-title"></div>
                         <div class="cc-matchup" id="cc-matchup"></div>
                         <div class="cc-meta" id="cc-meta"></div>
                     </div>
-                    <button class="btn btn-primary" id="btn-resume-storage" onclick="App.loadFromLocalStorage()">
+                    <button class="btn btn-primary" id="btn-resume-storage" onclick="App.resumeLastSession()">
                         <i class="fa-solid fa-clock-rotate-left"></i> Resume match
                     </button>
                 </section>
 
-                <div class="setup-rule" id="setup-new-rule" hidden>or start a new match</div>
+                <div class="home-tabs" role="tablist" aria-label="Home">
+                    <button type="button" class="home-tab is-active" role="tab" id="home-tab-new" data-tab="new"
+                        aria-selected="true" aria-controls="home-panel-new" onclick="App.setHomeTab('new')">
+                        <i class="fa-solid fa-play"></i> New match</button>
+                    <button type="button" class="home-tab" role="tab" id="home-tab-sessions" data-tab="sessions"
+                        aria-selected="false" aria-controls="home-panel-sessions" tabindex="-1"
+                        onclick="App.setHomeTab('sessions')">
+                        <i class="fa-solid fa-folder-open"></i> My sessions <span class="ht-count" id="home-count-sessions"></span></button>
+                    <button type="button" class="home-tab" role="tab" id="home-tab-decks" data-tab="decks"
+                        aria-selected="false" aria-controls="home-panel-decks" tabindex="-1"
+                        onclick="App.setHomeTab('decks')">
+                        <i class="fa-solid fa-layer-group"></i> Decks</button>
+                    <button type="button" class="home-tab" role="tab" id="home-tab-demos" data-tab="demos"
+                        aria-selected="false" aria-controls="home-panel-demos" tabindex="-1"
+                        onclick="App.setHomeTab('demos')">
+                        <i class="fa-solid fa-graduation-cap"></i> Demos</button>
+                </div>
 
-                <section class="deck-pair" aria-label="Start a new match">
-                    <div class="deck-card is-p1" id="deck-card-1">
-                        <div class="deck-card-label">
-                            <label class="label-text" for="deck1-input">Player 1 · You</label>
-                            <span class="label-tag">P1</span>
-                            <button type="button" class="deck-disclose" aria-expanded="true" aria-controls="deck1-input"
-                                onclick="App.toggleDeckCard(1)">
-                                <span class="dd-text">Hide list</span>
-                                <i class="fa-solid fa-chevron-up" aria-hidden="true"></i>
-                            </button>
+                <!-- NEW MATCH -->
+                <section class="home-panel" id="home-panel-new" role="tabpanel" aria-labelledby="home-tab-new">
+                    <div class="deck-pair">
+                        <div class="deck-card is-p1" id="deck-card-1">
+                            <div class="deck-card-label">
+                                <label class="label-text" for="deck1-input">Player 1 · You</label>
+                                <span class="label-tag">P1</span>
+                                <button type="button" class="deck-disclose" aria-expanded="true" aria-controls="deck1-input"
+                                    onclick="App.toggleDeckCard(1)">
+                                    <span class="dd-text">Hide list</span>
+                                    <i class="fa-solid fa-chevron-up" aria-hidden="true"></i>
+                                </button>
+                            </div>
+                            <select id="p1-deck-select" class="select" aria-label="Choose Player 1's deck"
+                                onchange="App.onDeckSelect(1, this.value)">
+                                <option value="">— Choose a deck, or paste one below —</option>
+                            </select>
+                            <textarea id="deck1-input" class="dojo-textarea" style="height:140px"
+                                placeholder="Paste decklist&#10;(e.g. 4 Tinker Bell - Giant Fairy)"
+                                oninput="App.markDeckTouched(1)" onblur="App.checkDeckInput(1)"></textarea>
+                            <div class="deck-note" id="deck1-note" role="status" aria-live="polite"></div>
+                            <label class="deck-save-opt" id="deck1-save-opt" hidden>
+                                <input type="checkbox" id="deck1-save"> Save to My decks
+                            </label>
                         </div>
-                        <select id="p1-deck-select" class="select" aria-label="Pick Player 1's deck from the cloud"
-                            onchange="App.onDeckSelect(1, this.value)">
-                            <option value="">— Pick a deck from cloud —</option>
-                        </select>
-                        <textarea id="deck1-input" class="dojo-textarea" style="height:140px"
-                            placeholder="Paste decklist&#10;(e.g. 4 Tinker Bell - Giant Fairy)"
-                            oninput="App.markDeckTouched(1)" onblur="App.checkDeckInput(1)"></textarea>
-                        <div class="deck-note" id="deck1-note" role="status" aria-live="polite"></div>
+                        <div class="deck-card is-p2" id="deck-card-2">
+                            <div class="deck-card-label">
+                                <label class="label-text" for="deck2-input">Player 2 · Opponent</label>
+                                <span class="label-tag">P2</span>
+                                <button type="button" class="deck-disclose" aria-expanded="true" aria-controls="deck2-input"
+                                    onclick="App.toggleDeckCard(2)">
+                                    <span class="dd-text">Hide list</span>
+                                    <i class="fa-solid fa-chevron-up" aria-hidden="true"></i>
+                                </button>
+                            </div>
+                            <select id="p2-deck-select" class="select" aria-label="Choose Player 2's deck"
+                                onchange="App.onDeckSelect(2, this.value)">
+                                <option value="">— Choose a deck, or paste one below —</option>
+                            </select>
+                            <textarea id="deck2-input" class="dojo-textarea" style="height:140px"
+                                placeholder="Paste decklist&#10;(e.g. 4 Maui - Hero to All)"
+                                oninput="App.markDeckTouched(2)" onblur="App.checkDeckInput(2)"></textarea>
+                            <div class="deck-note" id="deck2-note" role="status" aria-live="polite"></div>
+                            <label class="deck-save-opt" id="deck2-save-opt" hidden>
+                                <input type="checkbox" id="deck2-save"> Save to My decks
+                            </label>
+                        </div>
                     </div>
-                    <div class="deck-card is-p2" id="deck-card-2">
-                        <div class="deck-card-label">
-                            <label class="label-text" for="deck2-input">Player 2 · Opponent</label>
-                            <span class="label-tag">P2</span>
-                            <button type="button" class="deck-disclose" aria-expanded="true" aria-controls="deck2-input"
-                                onclick="App.toggleDeckCard(2)">
-                                <span class="dd-text">Hide list</span>
-                                <i class="fa-solid fa-chevron-up" aria-hidden="true"></i>
-                            </button>
-                        </div>
-                        <select id="p2-deck-select" class="select" aria-label="Pick Player 2's deck from the cloud"
-                            onchange="App.onDeckSelect(2, this.value)">
-                            <option value="">— Pick a deck from cloud —</option>
-                        </select>
-                        <textarea id="deck2-input" class="dojo-textarea" style="height:140px"
-                            placeholder="Paste decklist&#10;(e.g. 4 Maui - Hero to All)"
-                            oninput="App.markDeckTouched(2)" onblur="App.checkDeckInput(2)"></textarea>
-                        <div class="deck-note" id="deck2-note" role="status" aria-live="polite"></div>
+
+                    <!-- Every "open a match that already exists" path, in one named family -->
+                    <div class="open-row" role="group" aria-labelledby="setup-open-label">
+                        <span class="open-label" id="setup-open-label">Or open an existing match:</span>
+                        <input type="file" id="setup-import-file" class="hidden" accept=".json,.gz,application/json,application/gzip"
+                            onchange="App.importTimelines(event)">
+                        <button class="btn btn-ghost" onclick="document.getElementById('setup-import-file').click()">
+                            <i class="fa-solid fa-file-import"></i> .json / .gz file
+                        </button>
+                        <button class="btn btn-ghost" onclick="App.openImportLogModal()">
+                            <i class="fa-solid fa-file-lines"></i> Duels.ink log / replay
+                        </button>
                     </div>
                 </section>
 
-                <!-- Every "open a match that already exists" path, in one named family -->
-                <section class="open-row" aria-labelledby="setup-open-label">
-                    <span class="open-label" id="setup-open-label">Or open an existing match:</span>
-                    <select id="example-session-select" class="select" aria-label="Choose a cloud demo session"
-                        onchange="App.onExampleSessionChange()">
-                        <option value="">— Cloud demos —</option>
-                    </select>
-                    <button class="btn btn-ghost" id="btn-load-example" onclick="App.loadExampleSession()" disabled>
-                        <i class="fa-solid fa-cloud-arrow-down"></i> Load demo
-                    </button>
-                    <input type="file" id="setup-import-file" class="hidden" accept=".json"
-                        onchange="App.importTimelines(event)">
-                    <button class="btn btn-ghost" onclick="document.getElementById('setup-import-file').click()">
-                        <i class="fa-solid fa-file-import"></i> .json file
-                    </button>
-                    <button class="btn btn-ghost" onclick="App.openImportLogModal()">
-                        <i class="fa-solid fa-file-lines"></i> Duels.ink log
-                    </button>
+                <!-- MY SESSIONS -->
+                <section class="home-panel" id="home-panel-sessions" role="tabpanel" aria-labelledby="home-tab-sessions" hidden>
+                    <div class="lib-toolbar">
+                        <span class="lib-hint">Saved on this device. Every match saves itself as you play.</span>
+                        <button class="btn btn-ghost" onclick="document.getElementById('setup-import-file').click()">
+                            <i class="fa-solid fa-file-import"></i> Import file
+                        </button>
+                    </div>
+                    <div class="lib-list" id="home-sessions-list"></div>
+                </section>
+
+                <!-- DECKS -->
+                <section class="home-panel" id="home-panel-decks" role="tabpanel" aria-labelledby="home-tab-decks" hidden>
+                    <div class="lib-toolbar">
+                        <button class="btn btn-ghost" onclick="App.openDeckEditor(null)">
+                            <i class="fa-solid fa-plus"></i> New deck
+                        </button>
+                        <input type="file" id="deck-import-txt" class="hidden" accept=".txt,text/plain"
+                            onchange="App.importDeckTxt(event)">
+                        <button class="btn btn-ghost" onclick="document.getElementById('deck-import-txt').click()">
+                            <i class="fa-solid fa-file-lines"></i> Import .txt
+                        </button>
+                        <input type="file" id="deck-import-replay" class="hidden" accept=".json,.replay,.gz"
+                            onchange="App.importDeckFromReplay(event)">
+                        <button class="btn btn-ghost" onclick="document.getElementById('deck-import-replay').click()"
+                            title="Use your exact decklist from a Duels.ink replay file">
+                            <i class="fa-solid fa-film"></i> From Duels.ink replay
+                        </button>
+                    </div>
+
+                    <form class="deck-editor" id="deck-editor" hidden onsubmit="event.preventDefault(); App.saveDeckEditor()">
+                        <div class="de-head">
+                            <span class="setup-section-label" id="deck-editor-label">New deck</span>
+                        </div>
+                        <input type="text" id="deck-editor-name" class="input" maxlength="80" placeholder="Deck name"
+                            aria-label="Deck name" required>
+                        <textarea id="deck-editor-list" class="dojo-textarea" style="height:180px" aria-label="Decklist"
+                            placeholder="Paste decklist&#10;(e.g. 4 Tinker Bell - Giant Fairy)"
+                            oninput="App.checkDeckEditor()"></textarea>
+                        <div class="deck-note" id="deck-editor-note" role="status" aria-live="polite"></div>
+                        <input type="text" id="deck-editor-notes" class="input" maxlength="4000"
+                            placeholder="Notes (optional)" aria-label="Deck notes">
+                        <div class="de-actions">
+                            <button type="button" class="btn btn-ghost" onclick="App.closeDeckEditor()">Cancel</button>
+                            <button type="submit" class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> Save deck</button>
+                        </div>
+                    </form>
+
+                    <div class="lib-group-title">My decks</div>
+                    <div class="lib-list" id="home-mydecks-list"></div>
+                    <div id="home-defaultdecks"></div>
+                </section>
+
+                <!-- DEMOS -->
+                <section class="home-panel" id="home-panel-demos" role="tabpanel" aria-labelledby="home-tab-demos" hidden>
+                    <div class="lib-toolbar">
+                        <span class="lib-hint">Opening a demo makes your own copy in My sessions. The original never changes.</span>
+                    </div>
+                    <div class="lib-list" id="home-demos-list"></div>
                 </section>
             </div>
 
             <div class="setup-foot">
-                <span class="hint"><i class="fa-solid fa-circle-info"></i> Leave both decklists empty to play with
+                <span class="hint" id="setup-foot-hint"><i class="fa-solid fa-circle-info"></i> Leave both decklists empty to play with
                     random dummy decks.</span>
                 <div class="foot-actions">
                     <button class="btn btn-ghost hidden" id="btn-setup-back" onclick="App.closeSetup()">
@@ -6790,14 +7207,14 @@
                     <button class="icon-btn ghost" onclick="App.toggleTimelines()">&times;</button>
                 </div>
                 <div class="drawer-row">
-                    <input type="file" id="import-file" class="hidden" accept=".json"
+                    <input type="file" id="import-file" class="hidden" accept=".json,.gz,application/json,application/gzip"
                         onchange="App.importTimelines(event)">
                     <button class="icon-btn" onclick="document.getElementById('import-file').click()"><i
                             class="fa-solid fa-file-import"></i> Import</button>
                     <button class="icon-btn" onclick="App.exportTimelines()"><i class="fa-solid fa-file-export"></i>
                         Export</button>
-                    <button class="icon-btn is-accent" onclick="App.promptSaveSessionToCloud()"><i
-                            class="fa-solid fa-cloud-arrow-up"></i> Save</button>
+                    <button class="icon-btn is-accent" onclick="App.saveSessionAsCopy()" title="Save as copy"><i
+                            class="fa-regular fa-copy"></i> Copy</button>
                     <button class="icon-btn is-ok" onclick="App.openImportLogModal()"><i
                             class="fa-solid fa-file-lines"></i> Log</button>
                 </div>
@@ -7118,17 +7535,9 @@
     </div>
 
     <script>
-        // Supabase Client Setup
-        const SUPABASE_URL = 'https://cjlhrfhximjldqrfblkj.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNqbGhyZmh4aW1qbGRxcmZibGtqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA0MTcxNzQsImV4cCI6MjA2NTk5MzE3NH0.zLiQcPnKt2SnNfQIkUnOG7bOo6F7MPMh8MsasdFF6lw';
-        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-        let allDecks = [];
-        let deckFuse = null;
         let cardFuse = null;
-        let allSessions = [];
 
-        const APP_VERSION = "v2.18.1"; // Centralized version string (redesign)
+        const APP_VERSION = "v2.19.0"; // Centralized version string (redesign)
 
         // Tweaks panel accent presets (hue values for the OKLCH accent ramp)
         const ACCENT_PRESETS = {
@@ -7147,6 +7556,11 @@
             if (setupVer) setupVer.innerText = APP_VERSION;
             if (sidebarVer) sidebarVer.innerText = APP_VERSION;
             try { App.bindTweaks(); } catch (e) { console.warn('Tweaks init failed', e); }
+            // Autosave is debounced; write it out before the tab can be closed or frozen.
+            document.addEventListener('visibilitychange', () => {
+                if (document.visibilityState === 'hidden') App.flushDeviceSave();
+            });
+            window.addEventListener('pagehide', () => App.flushDeviceSave());
             // Reconnecting retries every card image that never made it down.
             window.addEventListener('online', () => {
                 try { App.onBackOnline(); } catch (e) { console.warn('Image re-warm failed', e); }
@@ -7294,56 +7708,236 @@
                 log: []
             },
 
-            // --- Local Storage Persistence ---
-            saveToLocalStorage() {
-                const exportData = {
+            // --- Device library: the live session (ARCH §5) ---
+            // Every match is a session in DojoLibrary (IndexedDB). `session` is the
+            // one on the board; every state change autosaves it, debounced ~1s.
+            // null means nothing on the board belongs to the library (no saves).
+            session: null, // { id, title, createdAt, lastOpenedAt }
+            // The decklists the match was started from (session file deck1/deck2).
+            sessionDecks: { deck1: '', deck2: '' },
+
+            // The v1 payload: the `data` of a v2 session file (§6), unchanged.
+            buildSessionData() {
+                return {
                     version: 1,
                     currentState: this.compressState(this.state, true),
                     bookmarks: this.bookmarks,
                     autoSaves: this.autoSaves,
                     history: this.history,
-                    deck1: document.getElementById('deck1-input').value,
-                    deck2: document.getElementById('deck2-input').value,
-                    // Cheap digest so the setup screen can name what you'd be resuming
-                    // without decompressing the whole state first.
-                    summary: this.buildSessionSummary()
+                    deck1: this.sessionDecks.deck1 || '',
+                    deck2: this.sessionDecks.deck2 || ''
                 };
-                try {
-                    localStorage.setItem('lorcana_dojo_session', JSON.stringify(exportData));
-                } catch (e) {
-                    console.warn("Failed to save session to local storage:", e);
+            },
+
+            // Called after every change worth keeping.
+            saveToDevice() {
+                if (!this.session) return;
+                this._sessionDirty = true;
+                clearTimeout(this._deviceSaveTimer);
+                this._deviceSaveTimer = setTimeout(() => this.flushDeviceSave(), 1000);
+            },
+
+            // Writes now if anything is pending. The snapshot is taken synchronously,
+            // so a caller may replace the board right after calling this.
+            // Resolves true when the device copy is current.
+            flushDeviceSave() {
+                clearTimeout(this._deviceSaveTimer);
+                this._deviceSaveTimer = null;
+                if (!this.session || !this._sessionDirty) return (this._deviceSaveChain || Promise.resolve(true));
+                this._sessionDirty = false;
+                const meta = { ...this.session };
+                const file = { data: this.buildSessionData(), summary: this.buildSessionSummary(), appVersion: APP_VERSION };
+                this._deviceSaveChain = (this._deviceSaveChain || Promise.resolve())
+                    .catch(() => { })
+                    .then(() => DojoLibrary.saveSession(meta, file))
+                    .then(() => { this._saveFailWarned = false; return true; })
+                    .catch(e => {
+                        console.warn('Device save failed:', e);
+                        if (this.session && this.session.id === meta.id) this._sessionDirty = true;
+                        // Say it once: the old localStorage slot failed silently on big sessions.
+                        if (!this._saveFailWarned) {
+                            this._saveFailWarned = true;
+                            this.showToast("Couldn't save to this device. Export the session to keep it.");
+                        }
+                        return false;
+                    });
+                return this._deviceSaveChain;
+            },
+
+            // Puts a new library session on the board's current state.
+            _startNewSession(title) {
+                const now = Date.now();
+                this.session = { id: DojoLibrary.newId(), title: (title || 'Untitled session').slice(0, 120), createdAt: now, lastOpenedAt: now };
+                DojoLibrary.setPref('lastSessionId', this.session.id);
+                this.syncSessionTitle();
+                this._sessionDirty = true;
+                return this.flushDeviceSave();
+            },
+
+            syncSessionTitle() {
+                const el = document.getElementById('session-title');
+                if (el && document.activeElement !== el) el.value = this.session ? this.session.title : '';
+                document.title = this.session ? `${this.session.title} · Practice Dojo` : 'Lorcana Practice Dojo';
+            },
+
+            // "Amethyst/Ruby vs Amber/Steel", or the player names a Duels.ink import carries.
+            defaultSessionTitle() {
+                const ps = (this.state && this.state.players) || [];
+                const named = ps.some(p => p && p.name && !/^Player [12]$/.test(p.name));
+                if (named && ps.length === 2) return `${ps[0].name} vs ${ps[1].name}`;
+                const side = (i) => this.inkSlashLabel(this.getDeckColors(i));
+                const a = side(0), b = side(1);
+                return a && b ? `${a} vs ${b}` : 'Practice match';
+            },
+
+            renameCurrentSession(value) {
+                if (!this.session) return;
+                const t = String(value || '').trim().slice(0, 120);
+                if (!t) { this.syncSessionTitle(); return; }
+                if (t === this.session.title) return;
+                this.session.title = t;
+                this.syncSessionTitle();
+                this._sessionDirty = true;
+                this.flushDeviceSave();
+            },
+
+            // Topbar Save. Autosave already keeps the device copy current; this
+            // writes immediately and says so. (Phase 3 adds the account copy here.)
+            async saveSessionNow() {
+                if (!this.session) return;
+                this._sessionDirty = true;
+                const ok = await this.flushDeviceSave();
+                if (ok) {
+                    DojoLibrary.persist();
+                    this.showToast(`Saved “${this.session.title}” on this device`);
                 }
             },
 
-            loadFromLocalStorage() {
-                try {
-                    const saved = localStorage.getItem('lorcana_dojo_session');
-                    if (!saved) return false;
-
-                    const importedData = JSON.parse(saved);
-                    if (importedData.currentState && importedData.bookmarks) {
-                        this.state = this.decompressState(importedData.currentState);
-                        this.bookmarks = importedData.bookmarks;
-                        this.autoSaves = importedData.autoSaves || [];
-                        this.history = importedData.history || importedData.currentState.history || [];
-
-                        if (importedData.deck1) document.getElementById('deck1-input').value = importedData.deck1;
-                        if (importedData.deck2) document.getElementById('deck2-input').value = importedData.deck2;
-
-                        // Ensure user is booted into the app
-                        this.leaveSetup();
-
-                        document.getElementById('timeline-drawer').classList.remove('is-open');
-                        this.renderAutoSaves();
-                        this.renderTree();
-                        this.render();
-                        this.showToast("Restored previous session!");
-                        return true;
-                    }
-                } catch (e) {
-                    console.warn("Failed to load session from local storage:", e);
+            async saveSessionAsCopy() {
+                if (!this.session) return;
+                const title = await this.dialog({
+                    title: 'Save as copy',
+                    message: 'The copy becomes the session on the board. The original stays as it is in My sessions.',
+                    icon: 'fa-copy',
+                    prompt: true,
+                    value: `${this.session.title} (copy)`,
+                    maxLength: 120,
+                    confirmText: 'Save copy'
+                });
+                if (!title) return;
+                this._sessionDirty = true;
+                await this.flushDeviceSave(); // the original keeps everything up to now
+                const ok = await this._startNewSession(title);
+                if (ok) {
+                    DojoLibrary.persist();
+                    this.showToast(`Saved a copy. You're now in “${this.session.title}”.`);
                 }
-                return false;
+            },
+
+            // §9.4: session files come from strangers. Ids end up inside inline
+            // onclick handlers, so anything that isn't a plain token is re-issued;
+            // node colours end up in CSS custom properties, so url() and friends are
+            // dropped. Text fields are forced to strings and escaped where rendered.
+            sanitizeSessionData(data) {
+                const SAFE_ID = /^[A-Za-z0-9_-]{1,64}$/;
+                const remap = new Map();
+                const fixId = (id) => {
+                    if (id == null || id === '') return null;
+                    const s = String(id);
+                    if (SAFE_ID.test(s)) return s;
+                    if (!remap.has(s)) remap.set(s, this.uuid());
+                    return remap.get(s);
+                };
+                const str = (v) => (v == null ? '' : String(v));
+                const css = (v) => (typeof v === 'string' && v.length < 400 && !/url\s*\(|image-set|expression|[;{}<>\\]/i.test(v)) ? v : null;
+                const node = (b) => {
+                    if (!b || typeof b !== 'object') return null;
+                    return {
+                        ...b,
+                        id: fixId(b.id) || this.uuid(),
+                        parentId: fixId(b.parentId),
+                        name: str(b.name),
+                        stats: str(b.stats),
+                        comment: str(b.comment),
+                        color: css(b.color),
+                        gradient: css(b.gradient),
+                        state: typeof b.state === 'string' ? b.state : JSON.stringify(b.state || {}),
+                        cardsPlayedData: Array.isArray(b.cardsPlayedData) ? b.cardsPlayedData : [],
+                        timestamp: Number(b.timestamp) || Date.now()
+                    };
+                };
+                const list = (arr) => (Array.isArray(arr) ? arr.map(node).filter(Boolean) : []);
+                const cs = data.currentState || {};
+                const comments = {};
+                if (cs.turnComments && typeof cs.turnComments === 'object') {
+                    Object.keys(cs.turnComments).forEach(k => { comments[k] = str(cs.turnComments[k]); });
+                }
+                return {
+                    ...data,
+                    currentState: {
+                        ...cs,
+                        activeBookmarkId: fixId(cs.activeBookmarkId),
+                        turnComments: comments,
+                        players: Array.isArray(cs.players) ? cs.players.map(p => ({ ...p, name: str(p && p.name) })) : cs.players
+                    },
+                    bookmarks: list(data.bookmarks),
+                    autoSaves: list(data.autoSaves),
+                    history: Array.isArray(data.history) ? data.history.filter(h => typeof h === 'string') : [],
+                    deck1: str(data.deck1),
+                    deck2: str(data.deck2)
+                };
+            },
+
+            // The one way a saved session reaches the board: device library, file,
+            // demo or Duels.ink import. Throws before touching the board if the data
+            // is unusable. Detaches the previous session; the caller names the new one.
+            _applySessionData(data) {
+                const clean = this.sanitizeSessionData(data);
+                // Decompress into a local first, so a truncated file can't leave the
+                // board half-replaced.
+                const nextState = this.decompressState(clean.currentState);
+                if (!nextState || !nextState.players || nextState.players.length < 2) {
+                    throw new Error('Session state is incomplete');
+                }
+                this.flushDeviceSave();
+                this.session = null;
+                this.state = nextState;
+                this.bookmarks = clean.bookmarks;
+                this.autoSaves = clean.autoSaves;
+                this.history = clean.history;
+                this.sessionDecks = { deck1: clean.deck1, deck2: clean.deck2 };
+
+                if (clean.deck1) document.getElementById('deck1-input').value = clean.deck1;
+                if (clean.deck2) document.getElementById('deck2-input').value = clean.deck2;
+
+                this.leaveSetup();
+                document.getElementById('timeline-drawer').classList.remove('is-open');
+                this.renderAutoSaves();
+                this.renderTree();
+                this.render();
+            },
+
+            async openDeviceSession(id) {
+                // Same session already on the board: nothing to load.
+                if (this.session && this.session.id === id && this.hasLiveMatch()) { this.leaveSetup(); return; }
+                try {
+                    await this.flushDeviceSave();
+                    const { meta, data } = await DojoLibrary.loadSession(id);
+                    this._applySessionData(data);
+                    const now = Date.now();
+                    this.session = { id: meta.id, title: meta.title, createdAt: meta.createdAt, lastOpenedAt: now };
+                    DojoLibrary.updateSessionMeta(id, { lastOpenedAt: now }).catch(() => { });
+                    DojoLibrary.setPref('lastSessionId', id);
+                    this.syncSessionTitle();
+                    this.showToast(`Opened “${meta.title}”`);
+                } catch (e) {
+                    console.warn('Failed to open session:', e);
+                    this.dialogAlert(e && e.message ? e.message : "That session couldn't be read.", "Couldn't open session");
+                }
+            },
+
+            resumeLastSession() {
+                if (this._continueId) this.openDeviceSession(this._continueId);
             },
 
             updateTurnComment(turnNum, playerId, text) {
@@ -7555,7 +8149,7 @@
                     });
 
                     this.state.activeBookmarkId = newId;
-                    this.saveToLocalStorage();
+                    this.saveToDevice();
 
                     // Celebrate the win in the design system, then offer the multiverse
                     setTimeout(async () => {
@@ -7577,85 +8171,135 @@
                 }
             },
 
-            // Both cloud dropdowns used to sit enabled with a single option while the
-            // request was in flight, and stayed that way forever if it failed.
-            setSelectStatus(ids, label, disabled) {
-                ids.forEach(id => {
-                    const el = document.getElementById(id);
-                    if (!el) return;
-                    el.innerHTML = `<option value="">${this.escapeHtml(label)}</option>`;
-                    el.disabled = !!disabled;
-                });
-            },
+            // --- Deck pickers: My decks (device) + Default decks (repo) ---
+            // Option values are "my:<id>" / "def:<id>"; _deckIndex maps them to decks.
+            _deckIndex: {},
+            _pickedDeck: {},
 
-            async fetchDecksFromDatabase() {
-                const deckSelects = ['p1-deck-select', 'p2-deck-select'];
-                this.setSelectStatus(deckSelects, 'Loading decks…', true);
-                try {
-                    const { data, error } = await supabaseClient.from('decks').select('*').order('created_at', { ascending: false });
-                    if (error) {
-                        console.error('Error fetching decks:', error);
-                        allDecks = [];
-                    } else {
-                        allDecks = data;
-                    }
-                    deckFuse = new Fuse(allDecks, { keys: ['name'], includeScore: true, threshold: 0.4 });
-
-                    if (!allDecks.length) {
-                        this.setSelectStatus(deckSelects, 'Cloud unavailable — paste a decklist', true);
-                        return;
-                    }
-                    this.populateDeckDropdowns();
-                } catch (err) {
-                    console.error("Failed to fetch decks from Supabase:", err);
-                    allDecks = [];
-                    this.setSelectStatus(deckSelects, 'Cloud unavailable — paste a decklist', true);
+            async getDefaultDecks() {
+                try { return await DojoLibrary.loadDefaultDecks(); } catch (e) {
+                    console.warn('Default decks unavailable:', e);
+                    return null;
                 }
             },
 
-            populateDeckDropdowns() {
-                const s1 = document.getElementById('p1-deck-select');
-                const s2 = document.getElementById('p2-deck-select');
-                if (!s1 || !s2) return;
-
-                let optionsHtml = '<option value="">— Pick a deck from cloud —</option>';
-                allDecks.forEach((deck, index) => {
-                    optionsHtml += `<option value="${index}">${this.escapeHtml(deck.name || 'Unnamed Deck')}</option>`;
+            async populateDeckDropdowns() {
+                let mine = [];
+                try { mine = await DojoLibrary.listDecks(); } catch (e) { console.warn('Device decks unavailable:', e); }
+                const groups = (await this.getDefaultDecks()) || [];
+                const index = {};
+                const esc = (v) => this.escapeHtml(v);
+                let html = '<option value="">— Choose a deck, or paste one below —</option>';
+                if (mine.length) {
+                    html += '<optgroup label="My decks">' + mine.map(d => {
+                        index['my:' + d.id] = d;
+                        return `<option value="${esc('my:' + d.id)}">${esc(d.name)}</option>`;
+                    }).join('') + '</optgroup>';
+                }
+                groups.forEach(g => {
+                    if (!g.decks.length) return;
+                    html += `<optgroup label="${esc('Default · ' + g.title)}">` + g.decks.map(d => {
+                        index['def:' + d.id] = d;
+                        return `<option value="${esc('def:' + d.id)}">${esc(d.name)}</option>`;
+                    }).join('') + '</optgroup>';
                 });
-
-                s1.innerHTML = optionsHtml;
-                s2.innerHTML = optionsHtml;
-                s1.disabled = false;
-                s2.disabled = false;
+                this._deckIndex = index;
+                [1, 2].forEach(n => {
+                    const sel = document.getElementById(`p${n}-deck-select`);
+                    if (!sel) return;
+                    const keep = sel.value;
+                    sel.innerHTML = html;
+                    sel.value = index[keep] ? keep : '';
+                });
             },
 
-            onDeckSelect(playerNum, deckIndexStr) {
-                if (deckIndexStr === "") return;
-                const deck = allDecks[parseInt(deckIndexStr)];
+            onDeckSelect(playerNum, value) {
+                if (!value) return;
+                const deck = this._deckIndex[value];
                 if (!deck) return;
 
-                // Never clobber a list the user typed or pasted. This request lands
-                // asynchronously, so it can otherwise arrive mid-paste.
-                const target = document.getElementById(playerNum === 1 ? 'deck1-input' : 'deck2-input');
+                // Never clobber a list the user typed or pasted.
+                const sel = document.getElementById(`p${playerNum}-deck-select`);
+                const target = document.getElementById(`deck${playerNum}-input`);
                 if (target && target.value.trim() && this._deckTouched && this._deckTouched[playerNum]) {
-                    this.showToast(`Player ${playerNum}'s list was left as you typed it — clear it to load a cloud deck.`);
-                    document.getElementById(playerNum === 1 ? 'p1-deck-select' : 'p2-deck-select').value = '';
+                    this.showToast(`Player ${playerNum}'s list was left as you typed it. Clear it to load a saved deck.`);
+                    sel.value = '';
                     return;
                 }
-
-                // Smartly extract the decklist from whatever column name is used
-                let deckText = deck.decklist || deck.deck_list || deck.list || deck.cards || deck.export_string || deck.content || "";
-
-                // Format array of objects if needed
-                if (Array.isArray(deckText)) {
-                    deckText = deckText.map(c => `${c.amount || c.qty || 1} ${c.name || c.card_name}`).join('\n');
-                } else if (typeof deckText === 'object') {
-                    deckText = JSON.stringify(deckText, null, 2);
-                }
-
-                const inputId = playerNum === 1 ? 'deck1-input' : 'deck2-input';
-                document.getElementById(inputId).value = deckText;
+                target.value = deck.decklist;
+                this._pickedDeck[playerNum] = { value, text: deck.decklist };
+                if (this._deckTouched) this._deckTouched[playerNum] = false;
                 this.checkDeckInput(playerNum);
+            },
+
+            // "Save to My decks" is offered for a list that didn't come from a saved deck.
+            updateDeckSaveOpt(playerNum) {
+                const opt = document.getElementById(`deck${playerNum}-save-opt`);
+                const text = document.getElementById(`deck${playerNum}-input`).value;
+                const picked = this._pickedDeck[playerNum];
+                if (picked && picked.text !== text) {
+                    this._pickedDeck[playerNum] = null;
+                    const sel = document.getElementById(`p${playerNum}-deck-select`);
+                    if (sel) sel.value = '';
+                }
+                if (opt) opt.hidden = !text.trim() || !!this._pickedDeck[playerNum];
+            },
+
+            // Picks last match's decks again on a fresh home screen.
+            async applyLastDecks() {
+                const last = await DojoLibrary.getPref('lastDecks');
+                if (!last) return;
+                [1, 2].forEach(n => {
+                    const v = last['p' + n];
+                    const ta = document.getElementById(`deck${n}-input`);
+                    if (!v || !this._deckIndex[v] || ta.value.trim()) return;
+                    document.getElementById(`p${n}-deck-select`).value = v;
+                    this.onDeckSelect(n, v);
+                });
+            },
+
+            // Ink pair + card count of a decklist, computed from the card DB (never
+            // written by hand in the manifest). Memoised: lists rarely change.
+            deckInfo(text) {
+                this._deckInfoCache = this._deckInfoCache || new Map();
+                const key = String(text || '');
+                if (this._deckInfoCache.has(key)) return this._deckInfoCache.get(key);
+                const regex = /^(\d+)\s+(.+)$/;
+                let count = 0;
+                const unmatched = [];
+                const inks = new Set();
+                key.split('\n').forEach(line => {
+                    const t = line.trim();
+                    if (!t) return;
+                    const m = t.match(regex);
+                    if (!m) { unmatched.push(t); return; }
+                    const name = m[2].toLowerCase().trim();
+                    const card = this.cardDB[name] || this.allCards.find(c => c.name.toLowerCase() === name || (c.fullName && c.fullName.toLowerCase() === name));
+                    if (!card) { unmatched.push(m[2].trim()); return; }
+                    count += parseInt(m[1]);
+                    const cols = (card.colors && card.colors.length) ? card.colors : (card.color ? String(card.color).split('-') : []);
+                    cols.forEach(c => { const k = String(c).trim().toLowerCase(); if (k) inks.add(k); });
+                });
+                const info = { count, unmatched, inks: this.sortInks(Array.from(inks)) };
+                if (this._deckInfoCache.size > 200) this._deckInfoCache.clear();
+                this._deckInfoCache.set(key, info);
+                return info;
+            },
+
+            sortInks(inks) {
+                const order = ['amber', 'amethyst', 'emerald', 'ruby', 'sapphire', 'steel'];
+                return inks.slice().sort((a, b) => order.indexOf(a) - order.indexOf(b));
+            },
+
+            inkSlashLabel(inks) {
+                if (!inks || !inks.length) return '';
+                return this.sortInks(inks).slice(0, 2).map(c => c.charAt(0).toUpperCase() + c.slice(1)).join('/');
+            },
+
+            deckAutoName(text) {
+                const label = this.inkSlashLabel(this.deckInfo(text).inks) || 'Custom';
+                const d = new Date();
+                return `${label} · ${d.toLocaleDateString([], { month: 'short', day: 'numeric' })}`;
             },
 
             // --- Card database cache (IndexedDB) ------------------------------
@@ -7743,10 +8387,6 @@
                     const loadStart = performance.now();
                     const MIN_LOADING_MS = 1800;
 
-                    // Fetch Supabase Decks asynchronously in the background
-                    this.fetchDecksFromDatabase();
-                    this.fetchSessionsFromDatabase();
-
                     // 1. Fetch Cards (IndexedDB-cached: instant warm start, works offline)
                     const data = await this.loadCardDatabase();
 
@@ -7812,7 +8452,12 @@
 
                     document.getElementById('loading-screen').classList.add('hidden');
 
-                    // showSetup() reads localStorage itself and renders the Continue card,
+                    // The device library: one-time move of the old localStorage slot,
+                    // then the deck pickers. Signed out, nothing here touches the network
+                    // beyond this site's own defaults/ files.
+                    await this.initLibrary();
+
+                    // showSetup() re-reads the library and renders the Continue card,
                     // so a mid-session reset offers the same resume path as a cold start.
                     this.showSetup();
 
@@ -7956,6 +8601,17 @@
                     .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
             },
 
+            // Node comments are markdown, and marked passes raw HTML straight
+            // through, so its output is always sanitised (§9.4). If DOMPurify
+            // didn't load, the comment is shown as plain text instead.
+            renderMarkdown(text) {
+                const src = String(text == null ? '' : text);
+                if (typeof DOMPurify === 'undefined' || !DOMPurify.sanitize || typeof marked === 'undefined') {
+                    return `<p style="white-space:pre-wrap">${this.escapeHtml(src)}</p>`;
+                }
+                return DOMPurify.sanitize(marked.parse(src));
+            },
+
             // A digest of the live match, written on every autosave. Lets the setup
             // screen show a session you can recognise instead of a filename you can't.
             buildSessionSummary() {
@@ -8002,28 +8658,69 @@
                 ).join('') + `</span>`;
             },
 
-            // Reads localStorage on every call — the previous build injected the resume
-            // button once during init(), so a mid-session reset offered no way back.
-            renderContinueCard() {
+            // --- Home screen (ARCH §7) ---
+
+            async initLibrary() {
+                try {
+                    await DojoLibrary.migrateLegacySlot(APP_VERSION, (s) => {
+                        const a = s && s.inks ? this.inkSlashLabel(s.inks[0]) : '';
+                        const b = s && s.inks ? this.inkSlashLabel(s.inks[1]) : '';
+                        return a && b ? `${a} vs ${b}` : null;
+                    });
+                } catch (e) {
+                    console.warn('Library migration failed:', e);
+                }
+                this.bindHome();
+                await this.populateDeckDropdowns();
+            },
+
+            hasLiveMatch() {
+                return !!(this.session && this.state && this.state.players &&
+                    this.state.players[0].deck.length + this.state.players[0].hand.length > 0);
+            },
+
+            // Ink pips + "Amber · Steel vs Ruby · Sapphire · Turn 8 · lore 12–9 · …"
+            sessionMetaHtml(s, ts) {
+                const esc = (v) => this.escapeHtml(v);
+                const sep = '<span class="cc-sep">·</span>';
+                const bits = [];
+                if (s && s.inks) {
+                    bits.push(`<span>${this.inkPipsHtml(s.inks[0])} ${esc(this.inkPairLabel(s.inks[0]))}</span>` +
+                        ` <span class="dim">vs</span> <span>${this.inkPipsHtml(s.inks[1])} ${esc(this.inkPairLabel(s.inks[1]))}</span>`);
+                }
+                if (s && s.turn) bits.push(esc(`Turn ${s.turn}`));
+                if (s && Array.isArray(s.lore)) bits.push(esc(`lore ${s.lore[0]}–${s.lore[1]}`));
+                if (s && s.nodes) bits.push(esc(`${s.nodes} ${s.nodes === 1 ? 'node' : 'nodes'}`));
+                if (s && s.lines > 1) bits.push(esc(`${s.lines} lines`));
+                if (ts) bits.push(esc(this.relativeTime(ts)));
+                return bits.join(sep);
+            },
+
+            // Re-reads the library on every call — a mid-session reset gets the same
+            // resume path as a cold start.
+            async renderContinueCard() {
                 const card = document.getElementById('setup-continue');
-                const rule = document.getElementById('setup-new-rule');
                 const startBtn = document.getElementById('btn-start-match');
                 if (!card) return false;
 
-                let saved = null;
-                try { saved = JSON.parse(localStorage.getItem('lorcana_dojo_session') || 'null'); } catch (e) { saved = null; }
-                const usable = !!(saved && saved.currentState && saved.bookmarks);
+                let meta = null;
+                try {
+                    const id = await DojoLibrary.getPref('lastSessionId');
+                    meta = id ? await DojoLibrary.getSession(id) : null;
+                } catch (e) { meta = null; }
+                this._continueId = meta ? meta.id : null;
+                const usable = !!meta;
 
                 card.classList.toggle('is-shown', usable);
-                if (rule) rule.hidden = !usable;
                 // Exactly one primary button on screen, chosen by state.
                 if (startBtn) startBtn.classList.toggle('btn-primary', !usable);
-
                 if (!usable) return false;
 
-                const s = saved.summary || null;
+                const s = meta.summary || null;
+                const title = document.getElementById('cc-title');
                 const matchup = document.getElementById('cc-matchup');
-                const meta = document.getElementById('cc-meta');
+                const metaEl = document.getElementById('cc-meta');
+                title.textContent = meta.title || '';
 
                 if (s && s.inks) {
                     matchup.innerHTML =
@@ -8033,12 +8730,12 @@
                     const bits = [`Turn ${s.turn}`, `lore ${s.lore[0]}–${s.lore[1]}`];
                     if (s.nodes) bits.push(`${s.nodes} ${s.nodes === 1 ? 'node' : 'nodes'}`);
                     if (s.lines > 1) bits.push(`${s.lines} lines`);
-                    if (s.savedAt) bits.push(this.relativeTime(s.savedAt));
-                    meta.innerHTML = bits.map(b => this.escapeHtml(b)).join('<span class="cc-sep">·</span>');
+                    bits.push(this.relativeTime(meta.updatedAt || s.savedAt));
+                    metaEl.innerHTML = bits.map(b => this.escapeHtml(b)).join('<span class="cc-sep">·</span>');
                 } else {
                     // Sessions saved before summaries existed still get a real card.
                     matchup.textContent = 'Your last session';
-                    meta.textContent = 'Saved on this device';
+                    metaEl.textContent = 'Saved on this device';
                 }
                 return true;
             },
@@ -8050,22 +8747,27 @@
                 const tb = document.getElementById('topbar');
                 if (tb) tb.style.display = 'none';
 
-                const hasResume = this.renderContinueCard();
-
                 // "Back to match" only makes sense when there is a match behind the overlay.
+                const liveMatch = this.hasLiveMatch();
                 const back = document.getElementById('btn-setup-back');
-                const liveMatch = !!(this.state && this.state.players && this.state.players[0].deck.length + this.state.players[0].hand.length > 0);
                 if (back) back.classList.toggle('hidden', !liveMatch);
 
-                // Focus lands on the thing you most likely came for. Without this the
-                // trigger button is display:none'd out from under focus and it falls to <body>.
-                const target = hasResume
-                    ? document.getElementById('btn-resume-storage')
-                    : document.getElementById('deck1-input');
-                if (target) setTimeout(() => target.focus(), 0);
+                // The library lists must show this match as it is right now.
+                this.flushDeviceSave().then(() => {
+                    this.renderContinueCard().then(hasResume => {
+                        // Focus lands on the thing you most likely came for.
+                        if (this._homeTab !== 'new') return;
+                        const target = hasResume
+                            ? document.getElementById('btn-resume-storage')
+                            : document.getElementById('deck1-input');
+                        if (target && !modal.classList.contains('hidden')) target.focus();
+                    });
+                    this.setHomeTab(this._homeTab || 'new');
+                    if (!liveMatch) this.applyLastDecks();
+                });
             },
 
-            // "Back to match" — abandons the setup screen without touching state.
+            // "Back to match" — abandons the home screen without touching state.
             closeSetup() {
                 this.leaveSetup();
             },
@@ -8077,25 +8779,371 @@
                 document.getElementById('app').classList.remove('hidden');
                 const tb = document.getElementById('topbar');
                 if (tb) tb.style.display = '';
+                this.syncSessionTitle();
             },
 
-            async confirmShowSetup() {
-                const liveMatch = !!(this.state && this.state.players && this.state.players[0].hand.length > 0);
-                if (liveMatch) {
+            // The match on the board is already in My sessions, so leaving it loses nothing.
+            confirmShowSetup() {
+                this.showSetup();
+            },
+
+            setHomeTab(tab) {
+                this._homeTab = tab;
+                document.querySelectorAll('.home-tab').forEach(btn => {
+                    const on = btn.dataset.tab === tab;
+                    btn.classList.toggle('is-active', on);
+                    btn.setAttribute('aria-selected', String(on));
+                    btn.tabIndex = on ? 0 : -1;
+                });
+                document.querySelectorAll('.home-panel').forEach(p => { p.hidden = p.id !== `home-panel-${tab}`; });
+                // Start match and its hint belong to the New match tab.
+                const start = document.getElementById('btn-start-match');
+                const hint = document.getElementById('setup-foot-hint');
+                if (start) start.classList.toggle('hidden', tab !== 'new');
+                if (hint) hint.style.visibility = tab === 'new' ? '' : 'hidden';
+                if (tab === 'sessions') this.renderHomeSessions();
+                else if (tab === 'decks') this.renderHomeDecks();
+                else if (tab === 'demos') this.renderHomeDemos();
+                this.refreshHomeCounts();
+            },
+
+            async refreshHomeCounts() {
+                const el = document.getElementById('home-count-sessions');
+                if (!el) return;
+                try { const n = (await DojoLibrary.listSessions()).length; el.textContent = n ? String(n) : ''; }
+                catch (e) { el.textContent = ''; }
+            },
+
+            // Lists use data-act / data-id and one delegated listener each, so no
+            // stored string ever lands inside an inline handler.
+            bindHome() {
+                if (this._homeBound) return;
+                this._homeBound = true;
+                const on = (id, fn) => {
+                    const el = document.getElementById(id);
+                    if (!el) return;
+                    el.addEventListener('click', (e) => {
+                        const btn = e.target.closest('[data-act]');
+                        const row = e.target.closest('[data-id]');
+                        if (btn && row) fn(btn.dataset.act, row.dataset.id, row, btn);
+                    });
+                };
+                on('home-sessions-list', (act, id, row, btn) => this.onSessionAction(act, id, btn));
+                on('home-mydecks-list', (act, id) => this.onDeckAction(act, 'my', id));
+                on('home-defaultdecks', (act, id) => this.onDeckAction(act, 'def', id));
+                on('home-demos-list', (act, id, row, btn) => { if (act === 'open') this.openDemo(id, btn); });
+
+                // Arrow keys move between tabs (WAI-ARIA tabs pattern).
+                const tabs = document.querySelector('.home-tabs');
+                if (tabs) tabs.addEventListener('keydown', (e) => {
+                    if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+                    const all = Array.from(tabs.querySelectorAll('.home-tab'));
+                    const i = all.findIndex(b => b.dataset.tab === this._homeTab);
+                    const next = all[(i + (e.key === 'ArrowRight' ? 1 : all.length - 1)) % all.length];
+                    this.setHomeTab(next.dataset.tab);
+                    next.focus();
+                    e.preventDefault();
+                });
+            },
+
+            // --- My sessions tab ---
+
+            async renderHomeSessions() {
+                const list = document.getElementById('home-sessions-list');
+                let rows;
+                try { rows = await DojoLibrary.listSessions(); } catch (e) {
+                    list.innerHTML = `<div class="lib-empty">This browser isn't letting the Dojo keep a library (private window?). Use Export to keep a session.</div>`;
+                    return;
+                }
+                if (!rows.length) {
+                    list.innerHTML = `<div class="lib-empty">No sessions yet. Start a match, open a file or import a Duels.ink log, and it shows up here.</div>`;
+                    return;
+                }
+                const esc = (v) => this.escapeHtml(v);
+                const live = this.hasLiveMatch() && this.session ? this.session.id : null;
+                list.innerHTML = rows.map(r => `
+                    <div class="lib-row${r.id === live ? ' is-live' : ''}" data-id="${esc(r.id)}">
+                        <div class="lib-main">
+                            <div class="lib-title">${esc(r.title)}${r.id === live ? '<span class="lib-badge">on the board</span>' : ''}</div>
+                            <div class="lib-meta">${this.sessionMetaHtml(r.summary, r.updatedAt)}</div>
+                        </div>
+                        <div class="lib-actions">
+                            <button class="btn btn-primary" data-act="open">${r.id === live ? 'Back to it' : 'Open'}</button>
+                            <button class="icon-btn ghost" data-act="rename" title="Rename" aria-label="Rename ${esc(r.title)}"><i class="fa-solid fa-pen"></i></button>
+                            <button class="icon-btn ghost" data-act="duplicate" title="Duplicate" aria-label="Duplicate ${esc(r.title)}"><i class="fa-regular fa-copy"></i></button>
+                            <button class="icon-btn ghost" data-act="export" title="Export (.dojo.json.gz)" aria-label="Export ${esc(r.title)}"><i class="fa-solid fa-file-export"></i></button>
+                            <button class="icon-btn ghost" data-act="delete" title="Delete" aria-label="Delete ${esc(r.title)}"><i class="fa-solid fa-trash"></i></button>
+                        </div>
+                    </div>`).join('');
+            },
+
+            async onSessionAction(act, id, btn) {
+                const isLive = !!(this.session && this.session.id === id);
+                let meta;
+                try { meta = await DojoLibrary.getSession(id); } catch (e) { meta = null; }
+                if (!meta) { this.renderHomeSessions(); return; }
+
+                if (act === 'open') {
+                    await this.openDeviceSession(id);
+                } else if (act === 'rename') {
+                    const title = await this.dialog({
+                        title: 'Rename session', icon: 'fa-pen', prompt: true, value: meta.title, maxLength: 120, confirmText: 'Rename'
+                    });
+                    if (!title) return;
+                    if (isLive) this.renameCurrentSession(title);
+                    else await DojoLibrary.updateSessionMeta(id, { title: title.slice(0, 120) });
+                    if (isLive) await this.flushDeviceSave();
+                    this.renderHomeSessions();
+                    this.renderContinueCard();
+                } else if (act === 'duplicate') {
+                    if (isLive) { this._sessionDirty = true; await this.flushDeviceSave(); }
+                    try {
+                        await DojoLibrary.duplicateSession(id, `${meta.title} (copy)`.slice(0, 120));
+                        this.showToast(`Duplicated “${meta.title}”`);
+                    } catch (e) { this.dialogAlert(e.message, "Couldn't duplicate"); }
+                    this.renderHomeSessions();
+                    this.refreshHomeCounts();
+                } else if (act === 'export') {
+                    try {
+                        if (isLive) { this._sessionDirty = true; await this.flushDeviceSave(); }
+                        const { data } = await DojoLibrary.loadSession(id);
+                        await this.downloadSessionFile(meta, data);
+                    } catch (e) { this.dialogAlert(e.message, "Couldn't export"); }
+                } else if (act === 'delete') {
                     const ok = await this.dialog({
-                        title: 'Leave this match?',
-                        message: 'Starting a new match clears the current timeline tree and every auto-save in it. Your last auto-save stays on this device, so you can resume it from the setup screen instead.',
-                        confirmText: 'Change decks',
-                        cancelText: 'Keep playing'
+                        title: `Delete “${meta.title}”?`,
+                        message: isLive
+                            ? 'This is the match on the board. It will be removed from this device and stop saving. This can’t be undone. Export it first if you might want it back.'
+                            : 'It will be removed from this device. This can’t be undone. Export it first if you might want it back.',
+                        danger: true, confirmText: 'Delete', cancelText: 'Keep it'
                     });
                     if (!ok) return;
+                    if (isLive) {
+                        // Stop autosave first, then let any in-flight write land before deleting.
+                        clearTimeout(this._deviceSaveTimer);
+                        this._sessionDirty = false;
+                        this.session = null;
+                        this.syncSessionTitle();
+                        await (this._deviceSaveChain || Promise.resolve());
+                        const back = document.getElementById('btn-setup-back');
+                        if (back) back.classList.add('hidden');
+                    }
+                    try {
+                        await DojoLibrary.deleteSession(id);
+                        if ((await DojoLibrary.getPref('lastSessionId')) === id) await DojoLibrary.setPref('lastSessionId', null);
+                        this.showToast(`Deleted “${meta.title}”`);
+                    } catch (e) { this.dialogAlert(e.message, "Couldn't delete"); }
+                    this.renderHomeSessions();
+                    this.renderContinueCard();
+                    this.refreshHomeCounts();
                 }
-                this.showSetup();
+            },
+
+            // --- Decks tab ---
+
+            deckRowHtml(d, src) {
+                const esc = (v) => this.escapeHtml(v);
+                const info = this.deckInfo(d.decklist);
+                const sep = '<span class="cc-sep">·</span>';
+                const meta = [];
+                if (info.inks.length) meta.push(`<span>${this.inkPipsHtml(info.inks)} ${esc(this.inkPairLabel(info.inks))}</span>`);
+                meta.push(esc(`${info.count} cards`));
+                if (info.unmatched.length) meta.push(`<span class="is-warn">⚠ ${esc(info.unmatched.length)} not recognised</span>`);
+                const notes = d.notes ? ` title="${esc(d.notes)}"` : '';
+                return `
+                    <div class="lib-row" data-id="${esc(d.id)}">
+                        <div class="lib-main"${notes}>
+                            <div class="lib-title">${esc(d.name)}</div>
+                            <div class="lib-meta">${meta.join(sep)}</div>
+                        </div>
+                        <div class="lib-actions">
+                            <button class="btn btn-ghost" data-act="p1" title="Play as Player 1">P1</button>
+                            <button class="btn btn-ghost" data-act="p2" title="Play as Player 2">P2</button>
+                            ${src === 'my'
+                        ? `<button class="icon-btn ghost" data-act="edit" title="Edit" aria-label="Edit ${esc(d.name)}"><i class="fa-solid fa-pen"></i></button>
+                               <button class="icon-btn ghost" data-act="delete" title="Delete" aria-label="Delete ${esc(d.name)}"><i class="fa-solid fa-trash"></i></button>`
+                        : `<button class="icon-btn ghost" data-act="edit" title="Copy to My decks and edit" aria-label="Copy ${esc(d.name)} to My decks"><i class="fa-regular fa-copy"></i></button>`}
+                        </div>
+                    </div>`;
+            },
+
+            async renderHomeDecks() {
+                const mineEl = document.getElementById('home-mydecks-list');
+                const defEl = document.getElementById('home-defaultdecks');
+                let mine = [];
+                let mineFailed = false;
+                try { mine = await DojoLibrary.listDecks(); } catch (e) { mineFailed = true; }
+                mineEl.innerHTML = mineFailed
+                    ? `<div class="lib-empty">This browser isn't letting the Dojo keep a library (private window?).</div>`
+                    : mine.length ? mine.map(d => this.deckRowHtml(d, 'my')).join('')
+                        : `<div class="lib-empty">No decks yet. Use New deck, import a .txt, or tick “Save to My decks” when you start a match.</div>`;
+
+                const groups = await this.getDefaultDecks();
+                if (!groups) {
+                    defEl.innerHTML = `<div class="lib-group-title">Default decks</div><div class="lib-empty">Default decks couldn't be loaded. Check your connection.</div>`;
+                    return;
+                }
+                defEl.innerHTML = groups.filter(g => g.decks.length).map(g => `
+                    <div class="lib-group-title">Default decks · ${this.escapeHtml(g.title)}</div>
+                    <div class="lib-list">${g.decks.map(d => this.deckRowHtml(d, 'def')).join('')}</div>`).join('');
+            },
+
+            async onDeckAction(act, src, id) {
+                const deck = this._deckIndex[`${src}:${id}`] || (src === 'my' ? await DojoLibrary.getDeck(id) : null);
+                if (!deck) { this.populateDeckDropdowns().then(() => this.renderHomeDecks()); return; }
+                if (act === 'p1' || act === 'p2') {
+                    const n = act === 'p1' ? 1 : 2;
+                    this.setHomeTab('new');
+                    if (this._deckTouched) this._deckTouched[n] = false; // an explicit pick replaces what was typed
+                    const value = `${src}:${id}`;
+                    document.getElementById(`p${n}-deck-select`).value = value;
+                    this.onDeckSelect(n, value);
+                    this.showToast(`${deck.name} is Player ${n}'s deck`);
+                } else if (act === 'edit') {
+                    this.openDeckEditor(src === 'my' ? deck : null,
+                        src === 'def' ? { name: `${deck.name} (copy)`, decklist: deck.decklist, notes: deck.notes } : null);
+                } else if (act === 'delete') {
+                    const ok = await this.dialog({
+                        title: `Delete “${deck.name}”?`, message: 'It will be removed from My decks on this device. Matches already played with it keep their cards.',
+                        danger: true, confirmText: 'Delete', cancelText: 'Keep it'
+                    });
+                    if (!ok) return;
+                    await DojoLibrary.deleteDeck(id);
+                    await this.populateDeckDropdowns();
+                    this.renderHomeDecks();
+                    this.showToast(`Deleted “${deck.name}”`);
+                }
+            },
+
+            // deck: a My deck to edit, or null for a new one; prefill: fields for a new one.
+            openDeckEditor(deck, prefill) {
+                const form = document.getElementById('deck-editor');
+                const src = deck || prefill || {};
+                this._deckEditing = deck ? { id: deck.id, createdAt: deck.createdAt } : null;
+                document.getElementById('deck-editor-label').textContent = deck ? 'Edit deck' : (prefill ? 'Save to My decks' : 'New deck');
+                document.getElementById('deck-editor-name').value = src.name || '';
+                document.getElementById('deck-editor-list').value = src.decklist || '';
+                document.getElementById('deck-editor-notes').value = src.notes || '';
+                form.hidden = false;
+                this.checkDeckEditor();
+                form.scrollIntoView({ block: 'nearest' });
+                document.getElementById('deck-editor-name').focus();
+            },
+
+            closeDeckEditor() {
+                document.getElementById('deck-editor').hidden = true;
+                this._deckEditing = null;
+            },
+
+            checkDeckEditor() {
+                this.renderDeckNote(document.getElementById('deck-editor-note'), document.getElementById('deck-editor-list').value);
+            },
+
+            async saveDeckEditor() {
+                const name = document.getElementById('deck-editor-name').value.trim();
+                const decklist = document.getElementById('deck-editor-list').value;
+                if (!name) { document.getElementById('deck-editor-name').focus(); return; }
+                if (!decklist.trim()) { document.getElementById('deck-editor-list').focus(); return; }
+                try {
+                    const row = await DojoLibrary.saveDeck({
+                        ...(this._deckEditing || {}), name, decklist,
+                        notes: document.getElementById('deck-editor-notes').value.trim()
+                    });
+                    DojoLibrary.persist();
+                    this.closeDeckEditor();
+                    await this.populateDeckDropdowns();
+                    this.renderHomeDecks();
+                    this.showToast(`Saved “${row.name}” to My decks`);
+                } catch (e) {
+                    this.dialogAlert(e.message || 'The deck could not be saved on this device.', "Couldn't save deck");
+                }
+            },
+
+            async importDeckTxt(event) {
+                const file = event.target.files[0];
+                event.target.value = '';
+                if (!file) return;
+                const text = await file.text();
+                this.openDeckEditor(null, { name: file.name.replace(/\.txt$/i, '').slice(0, 80), decklist: text });
+            },
+
+            // "My list from a Duels.ink replay": the replay's exact `decklist`.
+            async importDeckFromReplay(event) {
+                const file = event.target.files[0];
+                event.target.value = '';
+                if (!file) return;
+                try {
+                    const obj = JSON.parse(await DojoLibrary.readText(file));
+                    if (!obj || !Array.isArray(obj.decklist) || !obj.decklist.length) {
+                        throw new Error("This file has no decklist. Only Duels.ink replays (.json, .replay or .replay.gz) carry one; text logs don't.");
+                    }
+                    const counts = new Map();
+                    let unknown = 0;
+                    obj.decklist.forEach(id => {
+                        const card = this.setNumberIndex[id];
+                        if (!card) { unknown++; return; }
+                        const name = card.fullName || card.name;
+                        counts.set(name, (counts.get(name) || 0) + 1);
+                    });
+                    if (!counts.size) throw new Error("None of this replay's cards are in the card database yet.");
+                    const decklist = Array.from(counts, ([n, c]) => `${c} ${n}`).join('\n');
+                    const who = obj.playerNames && obj.perspective != null ? obj.playerNames[obj.perspective] : null;
+                    const label = this.inkSlashLabel(this.deckInfo(decklist).inks) || 'Duels.ink deck';
+                    this.openDeckEditor(null, {
+                        name: (who ? `${label} · ${who}` : label).slice(0, 80),
+                        decklist,
+                        notes: obj.gameId ? `From Duels.ink replay ${obj.gameId}` : 'From a Duels.ink replay'
+                    });
+                    if (unknown) this.showToast(`${unknown} card${unknown === 1 ? '' : 's'} in that replay aren't in the card database yet.`);
+                } catch (e) {
+                    this.dialogAlert(e.message || "That file couldn't be read.", "Couldn't import deck");
+                }
+            },
+
+            // --- Demos tab ---
+
+            async renderHomeDemos() {
+                const list = document.getElementById('home-demos-list');
+                let demos;
+                try { demos = await DojoLibrary.loadDemoManifest(); } catch (e) {
+                    list.innerHTML = `<div class="lib-empty">Demos couldn't be loaded. Check your connection.</div>`;
+                    return;
+                }
+                if (!demos.length) {
+                    list.innerHTML = `<div class="lib-empty">No demos yet.</div>`;
+                    return;
+                }
+                const esc = (v) => this.escapeHtml(v);
+                list.innerHTML = demos.map(d => `
+                    <div class="lib-row" data-id="${esc(d.id)}">
+                        <div class="lib-main"><div class="lib-title">${esc(d.title)}</div></div>
+                        <div class="lib-actions"><button class="btn btn-primary" data-act="open">Open</button></div>
+                    </div>`).join('');
+            },
+
+            // Opening a demo makes a device copy; the original never changes.
+            async openDemo(id, btn) {
+                const demo = (await DojoLibrary.loadDemoManifest()).find(d => d.id === id);
+                if (!demo) return;
+                const label = btn ? btn.innerHTML : '';
+                if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Loading…'; }
+                try {
+                    const file = await DojoLibrary.fetchDemo(demo);
+                    this._applySessionData(file.data);
+                    await this._startNewSession(demo.title);
+                    this.showToast(`Opened your copy of “${demo.title}”`);
+                } catch (e) {
+                    console.error('Failed to open demo', e);
+                    this.dialogAlert(e.message || "That demo couldn't be loaded.", "Couldn't open demo");
+                } finally {
+                    if (btn) { btn.disabled = false; btn.innerHTML = label; }
+                }
             },
 
             markDeckTouched(playerNum) {
                 this._deckTouched = this._deckTouched || {};
                 this._deckTouched[playerNum] = true;
+                this.updateDeckSaveOpt(playerNum);
             },
 
             toggleDeckCard(playerNum) {
@@ -8107,11 +9155,16 @@
                 btn.querySelector('i').className = collapsed ? 'fa-solid fa-chevron-down' : 'fa-solid fa-chevron-up';
             },
 
-            // Names what the parser actually understood, so a malformed list can no
-            // longer turn into 60 random cards without the user hearing about it.
             checkDeckInput(playerNum) {
                 const note = document.getElementById(`deck${playerNum}-note`);
                 const text = document.getElementById(`deck${playerNum}-input`).value;
+                this.renderDeckNote(note, text);
+                this.updateDeckSaveOpt(playerNum);
+            },
+
+            // Names what the parser actually understood, so a malformed list can no
+            // longer turn into 60 random cards without the user hearing about it.
+            renderDeckNote(note, text) {
                 if (!note) return;
 
                 if (!text.trim()) {
@@ -8120,19 +9173,7 @@
                     return;
                 }
 
-                const regex = /^(\d+)\s+(.+)$/;
-                let counted = 0;
-                const unmatched = [];
-                text.split('\n').forEach(line => {
-                    const t = line.trim();
-                    if (!t) return;
-                    const m = t.match(regex);
-                    if (!m) { unmatched.push(t); return; }
-                    const name = m[2].toLowerCase().trim();
-                    const card = this.cardDB[name] || this.allCards.find(c => c.name.toLowerCase() === name || (c.fullName && c.fullName.toLowerCase() === name));
-                    if (card) counted += parseInt(m[1]);
-                    else unmatched.push(m[2].trim());
-                });
+                const { count: counted, unmatched } = this.deckInfo(text);
 
                 if (counted === 0) {
                     note.className = 'deck-note is-warn';
@@ -8150,12 +9191,6 @@
                 }
                 note.className = counted === 60 ? 'deck-note' : 'deck-note is-warn';
                 note.textContent = msg;
-            },
-
-            onExampleSessionChange() {
-                const sel = document.getElementById('example-session-select');
-                const btn = document.getElementById('btn-load-example');
-                if (btn) btn.disabled = !sel.value;
             },
 
             parseDeck(text) {
@@ -8197,11 +9232,8 @@
                 // Keep last 250 states
                 if (this.history.length > 250) this.history.shift();
 
-                // Debounce the local storage save slightly so we don't spam it on every single rapid millisecond click
-                clearTimeout(this._saveTimeout);
-                this._saveTimeout = setTimeout(() => {
-                    this.saveToLocalStorage();
-                }, 500);
+                // Autosave to the device library (debounced inside saveToDevice)
+                this.saveToDevice();
             },
 
             undo() {
@@ -8305,6 +9337,26 @@
                 const deck1Str = document.getElementById('deck1-input').value;
                 const deck2Str = document.getElementById('deck2-input').value;
 
+                // The match on the board keeps everything up to now; then it lets go,
+                // so nothing below can autosave into it.
+                this.flushDeviceSave();
+                this.session = null;
+
+                // "Save to My decks" for a pasted list, and remember the picks for next time.
+                [[1, deck1Str], [2, deck2Str]].forEach(([n, text]) => {
+                    const box = document.getElementById(`deck${n}-save`);
+                    const opt = document.getElementById(`deck${n}-save-opt`);
+                    if (box && box.checked && opt && !opt.hidden && text.trim()) {
+                        DojoLibrary.saveDeck({ name: this.deckAutoName(text), decklist: text })
+                            .then(row => { DojoLibrary.persist(); this.showToast(`Saved “${row.name}” to My decks`); this.populateDeckDropdowns(); })
+                            .catch(e => console.warn('Deck save failed', e));
+                        box.checked = false;
+                    }
+                });
+                const pick = (n, text) => (this._pickedDeck[n] && this._pickedDeck[n].text === text) ? this._pickedDeck[n].value : null;
+                DojoLibrary.setPref('lastDecks', { p1: pick(1, deck1Str), p2: pick(2, deck2Str) });
+                this.sessionDecks = { deck1: deck1Str, deck2: deck2Str };
+
                 const d1Ids = this.parseDeck(deck1Str);
                 const d2Ids = this.parseDeck(deck2Str);
 
@@ -8345,7 +9397,7 @@
 
                 this.logAction(`--- Turn 1 Begins ---`, true);
                 this.render();
-                this.saveToLocalStorage();
+                this._startNewSession(this.defaultSessionTitle());
             },
 
             // Returns the drawn CardInstance (or null). `track` records it in the turn's
@@ -8567,74 +9619,53 @@
                 if (scrim) scrim.classList.toggle('is-open', open);
             },
 
-            exportTimelines() {
-                const exportData = {
-                    version: 1,
-                    currentState: this.compressState(this.state, true),
-                    bookmarks: this.bookmarks,
-                    autoSaves: this.autoSaves,
-                    history: this.history,
-                    deck1: document.getElementById('deck1-input').value,
-                    deck2: document.getElementById('deck2-input').value
-                };
+            // Export: the live session as a v2 file, gzipped (<title>.dojo.json.gz).
+            async exportTimelines() {
+                if (this.session) { this._sessionDirty = true; await this.flushDeviceSave(); }
+                const meta = this.session || { id: DojoLibrary.newId(), title: this.defaultSessionTitle() };
+                try {
+                    await this.downloadSessionFile(meta, this.buildSessionData(), this.buildSessionSummary());
+                    this.showToast("Session exported");
+                } catch (e) {
+                    console.error('Export failed', e);
+                    this.dialogAlert("The session couldn't be exported.", "Export failed");
+                }
+            },
 
-                const blob = new Blob([JSON.stringify(exportData)], { type: "application/json" });
+            async downloadSessionFile(meta, data, summary) {
+                const file = DojoLibrary.encodeFile({
+                    id: meta.id, title: meta.title, summary: summary || meta.summary, data, appVersion: APP_VERSION
+                });
+                const blob = await DojoLibrary.encodeBlob(file);
+                const base = String(meta.title || 'session').replace(/[\\/:*?"<>|\u0000-\u001f]+/g, '').replace(/\s+/g, ' ').trim().slice(0, 80) || 'session';
+                const ext = blob.type === 'application/gzip' ? '.dojo.json.gz' : '.dojo.json';
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
-                a.download = `lorcana-session-${Date.now()}.json`;
+                a.download = base + ext;
                 document.body.appendChild(a);
                 a.click();
                 document.body.removeChild(a);
-                URL.revokeObjectURL(url);
-
-                this.showToast("Session Exported!");
+                setTimeout(() => URL.revokeObjectURL(url), 1000);
             },
 
-            importTimelines(event) {
+            // Import: v2 gzipped, v2 plain or v1 plain. The file becomes a new device session.
+            async importTimelines(event) {
                 const file = event.target.files[0];
+                // Reset so the same file can be picked again
+                event.target.value = '';
                 if (!file) return;
-
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    try {
-                        const importedData = JSON.parse(e.target.result);
-                        if (importedData.currentState && importedData.bookmarks) {
-                            // Decompress into a local first. Assigning this.state before the
-                            // call succeeds left the app on half-replaced state when a
-                            // truncated file threw mid-way.
-                            const nextState = this.decompressState(importedData.currentState);
-                            if (!nextState || !nextState.players || nextState.players.length < 2) {
-                                throw new Error('Session state is incomplete');
-                            }
-                            this.state = nextState;
-                            this.bookmarks = importedData.bookmarks;
-                            this.autoSaves = importedData.autoSaves || [];
-                            this.history = importedData.history || importedData.currentState.history || [];
-
-                            if (importedData.deck1) document.getElementById('deck1-input').value = importedData.deck1;
-                            if (importedData.deck2) document.getElementById('deck2-input').value = importedData.deck2;
-
-                            // Ensure user is booted into the app if they imported from setup modal
-                            this.leaveSetup();
-
-                            // Close Drawer if open, render new state
-                            document.getElementById('timeline-drawer').classList.remove('is-open');
-                            this.renderAutoSaves();
-                            this.renderTree(); // Ensure tree is ready if they open it
-                            this.render();
-                            this.showToast("Session Imported Successfully!");
-                        } else {
-                            this.dialogAlert("This file is missing the session data the Dojo expects. Export a session from the Dojo and try again.", "Invalid session file");
-                        }
-                    } catch (err) {
-                        console.error("Failed to parse timeline file", err);
-                        this.dialogAlert("That file couldn't be read as a Dojo session. Make sure it's a JSON file exported from the Dojo.", "Couldn't read file");
-                    }
-                    // Reset file input so the same file can be imported again if needed
-                    event.target.value = '';
-                };
-                reader.readAsText(file);
+                try {
+                    const parsed = await DojoLibrary.decode(file);
+                    this._applySessionData(parsed.data);
+                    const fromName = file.name.replace(/(\.dojo)?(\.json)?(\.gz)?$/i, '').trim();
+                    const title = parsed.title || (fromName && !/^lorcana-session-\d+$/.test(fromName) ? fromName : this.defaultSessionTitle());
+                    await this._startNewSession(title);
+                    this.showToast(`Imported “${this.session.title}” into My sessions`);
+                } catch (err) {
+                    console.error("Failed to import session file", err);
+                    this.dialogAlert(err && err.message ? err.message : "That file couldn't be read as a Dojo session.", "Couldn't read file");
+                }
             },
 
             // --- Duels.ink Log Import ---
@@ -9481,21 +10512,11 @@
             },
 
             // Loads a built session object into the app (shared by all import paths).
+            // The result becomes a new device session automatically.
             _loadSessionIntoApp(session, turnCount) {
-                this.state = this.decompressState(session.currentState);
-                this.bookmarks = session.bookmarks;
-                this.autoSaves = [];
-                this.history = [];
-
-                if (session.deck1) document.getElementById('deck1-input').value = session.deck1;
-                if (session.deck2) document.getElementById('deck2-input').value = session.deck2;
-
-                document.getElementById('setup-modal').classList.add('hidden');
-                document.getElementById('app').classList.remove('hidden');
-                document.getElementById('timeline-drawer').classList.remove('is-open');
-                this.renderAutoSaves();
-                this.renderTree();
-                this.render();
+                const { _turnCount, ...data } = session; // importer bookkeeping, not session data
+                this._applySessionData({ ...data, autoSaves: [], history: [] });
+                this._startNewSession(`${this.defaultSessionTitle()} (Duels.ink)`);
                 this.showToast(`Log Imported: ${turnCount} turns loaded!`);
             },
 
@@ -9639,132 +10660,6 @@
                 }
             },
 
-            async fetchSessionsFromDatabase() {
-                this.setSelectStatus(['example-session-select'], 'Loading demos…', true);
-                try {
-                    // Only select id, name, and created_at to save bandwidth. session_data is heavy.
-                    const { data, error } = await supabaseClient.from('dojo_sessions').select('id, name, created_at').order('created_at', { ascending: false });
-                    if (error) {
-                        console.error('Error fetching sessions:', error);
-                        allSessions = [];
-                    } else {
-                        allSessions = data;
-                    }
-                    if (!allSessions.length) {
-                        this.setSelectStatus(['example-session-select'], 'No demos available', true);
-                        return;
-                    }
-                    this.populateSessionDropdown();
-                } catch (err) {
-                    console.error("Failed to fetch sessions from Supabase:", err);
-                    allSessions = [];
-                    this.setSelectStatus(['example-session-select'], 'Cloud unavailable', true);
-                }
-            },
-
-            populateSessionDropdown() {
-                const selectElement = document.getElementById('example-session-select');
-                if (!selectElement) return;
-
-                let optionsHtml = '<option value="">— Cloud demos —</option>';
-                allSessions.forEach(session => {
-                    optionsHtml += `<option value="${this.escapeHtml(session.id)}">${this.escapeHtml(session.name)}</option>`;
-                });
-                selectElement.innerHTML = optionsHtml;
-                selectElement.disabled = false;
-                this.onExampleSessionChange();
-            },
-
-            async loadExampleSession() {
-                const selectElement = document.getElementById('example-session-select');
-                const sessionId = selectElement.value;
-                if (!sessionId) return;
-
-                const btn = document.getElementById('btn-load-example');
-                const originalText = btn.innerHTML;
-                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Loading...';
-                btn.disabled = true;
-
-                try {
-                    const { data, error } = await supabaseClient.from('dojo_sessions').select('session_data').eq('id', sessionId).single();
-                    if (error) throw error;
-
-                    const importedData = data.session_data;
-
-                    if (importedData.currentState && importedData.bookmarks) {
-                        this.state = this.decompressState(importedData.currentState);
-                        this.bookmarks = importedData.bookmarks;
-                        this.autoSaves = importedData.autoSaves || [];
-                        this.history = importedData.history || importedData.currentState.history || [];
-
-                        if (importedData.deck1) document.getElementById('deck1-input').value = importedData.deck1;
-                        if (importedData.deck2) document.getElementById('deck2-input').value = importedData.deck2;
-
-                        // Ensure user is booted into the app if they imported from setup modal
-                        this.leaveSetup();
-
-                        // Close Drawer if open, render new state
-                        document.getElementById('timeline-drawer').classList.remove('is-open');
-                        this.renderAutoSaves();
-                        this.renderTree(); // Ensure tree is ready if they open it
-                        this.render();
-                        this.showToast(`Loaded session successfully!`);
-                    } else {
-                        this.dialogAlert("The cloud returned a session without the data the Dojo expects. It may have been saved by an incompatible version.", "Invalid cloud session");
-                    }
-                } catch (err) {
-                    console.error("Failed to fetch example session", err);
-                    this.dialogAlert("Couldn't reach the cloud to load that session. Check your connection and try again.", "Cloud load failed");
-                } finally {
-                    btn.innerHTML = originalText;
-                    selectElement.value = '';
-                    this.onExampleSessionChange();
-                }
-            },
-
-            async promptSaveSessionToCloud() {
-                const sessionName = await this.dialog({
-                    title: 'Save session to cloud',
-                    message: 'Name this session so you can find it in the load list later.',
-                    icon: 'fa-cloud-arrow-up',
-                    prompt: true,
-                    placeholder: 'e.g. Amber/Steel vs Ruby/Sapphire — turn 8 study',
-                    confirmText: 'Save'
-                });
-                if (sessionName) {
-                    this.saveSessionToCloud(sessionName);
-                }
-            },
-
-            async saveSessionToCloud(sessionName) {
-                const exportData = {
-                    version: 1,
-                    currentState: this.compressState(this.state, true),
-                    bookmarks: this.bookmarks,
-                    autoSaves: this.autoSaves,
-                    history: this.history,
-                    deck1: document.getElementById('deck1-input').value,
-                    deck2: document.getElementById('deck2-input').value
-                };
-
-                this.showToast("Uploading session to cloud...");
-
-                try {
-                    const { data, error } = await supabaseClient.from('dojo_sessions').insert([
-                        { name: sessionName, session_data: exportData }
-                    ]);
-
-                    if (error) throw error;
-
-                    this.showToast("Session saved to Cloud successfully!");
-                    // Refresh the dropdown to include the newly saved session
-                    this.fetchSessionsFromDatabase();
-                } catch (err) {
-                    console.error("Failed to save session to cloud:", err);
-                    this.dialogAlert("The session couldn't be uploaded. Your local game is untouched — check your connection and try Save to Cloud again.", "Cloud save failed");
-                }
-            },
-
             saveTimeline() {
                 const nameInput = document.getElementById('bookmark-name').value.trim();
                 const commentInput = document.getElementById('bookmark-comment').value.trim();
@@ -9800,7 +10695,7 @@
                 document.getElementById('bookmark-name').value = '';
                 document.getElementById('bookmark-comment').value = '';
                 this.showToast("Timeline node created.");
-                this.saveToLocalStorage();
+                this.saveToDevice();
             },
 
             autoSaveTimeline() {
@@ -9826,7 +10721,7 @@
                 if (this.autoSaves.length > 5) this.autoSaves.length = 5;
 
                 this.renderAutoSaves();
-                this.saveToLocalStorage();
+                this.saveToDevice();
             },
 
             restoreTimeline(id, isAuto = false) {
@@ -9862,7 +10757,7 @@
                 this.render();
                 this.showToast(`Timeline Restored: ${bookmark.name}`);
                 this.triggerTimeFlash();
-                this.saveToLocalStorage();
+                this.saveToDevice();
             },
 
             deleteTimeline(id, isAuto = false) {
@@ -9874,13 +10769,13 @@
                     if (!target) return;
                     this.autoSaves = this.autoSaves.filter(b => b.id !== id);
                     this.renderAutoSaves();
-                    this.saveToLocalStorage();
+                    this.saveToDevice();
                     this.showToast(`Auto-save deleted`, {
                         actionLabel: 'Undo',
                         onAction: () => {
                             this.autoSaves = snapshot;
                             this.renderAutoSaves();
-                            this.saveToLocalStorage();
+                            this.saveToDevice();
                         }
                     });
                 } else {
@@ -9900,7 +10795,7 @@
                     this.bookmarks = this.bookmarks.filter(b => b.id !== id);
                     if (wasActive) this.state.activeBookmarkId = nodeToDelete.parentId || null;
                     this.renderTree(); // Re-draw the canvas
-                    this.saveToLocalStorage();
+                    this.saveToDevice();
 
                     this.showToast(`Deleted "${nodeToDelete.name}"`, {
                         actionLabel: 'Undo',
@@ -9908,7 +10803,7 @@
                             this.bookmarks = snapshot;
                             if (wasActive) this.state.activeBookmarkId = id;
                             this.renderTree();
-                            this.saveToLocalStorage();
+                            this.saveToDevice();
                         }
                     });
                 }
@@ -10184,33 +11079,36 @@
                     if (b.gradient) el.style.setProperty('--node-g', b.gradient);
 
                     const isEditing = this.state.editingNodeId === b.id;
+                    // Node text comes from session files, which can come from anyone (§9.4).
+                    const esc = (v) => this.escapeHtml(v);
+                    const bid = esc(b.id);
 
                     if (isEditing) {
                         el.innerHTML = `
                             <div class="tn-edit-form">
-                                <input type="text" id="edit-node-name-${b.id}" class="input" aria-label="Node name" value="${b.name.replace(/"/g, '&quot;')}">
-                                <textarea id="edit-node-comment-${b.id}" class="input custom-scrollbar" aria-label="Node comment">${b.comment || ''}</textarea>
+                                <input type="text" id="edit-node-name-${bid}" class="input" aria-label="Node name" value="${esc(b.name)}">
+                                <textarea id="edit-node-comment-${bid}" class="input custom-scrollbar" aria-label="Node comment">${esc(b.comment || '')}</textarea>
                                 <div class="tn-edit-actions">
                                     <button onclick="App.toggleEditNode(null)" class="btn btn-ghost">Cancel</button>
-                                    <button onclick="App.saveEditNode('${b.id}')" class="btn btn-primary">Save</button>
+                                    <button onclick="App.saveEditNode('${bid}')" class="btn btn-primary">Save</button>
                                 </div>
                             </div>
                         `;
                     } else {
                         el.innerHTML = `
                              <div class="tn-body">
-                                 <button onclick="App.restoreTimeline('${b.id}', false)" class="tn-title"
-                                     title="Restore this timeline" aria-label="Restore timeline: ${b.name.replace(/"/g, '&quot;')}">
-                                     ${icon} <span>${b.name}</span>
+                                 <button onclick="App.restoreTimeline('${bid}', false)" class="tn-title"
+                                     title="Restore this timeline" aria-label="Restore timeline: ${esc(b.name)}">
+                                     ${icon} <span>${esc(b.name)}</span>
                                  </button>
-                                 <div class="tn-stats">${b.stats}</div>
-                                 <div class="tn-comment custom-scrollbar markdown-comment">${b.comment ? marked.parse(b.comment) : ''}</div>
+                                 <div class="tn-stats">${esc(b.stats)}</div>
+                                 <div class="tn-comment custom-scrollbar markdown-comment">${b.comment ? this.renderMarkdown(b.comment) : ''}</div>
 
-                                 <button onclick="App.toggleEditNode('${b.id}')" class="tn-icon-btn tn-edit"
+                                 <button onclick="App.toggleEditNode('${bid}')" class="tn-icon-btn tn-edit"
                                      title="Edit Node" aria-label="Edit node">
                                      <i class="fa-solid fa-pen"></i>
                                  </button>
-                                 <button onclick="App.deleteTimeline('${b.id}', false)" class="tn-icon-btn tn-delete"
+                                 <button onclick="App.deleteTimeline('${bid}', false)" class="tn-icon-btn tn-delete"
                                      title="Delete Node (children reattach to parent; Undo available)" aria-label="Delete node">
                                      <i class="fa-solid fa-trash"></i>
                                  </button>
@@ -10231,12 +11129,14 @@
                         // same player weave the multiverse node does.
                         const pIdx = this.bookmarkPlayerIndex(b);
                         const pCls = pIdx === null ? '' : ` is-p${pIdx + 1}`;
+                        const esc = (v) => this.escapeHtml(v);
+                        const bid = esc(b.id);
                         return `
-                        <div class="autosave-item${pCls}" role="button" tabindex="0" onclick="App.restoreTimeline('${b.id}', true)"
-                            onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();App.restoreTimeline('${b.id}', true)}"
-                            aria-label="Restore auto-save: ${b.name.replace(/"/g, '&quot;')}">
-                            <div class="as-name">${b.name}</div>
-                            <div class="as-stats">${b.stats}</div>
+                        <div class="autosave-item${pCls}" role="button" tabindex="0" onclick="App.restoreTimeline('${bid}', true)"
+                            onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();App.restoreTimeline('${bid}', true)}"
+                            aria-label="Restore auto-save: ${esc(b.name)}">
+                            <div class="as-name">${esc(b.name)}</div>
+                            <div class="as-stats">${esc(b.stats)}</div>
                             ${b.cardsPlayedData && b.cardsPlayedData.length > 0 ? `
                             <div class="as-cards">
                                 ${b.cardsPlayedData.slice(0, 5).map(cid => {
@@ -10354,6 +11254,8 @@
                         inputEl.type = 'text';
                         inputEl.className = 'input';
                         inputEl.placeholder = opts.placeholder || '';
+                        if (opts.value) inputEl.value = opts.value;
+                        if (opts.maxLength) inputEl.maxLength = opts.maxLength;
                         inputEl.setAttribute('aria-label', opts.title || 'Value');
                         body.appendChild(inputEl);
                     }
@@ -10416,6 +11318,7 @@
                     backdrop.appendChild(card);
                     document.body.appendChild(backdrop);
                     (inputEl || ok).focus();
+                    if (inputEl && opts.value) inputEl.select();
                 });
             },
 
@@ -13453,9 +14356,9 @@
                     cNode.className = 'text-xs mt-1 mb-2 p-2 bg-black/40 border border-gray-700/50 rounded-lg shadow-inner flex flex-col gap-1 w-11/12 ml-auto';
                     cNode.innerHTML = `
                         <div class="flex items-center gap-1.5 text-white/40 text-[10px] uppercase font-bold tracking-wider">
-                            <i class="fa-solid fa-book-open"></i> Turn ${turnNum} Notes (${pName})
+                            <i class="fa-solid fa-book-open"></i> Turn ${this.escapeHtml(turnNum)} Notes (${this.escapeHtml(pName)})
                         </div>
-                        <div class="text-white/80 whitespace-pre-wrap leading-relaxed">${comment}</div>
+                        <div class="text-white/80 whitespace-pre-wrap leading-relaxed">${this.escapeHtml(comment)}</div>
                     `;
                     logEl.appendChild(cNode);
                 };

@@ -14,7 +14,8 @@ This file provides system instructions and context for AI agents working in this
 |---|---|
 | `index.html` | Landing page (`https://practicedojo.github.io/`) |
 | `app/index.html` | The Practice Dojo (`https://practicedojo.github.io/app/`) |
-| `app/js/` | Small modules split out of the app (see "Splitting rule") |
+| `app/js/` | Small modules split out of the app (see "Splitting rule"). `library.js` = device library |
+| `app/defaults/` | Default decks and demos shipped with the app (manifests + files) |
 | `img/` | Images used by the landing page and the app |
 | `docs/` | Feature list, dev guide, architecture, implementation and research notes, test protocols |
 | `docs/samples/` | Sample Duels.ink logs and replays for testing imports |

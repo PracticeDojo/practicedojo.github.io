@@ -1,9 +1,8 @@
 # ARCH: Deck & Session Library, Share Links, Optional Accounts
 
-> **Status:** v0.3. Design agreed and ready to break into features. Nothing here is implemented yet.
-> **Scope:** Practice Dojo (`practice_dojo/practice_dojo.html`), designed to move with the app to
-> `PracticeDojo/practicedojo.github.io`.
-> The decision log is in [§14](#14-decision-log). There are no open questions; next step is Phase 0 (§12.1).
+> **Status:** v0.3. Phase 0 (move, v2.18.1) and **Phase 1 (library, v2.19.0, Feature 38)** are done; see §12.3 for how Phase 1 was built. Next step is Phase 2 (share links).
+> **Scope:** Practice Dojo (`app/index.html` in `PracticeDojo/practicedojo.github.io`).
+> The decision log is in [§14](#14-decision-log).
 
 ### What changed since v0.2
 - **Anonymous identity for session links: accepted**, with the security analysis and hardening in §9.3–§9.4.
@@ -117,7 +116,7 @@ defaults/
     manifest.json
     t8-amber-steel-vs-ruby-sapphire.dojo.json.gz
 ```
-(Until the move this is `practice_dojo/defaults/`. After it, `/app/defaults/` or `/defaults/`.)
+Built at `/app/defaults/`, next to the app that reads it.
 
 ### 4.2 Deck files
 Plain decklist text, exactly what you'd paste into the Dojo today:
@@ -443,9 +442,11 @@ Session files can come from strangers (imported files today, share links tomorro
 
 | Where | What happens |
 |---|---|
-| `practice_dojo.html:10204`, `:10238` | Bookmark and autosave **names** are inserted into the page as raw HTML |
-| `practice_dojo.html:10192` | Bookmark **comments** are placed raw inside a `<textarea>` (a comment containing `</textarea>` escapes it) |
-| `practice_dojo.html:10207` | Comments go through `marked.parse()` **without sanitizing**, and marked passes HTML straight through |
+| `renderTree()`, `renderAutoSaves()` | Bookmark and autosave **names** are inserted into the page as raw HTML |
+| `renderTree()` (node editor) | Bookmark **comments** are placed raw inside a `<textarea>` (a comment containing `</textarea>` escapes it) |
+| `renderTree()` | Comments go through `marked.parse()` **without sanitizing**, and marked passes HTML straight through |
+
+*Fixed in v2.19.0 (Phase 1): see §12.3.*
 
 A crafted file with a node named `<img src=x onerror=…>` runs its code as soon as the multiverse tree opens. Today the victim has to import a file by hand. With share links it takes **one click on a link**, and once accounts exist that code could act as the signed-in user, because supabase-js keeps the login token in the browser's storage.
 
@@ -566,6 +567,16 @@ Phases 2 and 3 can swap order if you'd rather have accounts first.
 4. In *Auth → Providers*, enable **Anonymous sign-ins** and **Manual linking** (and **Discord** and **Google** at Phase 3).
 5. In *Auth → URL configuration*, set the Site URL to `https://practicedojo.github.io`, with redirects `https://practicedojo.github.io/**` and `http://localhost:*/**`.
 6. Put the project URL and anon key into `cloud.js` and into the repo variables for the keep-alive. **Never commit the `service_role` key.**
+
+---
+
+### 12.3 Phase 1 as built (v2.19.0)
+- `app/js/library.js` exposes `DojoLibrary`. The app calls it from a small session layer in `app/index.html` (`saveToDevice`, `flushDeviceSave`, `_startNewSession`, `_applySessionData`, `openDeviceSession`). `saveToLocalStorage` / `loadFromLocalStorage` are gone.
+- Session files are stored gzipped as an `ArrayBuffer` rather than a `Blob` (older Safari is unreliable with Blobs in IndexedDB). Without `CompressionStream` they're stored and exported as plain JSON.
+- Every load path (device, file, demo, Duels.ink) goes through `_applySessionData()`, which runs `sanitizeSessionData()` first: text fields forced to strings, node ids that aren't `[A-Za-z0-9_-]` re-issued, node colours containing `url()` dropped. Rendering escapes every session string, and comments go through DOMPurify (plain text if DOMPurify fails to load).
+- Imports always get a new session id, so importing your own export never overwrites the original.
+- The old project's `decks` / `dojo_sessions` calls and supabase-js are removed. Phase 2 re-adds Supabase only inside `app/js/cloud.js`.
+- Share links (§9) and the account side of **Save** (§8) are not in Phase 1. The *Share* buttons arrive with Phase 2.
 
 ---
 

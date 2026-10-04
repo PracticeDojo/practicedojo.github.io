@@ -12,8 +12,9 @@ The application lives in `app/index.html`, which contains the HTML, CSS, and Jav
 
 * **Styling:** Tailwind CSS (via CDN) \+ Custom CSS in \<style\> tags.  
 * **Icons:** FontAwesome 6.4.0 (via CDN).  
-* **Database/Backend:** Supabase JS v2 (via CDN) for fetching user decklists.  
-* **Search:** Fuse.js (via CDN) for fuzzy searching decks.  
+* **Device library:** `app/js/library.js` (`DojoLibrary`, IndexedDB) for decks and sessions; default decks and demos are static files in `app/defaults/` (§20). No backend is used at startup.  
+* **Sanitising:** DOMPurify (cdnjs, pinned) cleans `marked` output for node comments.  
+* **Search:** Fuse.js (via CDN) for fuzzy card search.  
 * **External Logic:** Custom UnifiedWinProbabiliyCalculation library (via CDN) for BCR, LVI, RDS, and CTL metrics.  
 * **Card Data:** LorcanaJSON (allCards.json fetched on init). Excludes 'Enchanted', 'Promo', and 'Special' rarities.
 
@@ -1142,3 +1143,72 @@ it maps `.name` first; the replay reads `takenAction.type === 'QUEST'`.
 Seven sections put `TREE_NODE_H.full` at **510** (label 16px + row 46px each, plus the body). Empty
 sections still collapse to their label row, so a typical turn node is far shorter than the worst
 case. Compact view is unchanged at 250.
+
+---
+
+## **20\. Feature 38: Device Library — decks, sessions, defaults (v2.19.0)**
+
+Phase 1 of `docs/ARCH-accounts-and-library.md`. Read §12.3 there for the design summary; this is the
+working detail.
+
+### 20.1 Two layers
+
+* **`DojoLibrary` (`app/js/library.js`)** knows IndexedDB, the file codec and the `defaults/` files.
+  It never touches the board. It takes and returns the **v1 payload** (`{version:1, currentState,
+  bookmarks, autoSaves, history, deck1, deck2}`), which is the `data` field of a v2 file.
+* **The session layer in `App`** knows which session is on the board: `App.session = { id, title,
+  createdAt, lastOpenedAt }`, or `null` when nothing on the board belongs to the library.
+
+### 20.2 Autosave
+
+`saveState()` and every former `saveToLocalStorage()` call site now call **`saveToDevice()`**: it marks
+the session dirty and debounces 1 s. `flushDeviceSave()` takes the snapshot **synchronously**
+(`buildSessionData()` + `buildSessionSummary()`) and chains the async gzip + write, so callers may
+replace the board right after calling it. It runs on `visibilitychange: hidden` and `pagehide` too.
+
+Rule for anything that replaces the board: **flush, then set `session = null`, then mutate, then
+`_startNewSession(title)`** (or assign the opened session). `startGame()` and `_applySessionData()`
+both do this. Skip it and the first `saveState()` of the new match autosaves into the *old* session.
+
+### 20.3 One load path
+
+`_applySessionData(data)` is the only way saved data reaches the board (library, file import, demo,
+Duels.ink import via `_loadSessionIntoApp`). It runs `sanitizeSessionData()` first (§20.4), decodes
+into a local, and throws before touching the board if the state is unusable.
+
+`sessionDecks` holds the two decklists the match started from. Session files take `deck1/deck2` from
+there now, not from the home-screen textareas, so editing a textarea on the home screen can't leak
+into the match behind it.
+
+### 20.4 Untrusted session files (ARCH §9.4)
+
+Session files can come from anyone. Two defences, both needed:
+1. **On load:** `sanitizeSessionData()` forces names, stats, comments, turn notes and player names to
+   strings, re-issues node ids that aren't `[A-Za-z0-9_-]{1,64}` (ids sit inside inline `onclick`
+   handlers, where HTML escaping does **not** help, because the browser decodes entities before
+   running the handler), and drops node colours containing `url()` (they go into CSS custom
+   properties).
+2. **On render:** every session string is escaped (`escapeHtml`). Node comments go through
+   `renderMarkdown()` = `DOMPurify.sanitize(marked.parse(text))`, or plain escaped text if DOMPurify
+   didn't load.
+
+The home-screen lists never put stored strings in inline handlers: rows carry `data-id` / `data-act`,
+and `bindHome()` attaches one delegated listener per list.
+
+### 20.5 Home screen
+
+`showSetup()` flushes the live session, then renders the Continue card (`kv.lastSessionId`) and the
+active tab. Tabs render lazily on every switch (`renderHomeSessions/Decks/Demos`). `hasLiveMatch()`
+(a session **and** cards in play) decides whether *Back to match* shows. Deleting the live session
+detaches it (`session = null`) and hides *Back to match*.
+
+Deck picker values are `my:<id>` / `def:<id>`, resolved through `_deckIndex`. `deckInfo(text)` (memoised)
+gives ink pair, card count and unrecognised lines for any decklist; `renderDeckNote()` is the shared
+"60 of 60 cards recognised" line.
+
+### 20.6 Adding default decks and demos
+
+Decks: add a `.txt` under `app/defaults/decks/<set>/` and a line to `manifest.json` (stable `id`).
+Demos: export a session (**Export** gives `<title>.dojo.json.gz`), drop it in `app/defaults/demos/` and
+add `{ id, title, file }` to its manifest. No database step.
+

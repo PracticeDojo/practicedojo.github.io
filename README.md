@@ -13,7 +13,9 @@ Everything runs in the browser and is served by GitHub Pages. There's no build s
 |---|---|
 | `index.html` | Landing page |
 | `app/index.html` | The Dojo |
+| `app/js/` | Small modules (`library.js`: decks and sessions on this device) |
+| `app/defaults/` | Default decks and demos |
 | `img/` | Shared images |
 | `docs/` | Feature list, dev guide, architecture and test protocols |
 
-Start with `docs/features.md` and `docs/personal_dojo_dev_guide.md`. The planned deck and session library, share links and optional accounts are described in `docs/ARCH-accounts-and-library.md`.
+Start with `docs/features.md` and `docs/personal_dojo_dev_guide.md`. The deck and session library (built), share links and optional accounts (planned) are described in `docs/ARCH-accounts-and-library.md`.
