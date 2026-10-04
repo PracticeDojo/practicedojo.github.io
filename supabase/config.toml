@@ -1,0 +1,11 @@
+# Supabase project config for the GitHub integration.
+# On the production project only new migrations (supabase/migrations/) are
+# applied from here. Auth settings below are for local/preview use; set the
+# real ones in the dashboard (docs/ARCH-accounts-and-library.md §12.2).
+project_id = "practicedojo"
+
+[auth]
+site_url = "https://practicedojo.github.io"
+additional_redirect_urls = ["https://practicedojo.github.io/**", "http://localhost:*/**"]
+enable_anonymous_sign_ins = true
+enable_manual_linking = true

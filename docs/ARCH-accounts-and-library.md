@@ -344,6 +344,8 @@ https://practicedojo.github.io/app/?s=k3J9xQ2mPa
 
 ### 9.2 Table, read function, and storage rules
 
+> **As built:** the real SQL is `supabase/migrations/20261004120000_shares.sql` (safe to run more than once, tested against Postgres 16). It differs from the sketch below in four ways: explicit grants (new Supabase projects don't expose tables to the API by default; only `authenticated` gets `select, insert, delete`, and `anon` only `get_share()`); the guard trigger **sets** `owner_id` and `created_at` itself, so a share can't be backdated around the daily limit; the bucket is created in SQL; and owners get a `select` policy on their own folder, which Storage needs before it can delete a file.
+
 ```sql
 create table public.shares (
   id          text primary key check (id ~ '^[A-Za-z0-9]{10}$'),  -- the slug in the link
@@ -505,6 +507,7 @@ jobs:
           SUPABASE_URL: ${{ vars.SUPABASE_URL }}
           SUPABASE_ANON_KEY: ${{ vars.SUPABASE_ANON_KEY }}
 ```
+*As built:* `.github/workflows/supabase-keepalive.yml` reads the variables `SUPABASE_URL` and `SUPABASE_PUBLISHABLE_KEY`, and fails with a clear message until they're set.
 - Store the URL and anon key as repository **variables** (*Settings → Secrets and variables → Actions → Variables*). They're public values already, so they don't need to be secrets.
 - **Caveat:** GitHub turns off scheduled workflows in a public repo after **60 days without commits**. It emails you first. Any commit resets the clock, or you can re-enable the workflow with one click in the *Actions* tab.
 
@@ -561,14 +564,12 @@ Phases 2 and 3 can swap order if you'd rather have accounts first.
    - Everything else in `practice_dojo/` stays as it is (D18).
 
 ### 12.2 Supabase setup checklist (Phase 2)
-1. Create a new project (free plan, closest region).
-2. Run `supabase/migrations/*.sql` in the SQL editor.
-3. Create the buckets:
-   - `shares`: public, 10 MB, `application/gzip`
-   - `sessions`: private, 10 MB, `application/gzip` (needed at Phase 3)
-4. In *Auth → Providers*, enable **Anonymous sign-ins** and **Manual linking** (and **Discord** and **Google** at Phase 3).
-5. In *Auth → URL configuration*, set the Site URL to `https://practicedojo.github.io`, with redirects `https://practicedojo.github.io/**` and `http://localhost:*/**`.
-6. Put the project URL and anon key into `cloud.js` and into the repo variables for the keep-alive. **Never commit the `service_role` key.**
+1. Create a new project (free plan, closest region). Keep the Data API on.
+2. Connect the GitHub integration to `PracticeDojo/practicedojo.github.io`: working directory `.` (the repo root, which holds `supabase/`), production branch `main`, **Deploy to production** on. New files in `supabase/migrations/` are then applied when they reach `main`. Without the integration, paste the migration into the SQL editor instead; it's safe to run twice.
+3. The migration creates the `shares` bucket (public, 10 MB, `application/gzip`). The private `sessions` bucket comes with Phase 3.
+4. In *Authentication → Sign In / Providers*, enable **Allow anonymous sign-ins** and **Allow manual linking** (and **Discord** and **Google** at Phase 3). The integration does not apply auth settings to production.
+5. In *Authentication → URL Configuration*, set the Site URL to `https://practicedojo.github.io`, with redirects `https://practicedojo.github.io/**` and `http://localhost:*/**`.
+6. Put the project URL and the **publishable** key (or the legacy `anon` key) into `cloud.js`, and into the repo variables `SUPABASE_URL` and `SUPABASE_PUBLISHABLE_KEY` for the keep-alive. **Never commit the secret / `service_role` key.**
 
 ---
 
