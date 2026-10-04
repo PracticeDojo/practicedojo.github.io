@@ -211,6 +211,8 @@ One IndexedDB database `practice_dojo` (the existing `lorcana_dojo_cache` card c
 
 ## 7. Home screen (replaces `#setup-modal`)
 
+> **As built (v2.20.0, Feature 39):** the home screen became "The inkwell" (option B of `docs/design/home-redesign/`): one field for decklists, Duels.ink games and session files, two seats with deck chips, *Pick up again*, and sessions and decks in a Library drawer. The sketch below is the v2.19.0 tabbed layout it replaced; the behaviour described under it still holds.
+
 ```
 ┌──────────────────────────────────────────────────────────────────────────┐
 │ ◆ Practice Dojo  v2.19.0                                [ Sign in ▾ ]    │

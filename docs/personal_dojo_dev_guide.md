@@ -1195,16 +1195,28 @@ Session files can come from anyone. Two defences, both needed:
 The home-screen lists never put stored strings in inline handlers: rows carry `data-id` / `data-act`,
 and `bindHome()` attaches one delegated listener per list.
 
-### 20.5 Home screen
+### 20.5 Home screen ("The inkwell", Feature 39, v2.20.0)
 
-`showSetup()` flushes the live session, then renders the Continue card (`kv.lastSessionId`) and the
-active tab. Tabs render lazily on every switch (`renderHomeSessions/Decks/Demos`). `hasLiveMatch()`
-(a session **and** cards in play) decides whether *Back to match* shows. Deleting the live session
-detaches it (`session = null`) and hides *Back to match*.
+`#setup-modal` is now a full-page `.home-page` (fixed, scrolls itself, z-index 80). Its id stayed, so
+`showSetup()` / `leaveSetup()` / Escape work as before.
 
-Deck picker values are `my:<id>` / `def:<id>`, resolved through `_deckIndex`. `deckInfo(text)` (memoised)
-gives ink pair, card count and unrecognised lines for any decklist; `renderDeckNote()` is the shared
-"60 of 60 cards recognised" line.
+* **The field.** `onIntakeInput()` debounces into `readIntake()`, which calls `classifyIntake(text)`:
+  JSON first (`duels-replay-v1` → replay, else `DojoLibrary.decodeText` → session), then the new
+  "You / Opponent" log (`newlog`, refused politely), then the old log (`validateDojoLog`), then a
+  decklist (at least half the lines look like `N Name`). The readout's buttons carry `data-act`;
+  `onIntakeAction()` does the work, reusing `_applyDojoLog`, `_openSessionFile`, `decklistFromReplay`.
+* **Files.** `takeIntakeFile()` reads via `DojoLibrary.readText` (gzip-aware). Small text goes into the
+  textarea; JSON and anything over 300 KB is held in `_intake = { text, name }` and only described,
+  so a 13 MB session never lands in a textarea. Typing clears `_intake`.
+* **Seats replace the textareas.** `seats[1|2] = { key, name, decklist } | null`; `key` is
+  `my:<id>` / `def:<id>` (resolved through `_deckIndex`, rebuilt by `refreshDeckIndex()`) or `null` for
+  a pasted list. `startGame()` reads the seats and stores their keys as `kv.lastDecks`;
+  `applyLastDecks()` reseats them on a fresh home screen.
+* **Pick up again** (`renderRecent()`): `kv.lastSessionId` first, then up to three more sessions, then
+  demos. **Library** is a drawer (`openLibrary(tab)` / `closeLibrary()`); its lists are the Feature 38
+  ones (`renderHomeSessions`, `renderHomeDecks`) with the same delegated `data-act` handlers.
+* The global keydown handler returns early while the home screen is visible (only Escape gets
+  through), so board hotkeys can't fire behind it.
 
 ### 20.6 Adding default decks and demos
 

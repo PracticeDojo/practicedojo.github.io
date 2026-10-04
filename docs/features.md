@@ -554,6 +554,27 @@ Phase 1 of `docs/ARCH-accounts-and-library.md`. Nothing here needs an account or
 - **Security (§9.4)**: node names, stats, comments, turn notes and player names from session files are escaped; node comments go through `marked` and then **DOMPurify**; node ids that aren't plain tokens are re-issued on load (they sit inside inline handlers); node colours with `url()` are dropped.
 - **No Supabase at startup.** The old project's decks and cloud demos are no longer read or written (D10), and supabase-js is no longer loaded. Phase 2 brings Supabase back in `app/js/cloud.js` for share links.
 
+## Feature 39: Home screen redesign — "The inkwell" (v2.20.0)
+
+### User Story
+- As a new player I want the first screen to tell me what to do, and to accept whatever I already have (a decklist, a Duels.ink game, a saved session) without making me find the right button first.
+- As a returning player I want my last match one click away, and my sessions and decks out of the way until I need them.
+
+### Details
+Chosen from three prototypes in `docs/design/home-redesign/` (option **B**). Replaces the Feature 38 tabbed home screen; the device library underneath is unchanged.
+- **One field** ("Paste a decklist or a Duels.ink game"): paste, type, choose a file, or drop a file anywhere on the page. Pasting anywhere on the home screen lands in the field. A **readout** says what it understood and offers the next step:
+  - decklist → ink pips, "A 60-card Amethyst/Ruby deck", recognised/skipped → *Play it as you*, *Play against it*, *Save to My decks*
+  - Duels.ink text log (Player 1 / Player 2 format) → turn count → *Study this game*
+  - Duels.ink replay (`.json` / `.replay.gz`) → players and turns → *Study this game*, *Play my deck from it*
+  - session file (`.dojo.json.gz` or old `.json`) → title and summary → *Open it*
+  - Duels.ink's newer "You / Opponent" log → says it can't be imported yet and points to the replay file (parsing it is `docs/IMP-newLog.md`, not done)
+  - anything else → explains what a decklist and a log look like
+- **Example buttons** load the default deck or a sample Duels.ink log (`app/defaults/examples/duels-ink-log.txt`).
+- **On the table**: two seats (You / Opponent) with the player's ink weave on a deck box, a card count (amber if not 60), and a clear button. Deck chips (My decks + default decks) fill the first open seat. Last match's saved decks are seated again. An empty seat plays 60 random cards.
+- **Pick up again**: the last session first (*Resume*), then recent sessions and any demos. *All sessions* opens the Library.
+- **Library drawer** (header button): Sessions (open, rename, duplicate, export, delete, import file) and Decks (seat as You / Opponent, edit, delete, copy a default, new deck, import .txt, from a replay).
+- Game hotkeys (M, T, Q, Space…) no longer act on the board hidden behind the home screen. Escape closes the Library first.
+
 ## Refactor 2: Own repository (v2.18.1)
 
 ### Details
@@ -606,3 +627,4 @@ Phase 1 of `docs/ARCH-accounts-and-library.md`. Nothing here needs an account or
 - [x] Feature 37: Card interaction redesign (Option A, challenge mode, phone hand & card drawer, ink counter)
 - [x] Refactor 2: Own repository
 - [x] Feature 38: Deck & session library on this device (ARCH Phase 1)
+- [x] Feature 39: Home screen redesign — "The inkwell"

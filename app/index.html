@@ -962,154 +962,6 @@
             margin: 0 4px;
         }
 
-        /* SETUP OVERLAY */
-        .overlay {
-            position: fixed;
-            inset: 0;
-            background: oklch(0.05 0.01 60 / 0.78);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            z-index: 80;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 24px;
-        }
-
-        .overlay.hidden {
-            display: none;
-        }
-
-        .setup-card {
-            width: min(960px, 95vw);
-            max-height: 92vh;
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            box-shadow: var(--shadow-3);
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-
-        .setup-head {
-            padding: 20px 24px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            border-bottom: 1px solid var(--border-soft);
-        }
-
-        .setup-head h1 {
-            font-size: 22px;
-            font-weight: 600;
-            letter-spacing: -0.015em;
-            margin: 0;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .setup-head .brand-mark {
-            width: 22px;
-            height: 22px;
-        }
-
-        .setup-head .version {
-            font-family: var(--font-mono);
-            font-size: 11px;
-            color: var(--text-dim);
-        }
-
-        .setup-body {
-            padding: 20px 24px;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 18px;
-        }
-
-        .deck-pair {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 14px;
-        }
-
-        .deck-card {
-            background: var(--surface-2);
-            border: 1px solid var(--border-soft);
-            border-radius: var(--radius);
-            padding: 14px;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .deck-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 2px;
-            background: linear-gradient(90deg, currentColor, transparent);
-            opacity: 0.55;
-        }
-
-        .deck-card.is-p1 {
-            color: var(--p1);
-        }
-
-        .deck-card.is-p2 {
-            color: var(--p2);
-        }
-
-        .deck-card-label {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 8px;
-            color: var(--text);
-        }
-
-        /* Expand/collapse a decklist — phone layout only */
-        .deck-disclose {
-            display: none;
-            align-items: center;
-            gap: 6px;
-            background: none;
-            border: 0;
-            padding: 0 4px;
-            color: var(--text-dim);
-            font: inherit;
-            font-size: 12px;
-            cursor: pointer;
-        }
-
-        .deck-disclose:hover {
-            color: var(--text);
-        }
-
-        .deck-card-label .label-text {
-            font-size: 11px;
-            font-weight: 600;
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
-            color: var(--text-dim);
-        }
-
-        .deck-card-label .label-tag {
-            font-family: var(--font-mono);
-            font-size: 11px;
-            color: currentColor;
-            padding: 2px 8px;
-            background: color-mix(in oklch, currentColor 14%, transparent);
-            border: 1px solid color-mix(in oklch, currentColor 30%, transparent);
-            border-radius: 999px;
-        }
-
         .input,
         .select,
         .dojo-textarea {
@@ -1140,130 +992,6 @@
             line-height: 1.5;
         }
 
-        /* "Open from…" — the one row that holds every import path */
-        .open-row {
-            display: flex;
-            gap: 8px;
-            align-items: center;
-            flex-wrap: wrap;
-        }
-
-        .open-row .open-label {
-            font-size: 12px;
-            color: var(--text-dim);
-            flex: 0 0 auto;
-            margin-right: 2px;
-        }
-
-        .open-row .select {
-            width: auto;
-            max-width: 200px;
-            flex: 0 1 auto;
-        }
-
-        /* CONTINUE — the returning player's own session, named so it can be recognised */
-        .continue-card {
-            display: none;
-            gap: 14px;
-            align-items: center;
-            justify-content: space-between;
-            padding: 14px 16px;
-            background: color-mix(in oklch, var(--accent) 7%, var(--surface-2));
-            border: 1px solid color-mix(in oklch, var(--accent) 26%, transparent);
-            border-radius: var(--radius);
-        }
-
-        .continue-card.is-shown {
-            display: flex;
-            flex-wrap: wrap;
-        }
-
-        .continue-card .cc-body {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-            min-width: 0;
-            flex: 1 1 260px;
-        }
-
-        .continue-card .cc-matchup {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            flex-wrap: wrap;
-            font-size: 15px;
-            font-weight: 600;
-            color: var(--text);
-            letter-spacing: -0.01em;
-        }
-
-        .continue-card .cc-vs {
-            font-size: 11px;
-            font-weight: 500;
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
-            color: var(--text-dim);
-        }
-
-        .continue-card .cc-side {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .continue-card .cc-pips {
-            display: inline-flex;
-            gap: 3px;
-        }
-
-        .continue-card .cc-pip {
-            width: 8px;
-            height: 8px;
-            border-radius: 999px;
-            background: var(--pip, var(--text-faint));
-            box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.35);
-        }
-
-        .continue-card .cc-meta {
-            font-family: var(--font-mono);
-            font-size: 11.5px;
-            color: var(--text-2);
-        }
-
-        .continue-card .cc-meta .cc-sep {
-            color: var(--text-faint);
-            margin: 0 6px;
-        }
-
-        /* Section naming: two jobs on this screen, both named */
-        .setup-section-label {
-            font-size: 11px;
-            font-weight: 600;
-            letter-spacing: 0.09em;
-            text-transform: uppercase;
-            color: var(--text-dim);
-        }
-
-        .setup-rule {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            color: var(--text-dim);
-            font-size: 12px;
-        }
-
-        .setup-rule[hidden] {
-            display: none;
-        }
-
-        .setup-rule::before,
-        .setup-rule::after {
-            content: '';
-            flex: 1;
-            height: 1px;
-            background: var(--border-soft);
-        }
-
         /* Decklist parse feedback — replaces the silent 60-random-cards substitution */
         .deck-note {
             font-family: var(--font-mono);
@@ -1281,47 +1009,7 @@
             color: var(--text-2);
         }
 
-        .setup-foot {
-            padding: 14px 24px;
-            border-top: 1px solid var(--border-soft);
-            background: var(--surface);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 14px;
-        }
-
-        .setup-foot .foot-actions {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-left: auto;
-        }
-
-        .setup-foot .hint {
-            font-size: 12px;
-            color: var(--text-dim);
-        }
-
-        /* HOME SCREEN · library tabs (ARCH §7) */
-        .continue-card .cc-title {
-            font-size: 13px;
-            color: var(--text-2);
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-
-        .continue-card .cc-title:empty {
-            display: none;
-        }
-
-        /* The body scrolls; its children keep their height (a scrolling flex
-           child like the tab bar would otherwise shrink to nothing on a phone). */
-        .setup-body > * {
-            flex-shrink: 0;
-        }
-
+        /* LIBRARY · tabs, rows and the deck editor (ARCH §7) */
         .home-tabs {
             display: flex;
             gap: 4px;
@@ -1375,16 +1063,6 @@
         }
 
         .home-tab .ht-count:empty {
-            display: none;
-        }
-
-        .home-panel {
-            display: flex;
-            flex-direction: column;
-            gap: 14px;
-        }
-
-        .home-panel[hidden] {
             display: none;
         }
 
@@ -1534,21 +1212,587 @@
             gap: 8px;
         }
 
-        .deck-save-opt {
-            display: inline-flex;
+        /* HOME · "The inkwell" (Feature 39) ===================================
+           One field takes whatever the player brought; a readout says what it
+           understood. Everything else on the page is deliberately quieter. */
+        .home-page {
+            position: fixed;
+            inset: 0;
+            z-index: 80;
+            overflow-y: auto;
+            background: var(--bg);
+        }
+
+        .home-page.hidden {
+            display: none;
+        }
+
+        .home-wrap {
+            max-width: 980px;
+            margin: 0 auto;
+            padding: 20px 24px 48px;
+            display: flex;
+            flex-direction: column;
+            gap: 22px;
+        }
+
+        .home-hd {
+            display: flex;
             align-items: center;
-            gap: 7px;
+            gap: 10px;
+        }
+
+        .home-hd h1 {
+            margin: 0;
+            font-size: 17px;
+            font-weight: 600;
+            letter-spacing: -0.01em;
+            display: flex;
+            align-items: center;
+            gap: 9px;
+        }
+
+        .home-hd .brand-mark {
+            width: 18px;
+            height: 18px;
+        }
+
+        .home-hd .home-ver {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            color: var(--text-faint);
+        }
+
+        .home-spacer {
+            flex: 1;
+        }
+
+        .ht-count {
+            font-family: var(--font-mono);
+            font-size: 10.5px;
+            color: var(--text-dim);
+            padding: 1px 6px;
+            border: 1px solid var(--border-soft);
+            border-radius: 999px;
+        }
+
+        .ht-count:empty {
+            display: none;
+        }
+
+        .home-lede h2 {
+            margin: 18px 0 6px;
+            font-size: clamp(28px, 4.4vw, 44px);
+            line-height: 1.04;
+            letter-spacing: -0.035em;
+            font-weight: 600;
+            max-width: 16ch;
+        }
+
+        .home-lede h2 em {
+            font-style: normal;
+            color: var(--accent-hi);
+        }
+
+        .home-lede p {
+            margin: 0;
+            color: var(--text-2);
+            font-size: 14px;
+        }
+
+        /* The well: a hairline at rest, accent when focused, all six inks
+           turning while a file is dragged over the page. */
+        @property --well-spin {
+            syntax: '<angle>';
+            inherits: false;
+            initial-value: 0deg;
+        }
+
+        .well {
+            border-radius: 16px;
+            padding: 2px;
+            background: conic-gradient(from var(--well-spin), oklch(0.79 0.145 78), oklch(0.70 0.155 305), oklch(0.74 0.135 158), oklch(0.68 0.175 22), oklch(0.72 0.125 245), oklch(0.78 0.028 250), oklch(0.79 0.145 78));
+        }
+
+        .well.is-idle {
+            background: var(--border);
+        }
+
+        .well.is-idle:focus-within {
+            background: var(--accent);
+        }
+
+        .well.is-drag {
+            animation: well-spin 2.4s linear infinite;
+        }
+
+        @keyframes well-spin {
+            to {
+                --well-spin: 360deg;
+            }
+        }
+
+        .well-in {
+            border-radius: 14px;
+            background: var(--surface);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .well textarea {
+            width: 100%;
+            min-height: 170px;
+            resize: vertical;
+            border: 0;
+            outline: none;
+            background: transparent;
+            padding: 18px 20px 8px;
+            font: 13px/1.6 var(--font-mono);
+            color: var(--text);
+        }
+
+        .well textarea::placeholder {
+            color: var(--text-faint);
+        }
+
+        .well-ft {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            padding: 8px 10px 10px 14px;
+            border-top: 1px solid var(--border-soft);
+            flex-wrap: wrap;
+        }
+
+        .well-ft .hint {
             font-size: 12px;
+            color: var(--text-dim);
+            margin-right: auto;
+        }
+
+        .well-ft .btn {
+            font-size: 12.5px;
+            padding: 7px 11px;
+        }
+
+        /* The readout: what the Dojo understood, and the next step */
+        .readout {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            align-items: center;
+            padding: 16px 18px;
+            border-radius: 12px;
+            background: var(--surface-2);
+            border: 1px solid var(--border-soft);
+            animation: readout-in .22s ease;
+        }
+
+        .readout[hidden] {
+            display: none;
+        }
+
+        @keyframes readout-in {
+            from {
+                opacity: 0;
+                transform: translateY(-4px);
+            }
+        }
+
+        .readout .ro-main {
+            flex: 1 1 300px;
+            min-width: 0;
+        }
+
+        .readout .ro-kind {
+            font-size: 10.5px;
+            font-weight: 600;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--accent-hi);
+        }
+
+        .readout.is-unknown .ro-kind {
+            color: var(--text-dim);
+        }
+
+        .readout .ro-what {
+            font-size: 18px;
+            font-weight: 600;
+            letter-spacing: -0.015em;
+            margin-top: 4px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+            overflow-wrap: anywhere;
+        }
+
+        .readout .ro-detail {
+            font-family: var(--font-mono);
+            font-size: 12px;
+            color: var(--text-dim);
+            margin-top: 4px;
+        }
+
+        .readout .ro-detail .is-warn {
+            color: oklch(0.82 0.13 85);
+        }
+
+        .readout .acts {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .ro-pips {
+            display: inline-flex;
+            gap: 5px;
+        }
+
+        .ro-pips .ro-pip {
+            width: 14px;
+            height: 14px;
+            border-radius: 999px;
+            background: var(--pip);
+            box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.35);
+            animation: pip-pop .3s ease both;
+        }
+
+        .ro-pips .ro-pip:nth-child(2) {
+            animation-delay: .12s;
+        }
+
+        @keyframes pip-pop {
+            from {
+                transform: scale(0);
+            }
+
+            70% {
+                transform: scale(1.2);
+            }
+        }
+
+        .cc-pips {
+            display: inline-flex;
+            gap: 3px;
+            vertical-align: middle;
+        }
+
+        .cc-pip {
+            width: 7px;
+            height: 7px;
+            border-radius: 999px;
+            background: var(--pip, var(--text-faint));
+            box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.35);
+        }
+
+        .cc-sep {
+            color: var(--text-faint);
+        }
+
+        /* Lower half: the table and your recent work */
+        .home-lower {
+            display: grid;
+            grid-template-columns: 1.15fr 1fr;
+            gap: 16px;
+            align-items: start;
+        }
+
+        .home-box {
+            border-radius: 14px;
+            background: var(--surface);
+            border: 1px solid var(--border-soft);
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            min-width: 0;
+        }
+
+        .home-box h3 {
+            margin: 0;
+            font-size: 10.5px;
+            font-weight: 600;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--text-dim);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .link-btn {
+            background: none;
+            border: 0;
+            padding: 2px 0;
+            font: 500 12px var(--font-sans);
+            letter-spacing: 0;
+            text-transform: none;
             color: var(--text-2);
             cursor: pointer;
         }
 
-        .deck-save-opt[hidden] {
+        .link-btn:hover {
+            color: var(--text);
+            text-decoration: underline;
+        }
+
+        .seats {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .seat {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 12px;
+            border-radius: 10px;
+            background: var(--surface-2);
+            border: 1px solid var(--border-soft);
+        }
+
+        .seat .seat-who {
+            width: 72px;
+            flex: 0 0 auto;
+            font-size: 10.5px;
+            font-weight: 600;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--text-dim);
+        }
+
+        /* The deck box wears the player's weave: P1 split, P2 barber pole */
+        .deck-box {
+            width: 20px;
+            height: 28px;
+            flex: 0 0 auto;
+            border-radius: 3px;
+            box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.4);
+        }
+
+        .deck-box.is-p1 {
+            background: linear-gradient(90deg, var(--i1) 50%, var(--i2) 50%);
+        }
+
+        .deck-box.is-p2 {
+            background: repeating-linear-gradient(45deg, var(--i1) 0 5px, var(--i2) 5px 10px);
+        }
+
+        .deck-box.is-empty {
+            background: none;
+            border: 1.5px dashed var(--border);
+            box-shadow: none;
+        }
+
+        .seat .seat-name {
+            flex: 1;
+            min-width: 0;
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .seat.is-empty .seat-name {
+            color: var(--text-dim);
+            font-weight: 500;
+        }
+
+        .seat .seat-count {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            color: var(--text-dim);
+        }
+
+        .seat .seat-count.is-warn {
+            color: oklch(0.82 0.13 85);
+        }
+
+        .chips-label {
+            font-size: 12px;
+            color: var(--text-dim);
+        }
+
+        .chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 6px 10px 6px 8px;
+            border-radius: 999px;
+            border: 1px solid var(--border-soft);
+            background: transparent;
+            font: inherit;
+            font-size: 12.5px;
+            color: var(--text-2);
+            cursor: pointer;
+        }
+
+        .chip:hover {
+            border-color: var(--border);
+            color: var(--text);
+            background: var(--surface-2);
+        }
+
+        .start-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .start-btn {
+            padding: 11px 22px;
+            border-radius: 999px;
+            justify-content: center;
+        }
+
+        .start-hint {
+            font-size: 12px;
+            color: var(--text-faint);
+        }
+
+        .rec {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 12px;
+            border-radius: 10px;
+            border: 1px solid transparent;
+            background: none;
+            width: 100%;
+            text-align: left;
+            font: inherit;
+            color: inherit;
+            cursor: pointer;
+        }
+
+        .rec:hover {
+            background: var(--surface-2);
+            border-color: var(--border-soft);
+        }
+
+        .rec.is-continue {
+            background: color-mix(in oklch, var(--accent) 8%, var(--surface-2));
+            border-color: color-mix(in oklch, var(--accent) 24%, transparent);
+        }
+
+        .rec .rec-main {
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+
+        .rec .rec-title {
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .rec .rec-meta {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            color: var(--text-dim);
+            display: flex;
+            gap: 6px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .rec .rec-go {
+            font-size: 12px;
+            color: var(--accent-hi);
+            white-space: nowrap;
+        }
+
+        .home-empty {
+            font-size: 13px;
+            color: var(--text-dim);
+            padding: 4px 2px 8px;
+        }
+
+        /* Library drawer */
+        .lib-scrim {
+            position: fixed;
+            inset: 0;
+            z-index: 84;
+            background: oklch(0.05 0.01 60 / 0.6);
+        }
+
+        .lib-drawer {
+            position: fixed;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 85;
+            width: min(560px, 100vw);
+            background: var(--surface);
+            border-left: 1px solid var(--border);
+            box-shadow: -24px 0 60px -20px rgba(0, 0, 0, 0.8);
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            animation: lib-in .22s ease;
+        }
+
+        .lib-drawer[hidden] {
             display: none;
         }
 
-        .deck-save-opt input {
-            accent-color: var(--accent);
+        @keyframes lib-in {
+            from {
+                transform: translateX(24px);
+                opacity: 0;
+            }
+        }
+
+        .lib-hd {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 18px 6px;
+        }
+
+        .lib-hd h2 {
+            margin: 0;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .lib-drawer .home-tabs {
+            padding: 0 14px;
+        }
+
+        .lib-panel {
+            padding: 14px 18px 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .lib-panel[hidden] {
+            display: none;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+
+            .well.is-drag,
+            .readout,
+            .ro-pips .ro-pip,
+            .lib-drawer {
+                animation: none;
+            }
         }
 
         /* Topbar session title (rename in place) */
@@ -4968,7 +5212,6 @@
             }
 
             /* Full-screen, scrollable modals. */
-            .setup-card,
             .modal-card {
                 width: 100vw;
                 max-width: 100vw;
@@ -4981,7 +5224,6 @@
                 height: 100dvh;
             }
 
-            .overlay,
             .modal-backdrop {
                 padding: 0;
             }
@@ -4990,70 +5232,67 @@
                 grid-template-columns: repeat(auto-fill, minmax(84px, 1fr));
             }
 
-            .deck-pair {
-                grid-template-columns: 1fr;
+            /* Home on a phone: one column, thumb-sized targets */
+            .home-wrap {
+                padding: 14px 14px 32px;
+                gap: 16px;
             }
 
-            /* Setup on a phone: the primary action stays in the thumb zone and
-               survives the software keyboard, so the footer scrolls with nothing. */
-            .setup-card {
-                display: flex;
-                flex-direction: column;
-            }
-
-            .setup-body {
-                padding: 16px 14px;
-                gap: 14px;
-            }
-
-            .setup-head {
-                padding: 14px 16px;
-            }
-
-            .setup-foot {
-                position: sticky;
-                bottom: 0;
-                padding: 12px 14px;
-                padding-bottom: max(12px, env(safe-area-inset-bottom));
-                flex-wrap: wrap;
-                background: var(--surface);
-                box-shadow: 0 -8px 20px -12px rgba(0, 0, 0, 0.9);
-            }
-
-            .setup-foot .hint {
-                flex: 1 1 100%;
-                order: -1;
-            }
-
-            .setup-foot .foot-actions {
-                flex: 1 1 100%;
-                margin-left: 0;
-            }
-
-            .setup-foot .foot-actions .btn-primary {
-                flex: 1;
-                justify-content: center;
-            }
-
-            /* Collapsed decklists: the 140px textareas are why this screen used
-               to be taller than the viewport before you could reach Start. */
-            .deck-card .dojo-textarea {
-                height: 96px !important;
-                min-height: 96px;
-            }
-
-            .deck-card.is-collapsed .dojo-textarea,
-            .deck-card.is-collapsed .deck-note {
+            .home-hd .home-ver {
                 display: none;
             }
 
-            .deck-disclose {
-                display: inline-flex;
+            .home-lede h2 {
+                margin-top: 6px;
             }
 
-            .open-row .select,
-            .open-row .btn {
+            .well textarea {
+                min-height: 130px;
+                font-size: 16px;
+                /* below 16px iOS Safari zooms the whole page on focus */
+            }
+
+            .well-ft .hint {
+                flex-basis: 100%;
+            }
+
+            .well-ft .btn {
+                flex: 1 1 0;
+                padding: 7px 6px;
+                font-size: 12px;
+            }
+
+            .home-lower {
+                grid-template-columns: 1fr;
+            }
+
+            .readout .acts {
+                width: 100%;
+            }
+
+            .readout .acts .btn {
                 flex: 1 1 auto;
+            }
+
+            .start-row .start-btn {
+                flex: 1 1 100%;
+            }
+
+            .home-page .btn,
+            .home-page .chip,
+            .home-page .rec,
+            .lib-drawer .btn,
+            .lib-drawer .home-tab {
+                min-height: 44px;
+            }
+
+            .lib-drawer .input,
+            .lib-drawer .dojo-textarea {
+                font-size: 16px;
+            }
+
+            .lib-drawer .input {
+                min-height: 44px;
             }
 
             /* Library rows: actions drop under the title on a phone */
@@ -5077,17 +5316,8 @@
                 justify-content: center;
             }
 
-            .setup-card .home-tab {
-                min-height: 44px;
-            }
-
-            .setup-card .input {
-                font-size: 16px;
-                min-height: 44px;
-            }
-
             /* Topbar on a phone: keep Save, drop the title field and Copy
-               (rename lives in My sessions, Copy in the Timelines drawer) */
+               (rename lives in the Library, Copy in the Timelines drawer) */
             .session-ctl .session-title,
             .session-ctl .session-copy {
                 display: none;
@@ -5095,20 +5325,6 @@
 
             .session-ctl {
                 margin-left: 0;
-            }
-
-            /* Touch targets: 44px minimum across every setup control. Scoped to the
-               setup card so the topbar keeps its --topbar-h. */
-            .setup-card .btn,
-            .setup-card .select,
-            .setup-card .deck-disclose {
-                min-height: 44px;
-            }
-
-            .setup-card .select,
-            .setup-card .dojo-textarea {
-                font-size: 16px;
-                /* below 16px iOS Safari zooms the whole page on focus */
             }
         }
 
@@ -6692,185 +6908,136 @@
         </div>
     </header>
 
-    <!-- Home screen (replaces the old deck setup overlay; ARCH §7) -->
-    <div id="setup-modal" class="overlay hidden" role="dialog" aria-modal="true" aria-labelledby="setup-title">
-        <div class="setup-card">
-            <div class="setup-head">
-                <h1 id="setup-title"><span class="brand-mark"></span> Practice Dojo</h1>
-                <span class="version" id="app-version-setup"></span>
+    <!-- Home screen: "The inkwell" (Feature 39). One field takes a decklist, a
+         Duels.ink log or replay, or a session file, and says what it understood. -->
+    <div id="setup-modal" class="home-page hidden" role="dialog" aria-modal="true" aria-labelledby="home-title">
+        <div class="home-wrap">
+            <header class="home-hd">
+                <h1 id="home-title"><span class="brand-mark"></span> Practice Dojo</h1>
+                <span class="home-ver" id="app-version-setup"></span>
+                <span class="home-spacer"></span>
+                <button class="btn btn-ghost hidden" id="btn-setup-back" onclick="App.closeSetup()">
+                    <i class="fa-solid fa-arrow-left"></i> Back to match
+                </button>
+                <button class="btn btn-ghost" id="btn-open-library" onclick="App.openLibrary('sessions')">
+                    <i class="fa-solid fa-book-bookmark"></i> Library <span class="ht-count" id="home-count-sessions"></span>
+                </button>
+            </header>
+
+            <section class="home-lede">
+                <h2>Paste a decklist or a <em>Duels.ink</em> game.</h2>
+                <p>Or drop a saved session anywhere on this page. The Dojo works out what it is.</p>
+            </section>
+
+            <div class="well is-idle" id="well">
+                <div class="well-in">
+                    <textarea id="intake" spellcheck="false" aria-describedby="readout"
+                        aria-label="Paste a decklist, a Duels.ink log or replay, or a saved session"
+                        placeholder="4 Tinker Bell - Giant Fairy&#10;4 Maui - Hero to All&#10;…&#10;&#10;or a whole Duels.ink log, starting “Player 1's starting hand: …”"
+                        oninput="App.onIntakeInput()"></textarea>
+                    <div class="well-ft">
+                        <span class="hint">Nothing to paste? Try an example:</span>
+                        <button class="btn btn-ghost" id="btn-example-deck" onclick="App.intakeExample('deck')"><i class="fa-solid fa-layer-group"></i> A decklist</button>
+                        <button class="btn btn-ghost" onclick="App.intakeExample('log')"><i class="fa-solid fa-film"></i> A Duels.ink log</button>
+                        <input type="file" id="intake-file" class="hidden"
+                            accept=".json,.gz,.txt,.md,.log,.replay,application/json,application/gzip,text/plain"
+                            onchange="App.onIntakeFile(event)">
+                        <button class="btn" onclick="document.getElementById('intake-file').click()"><i class="fa-solid fa-file-arrow-up"></i> Choose a file</button>
+                    </div>
+                </div>
             </div>
 
-            <div class="setup-body">
-                <!-- CONTINUE: the device library's last session, re-read on every showSetup() -->
-                <section id="setup-continue" class="continue-card" aria-labelledby="setup-continue-label">
-                    <div class="cc-body">
-                        <span id="setup-continue-label" class="setup-section-label">Continue where you left off</span>
-                        <div class="cc-title" id="cc-title"></div>
-                        <div class="cc-matchup" id="cc-matchup"></div>
-                        <div class="cc-meta" id="cc-meta"></div>
-                    </div>
-                    <button class="btn btn-primary" id="btn-resume-storage" onclick="App.resumeLastSession()">
-                        <i class="fa-solid fa-clock-rotate-left"></i> Resume match
-                    </button>
-                </section>
+            <section class="readout" id="readout" aria-live="polite" hidden></section>
 
-                <div class="home-tabs" role="tablist" aria-label="Home">
-                    <button type="button" class="home-tab is-active" role="tab" id="home-tab-new" data-tab="new"
-                        aria-selected="true" aria-controls="home-panel-new" onclick="App.setHomeTab('new')">
-                        <i class="fa-solid fa-play"></i> New match</button>
-                    <button type="button" class="home-tab" role="tab" id="home-tab-sessions" data-tab="sessions"
-                        aria-selected="false" aria-controls="home-panel-sessions" tabindex="-1"
-                        onclick="App.setHomeTab('sessions')">
-                        <i class="fa-solid fa-folder-open"></i> My sessions <span class="ht-count" id="home-count-sessions"></span></button>
-                    <button type="button" class="home-tab" role="tab" id="home-tab-decks" data-tab="decks"
-                        aria-selected="false" aria-controls="home-panel-decks" tabindex="-1"
-                        onclick="App.setHomeTab('decks')">
-                        <i class="fa-solid fa-layer-group"></i> Decks</button>
-                    <button type="button" class="home-tab" role="tab" id="home-tab-demos" data-tab="demos"
-                        aria-selected="false" aria-controls="home-panel-demos" tabindex="-1"
-                        onclick="App.setHomeTab('demos')">
-                        <i class="fa-solid fa-graduation-cap"></i> Demos</button>
-                </div>
-
-                <!-- NEW MATCH -->
-                <section class="home-panel" id="home-panel-new" role="tabpanel" aria-labelledby="home-tab-new">
-                    <div class="deck-pair">
-                        <div class="deck-card is-p1" id="deck-card-1">
-                            <div class="deck-card-label">
-                                <label class="label-text" for="deck1-input">Player 1 · You</label>
-                                <span class="label-tag">P1</span>
-                                <button type="button" class="deck-disclose" aria-expanded="true" aria-controls="deck1-input"
-                                    onclick="App.toggleDeckCard(1)">
-                                    <span class="dd-text">Hide list</span>
-                                    <i class="fa-solid fa-chevron-up" aria-hidden="true"></i>
-                                </button>
-                            </div>
-                            <select id="p1-deck-select" class="select" aria-label="Choose Player 1's deck"
-                                onchange="App.onDeckSelect(1, this.value)">
-                                <option value="">— Choose a deck, or paste one below —</option>
-                            </select>
-                            <textarea id="deck1-input" class="dojo-textarea" style="height:140px"
-                                placeholder="Paste decklist&#10;(e.g. 4 Tinker Bell - Giant Fairy)"
-                                oninput="App.markDeckTouched(1)" onblur="App.checkDeckInput(1)"></textarea>
-                            <div class="deck-note" id="deck1-note" role="status" aria-live="polite"></div>
-                            <label class="deck-save-opt" id="deck1-save-opt" hidden>
-                                <input type="checkbox" id="deck1-save"> Save to My decks
-                            </label>
-                        </div>
-                        <div class="deck-card is-p2" id="deck-card-2">
-                            <div class="deck-card-label">
-                                <label class="label-text" for="deck2-input">Player 2 · Opponent</label>
-                                <span class="label-tag">P2</span>
-                                <button type="button" class="deck-disclose" aria-expanded="true" aria-controls="deck2-input"
-                                    onclick="App.toggleDeckCard(2)">
-                                    <span class="dd-text">Hide list</span>
-                                    <i class="fa-solid fa-chevron-up" aria-hidden="true"></i>
-                                </button>
-                            </div>
-                            <select id="p2-deck-select" class="select" aria-label="Choose Player 2's deck"
-                                onchange="App.onDeckSelect(2, this.value)">
-                                <option value="">— Choose a deck, or paste one below —</option>
-                            </select>
-                            <textarea id="deck2-input" class="dojo-textarea" style="height:140px"
-                                placeholder="Paste decklist&#10;(e.g. 4 Maui - Hero to All)"
-                                oninput="App.markDeckTouched(2)" onblur="App.checkDeckInput(2)"></textarea>
-                            <div class="deck-note" id="deck2-note" role="status" aria-live="polite"></div>
-                            <label class="deck-save-opt" id="deck2-save-opt" hidden>
-                                <input type="checkbox" id="deck2-save"> Save to My decks
-                            </label>
-                        </div>
-                    </div>
-
-                    <!-- Every "open a match that already exists" path, in one named family -->
-                    <div class="open-row" role="group" aria-labelledby="setup-open-label">
-                        <span class="open-label" id="setup-open-label">Or open an existing match:</span>
-                        <input type="file" id="setup-import-file" class="hidden" accept=".json,.gz,application/json,application/gzip"
-                            onchange="App.importTimelines(event)">
-                        <button class="btn btn-ghost" onclick="document.getElementById('setup-import-file').click()">
-                            <i class="fa-solid fa-file-import"></i> .json / .gz file
+            <div class="home-lower">
+                <section class="home-box" aria-labelledby="home-table-title">
+                    <h3 id="home-table-title">On the table</h3>
+                    <div class="seats" id="home-seats"></div>
+                    <div class="chips-label">Or pick a deck. It goes to the first open seat.</div>
+                    <div class="chips" id="home-chips"></div>
+                    <div class="start-row">
+                        <button class="btn btn-primary start-btn" id="btn-start-match" onclick="App.startGame()">
+                            Start match <i class="fa-solid fa-arrow-right"></i>
                         </button>
-                        <button class="btn btn-ghost" onclick="App.openImportLogModal()">
-                            <i class="fa-solid fa-file-lines"></i> Duels.ink log / replay
-                        </button>
+                        <span class="start-hint">An empty seat plays 60 random cards.</span>
                     </div>
                 </section>
-
-                <!-- MY SESSIONS -->
-                <section class="home-panel" id="home-panel-sessions" role="tabpanel" aria-labelledby="home-tab-sessions" hidden>
-                    <div class="lib-toolbar">
-                        <span class="lib-hint">Saved on this device. Every match saves itself as you play.</span>
-                        <button class="btn btn-ghost" onclick="document.getElementById('setup-import-file').click()">
-                            <i class="fa-solid fa-file-import"></i> Import file
-                        </button>
-                    </div>
-                    <div class="lib-list" id="home-sessions-list"></div>
+                <section class="home-box" aria-labelledby="home-recent-title">
+                    <h3 id="home-recent-title">Pick up again
+                        <button class="link-btn" onclick="App.openLibrary('sessions')">All sessions</button></h3>
+                    <div id="home-recent"></div>
                 </section>
-
-                <!-- DECKS -->
-                <section class="home-panel" id="home-panel-decks" role="tabpanel" aria-labelledby="home-tab-decks" hidden>
-                    <div class="lib-toolbar">
-                        <button class="btn btn-ghost" onclick="App.openDeckEditor(null)">
-                            <i class="fa-solid fa-plus"></i> New deck
-                        </button>
-                        <input type="file" id="deck-import-txt" class="hidden" accept=".txt,text/plain"
-                            onchange="App.importDeckTxt(event)">
-                        <button class="btn btn-ghost" onclick="document.getElementById('deck-import-txt').click()">
-                            <i class="fa-solid fa-file-lines"></i> Import .txt
-                        </button>
-                        <input type="file" id="deck-import-replay" class="hidden" accept=".json,.replay,.gz"
-                            onchange="App.importDeckFromReplay(event)">
-                        <button class="btn btn-ghost" onclick="document.getElementById('deck-import-replay').click()"
-                            title="Use your exact decklist from a Duels.ink replay file">
-                            <i class="fa-solid fa-film"></i> From Duels.ink replay
-                        </button>
-                    </div>
-
-                    <form class="deck-editor" id="deck-editor" hidden onsubmit="event.preventDefault(); App.saveDeckEditor()">
-                        <div class="de-head">
-                            <span class="setup-section-label" id="deck-editor-label">New deck</span>
-                        </div>
-                        <input type="text" id="deck-editor-name" class="input" maxlength="80" placeholder="Deck name"
-                            aria-label="Deck name" required>
-                        <textarea id="deck-editor-list" class="dojo-textarea" style="height:180px" aria-label="Decklist"
-                            placeholder="Paste decklist&#10;(e.g. 4 Tinker Bell - Giant Fairy)"
-                            oninput="App.checkDeckEditor()"></textarea>
-                        <div class="deck-note" id="deck-editor-note" role="status" aria-live="polite"></div>
-                        <input type="text" id="deck-editor-notes" class="input" maxlength="4000"
-                            placeholder="Notes (optional)" aria-label="Deck notes">
-                        <div class="de-actions">
-                            <button type="button" class="btn btn-ghost" onclick="App.closeDeckEditor()">Cancel</button>
-                            <button type="submit" class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> Save deck</button>
-                        </div>
-                    </form>
-
-                    <div class="lib-group-title">My decks</div>
-                    <div class="lib-list" id="home-mydecks-list"></div>
-                    <div id="home-defaultdecks"></div>
-                </section>
-
-                <!-- DEMOS -->
-                <section class="home-panel" id="home-panel-demos" role="tabpanel" aria-labelledby="home-tab-demos" hidden>
-                    <div class="lib-toolbar">
-                        <span class="lib-hint">Opening a demo makes your own copy in My sessions. The original never changes.</span>
-                    </div>
-                    <div class="lib-list" id="home-demos-list"></div>
-                </section>
-            </div>
-
-            <div class="setup-foot">
-                <span class="hint" id="setup-foot-hint"><i class="fa-solid fa-circle-info"></i> Leave both decklists empty to play with
-                    random dummy decks.</span>
-                <div class="foot-actions">
-                    <button class="btn btn-ghost hidden" id="btn-setup-back" onclick="App.closeSetup()">
-                        <i class="fa-solid fa-arrow-left"></i> Back to match
-                    </button>
-                    <button class="btn btn-primary" id="btn-start-match" onclick="App.startGame()">
-                        Start match <i class="fa-solid fa-arrow-right"></i>
-                    </button>
-                </div>
             </div>
         </div>
     </div>
+
+    <!-- Library: every session and deck on this device -->
+    <div class="lib-scrim hidden" id="library-scrim" onclick="App.closeLibrary()"></div>
+    <aside class="lib-drawer" id="library-drawer" role="dialog" aria-modal="true" aria-labelledby="library-title" hidden>
+        <div class="lib-hd">
+            <h2 id="library-title">Library</h2>
+            <button class="icon-btn ghost" onclick="App.closeLibrary()" aria-label="Close library">&times;</button>
+        </div>
+        <div class="home-tabs" role="tablist" aria-label="Library">
+            <button type="button" class="home-tab is-active" role="tab" id="lib-tab-sessions" data-tab="sessions"
+                aria-selected="true" aria-controls="lib-panel-sessions" onclick="App.libTab('sessions')">
+                <i class="fa-solid fa-folder-open"></i> Sessions</button>
+            <button type="button" class="home-tab" role="tab" id="lib-tab-decks" data-tab="decks"
+                aria-selected="false" aria-controls="lib-panel-decks" tabindex="-1" onclick="App.libTab('decks')">
+                <i class="fa-solid fa-layer-group"></i> Decks</button>
+        </div>
+
+        <section class="lib-panel" id="lib-panel-sessions" role="tabpanel" aria-labelledby="lib-tab-sessions">
+            <div class="lib-toolbar">
+                <span class="lib-hint">Kept on this device. Every match saves itself as you play.</span>
+                <input type="file" id="setup-import-file" class="hidden" accept=".json,.gz,application/json,application/gzip"
+                    onchange="App.importTimelines(event)">
+                <button class="btn btn-ghost" onclick="document.getElementById('setup-import-file').click()">
+                    <i class="fa-solid fa-file-import"></i> Import file
+                </button>
+            </div>
+            <div class="lib-list" id="home-sessions-list"></div>
+        </section>
+
+        <section class="lib-panel" id="lib-panel-decks" role="tabpanel" aria-labelledby="lib-tab-decks" hidden>
+            <div class="lib-toolbar">
+                <button class="btn btn-ghost" onclick="App.openDeckEditor(null)">
+                    <i class="fa-solid fa-plus"></i> New deck
+                </button>
+                <input type="file" id="deck-import-txt" class="hidden" accept=".txt,text/plain"
+                    onchange="App.importDeckTxt(event)">
+                <button class="btn btn-ghost" onclick="document.getElementById('deck-import-txt').click()">
+                    <i class="fa-solid fa-file-lines"></i> Import .txt
+                </button>
+                <input type="file" id="deck-import-replay" class="hidden" accept=".json,.replay,.gz"
+                    onchange="App.importDeckFromReplay(event)">
+                <button class="btn btn-ghost" onclick="document.getElementById('deck-import-replay').click()"
+                    title="Use your exact decklist from a Duels.ink replay file">
+                    <i class="fa-solid fa-film"></i> From a replay
+                </button>
+            </div>
+
+            <form class="deck-editor" id="deck-editor" hidden onsubmit="event.preventDefault(); App.saveDeckEditor()">
+                <span class="lib-group-title" id="deck-editor-label">New deck</span>
+                <input type="text" id="deck-editor-name" class="input" maxlength="80" placeholder="Deck name"
+                    aria-label="Deck name" required>
+                <textarea id="deck-editor-list" class="dojo-textarea" style="height:180px" aria-label="Decklist"
+                    placeholder="Paste decklist&#10;(e.g. 4 Tinker Bell - Giant Fairy)"
+                    oninput="App.checkDeckEditor()"></textarea>
+                <div class="deck-note" id="deck-editor-note" role="status" aria-live="polite"></div>
+                <input type="text" id="deck-editor-notes" class="input" maxlength="4000"
+                    placeholder="Notes (optional)" aria-label="Deck notes">
+                <div class="de-actions">
+                    <button type="button" class="btn btn-ghost" onclick="App.closeDeckEditor()">Cancel</button>
+                    <button type="submit" class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> Save deck</button>
+                </div>
+            </form>
+
+            <div class="lib-group-title">My decks</div>
+            <div class="lib-list" id="home-mydecks-list"></div>
+            <div id="home-defaultdecks"></div>
+        </section>
+    </aside>
 
     <!-- Mulligan Modal -->
     <div id="mulligan-modal" role="dialog" aria-modal="true" aria-labelledby="mulligan-title"
@@ -7537,7 +7704,7 @@
     <script>
         let cardFuse = null;
 
-        const APP_VERSION = "v2.19.0"; // Centralized version string (redesign)
+        const APP_VERSION = "v2.20.0"; // Centralized version string (redesign)
 
         // Tweaks panel accent presets (hue values for the OKLCH accent ramp)
         const ACCENT_PRESETS = {
@@ -7907,9 +8074,6 @@
                 this.history = clean.history;
                 this.sessionDecks = { deck1: clean.deck1, deck2: clean.deck2 };
 
-                if (clean.deck1) document.getElementById('deck1-input').value = clean.deck1;
-                if (clean.deck2) document.getElementById('deck2-input').value = clean.deck2;
-
                 this.leaveSetup();
                 document.getElementById('timeline-drawer').classList.remove('is-open');
                 this.renderAutoSaves();
@@ -7934,10 +8098,6 @@
                     console.warn('Failed to open session:', e);
                     this.dialogAlert(e && e.message ? e.message : "That session couldn't be read.", "Couldn't open session");
                 }
-            },
-
-            resumeLastSession() {
-                if (this._continueId) this.openDeviceSession(this._continueId);
             },
 
             updateTurnComment(turnNum, playerId, text) {
@@ -8171,10 +8331,11 @@
                 }
             },
 
-            // --- Deck pickers: My decks (device) + Default decks (repo) ---
-            // Option values are "my:<id>" / "def:<id>"; _deckIndex maps them to decks.
+            // --- Seats: the two decks on the table (home screen) ---
+            // A seat is { key, name, decklist }. key is "my:<id>" / "def:<id>" for a
+            // saved deck and null for a pasted list. An empty seat plays random cards.
+            seats: { 1: null, 2: null },
             _deckIndex: {},
-            _pickedDeck: {},
 
             async getDefaultDecks() {
                 try { return await DojoLibrary.loadDefaultDecks(); } catch (e) {
@@ -8183,79 +8344,80 @@
                 }
             },
 
-            async populateDeckDropdowns() {
+            // My decks (device) + default decks (repo), keyed "my:<id>" / "def:<id>".
+            async refreshDeckIndex() {
                 let mine = [];
                 try { mine = await DojoLibrary.listDecks(); } catch (e) { console.warn('Device decks unavailable:', e); }
                 const groups = (await this.getDefaultDecks()) || [];
                 const index = {};
-                const esc = (v) => this.escapeHtml(v);
-                let html = '<option value="">— Choose a deck, or paste one below —</option>';
-                if (mine.length) {
-                    html += '<optgroup label="My decks">' + mine.map(d => {
-                        index['my:' + d.id] = d;
-                        return `<option value="${esc('my:' + d.id)}">${esc(d.name)}</option>`;
-                    }).join('') + '</optgroup>';
-                }
-                groups.forEach(g => {
-                    if (!g.decks.length) return;
-                    html += `<optgroup label="${esc('Default · ' + g.title)}">` + g.decks.map(d => {
-                        index['def:' + d.id] = d;
-                        return `<option value="${esc('def:' + d.id)}">${esc(d.name)}</option>`;
-                    }).join('') + '</optgroup>';
-                });
+                mine.forEach(d => { index['my:' + d.id] = d; });
+                groups.forEach(g => g.decks.forEach(d => { index['def:' + d.id] = d; }));
                 this._deckIndex = index;
-                [1, 2].forEach(n => {
-                    const sel = document.getElementById(`p${n}-deck-select`);
-                    if (!sel) return;
-                    const keep = sel.value;
-                    sel.innerHTML = html;
-                    sel.value = index[keep] ? keep : '';
-                });
+                this.renderSeats();
             },
 
-            onDeckSelect(playerNum, value) {
-                if (!value) return;
-                const deck = this._deckIndex[value];
-                if (!deck) return;
+            seatFromKey(key) {
+                const d = key && this._deckIndex[key];
+                return d ? { key, name: d.name, decklist: d.decklist } : null;
+            },
 
-                // Never clobber a list the user typed or pasted.
-                const sel = document.getElementById(`p${playerNum}-deck-select`);
-                const target = document.getElementById(`deck${playerNum}-input`);
-                if (target && target.value.trim() && this._deckTouched && this._deckTouched[playerNum]) {
-                    this.showToast(`Player ${playerNum}'s list was left as you typed it. Clear it to load a saved deck.`);
-                    sel.value = '';
-                    return;
+            setSeat(n, seat) {
+                this.seats[n] = seat || null;
+                this.renderSeats();
+            },
+
+            // A chip fills the first open seat; with both taken it replaces the opponent.
+            seatDeck(key) {
+                const seat = this.seatFromKey(key);
+                if (!seat) return;
+                this.setSeat(!this.seats[1] ? 1 : 2, seat);
+            },
+
+            inkCss(ink) {
+                const t = this.inkTokenMap[ink];
+                return t ? `oklch(${t.l} ${t.c} ${t.h})` : 'var(--text-faint)';
+            },
+
+            // The player's weave on a deck box: P1 split, P2 barber pole (Feature 36).
+            deckBoxHtml(inks, n) {
+                if (!inks || !inks.length) return '<span class="deck-box is-empty"></span>';
+                return `<span class="deck-box is-p${n}" style="--i1:${this.inkCss(inks[0])};--i2:${this.inkCss(inks[1] || inks[0])}"></span>`;
+            },
+
+            renderSeats() {
+                const seatsEl = document.getElementById('home-seats');
+                const chipsEl = document.getElementById('home-chips');
+                if (!seatsEl) return;
+                const esc = (v) => this.escapeHtml(v);
+                seatsEl.innerHTML = [1, 2].map(n => {
+                    const s = this.seats[n];
+                    const who = n === 1 ? 'You' : 'Opponent';
+                    if (!s) {
+                        return `<div class="seat is-empty"><span class="seat-who">${who}</span>${this.deckBoxHtml(null)}<span class="seat-name">Random cards</span></div>`;
+                    }
+                    const info = this.deckInfo(s.decklist);
+                    const warn = info.count !== 60 || info.unmatched.length > 0;
+                    return `<div class="seat" data-seat="${n}"><span class="seat-who">${who}</span>${this.deckBoxHtml(info.inks, n)}
+                        <span class="seat-name" title="${esc(s.name)}">${esc(s.name)}</span>
+                        <span class="seat-count${warn ? ' is-warn' : ''}" title="${esc(`${info.count} cards recognised`)}">${info.count}</span>
+                        <button class="icon-btn ghost" data-act="clear" aria-label="${esc(`Clear ${who.toLowerCase()} seat`)}"><i class="fa-solid fa-xmark"></i></button></div>`;
+                }).join('');
+                if (chipsEl) {
+                    const keys = Object.keys(this._deckIndex);
+                    chipsEl.innerHTML = keys.length ? keys.map(k => {
+                        const d = this._deckIndex[k];
+                        return `<button class="chip" data-key="${esc(k)}" title="${esc(d.notes || '')}">${this.inkPipsHtml(this.deckInfo(d.decklist).inks)} ${esc(d.name)}</button>`;
+                    }).join('') : '<span class="home-empty">Default decks couldn\'t be loaded. Paste a list above instead.</span>';
                 }
-                target.value = deck.decklist;
-                this._pickedDeck[playerNum] = { value, text: deck.decklist };
-                if (this._deckTouched) this._deckTouched[playerNum] = false;
-                this.checkDeckInput(playerNum);
             },
 
-            // "Save to My decks" is offered for a list that didn't come from a saved deck.
-            updateDeckSaveOpt(playerNum) {
-                const opt = document.getElementById(`deck${playerNum}-save-opt`);
-                const text = document.getElementById(`deck${playerNum}-input`).value;
-                const picked = this._pickedDeck[playerNum];
-                if (picked && picked.text !== text) {
-                    this._pickedDeck[playerNum] = null;
-                    const sel = document.getElementById(`p${playerNum}-deck-select`);
-                    if (sel) sel.value = '';
-                }
-                if (opt) opt.hidden = !text.trim() || !!this._pickedDeck[playerNum];
-            },
-
-            // Picks last match's decks again on a fresh home screen.
+            // A fresh home screen seats last match's decks again.
             async applyLastDecks() {
+                if (this.seats[1] || this.seats[2]) return;
                 const last = await DojoLibrary.getPref('lastDecks');
                 if (!last) return;
-                [1, 2].forEach(n => {
-                    const v = last['p' + n];
-                    const ta = document.getElementById(`deck${n}-input`);
-                    if (!v || !this._deckIndex[v] || ta.value.trim()) return;
-                    document.getElementById(`p${n}-deck-select`).value = v;
-                    this.onDeckSelect(n, v);
-                });
+                [1, 2].forEach(n => { if (!this.seats[n]) this.seats[n] = this.seatFromKey(last['p' + n]); });
+                this.renderSeats();
             },
 
             // Ink pair + card count of a decklist, computed from the card DB (never
@@ -8658,7 +8820,7 @@
                 ).join('') + `</span>`;
             },
 
-            // --- Home screen (ARCH §7) ---
+            // --- Home screen: "The inkwell" (Feature 39) ---
 
             async initLibrary() {
                 try {
@@ -8671,7 +8833,7 @@
                     console.warn('Library migration failed:', e);
                 }
                 this.bindHome();
-                await this.populateDeckDropdowns();
+                await this.refreshDeckIndex();
             },
 
             hasLiveMatch() {
@@ -8684,9 +8846,9 @@
                 const esc = (v) => this.escapeHtml(v);
                 const sep = '<span class="cc-sep">·</span>';
                 const bits = [];
-                if (s && s.inks) {
-                    bits.push(`<span>${this.inkPipsHtml(s.inks[0])} ${esc(this.inkPairLabel(s.inks[0]))}</span>` +
-                        ` <span class="dim">vs</span> <span>${this.inkPipsHtml(s.inks[1])} ${esc(this.inkPairLabel(s.inks[1]))}</span>`);
+                if (s && Array.isArray(s.inks)) {
+                    const side = (inks) => { const k = this.sortInks(inks || []); return `<span>${this.inkPipsHtml(k)} ${esc(this.inkPairLabel(k))}</span>`; };
+                    bits.push(`${side(s.inks[0])} <span class="dim">vs</span> ${side(s.inks[1])}`);
                 }
                 if (s && s.turn) bits.push(esc(`Turn ${s.turn}`));
                 if (s && Array.isArray(s.lore)) bits.push(esc(`lore ${s.lore[0]}–${s.lore[1]}`));
@@ -8696,50 +8858,6 @@
                 return bits.join(sep);
             },
 
-            // Re-reads the library on every call — a mid-session reset gets the same
-            // resume path as a cold start.
-            async renderContinueCard() {
-                const card = document.getElementById('setup-continue');
-                const startBtn = document.getElementById('btn-start-match');
-                if (!card) return false;
-
-                let meta = null;
-                try {
-                    const id = await DojoLibrary.getPref('lastSessionId');
-                    meta = id ? await DojoLibrary.getSession(id) : null;
-                } catch (e) { meta = null; }
-                this._continueId = meta ? meta.id : null;
-                const usable = !!meta;
-
-                card.classList.toggle('is-shown', usable);
-                // Exactly one primary button on screen, chosen by state.
-                if (startBtn) startBtn.classList.toggle('btn-primary', !usable);
-                if (!usable) return false;
-
-                const s = meta.summary || null;
-                const title = document.getElementById('cc-title');
-                const matchup = document.getElementById('cc-matchup');
-                const metaEl = document.getElementById('cc-meta');
-                title.textContent = meta.title || '';
-
-                if (s && s.inks) {
-                    matchup.innerHTML =
-                        `<span class="cc-side">${this.inkPipsHtml(s.inks[0])}${this.escapeHtml(this.inkPairLabel(s.inks[0]))}</span>` +
-                        `<span class="cc-vs">vs</span>` +
-                        `<span class="cc-side">${this.inkPipsHtml(s.inks[1])}${this.escapeHtml(this.inkPairLabel(s.inks[1]))}</span>`;
-                    const bits = [`Turn ${s.turn}`, `lore ${s.lore[0]}–${s.lore[1]}`];
-                    if (s.nodes) bits.push(`${s.nodes} ${s.nodes === 1 ? 'node' : 'nodes'}`);
-                    if (s.lines > 1) bits.push(`${s.lines} lines`);
-                    bits.push(this.relativeTime(meta.updatedAt || s.savedAt));
-                    metaEl.innerHTML = bits.map(b => this.escapeHtml(b)).join('<span class="cc-sep">·</span>');
-                } else {
-                    // Sessions saved before summaries existed still get a real card.
-                    matchup.textContent = 'Your last session';
-                    metaEl.textContent = 'Saved on this device';
-                }
-                return true;
-            },
-
             showSetup() {
                 const modal = document.getElementById('setup-modal');
                 modal.classList.remove('hidden');
@@ -8747,34 +8865,38 @@
                 const tb = document.getElementById('topbar');
                 if (tb) tb.style.display = 'none';
 
-                // "Back to match" only makes sense when there is a match behind the overlay.
+                // "Back to match" only makes sense when there is a match behind the home screen.
                 const liveMatch = this.hasLiveMatch();
                 const back = document.getElementById('btn-setup-back');
                 if (back) back.classList.toggle('hidden', !liveMatch);
 
-                // The library lists must show this match as it is right now.
+                this.renderSeats();
+                // The lists must show the match on the board as it is right now.
                 this.flushDeviceSave().then(() => {
-                    this.renderContinueCard().then(hasResume => {
-                        // Focus lands on the thing you most likely came for.
-                        if (this._homeTab !== 'new') return;
-                        const target = hasResume
-                            ? document.getElementById('btn-resume-storage')
-                            : document.getElementById('deck1-input');
-                        if (target && !modal.classList.contains('hidden')) target.focus();
-                    });
-                    this.setHomeTab(this._homeTab || 'new');
+                    this.renderRecent();
                     if (!liveMatch) this.applyLastDecks();
                 });
+
+                // With a keyboard the field is ready for Ctrl+V; on touch, no surprise keyboard.
+                if (window.matchMedia && window.matchMedia('(hover: hover)').matches) {
+                    setTimeout(() => {
+                        if (!modal.classList.contains('hidden') && !this.isLibraryOpen()) {
+                            document.getElementById('intake').focus({ preventScroll: true });
+                        }
+                    }, 0);
+                }
             },
 
-            // "Back to match" — abandons the home screen without touching state.
+            // "Back to match" — leaves the home screen without touching state.
             closeSetup() {
+                this.closeLibrary();
                 this.leaveSetup();
             },
 
-            // Every path that leaves setup for a live board goes through here, so the
-            // topbar hidden by showSetup() always comes back.
+            // Every path that leaves the home screen for a live board goes through here,
+            // so the topbar hidden by showSetup() always comes back.
             leaveSetup() {
+                this.closeLibrary();
                 document.getElementById('setup-modal').classList.add('hidden');
                 document.getElementById('app').classList.remove('hidden');
                 const tb = document.getElementById('topbar');
@@ -8782,36 +8904,9 @@
                 this.syncSessionTitle();
             },
 
-            // The match on the board is already in My sessions, so leaving it loses nothing.
+            // The match on the board is already in the library, so leaving it loses nothing.
             confirmShowSetup() {
                 this.showSetup();
-            },
-
-            setHomeTab(tab) {
-                this._homeTab = tab;
-                document.querySelectorAll('.home-tab').forEach(btn => {
-                    const on = btn.dataset.tab === tab;
-                    btn.classList.toggle('is-active', on);
-                    btn.setAttribute('aria-selected', String(on));
-                    btn.tabIndex = on ? 0 : -1;
-                });
-                document.querySelectorAll('.home-panel').forEach(p => { p.hidden = p.id !== `home-panel-${tab}`; });
-                // Start match and its hint belong to the New match tab.
-                const start = document.getElementById('btn-start-match');
-                const hint = document.getElementById('setup-foot-hint');
-                if (start) start.classList.toggle('hidden', tab !== 'new');
-                if (hint) hint.style.visibility = tab === 'new' ? '' : 'hidden';
-                if (tab === 'sessions') this.renderHomeSessions();
-                else if (tab === 'decks') this.renderHomeDecks();
-                else if (tab === 'demos') this.renderHomeDemos();
-                this.refreshHomeCounts();
-            },
-
-            async refreshHomeCounts() {
-                const el = document.getElementById('home-count-sessions');
-                if (!el) return;
-                try { const n = (await DojoLibrary.listSessions()).length; el.textContent = n ? String(n) : ''; }
-                catch (e) { el.textContent = ''; }
             },
 
             // Lists use data-act / data-id and one delegated listener each, so no
@@ -8831,22 +8926,369 @@
                 on('home-sessions-list', (act, id, row, btn) => this.onSessionAction(act, id, btn));
                 on('home-mydecks-list', (act, id) => this.onDeckAction(act, 'my', id));
                 on('home-defaultdecks', (act, id) => this.onDeckAction(act, 'def', id));
-                on('home-demos-list', (act, id, row, btn) => { if (act === 'open') this.openDemo(id, btn); });
+                on('home-recent', (act, id, row) => {
+                    if (act === 'open-session') this.openDeviceSession(id);
+                    else if (act === 'open-demo') this.openDemo(id, row);
+                });
 
-                // Arrow keys move between tabs (WAI-ARIA tabs pattern).
-                const tabs = document.querySelector('.home-tabs');
+                document.getElementById('readout').addEventListener('click', (e) => {
+                    const btn = e.target.closest('[data-act]');
+                    if (btn) this.onIntakeAction(btn.dataset.act);
+                });
+                document.getElementById('home-chips').addEventListener('click', (e) => {
+                    const chip = e.target.closest('[data-key]');
+                    if (chip) this.seatDeck(chip.dataset.key);
+                });
+                document.getElementById('home-seats').addEventListener('click', (e) => {
+                    const btn = e.target.closest('[data-act="clear"]');
+                    const seat = e.target.closest('[data-seat]');
+                    if (btn && seat) this.setSeat(Number(seat.dataset.seat), null);
+                });
+
+                // Drop a file anywhere on the home screen; the well turns in all six inks.
+                const home = document.getElementById('setup-modal');
+                const well = document.getElementById('well');
+                const hasFiles = (e) => e.dataTransfer && Array.from(e.dataTransfer.types || []).includes('Files');
+                let depth = 0;
+                home.addEventListener('dragenter', (e) => {
+                    if (!hasFiles(e)) return;
+                    e.preventDefault();
+                    if (++depth === 1) { well.classList.add('is-drag'); well.classList.remove('is-idle'); }
+                });
+                home.addEventListener('dragover', (e) => { if (hasFiles(e)) e.preventDefault(); });
+                home.addEventListener('dragleave', (e) => {
+                    if (!hasFiles(e)) return;
+                    if (--depth <= 0) { depth = 0; well.classList.remove('is-drag'); this.readIntake(); }
+                });
+                home.addEventListener('drop', (e) => {
+                    if (!hasFiles(e)) return;
+                    e.preventDefault();
+                    depth = 0;
+                    well.classList.remove('is-drag');
+                    const file = e.dataTransfer.files && e.dataTransfer.files[0];
+                    if (file) this.takeIntakeFile(file); else this.readIntake();
+                });
+
+                // Paste anywhere on the home screen lands in the field.
+                document.addEventListener('paste', (e) => {
+                    if (home.classList.contains('hidden') || this.isLibraryOpen()) return;
+                    const t = e.target;
+                    if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable)) return;
+                    const text = e.clipboardData && e.clipboardData.getData('text');
+                    if (!text) return;
+                    e.preventDefault();
+                    const ta = document.getElementById('intake');
+                    ta.value = text;
+                    this._intake = null;
+                    this.readIntake();
+                    ta.focus({ preventScroll: true });
+                });
+
+                // Arrow keys move between the library tabs (WAI-ARIA tabs pattern).
+                const tabs = document.querySelector('.lib-drawer .home-tabs');
                 if (tabs) tabs.addEventListener('keydown', (e) => {
                     if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
-                    const all = Array.from(tabs.querySelectorAll('.home-tab'));
-                    const i = all.findIndex(b => b.dataset.tab === this._homeTab);
-                    const next = all[(i + (e.key === 'ArrowRight' ? 1 : all.length - 1)) % all.length];
-                    this.setHomeTab(next.dataset.tab);
-                    next.focus();
+                    const next = this._libTab === 'sessions' ? 'decks' : 'sessions';
+                    this.libTab(next);
+                    document.getElementById(`lib-tab-${next}`).focus();
                     e.preventDefault();
                 });
             },
 
-            // --- My sessions tab ---
+            // --- The inkwell: one field for decklists, Duels.ink games and session files ---
+            _intake: null, // { text, name } when a file was chosen or dropped; else the textarea is the source
+
+            intakeText() {
+                return this._intake ? this._intake.text : document.getElementById('intake').value;
+            },
+
+            onIntakeInput() {
+                this._intake = null;
+                clearTimeout(this._intakeTimer);
+                this._intakeTimer = setTimeout(() => this.readIntake(), 120);
+            },
+
+            // What did the player bring? JSON first (replay or session), then a
+            // Duels.ink text log (either format), then a decklist.
+            classifyIntake(text) {
+                const t = String(text || '').trim();
+                if (!t) return { kind: 'empty' };
+                if (t.startsWith('{')) {
+                    let obj = null;
+                    try { obj = JSON.parse(t); } catch (e) { obj = null; }
+                    if (!obj) return { kind: 'unknown', why: 'badjson' };
+                    if (obj.format === 'duels-replay-v1') return { kind: 'replay', data: obj };
+                    try { return { kind: 'session', file: DojoLibrary.decodeText(t) }; } catch (e) { return { kind: 'unknown', why: 'json' }; }
+                }
+                // Duels.ink's newer "You / Opponent" export isn't parsed yet (docs/IMP-newLog.md).
+                if (/^Your starting hand:/m.test(t) || /^(Your|Opponent's) turn begins$/m.test(t)) return { kind: 'newlog' };
+                if (/^---\s*Turn \d+\s*---/m.test(t) || /^Player \d+'s starting hand:/m.test(t)) {
+                    const check = this.validateDojoLog(t);
+                    return check.valid ? { kind: 'log', check, turns: (t.match(/^---\s*Turn \d+\s*---/mg) || []).length }
+                        : { kind: 'unknown', why: 'log' };
+                }
+                const lines = t.split('\n').map(l => l.trim()).filter(Boolean);
+                const deckLines = lines.filter(l => /^\d+\s+\S/.test(l)).length;
+                if (deckLines && deckLines >= lines.length / 2) return { kind: 'deck', info: this.deckInfo(t) };
+                return { kind: 'unknown', why: 'text' };
+            },
+
+            readIntake() {
+                const out = document.getElementById('readout');
+                const well = document.getElementById('well');
+                if (!out || !well) return;
+                const text = this.intakeText();
+                const r = this.classifyIntake(text);
+                this._intakeResult = r;
+                well.classList.toggle('is-idle', r.kind === 'empty');
+                if (r.kind === 'empty') { out.hidden = true; out.innerHTML = ''; return; }
+
+                const esc = (v) => this.escapeHtml(v);
+                const from = this._intake ? ` · from ${esc(this._intake.name)}` : '';
+                const btn = (act, label, cls = 'btn') => `<button class="${cls}" data-act="${act}">${label}</button>`;
+                let kind = '', what = '', detail = '', acts = '', unknown = false;
+
+                if (r.kind === 'deck') {
+                    const { count, unmatched, inks } = r.info;
+                    if (!count) {
+                        unknown = true;
+                        kind = 'Not recognised';
+                        what = 'None of these cards are in the card database';
+                        detail = 'Check the spelling against a card name, like “4 Tinker Bell - Giant Fairy”.';
+                    } else {
+                        const label = this.inkSlashLabel(inks) || 'custom';
+                        kind = 'Decklist';
+                        what = `<span class="ro-pips">${inks.slice(0, 2).map(i => `<span class="ro-pip" style="--pip:${this.inkCss(i)}"></span>`).join('')}</span> ${esc(`A ${count}-card ${label} deck`)}`;
+                        detail = unmatched.length
+                            ? `${count} of 60 cards recognised · <span class="is-warn">skipped ${esc(unmatched.slice(0, 2).join(', '))}${unmatched.length > 2 ? ` +${unmatched.length - 2} more` : ''}</span>`
+                            : `${count} of 60 cards recognised`;
+                        acts = btn('seat1', 'Play it as you', 'btn btn-primary') + btn('seat2', 'Play against it') +
+                            btn('savedeck', '<i class="fa-regular fa-bookmark"></i> Save to My decks', 'btn btn-ghost');
+                    }
+                } else if (r.kind === 'log') {
+                    kind = 'Duels.ink log';
+                    what = esc(`A ${r.turns}-turn game`);
+                    detail = r.check.level === 'warn' ? esc(r.check.message)
+                        : 'Every turn becomes a node in the multiverse. Cards the log never names stay unknown until you fill them in.';
+                    acts = btn('study', '<i class="fa-solid fa-film"></i> Study this game', 'btn btn-primary');
+                } else if (r.kind === 'newlog') {
+                    unknown = true;
+                    kind = 'Duels.ink log';
+                    what = 'This newer log format can’t be imported yet';
+                    detail = 'Download the game’s replay from Duels.ink (.replay.gz) and drop it here instead. Replays import every turn.';
+                } else if (r.kind === 'replay') {
+                    const j = r.data;
+                    const turns = (j.frames || []).filter(f => f.actionType === 'END_TURN').length;
+                    const names = j.playerNames ? `${j.playerNames['1']} vs ${j.playerNames['2']}` : 'A Duels.ink game';
+                    kind = 'Duels.ink replay';
+                    what = esc(`${names} · ${turns} turns`);
+                    detail = 'Every turn becomes a node in the multiverse.';
+                    acts = btn('study', '<i class="fa-solid fa-film"></i> Study this game', 'btn btn-primary') +
+                        (Array.isArray(j.decklist) && j.decklist.length ? btn('replaydeck', 'Play my deck from it') : '');
+                } else if (r.kind === 'session') {
+                    const f = r.file;
+                    kind = 'Saved session';
+                    what = esc(f.title || 'A Dojo session');
+                    detail = this.sessionMetaHtml(f.summary, f.savedAt) || 'A session exported from the Dojo';
+                    acts = btn('opensession', '<i class="fa-solid fa-folder-open"></i> Open it', 'btn btn-primary');
+                } else {
+                    unknown = true;
+                    kind = 'Not recognised';
+                    what = {
+                        badjson: 'This looks like JSON, but it’s cut off or malformed',
+                        json: 'This JSON isn’t a Duels.ink replay or a Dojo session',
+                        log: 'This looks like a Duels.ink log, but it has no turns',
+                        text: 'This isn’t a decklist or a Duels.ink log'
+                    }[r.why];
+                    detail = 'A decklist has one card per line, like “4 Tinker Bell - Giant Fairy”. A Duels.ink log has “--- Turn 1 ---” lines; a replay is a .json or .replay.gz file.';
+                }
+                out.className = 'readout' + (unknown ? ' is-unknown' : '');
+                out.innerHTML = `<div class="ro-main"><div class="ro-kind">${kind}${from}</div><div class="ro-what">${what}</div><div class="ro-detail">${detail}</div></div>` +
+                    (acts ? `<div class="acts">${acts}</div>` : '');
+                out.hidden = false;
+            },
+
+            clearIntake() {
+                document.getElementById('intake').value = '';
+                this._intake = null;
+                this.readIntake();
+            },
+
+            async onIntakeAction(act) {
+                const r = this._intakeResult || {};
+                const text = this.intakeText();
+                if (act === 'seat1' || act === 'seat2') {
+                    const n = act === 'seat1' ? 1 : 2;
+                    this.setSeat(n, { key: null, name: this.deckAutoName(text), decklist: text });
+                    this.clearIntake();
+                    this.showToast(n === 1 ? 'That list is your deck' : "That list is the opponent's deck");
+                } else if (act === 'savedeck') {
+                    const name = await this.dialog({
+                        title: 'Save to My decks', icon: 'fa-bookmark', prompt: true,
+                        value: this.deckAutoName(text), maxLength: 80, confirmText: 'Save deck'
+                    });
+                    if (!name) return;
+                    try {
+                        const row = await DojoLibrary.saveDeck({ name, decklist: text });
+                        DojoLibrary.persist();
+                        await this.refreshDeckIndex();
+                        this.showToast(`Saved “${row.name}” to My decks`);
+                    } catch (e) {
+                        this.dialogAlert(e.message || 'The deck could not be saved on this device.', "Couldn't save deck");
+                    }
+                } else if (act === 'study') {
+                    try {
+                        this._applyDojoLog(text);
+                        this.clearIntake();
+                    } catch (err) {
+                        console.error('Failed to import Duels.ink game', err);
+                        this.dialogAlert(err.message || "That game couldn't be read.", 'Log import failed');
+                    }
+                } else if (act === 'replaydeck' && r.data) {
+                    const deck = this.decklistFromReplay(r.data);
+                    if (!deck) { this.dialogAlert("None of this replay's cards are in the card database yet.", "Couldn't read the deck"); return; }
+                    this.setSeat(1, { key: null, name: deck.name, decklist: deck.decklist });
+                    this.showToast(deck.unknown ? `Your deck is seated. ${deck.unknown} card${deck.unknown === 1 ? '' : 's'} weren't recognised.` : 'Your deck from that replay is seated');
+                } else if (act === 'opensession' && r.file) {
+                    try {
+                        await this._openSessionFile(r.file, this._intake ? this._intake.name : '');
+                        this.clearIntake();
+                    } catch (err) {
+                        console.error('Failed to open session', err);
+                        this.dialogAlert(err.message || "That session couldn't be opened.", "Couldn't open session");
+                    }
+                }
+            },
+
+            async onIntakeFile(event) {
+                const file = event.target.files[0];
+                event.target.value = '';
+                if (file) this.takeIntakeFile(file);
+            },
+
+            // Small text files (decklists, text logs) go into the field so they can be
+            // read and edited; JSON and anything large is held aside and only described.
+            async takeIntakeFile(file) {
+                let text;
+                try {
+                    text = await DojoLibrary.readText(file);
+                } catch (e) {
+                    this.dialogAlert(e.message || "That file couldn't be read.", "Couldn't read file");
+                    return;
+                }
+                const ta = document.getElementById('intake');
+                if (!text.trim().startsWith('{') && text.length < 300000) {
+                    ta.value = text;
+                    this._intake = null;
+                } else {
+                    ta.value = '';
+                    this._intake = { text, name: file.name };
+                }
+                this.readIntake();
+            },
+
+            async intakeExample(kind) {
+                const ta = document.getElementById('intake');
+                if (kind === 'deck') {
+                    const key = Object.keys(this._deckIndex).find(k => k.startsWith('def:'));
+                    if (!key) { this.showToast("The example deck couldn't be loaded."); return; }
+                    ta.value = this._deckIndex[key].decklist.trim();
+                } else {
+                    try {
+                        const r = await fetch('defaults/examples/duels-ink-log.txt', { cache: 'no-cache' });
+                        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+                        ta.value = (await r.text()).trim();
+                    } catch (e) {
+                        this.showToast("The example log couldn't be loaded. Check your connection.");
+                        return;
+                    }
+                }
+                this._intake = null;
+                this.readIntake();
+                ta.focus({ preventScroll: true });
+                ta.scrollTop = 0;
+            },
+
+            // --- Pick up again: the last session first, then recent ones and demos ---
+            async renderRecent() {
+                const el = document.getElementById('home-recent');
+                if (!el) return;
+                let rows = [];
+                try { rows = await DojoLibrary.listSessions(); } catch (e) { rows = null; }
+                let demos = [];
+                try { demos = await DojoLibrary.loadDemoManifest(); } catch (e) { demos = []; }
+                const count = document.getElementById('home-count-sessions');
+                if (count) count.textContent = rows && rows.length ? String(rows.length) : '';
+
+                const esc = (v) => this.escapeHtml(v);
+                const lastId = await DojoLibrary.getPref('lastSessionId');
+                const list = rows || [];
+                const cont = list.find(r => r.id === lastId) || null;
+                const shown = (cont ? [cont] : []).concat(list.filter(r => r !== cont)).slice(0, 4);
+                const live = this.hasLiveMatch() && this.session ? this.session.id : null;
+                const go = (label) => `<span class="rec-go">${label} <i class="fa-solid fa-arrow-right"></i></span>`;
+
+                let html = '';
+                if (rows === null) {
+                    html += `<div class="home-empty">This browser isn't letting the Dojo keep sessions (private window?). Use Export in the Timelines drawer to keep a match.</div>`;
+                } else if (!shown.length) {
+                    html += `<div class="home-empty">Every match you play is kept here, on this device. Nothing yet.</div>`;
+                }
+                html += shown.map(r => `
+                    <button class="rec${r === cont ? ' is-continue' : ''}" data-act="open-session" data-id="${esc(r.id)}">
+                        <span class="rec-main"><span class="rec-title">${esc(r.title)}</span>
+                        <span class="rec-meta">${this.sessionMetaHtml(r.summary, r.updatedAt)}</span></span>
+                        ${go(r.id === live ? 'Back to it' : r === cont ? 'Resume' : 'Open')}
+                    </button>`).join('');
+                html += demos.map(d => `
+                    <button class="rec" data-act="open-demo" data-id="${esc(d.id)}">
+                        <span class="rec-main"><span class="rec-title">${esc(d.title)}</span>
+                        <span class="rec-meta">Demo · opens as your own copy</span></span>
+                        ${go('Explore')}
+                    </button>`).join('');
+                el.innerHTML = html;
+            },
+
+            // --- Library drawer: every session and deck on this device ---
+            isLibraryOpen() {
+                const d = document.getElementById('library-drawer');
+                return !!(d && !d.hidden);
+            },
+
+            openLibrary(tab) {
+                const drawer = document.getElementById('library-drawer');
+                if (!this.isLibraryOpen()) this._libReturnFocus = document.activeElement;
+                drawer.hidden = false;
+                document.getElementById('library-scrim').classList.remove('hidden');
+                this.libTab(tab || this._libTab || 'sessions');
+                document.getElementById(`lib-tab-${this._libTab}`).focus();
+            },
+
+            closeLibrary() {
+                const drawer = document.getElementById('library-drawer');
+                if (!drawer || drawer.hidden) return;
+                drawer.hidden = true;
+                document.getElementById('library-scrim').classList.add('hidden');
+                this.closeDeckEditor();
+                const back = this._libReturnFocus;
+                this._libReturnFocus = null;
+                if (back && back.focus && document.body.contains(back)) back.focus({ preventScroll: true });
+            },
+
+            libTab(tab) {
+                this._libTab = tab;
+                ['sessions', 'decks'].forEach(t => {
+                    const on = t === tab;
+                    const b = document.getElementById(`lib-tab-${t}`);
+                    b.classList.toggle('is-active', on);
+                    b.setAttribute('aria-selected', String(on));
+                    b.tabIndex = on ? 0 : -1;
+                    document.getElementById(`lib-panel-${t}`).hidden = !on;
+                });
+                if (tab === 'sessions') this.renderHomeSessions(); else this.renderHomeDecks();
+            },
+
+            // --- Library · Sessions ---
 
             async renderHomeSessions() {
                 const list = document.getElementById('home-sessions-list');
@@ -8856,7 +9298,7 @@
                     return;
                 }
                 if (!rows.length) {
-                    list.innerHTML = `<div class="lib-empty">No sessions yet. Start a match, open a file or import a Duels.ink log, and it shows up here.</div>`;
+                    list.innerHTML = `<div class="lib-empty">No sessions yet. Start a match or study a Duels.ink game, and it shows up here.</div>`;
                     return;
                 }
                 const esc = (v) => this.escapeHtml(v);
@@ -8890,11 +9332,10 @@
                         title: 'Rename session', icon: 'fa-pen', prompt: true, value: meta.title, maxLength: 120, confirmText: 'Rename'
                     });
                     if (!title) return;
-                    if (isLive) this.renameCurrentSession(title);
+                    if (isLive) { this.renameCurrentSession(title); await this.flushDeviceSave(); }
                     else await DojoLibrary.updateSessionMeta(id, { title: title.slice(0, 120) });
-                    if (isLive) await this.flushDeviceSave();
                     this.renderHomeSessions();
-                    this.renderContinueCard();
+                    this.renderRecent();
                 } else if (act === 'duplicate') {
                     if (isLive) { this._sessionDirty = true; await this.flushDeviceSave(); }
                     try {
@@ -8902,7 +9343,7 @@
                         this.showToast(`Duplicated “${meta.title}”`);
                     } catch (e) { this.dialogAlert(e.message, "Couldn't duplicate"); }
                     this.renderHomeSessions();
-                    this.refreshHomeCounts();
+                    this.renderRecent();
                 } else if (act === 'export') {
                     try {
                         if (isLive) { this._sessionDirty = true; await this.flushDeviceSave(); }
@@ -8934,12 +9375,11 @@
                         this.showToast(`Deleted “${meta.title}”`);
                     } catch (e) { this.dialogAlert(e.message, "Couldn't delete"); }
                     this.renderHomeSessions();
-                    this.renderContinueCard();
-                    this.refreshHomeCounts();
+                    this.renderRecent();
                 }
             },
 
-            // --- Decks tab ---
+            // --- Library · Decks ---
 
             deckRowHtml(d, src) {
                 const esc = (v) => this.escapeHtml(v);
@@ -8957,8 +9397,8 @@
                             <div class="lib-meta">${meta.join(sep)}</div>
                         </div>
                         <div class="lib-actions">
-                            <button class="btn btn-ghost" data-act="p1" title="Play as Player 1">P1</button>
-                            <button class="btn btn-ghost" data-act="p2" title="Play as Player 2">P2</button>
+                            <button class="btn btn-ghost" data-act="p1" title="Seat as your deck">You</button>
+                            <button class="btn btn-ghost" data-act="p2" title="Seat as the opponent's deck">Opponent</button>
                             ${src === 'my'
                         ? `<button class="icon-btn ghost" data-act="edit" title="Edit" aria-label="Edit ${esc(d.name)}"><i class="fa-solid fa-pen"></i></button>
                                <button class="icon-btn ghost" data-act="delete" title="Delete" aria-label="Delete ${esc(d.name)}"><i class="fa-solid fa-trash"></i></button>`
@@ -8976,7 +9416,7 @@
                 mineEl.innerHTML = mineFailed
                     ? `<div class="lib-empty">This browser isn't letting the Dojo keep a library (private window?).</div>`
                     : mine.length ? mine.map(d => this.deckRowHtml(d, 'my')).join('')
-                        : `<div class="lib-empty">No decks yet. Use New deck, import a .txt, or tick “Save to My decks” when you start a match.</div>`;
+                        : `<div class="lib-empty">No decks yet. Paste a list on the home screen and choose Save to My decks, or use New deck.</div>`;
 
                 const groups = await this.getDefaultDecks();
                 if (!groups) {
@@ -8990,15 +9430,12 @@
 
             async onDeckAction(act, src, id) {
                 const deck = this._deckIndex[`${src}:${id}`] || (src === 'my' ? await DojoLibrary.getDeck(id) : null);
-                if (!deck) { this.populateDeckDropdowns().then(() => this.renderHomeDecks()); return; }
+                if (!deck) { this.refreshDeckIndex().then(() => this.renderHomeDecks()); return; }
                 if (act === 'p1' || act === 'p2') {
                     const n = act === 'p1' ? 1 : 2;
-                    this.setHomeTab('new');
-                    if (this._deckTouched) this._deckTouched[n] = false; // an explicit pick replaces what was typed
-                    const value = `${src}:${id}`;
-                    document.getElementById(`p${n}-deck-select`).value = value;
-                    this.onDeckSelect(n, value);
-                    this.showToast(`${deck.name} is Player ${n}'s deck`);
+                    this.setSeat(n, { key: `${src}:${id}`, name: deck.name, decklist: deck.decklist });
+                    this.closeLibrary();
+                    this.showToast(`${deck.name} is ${n === 1 ? 'your' : "the opponent's"} deck`);
                 } else if (act === 'edit') {
                     this.openDeckEditor(src === 'my' ? deck : null,
                         src === 'def' ? { name: `${deck.name} (copy)`, decklist: deck.decklist, notes: deck.notes } : null);
@@ -9009,7 +9446,8 @@
                     });
                     if (!ok) return;
                     await DojoLibrary.deleteDeck(id);
-                    await this.populateDeckDropdowns();
+                    [1, 2].forEach(n => { if (this.seats[n] && this.seats[n].key === `my:${id}`) this.seats[n] = null; });
+                    await this.refreshDeckIndex();
                     this.renderHomeDecks();
                     this.showToast(`Deleted “${deck.name}”`);
                 }
@@ -9017,6 +9455,7 @@
 
             // deck: a My deck to edit, or null for a new one; prefill: fields for a new one.
             openDeckEditor(deck, prefill) {
+                if (!this.isLibraryOpen() || this._libTab !== 'decks') this.openLibrary('decks');
                 const form = document.getElementById('deck-editor');
                 const src = deck || prefill || {};
                 this._deckEditing = deck ? { id: deck.id, createdAt: deck.createdAt } : null;
@@ -9031,7 +9470,8 @@
             },
 
             closeDeckEditor() {
-                document.getElementById('deck-editor').hidden = true;
+                const form = document.getElementById('deck-editor');
+                if (form) form.hidden = true;
                 this._deckEditing = null;
             },
 
@@ -9051,7 +9491,9 @@
                     });
                     DojoLibrary.persist();
                     this.closeDeckEditor();
-                    await this.populateDeckDropdowns();
+                    // A seated copy of this deck picks up the edit.
+                    [1, 2].forEach(n => { if (this.seats[n] && this.seats[n].key === `my:${row.id}`) this.seats[n] = { key: `my:${row.id}`, name: row.name, decklist: row.decklist }; });
+                    await this.refreshDeckIndex();
                     this.renderHomeDecks();
                     this.showToast(`Saved “${row.name}” to My decks`);
                 } catch (e) {
@@ -9067,7 +9509,28 @@
                 this.openDeckEditor(null, { name: file.name.replace(/\.txt$/i, '').slice(0, 80), decklist: text });
             },
 
-            // "My list from a Duels.ink replay": the replay's exact `decklist`.
+            // A Duels.ink replay's exact `decklist` (the replay owner's deck) as text.
+            decklistFromReplay(obj) {
+                if (!obj || !Array.isArray(obj.decklist) || !obj.decklist.length) return null;
+                const counts = new Map();
+                let unknown = 0;
+                obj.decklist.forEach(id => {
+                    const card = this.setNumberIndex[id];
+                    if (!card) { unknown++; return; }
+                    const name = card.fullName || card.name;
+                    counts.set(name, (counts.get(name) || 0) + 1);
+                });
+                if (!counts.size) return null;
+                const decklist = Array.from(counts, ([n, c]) => `${c} ${n}`).join('\n');
+                const who = obj.playerNames && obj.perspective != null ? obj.playerNames[obj.perspective] : null;
+                const label = this.inkSlashLabel(this.deckInfo(decklist).inks) || 'Duels.ink deck';
+                return {
+                    decklist, unknown,
+                    name: (who ? `${label} · ${who}` : label).slice(0, 80),
+                    notes: obj.gameId ? `From Duels.ink replay ${obj.gameId}` : 'From a Duels.ink replay'
+                };
+            },
+
             async importDeckFromReplay(event) {
                 const file = event.target.files[0];
                 event.target.value = '';
@@ -9077,56 +9540,21 @@
                     if (!obj || !Array.isArray(obj.decklist) || !obj.decklist.length) {
                         throw new Error("This file has no decklist. Only Duels.ink replays (.json, .replay or .replay.gz) carry one; text logs don't.");
                     }
-                    const counts = new Map();
-                    let unknown = 0;
-                    obj.decklist.forEach(id => {
-                        const card = this.setNumberIndex[id];
-                        if (!card) { unknown++; return; }
-                        const name = card.fullName || card.name;
-                        counts.set(name, (counts.get(name) || 0) + 1);
-                    });
-                    if (!counts.size) throw new Error("None of this replay's cards are in the card database yet.");
-                    const decklist = Array.from(counts, ([n, c]) => `${c} ${n}`).join('\n');
-                    const who = obj.playerNames && obj.perspective != null ? obj.playerNames[obj.perspective] : null;
-                    const label = this.inkSlashLabel(this.deckInfo(decklist).inks) || 'Duels.ink deck';
-                    this.openDeckEditor(null, {
-                        name: (who ? `${label} · ${who}` : label).slice(0, 80),
-                        decklist,
-                        notes: obj.gameId ? `From Duels.ink replay ${obj.gameId}` : 'From a Duels.ink replay'
-                    });
-                    if (unknown) this.showToast(`${unknown} card${unknown === 1 ? '' : 's'} in that replay aren't in the card database yet.`);
+                    const deck = this.decklistFromReplay(obj);
+                    if (!deck) throw new Error("None of this replay's cards are in the card database yet.");
+                    this.openDeckEditor(null, { name: deck.name, decklist: deck.decklist, notes: deck.notes });
+                    if (deck.unknown) this.showToast(`${deck.unknown} card${deck.unknown === 1 ? '' : 's'} in that replay aren't in the card database yet.`);
                 } catch (e) {
                     this.dialogAlert(e.message || "That file couldn't be read.", "Couldn't import deck");
                 }
             },
 
-            // --- Demos tab ---
-
-            async renderHomeDemos() {
-                const list = document.getElementById('home-demos-list');
-                let demos;
-                try { demos = await DojoLibrary.loadDemoManifest(); } catch (e) {
-                    list.innerHTML = `<div class="lib-empty">Demos couldn't be loaded. Check your connection.</div>`;
-                    return;
-                }
-                if (!demos.length) {
-                    list.innerHTML = `<div class="lib-empty">No demos yet.</div>`;
-                    return;
-                }
-                const esc = (v) => this.escapeHtml(v);
-                list.innerHTML = demos.map(d => `
-                    <div class="lib-row" data-id="${esc(d.id)}">
-                        <div class="lib-main"><div class="lib-title">${esc(d.title)}</div></div>
-                        <div class="lib-actions"><button class="btn btn-primary" data-act="open">Open</button></div>
-                    </div>`).join('');
-            },
-
             // Opening a demo makes a device copy; the original never changes.
-            async openDemo(id, btn) {
+            async openDemo(id, el) {
                 const demo = (await DojoLibrary.loadDemoManifest()).find(d => d.id === id);
                 if (!demo) return;
-                const label = btn ? btn.innerHTML : '';
-                if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Loading…'; }
+                const label = el ? el.innerHTML : '';
+                if (el) { el.disabled = true; el.innerHTML = '<span class="rec-main"><span class="rec-title"><i class="fa-solid fa-spinner fa-spin"></i> Loading demo…</span></span>'; }
                 try {
                     const file = await DojoLibrary.fetchDemo(demo);
                     this._applySessionData(file.data);
@@ -9136,30 +9564,8 @@
                     console.error('Failed to open demo', e);
                     this.dialogAlert(e.message || "That demo couldn't be loaded.", "Couldn't open demo");
                 } finally {
-                    if (btn) { btn.disabled = false; btn.innerHTML = label; }
+                    if (el) { el.disabled = false; el.innerHTML = label; }
                 }
-            },
-
-            markDeckTouched(playerNum) {
-                this._deckTouched = this._deckTouched || {};
-                this._deckTouched[playerNum] = true;
-                this.updateDeckSaveOpt(playerNum);
-            },
-
-            toggleDeckCard(playerNum) {
-                const card = document.getElementById(`deck-card-${playerNum}`);
-                const btn = card.querySelector('.deck-disclose');
-                const collapsed = card.classList.toggle('is-collapsed');
-                btn.setAttribute('aria-expanded', String(!collapsed));
-                btn.querySelector('.dd-text').textContent = collapsed ? 'Show list' : 'Hide list';
-                btn.querySelector('i').className = collapsed ? 'fa-solid fa-chevron-down' : 'fa-solid fa-chevron-up';
-            },
-
-            checkDeckInput(playerNum) {
-                const note = document.getElementById(`deck${playerNum}-note`);
-                const text = document.getElementById(`deck${playerNum}-input`).value;
-                this.renderDeckNote(note, text);
-                this.updateDeckSaveOpt(playerNum);
             },
 
             // Names what the parser actually understood, so a malformed list can no
@@ -9334,27 +9740,19 @@
             },
 
             startGame() {
-                const deck1Str = document.getElementById('deck1-input').value;
-                const deck2Str = document.getElementById('deck2-input').value;
+                const deck1Str = this.seats[1] ? this.seats[1].decklist : '';
+                const deck2Str = this.seats[2] ? this.seats[2].decklist : '';
 
                 // The match on the board keeps everything up to now; then it lets go,
                 // so nothing below can autosave into it.
                 this.flushDeviceSave();
                 this.session = null;
 
-                // "Save to My decks" for a pasted list, and remember the picks for next time.
-                [[1, deck1Str], [2, deck2Str]].forEach(([n, text]) => {
-                    const box = document.getElementById(`deck${n}-save`);
-                    const opt = document.getElementById(`deck${n}-save-opt`);
-                    if (box && box.checked && opt && !opt.hidden && text.trim()) {
-                        DojoLibrary.saveDeck({ name: this.deckAutoName(text), decklist: text })
-                            .then(row => { DojoLibrary.persist(); this.showToast(`Saved “${row.name}” to My decks`); this.populateDeckDropdowns(); })
-                            .catch(e => console.warn('Deck save failed', e));
-                        box.checked = false;
-                    }
+                // Seat the same saved decks next time (pasted lists aren't kept).
+                DojoLibrary.setPref('lastDecks', {
+                    p1: this.seats[1] ? this.seats[1].key : null,
+                    p2: this.seats[2] ? this.seats[2].key : null
                 });
-                const pick = (n, text) => (this._pickedDeck[n] && this._pickedDeck[n].text === text) ? this._pickedDeck[n].value : null;
-                DojoLibrary.setPref('lastDecks', { p1: pick(1, deck1Str), p2: pick(2, deck2Str) });
                 this.sessionDecks = { deck1: deck1Str, deck2: deck2Str };
 
                 const d1Ids = this.parseDeck(deck1Str);
@@ -9656,16 +10054,20 @@
                 event.target.value = '';
                 if (!file) return;
                 try {
-                    const parsed = await DojoLibrary.decode(file);
-                    this._applySessionData(parsed.data);
-                    const fromName = file.name.replace(/(\.dojo)?(\.json)?(\.gz)?$/i, '').trim();
-                    const title = parsed.title || (fromName && !/^lorcana-session-\d+$/.test(fromName) ? fromName : this.defaultSessionTitle());
-                    await this._startNewSession(title);
-                    this.showToast(`Imported “${this.session.title}” into My sessions`);
+                    await this._openSessionFile(await DojoLibrary.decode(file), file.name);
                 } catch (err) {
                     console.error("Failed to import session file", err);
                     this.dialogAlert(err && err.message ? err.message : "That file couldn't be read as a Dojo session.", "Couldn't read file");
                 }
+            },
+
+            // A decoded session file (DojoLibrary.decode) becomes a new device session.
+            async _openSessionFile(parsed, fileName) {
+                this._applySessionData(parsed.data);
+                const fromName = String(fileName || '').replace(/(\.dojo)?(\.json)?(\.gz)?$/i, '').trim();
+                const title = parsed.title || (fromName && !/^lorcana-session-\d+$/.test(fromName) ? fromName : this.defaultSessionTitle());
+                await this._startNewSession(title);
+                this.showToast(`Imported “${this.session.title}” into your library`);
             },
 
             // --- Duels.ink Log Import ---
@@ -15510,8 +15912,9 @@
                     App.closeTreeModal();
                     return;
                 }
-                // Setup is dismissible only when there is a live match behind it,
-                // otherwise Escape would drop the user onto an empty board.
+                // The library drawer closes first; then the home screen, which is
+                // dismissible only with a live match behind it.
+                if (App.isLibraryOpen()) { App.closeLibrary(); return; }
                 const setupModal = document.getElementById('setup-modal');
                 if (setupModal && !setupModal.classList.contains('hidden')) {
                     const back = document.getElementById('btn-setup-back');
@@ -15534,6 +15937,9 @@
                 }
                 return;
             }
+
+            // Game hotkeys never act on the board hidden behind the home screen.
+            if (!document.getElementById('setup-modal').classList.contains('hidden')) return;
 
             // Feature 37: hover-card hotkeys (+ − 0–9 E B) and C for challenge mode.
             // Only while no modal is up, so they never fire behind the tree or a dialog.
