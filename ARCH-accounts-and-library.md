@@ -1,475 +1,424 @@
-# ARCH: Accounts, Deck Library & Session Library (Supabase)
+# ARCH: Deck & Session Library, Share Links, Optional Accounts
 
-> **Status:** DRAFT v0.1 for discussion. Nothing here is implemented yet.
-> **Scope:** Practice Dojo only (`practice_dojo/practice_dojo.html`), designed to move with the app to
+> **Status:** DRAFT v0.2 for discussion. Nothing here is implemented yet.
+> **Scope:** Practice Dojo (`practice_dojo/practice_dojo.html`), designed to move with the app to
 > `PracticeDojo/practicedojo.github.io`.
-> **Decisions still open** are marked **❓Q#** and collected in [§13](#13-open-questions).
+> Questions that are still open are marked **❓** and collected in [§14](#14-open-questions).
+
+### What changed since v0.1
+- **No feature walls.** Every feature works signed out: playing, Duels.ink imports, the deck library, the session library, default decks, and creating and opening share links. Signing in only adds *"keep my decks and sessions in my account so I can get them on any device."*
+- **Default decks live in the repo** (`defaults/decks/`). Anyone loads them with no login and no Supabase call.
+- **Demos move to the repo too** (gzipped), so there are no admin roles and no "featured" flags in the database.
+- **Share links added.** Deck links need no backend. Session links use a public `shares` bucket.
+- **Simpler sync.** No outbox, tombstones, or background sync engine. Saving to the account is explicit and uses a revision check.
+- **Dropped:** `profiles` table, admin role, legacy deck import, `is_public`/`is_featured` on sessions, deck to session foreign keys.
+- **Code split allowed** (YAGNI): new concerns get their own small script file, and existing code is not refactored for its own sake.
+- **Recommended order changed:** move the repo **first**, then build (§12).
 
 ---
 
-## 1. Goals and non-goals
+## 1. Principles
 
-### Goals
-1. **Users have accounts.** Signing in is optional. Without an account the Dojo works exactly as it does today.
-2. **Personal deck library.** Import a decklist once (paste, file, Duels.ink replay), name it, and pick it from a list for later matches.
-3. **Personal session library.** Save many sessions (multiverse trees), not just the one "Continue" slot. Reopen, rename, delete, and export them, and replay them on any device.
-4. **New home screen.** The current setup modal becomes a library-first home screen.
-5. **Free tier only.** Everything fits inside one free Supabase project and GitHub Pages, with no server code to run.
-6. **Ready for the repo move.** Origins, redirect URLs, and the migration of users' local data are planned ahead of time.
-
-### Non-goals (for this iteration)
-- Real-time multiplayer and co-editing a session.
-- Social features (follows, comments, likes). Simple "share by link" is in scope as an option (❓Q6).
-- Rewriting the session JSON format (*Refactor 1*). We wrap it and gzip it, and leave the inner format alone.
-- Changing the other heavenideas tools that use the legacy `decks` table.
+1. **Everything works without an account.** Login is a convenience layer and never a gate. If Supabase is down or paused, the only things that stop working are *my account* items and share links.
+2. **The device is the first home.** Every deck and session a user creates is saved on their device (IndexedDB), whether or not they are signed in.
+3. **No Supabase calls at startup when signed out.** Today the Dojo fetches every deck and demo from Supabase on load. After this change a signed-out visit touches only GitHub Pages, plus the card DB as today.
+4. **YAGNI.** Every table, column, and module below has a feature that needs it now. Anything speculative goes into §13.
 
 ---
 
-## 2. Where we are today (as-is)
+## 2. Where we are today
 
-| Concern | Today | Problem |
-|---|---|---|
-| **Supabase project** | `cjlhrfhximjldqrfblkj`, shared by about 15 tools in this repo (turnMapper, goldfish, matchup analyzer, deck saver, ...) | The Dojo is tied to everything else in that project |
-| **Decks** | Global `decks` table (`id, name, decklist, inks, url, comments, created_at`). No owner column. The Dojo reads **every** row. | No per-user decks. The anon key can insert, update, and delete any row (`personal_deck_saver.js` does this), so anyone holding the public key can wipe the table. |
-| **Cloud sessions** | Global `dojo_sessions` table (`id, name, session_data jsonb, created_at`), surfaced as "Cloud demos" | No owner. Anyone can insert. Whole multi-MB sessions are stored as `jsonb` rows, which uses up the 500 MB database quickly. |
-| **Local session** | One slot: `localStorage['lorcana_dojo_session']` | localStorage holds about 5 MB per origin, and `saveToLocalStorage()` swallows the quota error. Large multiverses fail to save **without telling the user**. |
-| **Card DB cache** | IndexedDB `lorcana_dojo_cache` | Fine. It can be reused as the local store. |
-| **Session file** | `exportTimelines()` → `{version:1, currentState, bookmarks, autoSaves, history, deck1, deck2}` | Very large (see below) |
-| **Auth** | None, anywhere in the repo | — |
-
-### Measured session sizes (from `multiverse_examples/`)
-
-| File | Raw JSON | gzip | Ratio |
-|---|---|---|---|
-| `multiverse_session_example_02.json` (11 nodes, 3 autosaves) | **13.2 MB** | **210 KB** | 63× |
-| `multiverse_session_example_01.json` | **76.7 MB** | **1.2 MB** | 63× |
-
-`bookmarks` alone is 9.3 MB of the 13 MB, because every node stores a stringified full-state snapshot that includes the log. **Conclusion: sessions must be gzipped and stored as files (Supabase Storage), never as `jsonb` rows.** The browser's native `CompressionStream('gzip')` does this with no library.
-
----
-
-## 3. Free-tier budget
-
-Supabase Free (verify on the pricing page before building; these figures are as of mid-2026):
-
-| Resource | Free limit | What uses it here | Headroom |
-|---|---|---|---|
-| Postgres size | 500 MB | Deck rows (about 2 KB each) and session **metadata** rows (about 1 KB each) | Hundreds of thousands of rows |
-| File storage | 1 GB | Gzipped session blobs (about 200 KB typical, about 1–2 MB large) | About 5,000 typical sessions in total. **Per-user quotas are needed** (§6.4). |
-| Egress | 5 GB / month | Opening sessions from the cloud | About 25,000 opens of a 200 KB session per month |
-| Max upload size | 50 MB per file | One session blob | Fine once gzipped |
-| Auth MAU | 50,000 | Signed-in users | Plenty |
-| Projects | 2 active | — | We can afford a dedicated Dojo project (❓Q1) |
-| **Pausing** | Paused after **7 days with no activity** | — | Real users keep it awake. During quiet periods the app must **degrade to local-only** cleanly (§8.4). |
-| **Built-in email** | About 2 emails per hour, **only to project team members** | Magic links and password resets | Email login needs **custom SMTP** (for example the Resend free tier). This is why OAuth is recommended (❓Q2). |
-
----
-
-## 4. Proposed architecture (to-be)
-
-```
-┌───────────────────────── Browser (GitHub Pages, static) ─────────────────────────┐
-│                                                                                    │
-│   Home / Library UI  ──►  DojoLibrary (facade)                                     │
-│   Game board (App)        │   listDecks / saveDeck / listSessions / openSession…   │
-│                           │                                                        │
-│               ┌───────────┴────────────┐                                           │
-│               ▼                        ▼                                           │
-│        LocalStore (IndexedDB)    CloudStore (supabase-js)  ◄── DojoAuth            │
-│        • always on               • only when signed in                             │
-│        • source of truth for UI  • decks & session_meta: Postgres + RLS            │
-│        • outbox of pending sync  • session blobs: Storage (gzip)                   │
-│                                                                                    │
-│                         SyncEngine (outbox → cloud, cloud → local)                 │
-└────────────────────────────────────────────────────────────────────────────────────┘
-                                     │ HTTPS (anon key + user JWT)
-                                     ▼
-┌──────────────────────── Supabase (free project) ────────────────────────┐
-│  Auth (Discord / Google OAuth; optional email)                           │
-│  Postgres: profiles, decks, sessions  ── Row Level Security per owner    │
-│  Storage:  bucket `sessions` (private) → {user_id}/{session_id}.json.gz  │
-└──────────────────────────────────────────────────────────────────────────┘
-```
-
-**Principle: local first, cloud second.** The UI always reads from and writes to IndexedDB. The cloud is a sync target that only exists when the user is signed in. This gives us:
-- a working Dojo when signed out, offline, or while the free project is paused;
-- an end to the 5 MB localStorage limit, because IndexedDB holds hundreds of MB;
-- one code path for every read and write, so the UI never asks whether it is talking to the cloud.
-
-### 4.1 Modules (inside `practice_dojo.html`)
-
-The dev guide requires one HTML file. These are namespaced objects next to `App`, in the same style as today (❓Q8 asks whether the new repo should loosen this rule):
-
-| Module | Responsibility |
+| Concern | Today |
 |---|---|
-| `DojoAuth` | Wraps `supabase.auth`: `signIn(provider)`, `signOut()`, `onChange(cb)`, `user`, `profile` |
-| `LocalStore` | IndexedDB `practice_dojo` database. Object stores: `decks`, `sessions_meta`, `session_blobs`, `outbox`, `kv`. The existing card cache moves here or stays separate. |
-| `CloudStore` | Thin supabase-js calls: decks CRUD, sessions_meta CRUD, blob upload and download |
-| `SyncEngine` | Pushes the outbox when online and signed in. Pulls changes since `last_pulled_at`. Resolves conflicts (§8.2). |
-| `DojoLibrary` | The facade the UI calls. Hides local and cloud. Emits change events so lists re-render. |
-| `SessionCodec` | `encode(App) → Blob(gzip)`, `decode(Blob) → session v1 object`, `summarize(session) → summary` (reuses `buildSessionSummary()`) |
+| Decks | Global `decks` table in the shared heavenideas Supabase project. The Dojo reads every row at startup. |
+| Cloud sessions / demos | Global `dojo_sessions` table (`session_data jsonb`), shown as "Cloud demos" |
+| Local session | One slot: `localStorage['lorcana_dojo_session']` (the "Continue" card) |
+| Card DB cache | IndexedDB `lorcana_dojo_cache` |
+| Session file | `{version:1, currentState, bookmarks, autoSaves, history, deck1, deck2}` |
 
-`App` changes are small. `saveToLocalStorage()`, `loadFromLocalStorage()`, `exportTimelines()`, `importTimelines()`, `saveSessionToCloud()`, and `loadExampleSession()` all become thin calls into `DojoLibrary` and `SessionCodec`.
+### 2.1 About session size (clarifying v0.1)
+
+You're right: **saving to the cloud works.** `dojo_sessions` stores and restores large sessions fine. The problem is narrower and sits in the **local** slot:
+
+- **Tested:** in headless Chromium, writing `multiverse_session_example_02.json` (13.2 M characters) to the local Continue slot with the same keys `saveToLocalStorage()` uses fails with **`QuotaExceededError`**. Browsers cap localStorage at about 5 M characters per site.
+- `saveToLocalStorage()` catches that error and only logs `console.warn`. A big multiverse gets no "Continue" card on reload, and the user isn't told.
+- This matters more now, because signed-out users will rely on device storage entirely. **IndexedDB** has no 5 MB cap (browsers allow hundreds of MB), so it fixes this.
+
+For the cloud I still recommend **gzip + Supabase Storage** over `jsonb` rows. The new project's 500 MB database is shared by every user, and gzip shrinks these files about 63× (13 MB → 210 KB, 77 MB → 1.2 MB), while Postgres compresses `jsonb` far less. To check what your current demos actually cost in the database, run this in the old project's SQL editor:
+```sql
+select name, pg_size_pretty(pg_column_size(session_data)::bigint) as stored
+from dojo_sessions order by pg_column_size(session_data) desc;
+```
+Writing a gzipped blob is a few lines with the browser-native `CompressionStream`, so this costs almost nothing in complexity.
 
 ---
 
-## 5. Data model
-
-### 5.1 Entities
+## 3. Big picture
 
 ```
-profiles 1 ──── * decks
-profiles 1 ──── * sessions ── (blob in Storage)
-sessions * ──── 0..1 decks (p1_deck_id, p2_deck_id)   -- soft link; the deck text is also snapshotted
+                         ┌──────────── GitHub Pages (static, same origin) ────────────┐
+                         │  app (html + js)   defaults/decks/*.txt   defaults/demos/*.gz│
+                         └───────────────────────────┬─────────────────────────────────┘
+                                                     │ fetch (no auth)
+┌──────────────────────────── Browser ───────────────┴──────────────────────────────────┐
+│  Home screen / Board                                                                   │
+│        │                                                                               │
+│        ▼                                                                               │
+│  DojoLibrary ── Defaults (read-only, from repo)                                        │
+│        │      ── Device  (IndexedDB: my decks, my sessions)        ← always            │
+│        │      ── Account (Supabase: my decks, my sessions)          ← only if signed in│
+│        │                                                                               │
+│  DojoShare ─── deck links: #deck=… in the URL (no backend)                             │
+│            └── session links: ?share=… → Supabase `shares` (public read)               │
+└────────────────────────────────────────────────┬───────────────────────────────────────┘
+                                                 │ only for: sign-in, account items, session shares
+                                                 ▼
+                    ┌──────────── Supabase (new free project) ────────────┐
+                    │ Auth: Discord, Google (+ invisible anonymous, §9.3) │
+                    │ Postgres: decks, sessions, shares   (RLS)           │
+                    │ Storage: `sessions` (private), `shares` (public)    │
+                    └─────────────────────────────────────────────────────┘
 ```
 
-**Why snapshot deck text on the session?** A user edits a deck after playing with it. The saved session must still describe what was actually played, and deleting a deck must not break old sessions. The session keeps `deck1`/`deck2` text, as v1 already does, and gains an optional link back to the library deck.
-
-### 5.2 SQL (draft migration: `supabase/migrations/0001_dojo_library.sql`)
-
-```sql
--- ── profiles ───────────────────────────────────────────────────────────
-create table public.profiles (
-  id            uuid primary key references auth.users on delete cascade,
-  display_name  text check (char_length(display_name) <= 40),
-  role          text not null default 'user' check (role in ('user','admin')),
-  created_at    timestamptz not null default now()
-);
-
--- auto-create a profile on signup
-create function public.handle_new_user() returns trigger
-language plpgsql security definer set search_path = public as $$
-begin
-  insert into public.profiles (id, display_name)
-  values (new.id, coalesce(new.raw_user_meta_data->>'full_name', new.raw_user_meta_data->>'name'));
-  return new;
-end $$;
-create trigger on_auth_user_created after insert on auth.users
-  for each row execute function public.handle_new_user();
-
--- ── decks ──────────────────────────────────────────────────────────────
-create table public.decks (
-  id           uuid primary key default gen_random_uuid(),   -- client-generated so offline creates work
-  owner_id     uuid not null default auth.uid() references public.profiles on delete cascade,
-  name         text not null check (char_length(name) between 1 and 80),
-  decklist     text not null check (char_length(decklist) <= 8000),  -- canonical "4 Full Name" lines
-  inks         text[] not null default '{}',
-  card_count   smallint,
-  source       text check (source in ('paste','file','duels_replay','duels_log','legacy','other')),
-  source_url   text,
-  notes        text check (char_length(notes) <= 4000),
-  is_public    boolean not null default false,
-  created_at   timestamptz not null default now(),
-  updated_at   timestamptz not null default now(),
-  deleted_at   timestamptz                                     -- tombstone so deletes sync
-);
-create index on public.decks (owner_id, updated_at desc);
-
--- ── sessions (metadata only; payload lives in Storage) ────────────────
-create table public.sessions (
-  id              uuid primary key default gen_random_uuid(),
-  owner_id        uuid not null default auth.uid() references public.profiles on delete cascade,
-  title           text not null check (char_length(title) between 1 and 120),
-  kind            text not null default 'sandbox'
-                    check (kind in ('sandbox','duels_replay','duels_log','imported_file')),
-  p1_deck_id      uuid references public.decks on delete set null,
-  p2_deck_id      uuid references public.decks on delete set null,
-  summary         jsonb not null default '{}',   -- {inks:[[..],[..]], turn, lore:[a,b], nodes, lines}
-  format_version  smallint not null default 1,
-  blob_path       text,                          -- {owner_id}/{id}.json.gz
-  blob_bytes      integer,
-  revision        integer not null default 1,    -- optimistic concurrency (§8.2)
-  is_public       boolean not null default false,
-  is_featured     boolean not null default false, -- curated "demos"; admin only
-  created_at      timestamptz not null default now(),
-  updated_at      timestamptz not null default now(),
-  last_opened_at  timestamptz,
-  deleted_at      timestamptz
-);
-create index on public.sessions (owner_id, updated_at desc);
-create index on public.sessions (is_featured) where is_featured;
-
--- updated_at + revision bump
-create function public.touch() returns trigger language plpgsql as $$
-begin new.updated_at := now(); return new; end $$;
-create trigger decks_touch    before update on public.decks    for each row execute function public.touch();
-create trigger sessions_touch before update on public.sessions for each row execute function public.touch();
-```
-
-### 5.3 Row Level Security
-
-```sql
-alter table public.profiles enable row level security;
-alter table public.decks    enable row level security;
-alter table public.sessions enable row level security;
-
-create policy "own profile"      on public.profiles for all
-  using (id = auth.uid()) with check (id = auth.uid() and role = 'user');
-
-create policy "read own or public decks" on public.decks for select
-  using (owner_id = auth.uid() or (is_public and deleted_at is null));
-create policy "write own decks"  on public.decks for insert with check (owner_id = auth.uid());
-create policy "update own decks" on public.decks for update using (owner_id = auth.uid());
-create policy "delete own decks" on public.decks for delete using (owner_id = auth.uid());
-
-create policy "read own/public/featured sessions" on public.sessions for select
-  using (owner_id = auth.uid() or ((is_public or is_featured) and deleted_at is null));
-create policy "write own sessions"  on public.sessions for insert
-  with check (owner_id = auth.uid() and is_featured = false);
-create policy "update own sessions" on public.sessions for update
-  using (owner_id = auth.uid())
-  with check (owner_id = auth.uid()
-              and (is_featured = false
-                   or exists (select 1 from profiles where id = auth.uid() and role = 'admin')));
-create policy "delete own sessions" on public.sessions for delete using (owner_id = auth.uid());
-```
-
-The anon (signed-out) role sees only `is_public` and `is_featured` rows. That is how today's "Cloud demos" keep working for everyone.
-
-### 5.4 Storage
-
-- Bucket **`sessions`**: private, `file_size_limit = 10 MB`, allowed MIME `application/gzip`.
-- Object path: `{auth.uid()}/{session_id}.json.gz`
-
-```sql
-create policy "own session blobs" on storage.objects for all
-  using (bucket_id = 'sessions' and (storage.foldername(name))[1] = auth.uid()::text)
-  with check (bucket_id = 'sessions' and (storage.foldername(name))[1] = auth.uid()::text);
-
--- public/featured sessions readable by anyone
-create policy "public session blobs" on storage.objects for select
-  using (bucket_id = 'sessions' and exists (
-    select 1 from public.sessions s
-    where s.blob_path = storage.objects.name and (s.is_public or s.is_featured) and s.deleted_at is null));
-```
+| Feature | Signed out | Signed in | Needs Supabase? |
+|---|---|---|---|
+| Play, multiverse, every board feature | ✅ | ✅ | No |
+| Duels.ink log / replay import | ✅ | ✅ | No |
+| Default decks and demo sessions | ✅ | ✅ | No (repo) |
+| My decks and my sessions on this device | ✅ | ✅ | No |
+| Export / import `.json` files | ✅ | ✅ | No |
+| Share a deck link | ✅ | ✅ | No |
+| Share a session link (create / open) | ✅ / ✅ | ✅ / ✅ | Yes |
+| My decks and sessions **on every device** | — | ✅ | Yes |
 
 ---
 
-## 6. Session payload
+## 4. Default content in the repo
 
-### 6.1 Envelope (format v2 = v1 + header, gzipped)
+### 4.1 Layout
+```
+defaults/
+  decks/
+    manifest.json
+    set-10/amber-steel-songs.txt
+    set-10/ruby-sapphire-tempo.txt
+    set-9/…
+  demos/
+    manifest.json
+    t8-amber-steel-vs-ruby-sapphire.dojo.json.gz
+```
+(Until the move this is `practice_dojo/defaults/`. After it, `/app/defaults/` or `/defaults/`.)
+
+### 4.2 Deck files
+Plain decklist text, exactly what you'd paste into the Dojo today:
+```
+4 Tinker Bell - Giant Fairy
+4 Maui - Hero to All
+…
+```
+
+### 4.3 `defaults/decks/manifest.json`
+```jsonc
+{
+  "groups": [
+    {
+      "title": "Set 10",
+      "decks": [
+        { "id": "s10-amber-steel-songs", "name": "Amber/Steel Songs",
+          "file": "set-10/amber-steel-songs.txt", "notes": "Optional one-liner shown on hover" }
+      ]
+    },
+    { "title": "Set 9", "decks": [ … ] }
+  ]
+}
+```
+- `id` is a stable string you choose. If you edit the list, the id stays the same, so a user's "last used P2 deck" keeps pointing at it.
+- Ink pips and card counts are **computed in the app** from the decklist and card DB, not written by hand.
+- Groups display in manifest order (newest set first). To retire a set, delete its group.
+- A deck line that doesn't resolve shows a ⚠ badge, using the same validation `checkDeckInput()` does today, so typos are visible.
+
+**Updating defaults:** add or edit a `.txt`, add a line to the manifest, and commit. GitHub Pages serves it within about 10 minutes. There's no database step.
+
+### 4.4 Demos
+The same idea for sessions. `defaults/demos/manifest.json` lists `{ id, title, file, summary }`, and files are gzipped v2 sessions (§6). The current `dojo_sessions` demos get exported once (load, then *Export*) and committed. **Opening a demo creates a device copy**, so the original never changes.
+
+---
+
+## 5. Device library (IndexedDB)
+
+One IndexedDB database `practice_dojo` (the existing `lorcana_dojo_cache` card cache stays as it is):
+
+| Store | Key | Value |
+|---|---|---|
+| `decks` | `id` (uuid) | `{ id, name, decklist, notes, createdAt, updatedAt, account?: { revision } }` |
+| `sessions` | `id` (uuid) | `{ id, title, summary, createdAt, updatedAt, lastOpenedAt, account?: { revision } }` |
+| `session_blobs` | `id` | gzipped v2 session `Blob` |
+| `kv` | key | small prefs, e.g. `lastSessionId`, `lastDecks: {p1, p2}` |
+
+- **Continue card** = the session with `lastSessionId`. This replaces the single localStorage slot.
+- **One-time migration:** if `localStorage['lorcana_dojo_session']` exists, import it as a session and remove the key.
+- **Autosave** (unchanged behavior, new target): every state change, debounced about 1 s, rewrites that session's blob in IndexedDB.
+- **Storage persistence:** call `navigator.storage.persist()` once the user saves something, so the browser is less likely to evict the library.
+
+---
+
+## 6. Session file format (v2)
 
 ```jsonc
 {
   "format": "practice-dojo-session",
   "version": 2,
-  "app": "v2.19.0",                 // Dojo version that wrote it
-  "id": "uuid",                      // == sessions.id
+  "app": "v2.19.0",
+  "id": "uuid",
   "title": "Amber/Steel vs Ruby/Sapphire — T8 study",
   "savedAt": 1759600000000,
-  "summary": { ... },                // same as buildSessionSummary()
-  "decks": { "p1": { "id": "uuid|null", "text": "4 ..." }, "p2": { ... } },
-  "data": {                          // UNCHANGED v1 payload
-    "currentState": {...}, "bookmarks": [...], "autoSaves": [...], "history": [...]
-  }
+  "summary": { "inks": [["Amber","Steel"],["Ruby","Sapphire"]], "turn": 8, "lore": [12, 9], "nodes": 11, "lines": 2 },
+  "data": { "currentState": {…}, "bookmarks": […], "autoSaves": […], "history": […], "deck1": "…", "deck2": "…" }
 }
 ```
-
-- `SessionCodec.decode()` accepts **v2 gzipped**, **v2 plain**, and **v1 plain** (today's `.json` exports), so old files keep importing.
-- **Export** downloads `*.dojo.json.gz` by default, with a plain `.json` option for hand inspection.
-- *Refactor 1* (deduplicating node snapshots) can come later behind `version: 3` without touching this design.
-
-### 6.2 What "replay" means here (❓Q4)
-
-The Dojo already lets you reopen a session and navigate the multiverse tree. The doc assumes that **reopening and navigating** is the replay you want, which this design covers. Two additions are possible if you want them:
-- **(a) Playback mode:** a "▶ Play" control that steps through the tree's main line node by node on a timer, read-only.
-- **(b) Keep the original Duels.ink file:** store the raw `.replay` or `.md` next to the session so it can be re-imported later as the importer improves.
-
-### 6.3 Autosave policy
-
-| Trigger | Local (IndexedDB) | Cloud |
-|---|---|---|
-| Every state mutation (debounced 1 s) | ✅ overwrite current session blob | — |
-| New bookmark or node created | ✅ | queue in outbox |
-| Explicit "Save" | ✅ | ✅ immediately |
-| Tab hidden (`visibilitychange`) or every 3 min while dirty | ✅ | ✅ if dirty |
-
-This keeps uploads and egress low: a long session uploads a few times, not on every click.
-
-### 6.4 Quotas (to protect the shared 1 GB)
-
-- Up to **50 cloud sessions** and **200 decks** per user, enforced by a `before insert` trigger that counts rows where `deleted_at is null`.
-- At most **10 MB per blob**, enforced by the bucket limit.
-- The UI shows usage ("23 / 50 sessions · 18 MB") in the account menu.
-- Local-only sessions are unlimited, bounded only by browser storage.
+- `data` is the v1 payload, **unchanged**. *Refactor 1* can slim it later as `version: 3`.
+- Stored and exported gzipped (`.dojo.json.gz`). Import accepts gzipped v2, plain v2, and plain v1 (every existing export keeps working).
+- `summary` comes from the existing `buildSessionSummary()`.
 
 ---
 
 ## 7. Home screen (replaces `#setup-modal`)
 
-### 7.1 Layout
-
 ```
 ┌──────────────────────────────────────────────────────────────────────────┐
-│ ◆ Practice Dojo  v2.19.0                       ☁ Synced  [ (A) Ana ▾ ]    │
-│                                                     or [ Sign in ]        │
+│ ◆ Practice Dojo  v2.19.0                                [ Sign in ▾ ]    │
+│                         Sign in to keep your decks & sessions everywhere │
 ├──────────────────────────────────────────────────────────────────────────┤
 │ ┌ Continue ───────────────────────────────────────────────────────────┐  │
-│ │ ●● Amber/Steel  vs  ●● Ruby/Sapphire · Turn 8 · 11 nodes · 2h ago    │  │
-│ │                                                  [ Resume match ]   │  │
+│ │ ●● Amber/Steel vs ●● Ruby/Sapphire · Turn 8 · 11 nodes · 2h ago      │  │
+│ │                                                   [ Resume match ]  │  │
 │ └─────────────────────────────────────────────────────────────────────┘  │
-│                                                                          │
-│  [ New match ]  [ Sessions (12) ]  [ Decks (7) ]  [ Demos ]   ← tabs     │
+│  [ New match ]   [ My sessions ]   [ Decks ]   [ Demos ]                 │
 │ ──────────────────────────────────────────────────────────────────────── │
 │  NEW MATCH                                                               │
-│  ┌ Player 1 · You ───────────────┐   ┌ Player 2 · Opponent ──────────┐   │
-│  │ [ My decks ▾ ] [ Paste ]      │   │ [ My decks ▾ ] [ Paste ]      │   │
-│  │ ●● Amber/Steel Songs (60)     │   │ ●● Ruby/Sapphire (60)         │   │
-│  │ ☐ Save pasted list to library │   │ ☐ Save pasted list to library │   │
-│  └───────────────────────────────┘   └───────────────────────────────┘   │
-│                                                       [ Start match → ]  │
-│                                                                          │
-│  Open existing:  [ Import .json/.gz ]  [ Duels.ink log / replay ]        │
+│  ┌ Player 1 · You ──────────────────┐ ┌ Player 2 · Opponent ─────────┐   │
+│  │ [ Choose deck ▾ ]  [ Paste ]      │ │ [ Choose deck ▾ ]  [ Paste ] │   │
+│  │   My decks                        │ │                              │   │
+│  │   Defaults › Set 10 › …           │ │                              │   │
+│  │ ●● Amber/Steel Songs · 60         │ │ ●● Ruby/Sapphire Tempo · 60  │   │
+│  └───────────────────────────────────┘ └──────────────────────────────┘   │
+│                                                      [ Start match → ]   │
+│  Open: [ .json / .gz file ]  [ Duels.ink log / replay ]                  │
 └──────────────────────────────────────────────────────────────────────────┘
 ```
 
-**Sessions tab:** a list with ink pips, title, turn, lore, node count, updated time, and a ☁ or 💻 badge showing where the session lives. Row actions: Open, Rename, Duplicate, Export, Delete, and Upload to cloud for local-only sessions. Search and filter by ink.
-
-**Decks tab:** a list with pips, name, card count, and updated time. Actions: Play as P1, Play as P2, Edit (name, list, notes), Duplicate, Export text, and Delete. **Import deck** opens a modal (paste, `.txt`, or "from a Duels.ink replay" using the replay's exact `decklist` field). It validates through the existing `parseDeck()` and checks `checkDeckInput()`.
-
-**Demos tab:** the curated `is_featured` sessions, which replace today's "Cloud demos" dropdown. Anyone can see them, signed in or not.
-
-### 7.2 Flows
-
-- **Start a match:** pick or paste two decks → `startGame()` → a new session row is created locally (`kind: 'sandbox'`) with deck snapshots → autosave takes over.
-- **Duels.ink import:** create a session (`kind: 'duels_replay'` or `'duels_log'`). For replays, offer "Save *your* decklist to the library" because the file has the exact 60 cards.
-- **Continue card:** shows the most recent `last_opened_at` session from the local store, not the old single localStorage slot.
-- **Signed out:** everything works. Lists show local items only, and a subtle prompt reads "Sign in to sync across devices."
-- **First sign-in on a device that has local items:** a dialog asks "Upload 4 decks and 3 sessions from this device to your account?" with the options *Upload all*, *Choose…*, or *Not now*.
-
-### 7.3 In-game changes
-- The topbar "Save to cloud" button becomes **Save** (local always, and cloud when signed in) and **Save as…** (fork to a new session id).
-- The session title is shown and can be edited in the topbar.
-- The sync indicator shows ☁ synced, ↻ syncing, ⚠ offline (saved locally), or ⏸ cloud paused.
+- **Decks tab:** two sections, **My decks** and **Default decks**, both treated the same everywhere (pick for P1 or P2, view, share link). Default decks are read-only. *Edit* on a default makes a copy in My decks. **Import deck** accepts paste, a `.txt` file, a deck link, or "my list from a Duels.ink replay" (the replay's exact `decklist`). A pasted list at New match gets a *Save to My decks* checkbox.
+- **My sessions tab:** a list with ink pips, title, turn, lore, nodes, and updated time. Actions: Open, Rename, Duplicate, Export, Share link, Delete. Signed in, each row shows *This device*, *Account*, or both, with *Save to account* / *Download* buttons for the missing side.
+- **Demos tab:** from `defaults/demos/`.
+- **Duels.ink import:** unchanged parser. The result becomes a new device session automatically.
+- **In-game:** the topbar shows an editable session title, plus **Save** (device and, if signed in, account), **Save as copy**, and **Share**.
 
 ---
 
-## 8. Sync design
+## 8. Account (optional, Discord + Google)
 
-### 8.1 Outbox pattern
+### 8.1 Behavior
+- *Sign in* → Discord or Google (PKCE redirect back to the page). Nothing else on screen changes, except that lists gain account items and the *Account* badges.
+- **First sign-in on a device that has local items:** "Save 4 decks and 3 sessions from this device to your account?" with *All*, *Choose…*, or *Not now*.
+- **Saving while signed in:** device always. The account copy is updated on **Save**, and when the tab is hidden while the session has unsaved changes. Autosave never uploads on every click, which keeps egress tiny.
+- **Opening an account session on a new device** downloads it once into the device library.
+- **Conflict** (the same session was saved from two devices): the upload sends `revision = N`. If the account already has a newer revision, the app asks *Overwrite* or *Save mine as a copy*. There is no merging.
+- **Delete** asks *This device*, *Account*, or *Both*.
+- **Sign out** asks whether to keep the downloaded account copies on this device (relevant on shared computers).
 
-```mermaid
-sequenceDiagram
-  participant UI
-  participant Lib as DojoLibrary
-  participant L as LocalStore (IDB)
-  participant S as SyncEngine
-  participant C as Supabase
-  UI->>Lib: saveSession(id)
-  Lib->>L: put meta + gz blob, outbox.add({op:'upsert', id})
-  Lib-->>UI: saved (local)
-  S->>L: read outbox (when online and signed in)
-  S->>C: storage.upload({uid}/{id}.json.gz, upsert)
-  S->>C: sessions.upsert(meta) where revision = base_revision
-  alt revision matched
-    C-->>S: ok (revision+1)
-    S->>L: outbox.remove, meta.synced = true
-  else conflict
-    C-->>S: 0 rows
-    S->>UI: conflict prompt (§8.2)
-  end
+That's the entire "sync". There's no background engine, outbox, or tombstones. If it later proves too manual, §13 has the upgrade path.
+
+### 8.2 Tables (migration `supabase/migrations/0001_init.sql`)
+
+```sql
+-- My decks
+create table public.decks (
+  id          uuid primary key,                         -- client-generated, same id on device and account
+  owner_id    uuid not null default auth.uid() references auth.users on delete cascade,
+  name        text not null check (char_length(name) between 1 and 80),
+  decklist    text not null check (char_length(decklist) <= 8000),
+  notes       text check (char_length(notes) <= 4000),
+  revision    integer not null default 1,
+  created_at  timestamptz not null default now(),
+  updated_at  timestamptz not null default now()
+);
+
+-- My sessions (metadata; payload in Storage bucket `sessions`)
+create table public.sessions (
+  id          uuid primary key,
+  owner_id    uuid not null default auth.uid() references auth.users on delete cascade,
+  title       text not null check (char_length(title) between 1 and 120),
+  summary     jsonb not null default '{}',
+  blob_bytes  integer not null,
+  revision    integer not null default 1,
+  created_at  timestamptz not null default now(),
+  updated_at  timestamptz not null default now()
+);
+-- blob path is derived, not stored: sessions/{owner_id}/{id}.json.gz
+
+create index on public.decks    (owner_id, updated_at desc);
+create index on public.sessions (owner_id, updated_at desc);
 ```
 
-- Deletes write `deleted_at`, a tombstone, so other devices learn about them. A monthly job or a manual purge clears blobs of tombstoned sessions.
-- Pull runs on sign-in, on focus, and every 5 minutes: `select … where updated_at > last_pulled_at`. Blobs download **lazily** when a session is opened, which keeps egress small.
+### 8.3 Access rules (RLS)
 
-### 8.2 Conflicts
+Anonymous users (§9.3) are signed in from Postgres's point of view, so account tables must **exclude** them explicitly:
 
-Sessions are large and opaque, so we never merge them. **Last-writer-wins with detection:** the update includes `revision = base_revision`. On a mismatch the user chooses *Keep mine (overwrite)*, *Keep cloud*, or *Keep both (save mine as copy)*. Decks are small, so the same rule applies, defaulting to keep-both.
+```sql
+create function public.is_real_user() returns boolean language sql stable as $$
+  select auth.uid() is not null and coalesce((auth.jwt()->>'is_anonymous')::boolean, false) = false
+$$;
 
-### 8.3 Identity of local items
-All ids are UUIDs generated on the client (`App.uuid()` already exists). A local item and its cloud copy share one id, so no remapping is needed.
+alter table public.decks    enable row level security;
+alter table public.sessions enable row level security;
 
-### 8.4 Cloud unavailable or paused
-Any Supabase failure, including the free-tier pause, leaves items in the outbox with an ⚠ badge. The app stays fully usable. Today's "Cloud unavailable — paste a decklist" fallback generalizes to the whole library.
+create policy decks_owner    on public.decks    for all
+  using (owner_id = auth.uid()) with check (owner_id = auth.uid() and public.is_real_user());
+create policy sessions_owner on public.sessions for all
+  using (owner_id = auth.uid()) with check (owner_id = auth.uid() and public.is_real_user());
+
+-- Storage: private bucket `sessions`, 10 MB file limit
+create policy sessions_blobs on storage.objects for all
+  using      (bucket_id = 'sessions' and (storage.foldername(name))[1] = auth.uid()::text)
+  with check (bucket_id = 'sessions' and (storage.foldername(name))[1] = auth.uid()::text
+              and public.is_real_user());
+```
+
+**Revision check:** the client updates with `.update({..., revision: N+1}).eq('id', id).eq('revision', N)`. If zero rows come back, that's a conflict.
+
+### 8.4 Quotas
+A `before insert` trigger caps each account at **200 decks** and **50 sessions** (defaults, easy to change). The account menu shows usage. The device library has no cap.
 
 ---
 
-## 9. Authentication
+## 9. Share links
 
-| Option | Pros | Cons |
+### 9.1 Deck links: no backend
+`https://practicedojo.github.io/app/#deck=<base64url(deflate-raw(decklist))>&name=<…>`
+- A 60-card list compresses to a few hundred characters, which is fine for chat apps.
+- It lives in the URL fragment, so it never hits a server, works forever, and costs nothing.
+- Opening the link shows the deck with *Play as P1*, *Play as P2*, and *Save to My decks*.
+
+### 9.2 Session links
+`https://practicedojo.github.io/app/?share=<slug>` (slug = 10 random base62 characters)
+
+- **Creating** uploads an **immutable snapshot** (gzipped v2) to the public bucket `shares` and inserts a `shares` row. Later edits to your session don't change the link. Share again to get a new one.
+- **Opening** works for anyone with no sign-in. It loads straight onto the board with a banner reading *"Shared session · Save a copy"*. Any change the viewer makes lives in their own device copy.
+
+```sql
+create table public.shares (
+  id          text primary key,                       -- slug
+  owner_id    uuid not null default auth.uid() references auth.users on delete cascade,
+  title       text not null check (char_length(title) between 1 and 120),
+  summary     jsonb not null default '{}',
+  blob_bytes  integer not null,
+  created_at  timestamptz not null default now()
+);
+alter table public.shares enable row level security;
+
+-- Anyone signed in (incl. invisible anonymous) can create/delete their own shares; no updates (immutable).
+create policy shares_insert on public.shares for insert with check (owner_id = auth.uid());
+create policy shares_delete on public.shares for delete using (owner_id = auth.uid());
+create policy shares_own    on public.shares for select using (owner_id = auth.uid());
+
+-- Public read by slug only (no listing/enumeration of everyone's shares):
+create function public.get_share(slug text) returns public.shares
+language sql stable security definer set search_path = public as $$
+  select * from public.shares where id = slug
+$$;
+grant execute on function public.get_share(text) to anon, authenticated;
+
+-- Storage: public bucket `shares` (10 MB limit), objects at shares/{owner_id}/{slug}.json.gz
+create policy shares_blobs_write on storage.objects for insert
+  with check (bucket_id = 'shares' and (storage.foldername(name))[1] = auth.uid()::text);
+create policy shares_blobs_delete on storage.objects for delete
+  using (bucket_id = 'shares' and (storage.foldername(name))[1] = auth.uid()::text);
+```
+A public bucket serves files by URL without auth, but nobody can list its contents, and the paths are unguessable.
+
+### 9.3 Sharing without an account: invisible anonymous identity ❓
+To keep *"create a session link"* free of any login, the first time a signed-out user clicks **Share**, the app silently calls `supabase.auth.signInAnonymously()`. The user sees no login UI. This gives them:
+- an owner id, so RLS works and they can **delete their own links** later from the same browser ("My shared links" under *Share*);
+- per-identity rate limits (below).
+
+If that user later signs in with Discord or Google, `linkIdentity()` upgrades the anonymous identity, so their links stay theirs. This needs *Manual linking* enabled in Auth settings. If that Discord or Google account already exists, linking fails, and the links stay with the anonymous identity in that browser. That's acceptable for an edge case.
+
+**Abuse protection** (public writes on a free project):
+- Per-identity cap: **20 shares per day and 100 in total** (insert trigger), plus the 10 MB bucket limit.
+- Supabase rate-limits anonymous sign-ins per IP (about 30 per hour by default).
+- **Cloudflare Turnstile** (free, usually invisible) on anonymous sign-in. Supabase supports it natively. ❓ Turn on from day one, or only if abuse shows up?
+
+---
+
+## 10. Free-tier budget (new project)
+
+| Resource | Free limit (verify on the pricing page) | Main consumer | Headroom |
+|---|---|---|---|
+| Postgres | 500 MB | Rows of about 1–2 KB | Hundreds of thousands of rows |
+| Storage | 1 GB | Session and share blobs (about 200 KB typical) | About 5,000 blobs, so quotas matter |
+| Egress | 5 GB / month | Opening account sessions and share links | About 25,000 opens of 200 KB per month |
+| Auth MAU | 50,000 | Real and anonymous users | Plenty |
+| **Pause** | After 7 days with no API activity | — | Only account items and session links are affected. Everything else is static. ❓ Weekly keep-alive (§14). |
+
+Defaults, demos, deck links, and everything signed-out cost **zero** Supabase resources.
+
+---
+
+## 11. Code structure (YAGNI split)
+
+| File | Contents | Phase |
 |---|---|---|
-| **Discord OAuth** | Where the Lorcana community lives. One click, no email needed. | Requires a Discord developer app (free) |
-| **Google OAuth** | Universal | Requires a Google Cloud OAuth client (free) |
-| GitHub OAuth | Trivial to set up | Few players have accounts |
-| Email magic link | No third party | **Needs custom SMTP** on the free tier (Resend or similar), plus deliverability work |
-| Anonymous sign-in (Supabase) | Cloud sync with no sign-up, upgradable later | Anonymous accounts are lost if the browser is cleared, and anon-user abuse counts against quotas |
+| `app/index.html` | Today's `practice_dojo.html`. Its storage calls (`saveToLocalStorage`, `loadFromLocalStorage`, `exportTimelines`, `importTimelines`, `saveSessionToCloud`, `fetchDecksFromDatabase`, `fetchSessionsFromDatabase`, `loadExampleSession`) become thin calls into the modules below. **The rest is untouched.** | 1 |
+| `app/js/library.js` | `DojoLibrary`: IndexedDB stores, defaults loader, v2 codec (gzip), deck-link encode/decode | 1 |
+| `app/js/cloud.js` | `DojoCloud`: Supabase client, sign-in and out, account save and load, session shares, anonymous identity | 2–3 |
+| `supabase/migrations/*.sql` | The SQL above, versioned | 2 |
 
-**Recommendation:** Discord and Google at launch, with email magic link later if requested (❓Q2).
-
-**GitHub Pages specifics:**
-- Use the PKCE flow (`flowType: 'pkce'`, the supabase-js v2 default). The redirect lands back on the page with `?code=`, and supabase-js exchanges it.
-- *Auth → URL Configuration*: Site URL `https://practicedojo.github.io`. Additional redirects: `https://heavenideas.github.io/practice_dojo/**` (until the move) and `http://localhost:*/**`.
-- The anon key stays in the HTML, which is safe **only because** RLS is on every table and bucket.
-- Pin the CDN version (`@supabase/supabase-js@2.x.y`) instead of `@2` so a release can't break login without warning.
+- These are classic `<script src>` files exposing one global each, matching the current `App` style. **No build step, no bundler, no framework.**
+- `cloud.js` is the only file that knows Supabase exists. The supabase-js CDN script is pinned to an exact version.
+- **Splitting rule:** a new concern gets a new file when it has its own reason to change. Existing code is extracted only when a feature needs to change it substantially anyway. `AGENTS.md` and the dev guide get updated to replace the "never leave single-file" rule with this one.
 
 ---
 
-## 10. Which Supabase project? (❓Q1)
+## 12. Order of work and the repo move
 
-| | **A. New dedicated "practicedojo" project** (recommended) | B. Reuse `cjlhrfhximjldqrfblkj` |
+**Recommendation: move the repo first, then build.**
+Device storage (IndexedDB and localStorage) belongs to the site address. If we build device libraries on `heavenideas.github.io` and move later, every signed-out user's library is stranded on the old address. If we move first, today's users only lose the single *Continue* slot, and they can export it on the old site before switching. ❓
+
+| Phase | Delivers | Supabase? |
 |---|---|---|
-| Isolation from the legacy anon-writable tables | ✅ Clean RLS-only schema | ⚠ Legacy `decks` and `dojo_sessions` coexist. The new table needs another name (`dojo_decks`) or a separate schema. |
-| Free quota | Its own 500 MB, 1 GB, and 5 GB | Shared with about 15 tools |
-| Fits the PracticeDojo brand and repo move | ✅ | ✗ Tied to heavenideas |
-| Uses the second free project slot | Yes | No |
-| Pause risk | The Dojo alone must keep it active | Other tools keep it awake |
-| Getting your existing decks over | A one-time **"Import from legacy library"** that reads the old `decks` table with the old anon key, read-only | Direct |
+| **0. Move** | New repo layout (`/` landing, `/app/` Dojo), old URL becomes a "we moved" page with an *Export my session* button. Large artifacts (`multiverse_examples/`, `_bundle/`) stay behind. | No |
+| **1. Library** | `library.js`, IndexedDB library, `defaults/decks` and `defaults/demos`, new home screen, v2 gzip format, deck links, localStorage migration. **All feature work is done here, with no account.** | No |
+| **2. Session links** | New Supabase project, `shares`, anonymous identity, Share button, `?share=` opening | Yes |
+| **3. Accounts** | Discord and Google sign-in, `decks` and `sessions` tables, Save to account, first-sign-in upload, quotas | Yes |
 
-**Demo migration:** copy each `dojo_sessions` row to a gzipped blob plus a `sessions` row owned by your admin user with `is_featured = true`. This is a one-off Node or browser script kept in `supabase/scripts/`.
+Phases 2 and 3 can swap order if you'd rather have accounts first.
 
-**Security note (outside this doc's scope, but you should know):** the legacy `decks` and `dojo_sessions` tables can be written and deleted by anyone who has the public anon key embedded in these pages. If option A is chosen, consider making the legacy tables read-only for `anon` once the deck saver has its own auth.
+**Supabase setup checklist (Phase 2):** new project → run migrations → create buckets `sessions` (private) and `shares` (public), both with a 10 MB limit and `application/gzip` → Auth: enable Anonymous, Manual linking, Discord, and Google → URL config: Site URL `https://practicedojo.github.io`, redirects `https://practicedojo.github.io/**` and `http://localhost:*/**` → (Turnstile if chosen) → paste the project URL and anon key into `cloud.js`.
 
 ---
 
-## 11. Repo migration considerations
+## 13. Deliberately not doing (until needed)
 
-1. **localStorage and IndexedDB are per-origin.** Data saved at `heavenideas.github.io` is **not visible** at `practicedojo.github.io`. That makes shipping accounts *before* the move the right order: users sign in on the old origin, sync, then sign in on the new one. Fallbacks for signed-out users:
-   - a one-click **"Export everything"** (one `.zip` or a multi-session file) on the old origin;
-   - a stub page at the old URL saying "We moved" that links to the new site and offers that export.
-2. **Layout in the new repo (proposal):**
-   ```
-   /index.html             ← landing (today's practice_dojo/index.html)
-   /app/index.html         ← the Dojo (today's practice_dojo.html)   (❓Q7: or the app at root?)
-   /supabase/migrations/   ← SQL above, versioned
-   /supabase/scripts/      ← demo + legacy import scripts
-   /docs/                  ← dev guide, features.md, ARCH-*, TEST-PROTOCOL-*
-   ```
-3. **Leave the large artifacts behind:** `multiverse_examples/*.json` (77 MB and 13 MB) and the `_bundle/` chunk loader. Demos live in Supabase. If example files are still wanted in the repo, keep them gzipped (1.2 MB and 210 KB).
-4. Update the OAuth redirect URLs and the Supabase Site URL on cutover day.
+| Idea | Trigger to revisit |
+|---|---|
+| Background auto-sync between devices | Users complain about pressing Save / Download |
+| Share-link expiry and cleanup job | Storage passes about 50% of 1 GB |
+| Slimmer session format (*Refactor 1*) | Blobs regularly over about 2 MB gzipped |
+| Public deck or session browsing / gallery | Real demand. The `shares` table could later grow an opt-in `listed` flag. |
+| Playback mode (auto-step through nodes) | Not requested: replay = reopen and navigate |
+| Keeping the raw Duels.ink file with the session | The importer changes and re-import becomes valuable |
+| Profiles and display names | Something shows another user's name |
 
 ---
 
-## 12. Implementation phases
-
-Each phase ships on its own and gets a Feature number in `features.md`.
-
-| Phase | Delivers | Needs an account? |
-|---|---|---|
-| **0. Backend setup** | Supabase project, migration SQL, bucket and policies, OAuth providers, admin profile | — |
-| **1. Local library** | `LocalStore` (IndexedDB), `SessionCodec` (gzip v2), multi-session and deck library, new home screen. Fixes the silent 5 MB save failure. | No |
-| **2. Auth + deck sync** | `DojoAuth`, sign-in UI, `CloudStore` decks, `SyncEngine` outbox, first-sign-in upload dialog, legacy deck import | Yes |
-| **3. Session sync** | Blob upload and download, lazy fetch, conflicts, quotas, Demos tab on `is_featured` | Yes |
-| **4. Sharing and replay extras** | Public link `?s=<id>` (if ❓Q6), playback mode (if ❓Q4a), keep the raw Duels.ink file (if ❓Q4b) | Optional |
-| **5. Repo move** | New repo layout, redirects, "we moved" stub, export-everything | — |
-
-Phase 1 is useful on its own and carries no backend risk, which makes it a good first PR.
-
----
-
-## 13. Open questions
+## 14. Open questions
 
 | # | Question | Default if unanswered |
 |---|---|---|
-| **Q1** | New dedicated Supabase project, or reuse the existing one? | **New project** (§10) |
-| **Q2** | Which sign-in methods? Discord, Google, GitHub, email magic link (needs SMTP), anonymous? | **Discord + Google** |
-| **Q3** | Should signed-out users keep full local functionality, or is the library an account-only feature? | **Full local functionality** |
-| **Q4** | What does "replay" mean to you: (a) reopen and navigate (exists), (b) auto-playback through the main line, (c) keep the original Duels.ink file for re-import? | **(a) now; (b) and (c) in Phase 4** |
-| **Q5** | Should P2 (opponent) decks also live in the library, perhaps tagged "Opponent / Meta"? Or only your own decks? | **One library with an optional tag** |
-| **Q6** | Sharing: should a session or deck be shareable by link (read-only, opens as a copy)? | **Yes, Phase 4, off by default** |
-| **Q7** | New repo URL layout: Dojo at `/` with the landing elsewhere, or landing at `/` and the app at `/app/`? | **Landing `/`, app `/app/`** |
-| **Q8** | Keep the strict single-file rule in the new repo, or allow a few `js/*.js` modules (auth, store, sync)? | **Keep single file** |
-| **Q9** | Who curates the Demos? Only you as admin, or can users "publish" sessions? | **Admin only** |
-| **Q10** | Quotas: are 50 cloud sessions and 200 decks per user acceptable? | **Yes** |
-| **Q11** | Should your existing decks in the legacy `decks` table be imported into your account, and should other users see a "legacy library" at all? | **Import to your account only** |
-| **Q12** | Do the other heavenideas tools (turnMapper, goldfish, ...) need to read Dojo decks later? That would favour reusing the project. | **No** |
+| **Q1** | To create a **session** link while signed out, is an invisible anonymous Supabase identity OK (§9.3)? The alternative is that session links need sign-in, which would conflict with "no walls". | **Yes, anonymous identity** |
+| **Q2** | Turnstile captcha on anonymous sign-in from day one, or only if abused? | **From day one** (free, mostly invisible) |
+| **Q3** | Move the repo **before** building (Phase 0 first)? | **Yes** |
+| **Q4** | Demos: move the current cloud demos into `defaults/demos/` as gzipped files? | **Yes** |
+| **Q5** | Do share links live forever, or should anonymous shares expire (for example after a year)? | **Forever for now** (see §13) |
+| **Q6** | Free projects pause after 7 days without traffic, which would break session links. Add a weekly GitHub Actions ping to keep it awake? | **Yes, once Phase 2 ships** |
+| **Q7** | Who besides you edits `defaults/`? If collaborators will, we can add a tiny check (GitHub Action) that every default deck resolves to 60 known cards. | **Just you, no check yet** |
