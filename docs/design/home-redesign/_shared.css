@@ -1,0 +1,67 @@
+/* Shared tokens for the three home-screen proposals: the app's own shell
+   (app/index.html :root) and ink tokens (inkTokenMap), so whichever design
+   wins hands over to the board without a seam. */
+:root {
+  --bg: oklch(0.155 0.008 60);
+  --surface: oklch(0.205 0.010 60);
+  --surface-2: oklch(0.235 0.012 60);
+  --surface-3: oklch(0.275 0.014 60);
+  --border: oklch(0.30 0.013 60);
+  --border-soft: oklch(0.25 0.011 60);
+  --text: oklch(0.965 0.004 60);
+  --text-2: oklch(0.78 0.008 60);
+  --text-dim: oklch(0.62 0.012 60);
+  --text-faint: oklch(0.46 0.014 60);
+  --accent: oklch(0.78 0.14 70);
+  --accent-hi: oklch(0.84 0.15 70);
+  --accent-soft: oklch(0.78 0.14 70 / 0.18);
+  --danger: oklch(0.66 0.21 25);
+  --amber: oklch(0.79 0.145 78);
+  --amethyst: oklch(0.70 0.155 305);
+  --emerald: oklch(0.74 0.135 158);
+  --ruby: oklch(0.68 0.175 22);
+  --sapphire: oklch(0.72 0.125 245);
+  --steel: oklch(0.78 0.028 250);
+  --none: oklch(0.36 0.012 60);
+  --font-sans: 'Geist', system-ui, -apple-system, sans-serif;
+  --font-mono: 'Geist Mono', ui-monospace, monospace;
+  --r: 10px;
+  --r-sm: 7px;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.45;
+  -webkit-font-smoothing: antialiased;
+}
+button, input, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 6px; }
+.mono { font-family: var(--font-mono); }
+.brand-mark { width: 18px; height: 18px; background: url('../../../img/practice_dojo.svg') center/contain no-repeat; display: inline-block; }
+
+/* The app's two weaves: P1 = hard 50/50 split, P2 = 45° barber pole. */
+.weave-p1 { background: linear-gradient(90deg, var(--i1) 50%, var(--i2) 50%); }
+.weave-p2 { background: repeating-linear-gradient(45deg, var(--i1) 0 5px, var(--i2) 5px 10px); }
+.pips { display: inline-flex; gap: 3px; vertical-align: middle; }
+.pip { width: 8px; height: 8px; border-radius: 999px; background: var(--c); box-shadow: inset 0 0 0 1px oklch(0 0 0 / .35); }
+
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; border-radius: var(--r-sm); border: 1px solid var(--border-soft); background: var(--surface-2); color: var(--text-2); padding: 9px 14px; font-weight: 500; font-size: 13px; transition: background .12s, color .12s, border-color .12s; }
+.btn:hover { background: var(--surface-3); color: var(--text); border-color: var(--border); }
+.btn-primary { background: var(--accent); color: oklch(0.18 0.02 60); border-color: oklch(0.78 0.14 70 / .45); font-weight: 600; }
+.btn-primary:hover { background: var(--accent-hi); color: oklch(0.15 0.02 60); }
+.btn-ghost { background: transparent; }
+
+/* Review bar: not part of any design. */
+.review { position: fixed; left: 12px; bottom: 12px; z-index: 999; display: flex; gap: 4px; align-items: center; padding: 4px; border-radius: 999px; background: oklch(0.96 0 0); color: oklch(0.2 0 0); font: 600 11px/1 var(--font-sans); box-shadow: 0 6px 20px oklch(0 0 0 / .5); }
+.review span { padding: 0 8px; opacity: .6; }
+.review a { padding: 6px 10px; border-radius: 999px; color: inherit; text-decoration: none; }
+.review a[aria-current] { background: oklch(0.2 0 0); color: oklch(0.96 0 0); }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}

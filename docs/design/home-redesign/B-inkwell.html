@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Home · B · The inkwell</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="_shared.css">
+<style>
+  .home { max-width: 980px; margin: 0 auto; padding: 20px 24px 48px; display: flex; flex-direction: column; gap: 22px; }
+  .hd { display: flex; align-items: center; gap: 10px; }
+  .hd h1 { margin: 0; font-size: 17px; font-weight: 600; display: flex; gap: 9px; align-items: center; }
+  .hd .ver { font: 11px var(--font-mono); color: var(--text-faint); }
+  .hd .spacer { flex: 1; }
+
+  .lede h2 { margin: 18px 0 6px; font-size: clamp(28px, 4.4vw, 44px); line-height: 1.04; letter-spacing: -0.035em; font-weight: 600; max-width: 16ch; }
+  .lede h2 em { font-style: normal; color: var(--accent-hi); }
+  .lede p { margin: 0; color: var(--text-2); font-size: 14px; }
+
+  /* THE INKWELL — one field that takes whatever you brought */
+  .well { position: relative; border-radius: 16px; padding: 2px; background:
+      conic-gradient(from var(--spin, 0deg), var(--amber), var(--amethyst), var(--emerald), var(--ruby), var(--sapphire), var(--steel), var(--amber)); }
+  .well.idle { background: var(--border); }
+  .well.drag { --spin: 0deg; animation: spin 2.4s linear infinite; }
+  @property --spin { syntax: '<angle>'; inherits: false; initial-value: 0deg; }
+  @keyframes spin { to { --spin: 360deg; } }
+  .well-in { border-radius: 14px; background: var(--surface); display: flex; flex-direction: column; }
+  .well textarea { width: 100%; min-height: 170px; resize: vertical; border: 0; outline: none; background: transparent; padding: 18px 20px 8px; font: 13px/1.6 var(--font-mono); color: var(--text); }
+  .well textarea::placeholder { color: var(--text-faint); }
+  .well:focus-within.idle { background: var(--accent); }
+  .well-ft { display: flex; gap: 8px; align-items: center; padding: 8px 10px 10px 14px; border-top: 1px solid var(--border-soft); flex-wrap: wrap; }
+  .well-ft .hint { font-size: 12px; color: var(--text-dim); margin-right: auto; }
+  .well-ft .btn { font-size: 12.5px; padding: 7px 11px; }
+
+  /* The readout: what the Dojo understood, and the next step */
+  .readout { display: none; gap: 16px; align-items: center; padding: 16px 18px; border-radius: 12px; background: var(--surface-2); border: 1px solid var(--border-soft); animation: rise .25s ease; }
+  .readout.show { display: flex; flex-wrap: wrap; }
+  @keyframes rise { from { opacity: 0; transform: translateY(-4px); } }
+  .readout .kind { font: 600 10.5px/1 var(--font-sans); letter-spacing: .12em; text-transform: uppercase; color: var(--accent-hi); }
+  .readout .what { font-size: 18px; font-weight: 600; letter-spacing: -0.015em; margin-top: 4px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .readout .detail { font: 12px var(--font-mono); color: var(--text-dim); margin-top: 4px; }
+  .readout .detail .warn { color: oklch(0.82 0.13 85); }
+  .readout .grow { flex: 1 1 300px; min-width: 0; }
+  .readout .acts { display: flex; gap: 8px; flex-wrap: wrap; }
+  .readout.unknown .kind { color: var(--text-dim); }
+  .bigpips { display: inline-flex; gap: 5px; }
+  .bigpips .pip { width: 14px; height: 14px; transform: scale(0); animation: pop .3s ease forwards; }
+  .bigpips .pip:nth-child(2) { animation-delay: .12s; }
+  @keyframes pop { 70% { transform: scale(1.2); } to { transform: scale(1); } }
+
+  /* Lower deck: the table and your recent work */
+  .lower { display: grid; grid-template-columns: 1.15fr 1fr; gap: 16px; align-items: start; }
+  .panel { border-radius: 14px; background: var(--surface); border: 1px solid var(--border-soft); padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+  .panel h3 { margin: 0; font: 600 10.5px/1 var(--font-sans); letter-spacing: .12em; text-transform: uppercase; color: var(--text-dim); display: flex; justify-content: space-between; align-items: center; }
+  .panel h3 a { font: 500 12px var(--font-sans); letter-spacing: 0; text-transform: none; color: var(--text-2); text-decoration: none; }
+  .slot { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 10px; background: var(--surface-2); border: 1px solid var(--border-soft); }
+  .slot .who { width: 64px; font: 600 10.5px/1 var(--font-sans); letter-spacing: .1em; text-transform: uppercase; color: var(--text-dim); }
+  .slot .box { width: 20px; height: 28px; border-radius: 3px; box-shadow: inset 0 0 0 1px oklch(0 0 0 / .4); flex: 0 0 auto; }
+  .slot.empty .box { background: none; border: 1.5px dashed var(--border); box-shadow: none; }
+  .slot .n { font-weight: 600; flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .slot.empty .n { color: var(--text-dim); font-weight: 500; }
+  .slot .clr { background: none; border: 0; color: var(--text-faint); padding: 4px 6px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip { display: inline-flex; align-items: center; gap: 7px; padding: 6px 10px 6px 8px; border-radius: 999px; border: 1px solid var(--border-soft); background: transparent; font-size: 12.5px; color: var(--text-2); }
+  .chip:hover { border-color: var(--border); color: var(--text); background: var(--surface-2); }
+  .chips-label { font-size: 12px; color: var(--text-dim); }
+  .start { align-self: flex-start; padding: 11px 22px; border-radius: 999px; }
+
+  .rec { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 10px; border: 1px solid transparent; background: none; width: 100%; text-align: left; }
+  .rec:hover { background: var(--surface-2); border-color: var(--border-soft); }
+  .rec.first { background: color-mix(in oklch, var(--accent) 8%, var(--surface-2)); border-color: color-mix(in oklch, var(--accent) 24%, transparent); }
+  .rec .grow { flex: 1; min-width: 0; }
+  .rec .t { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .rec .m { font: 11px var(--font-mono); color: var(--text-dim); margin-top: 3px; display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+  .rec .go { font-size: 12px; color: var(--accent-hi); white-space: nowrap; }
+  .empty { font-size: 13px; color: var(--text-dim); padding: 6px 2px; }
+
+  .drop-hint { position: fixed; inset: 0; z-index: 40; pointer-events: none; display: none; align-items: center; justify-content: center; background: oklch(0.05 0.01 60 / .6); font-size: 20px; font-weight: 600; }
+
+  @media (max-width: 760px) {
+    .home { padding: 14px 14px 80px; gap: 16px; }
+    .lede h2 { margin-top: 8px; }
+    .well textarea { min-height: 130px; font-size: 16px; }
+    .well-ft .hint { flex-basis: 100%; }
+    .well-ft .btn { flex: 1 1 0; padding: 7px 6px; font-size: 12px; }
+    .lower { grid-template-columns: 1fr; }
+    .readout .acts { width: 100%; }
+    .readout .acts .btn { flex: 1 1 auto; min-height: 44px; }
+    .start { align-self: stretch; min-height: 48px; }
+    .btn, .chip, .rec { min-height: 44px; }
+  }
+</style>
+</head>
+<body>
+<div class="home">
+  <header class="hd">
+    <h1><span class="brand-mark"></span> Practice Dojo</h1>
+    <span class="ver">v2.19.0</span>
+    <span class="spacer"></span>
+    <button class="btn btn-ghost"><i class="fa-solid fa-book-bookmark"></i> Library</button>
+  </header>
+
+  <section class="lede">
+    <h2>Paste a decklist or a <em>Duels.ink</em> game.</h2>
+    <p>Or drop a saved session anywhere on this page. The Dojo works out what it is.</p>
+  </section>
+
+  <div class="well idle" id="well">
+    <div class="well-in">
+      <textarea id="intake" aria-label="Paste a decklist, a Duels.ink log, or a session" spellcheck="false"
+        placeholder="4 Tinker Bell - Giant Fairy&#10;4 Maui - Hero to All&#10;…&#10;&#10;or a whole Duels.ink log, starting “Player 1's starting hand: …”" oninput="read()"></textarea>
+      <div class="well-ft">
+        <span class="hint">Nothing to paste? Try an example:</span>
+        <button class="btn btn-ghost" onclick="example('deck')"><i class="fa-solid fa-layer-group"></i> A decklist</button>
+        <button class="btn btn-ghost" onclick="example('log')"><i class="fa-solid fa-film"></i> A Duels.ink log</button>
+        <button class="btn"><i class="fa-solid fa-file-arrow-up"></i> Choose a file</button>
+      </div>
+    </div>
+  </div>
+
+  <section class="readout" id="readout" aria-live="polite"></section>
+
+  <div class="lower">
+    <section class="panel" aria-labelledby="t-table">
+      <h3 id="t-table">On the table</h3>
+      <div id="slots"></div>
+      <div class="chips-label">Or pick a deck. It goes to the first open seat.</div>
+      <div class="chips" id="chips"></div>
+      <button class="btn btn-primary start" onclick="start()">Start match <i class="fa-solid fa-arrow-right"></i></button>
+    </section>
+    <section class="panel" aria-labelledby="t-recent">
+      <h3 id="t-recent">Pick up again <a href="#">All sessions</a></h3>
+      <div id="recent"></div>
+    </section>
+  </div>
+</div>
+<div class="drop-hint" id="drop-hint">Drop to open</div>
+
+<script src="_data.js"></script>
+<script>
+  const EX_DECK = `4 Olaf - Helping Hand
+4 Tinker Bell - Fancy Footwork
+3 Jebidiah Farnsworth - Cookie
+1 Lumiere - Fiery Friend
+2 Powerline - Taking the Stage
+4 Scrooge McDuck - Ghostly Ebenezer
+4 Cheshire Cat - Inexplicable
+3 Elisa Maza - Transformed Gargoyle
+2 Genie - Magical Researcher
+3 The Library - A Gift for Belle
+3 Be King Undisputed
+4 Dumbo - Ninth Wonder of the Universe
+2 Isis Vanderchill - Ice Queen of St. Canard
+3 Yzma - Conniving Chemist
+4 Elsa - The Fifth Spirit
+2 Finders Keepers
+4 Hades - Looking for a Deal
+2 The Headless Horseman - Terror of Sleepy Hollow
+4 Demona - Scourge of the Wyvern Clan
+2 Maui - Half-Shark`;
+  const EX_LOG = `Player 1's starting hand: Lumiere - Fiery Friend, Cheshire Cat - Inexplicable, Luisa Madrigal - Pushing Through, Queen of Hearts - Sensing Weakness, Demona - Scourge of the Wyvern Clan, Liquidator - Iced Over, Queen of Hearts - Sensing Weakness
+Player 2's starting hand: Tinker Bell - Giant Fairy, Moana - Curious Explorer, Strength of a Raging Fire, Cinderella - Dream Come True, Goliath - Clan Leader, Ariel - Sonic Warrior, Sail the Azurite Sea
+Game started!
+
+--- Turn 1 ---
+Player 2's turn begins
+Player 2 added Strength of a Raging Fire to ink
+…
+--- Turn 14 ---`;
+
+  const seats = FIRST ? { 1: null, 2: null } : { 1: 'd1', 2: 'm1' };
+  const deckById = (id) => allDecks().find(d => d.id === id) || null;
+
+  function read() {
+    const t = document.getElementById('intake').value.trim();
+    const out = document.getElementById('readout');
+    const well = document.getElementById('well');
+    well.classList.toggle('idle', !t);
+    out.className = 'readout';
+    if (!t) return;
+    let html;
+    if (/^Player \d's starting hand:/m.test(t) || /^--- Turn \d+ ---/m.test(t)) {
+      const turns = (t.match(/--- Turn (\d+) ---/g) || []).map(s => +s.match(/\d+/)[0]);
+      html = `<div class="grow"><div class="kind">Duels.ink game</div><div class="what">Player 1 vs Player 2 · ${Math.max(...turns, 0)} turns</div>
+        <div class="detail">Each turn becomes a node in the multiverse. Hidden cards show as unknown until you fill them in.</div></div>
+        <div class="acts"><button class="btn btn-primary"><i class="fa-solid fa-film"></i> Study this game</button></div>`;
+    } else if (/^\d+\s+\S/m.test(t)) {
+      const lines = t.split('\n').filter(l => l.trim());
+      const count = lines.reduce((a, l) => { const m = l.trim().match(/^(\d+)\s+\S/); return a + (m ? +m[1] : 0); }, 0);
+      const skipped = lines.filter(l => !/^\d+\s+\S/.test(l.trim()));
+      const inks = /Olaf|Demona|Cheshire/.test(t) ? ['amethyst', 'ruby'] : ['emerald', 'steel'];
+      const name = inks.map(i => INK_LABEL[i]).join('/');
+      html = `<div class="grow"><div class="kind">Decklist</div>
+        <div class="what"><span class="bigpips">${inks.map(i => `<span class="pip" style="--c:${inkVar(i)}"></span>`).join('')}</span> A ${count}-card ${name} deck</div>
+        <div class="detail">${count === 60 && !skipped.length ? '60 of 60 cards recognised' : `${count} of 60 cards recognised${skipped.length ? ` · <span class="warn">skipped ${esc(skipped[0].slice(0, 30))}</span>` : ''}`}</div></div>
+        <div class="acts">
+          <button class="btn btn-primary" onclick="seatPaste(1,'${name}')">Play it as you</button>
+          <button class="btn" onclick="seatPaste(2,'${name}')">Play against it</button>
+          <button class="btn btn-ghost"><i class="fa-regular fa-bookmark"></i> Save to My decks</button>
+        </div>`;
+    } else {
+      out.classList.add('unknown');
+      html = `<div class="grow"><div class="kind">Not recognised</div><div class="what">This isn't a decklist or a Duels.ink log</div>
+        <div class="detail">A decklist has one card per line, like “4 Tinker Bell - Giant Fairy”. A Duels.ink log starts with “Player 1's starting hand”.</div></div>`;
+    }
+    out.innerHTML = html;
+    out.classList.add('show');
+  }
+  function example(k) { const ta = document.getElementById('intake'); ta.value = k === 'deck' ? EX_DECK : EX_LOG; read(); ta.focus(); }
+  function seatPaste(n, name) {
+    const d = { id: 'p' + n, name: name + ' · pasted', inks: name === 'Amethyst/Ruby' ? ['amethyst', 'ruby'] : ['emerald', 'steel'], count: 60 };
+    DATA.myDecks = DATA.myDecks.filter(x => x.id !== d.id).concat(d);
+    seats[n] = d.id; renderSlots();
+  }
+
+  function renderSlots() {
+    document.getElementById('slots').innerHTML = [1, 2].map(n => {
+      const d = deckById(seats[n]);
+      const w = n === 1 ? 'weave-p1' : 'weave-p2';
+      return `<div class="slot ${d ? '' : 'empty'}" style="margin-bottom:6px">
+        <span class="who">${n === 1 ? 'You' : 'Opponent'}</span>
+        <span class="box ${d ? w : ''}" style="${d ? `--i1:${inkVar(d.inks[0])};--i2:${inkVar(d.inks[1] || d.inks[0])}` : ''}"></span>
+        <span class="n">${d ? esc(d.name) : 'Random cards'}</span>
+        ${d ? `<span class="mono" style="font-size:11px;color:var(--text-dim)">${d.count}</span><button class="clr" aria-label="Clear" onclick="seats[${n}]=null;renderSlots()"><i class="fa-solid fa-xmark"></i></button>` : ''}
+      </div>`;
+    }).join('');
+    document.getElementById('chips').innerHTML = allDecks().filter(d => !d.id.startsWith('p')).map(d =>
+      `<button class="chip" onclick="seatChip('${d.id}')">${pipsHtml(d.inks)} ${esc(d.name)}</button>`).join('');
+  }
+  function seatChip(id) { const n = !seats[1] ? 1 : !seats[2] ? 2 : 2; seats[n] = id; renderSlots(); }
+
+  function renderRecent() {
+    const el = document.getElementById('recent');
+    const rows = DATA.sessions.map((s, i) => `<button class="rec ${i === 0 ? 'first' : ''}"><span class="grow"><span class="t">${esc(s.title)}</span>
+      <span class="m">${pipsHtml(s.inks[0])} vs ${pipsHtml(s.inks[1])} · Turn ${s.turn} · lore ${s.lore[0]}–${s.lore[1]} · ${s.ago}</span></span>
+      <span class="go">${i === 0 ? 'Resume' : 'Open'} <i class="fa-solid fa-arrow-right"></i></span></button>`);
+    const demo = DATA.demos[0];
+    rows.push(`<button class="rec"><span class="grow"><span class="t">Explore a demo</span><span class="m">${esc(demo.title)}</span></span><span class="go">Open <i class="fa-solid fa-arrow-right"></i></span></button>`);
+    el.innerHTML = (DATA.sessions.length ? '' : `<div class="empty">Your matches are kept here as you play. Nothing yet.</div>`) + rows.join('');
+  }
+  function start() { const b = document.querySelector('.start'); b.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Shuffling…'; setTimeout(() => b.innerHTML = 'Start match <i class="fa-solid fa-arrow-right"></i>', 900); }
+
+  // Drop a file anywhere: the well lights up in all six inks.
+  let dragDepth = 0;
+  addEventListener('dragenter', e => { e.preventDefault(); if (++dragDepth === 1) { document.getElementById('well').classList.add('drag'); document.getElementById('well').classList.remove('idle'); } });
+  addEventListener('dragleave', () => { if (--dragDepth === 0) { document.getElementById('well').classList.remove('drag'); read(); } });
+  addEventListener('dragover', e => e.preventDefault());
+  addEventListener('drop', e => { e.preventDefault(); dragDepth = 0; document.getElementById('well').classList.remove('drag'); read(); });
+
+  renderSlots(); renderRecent(); reviewBar();
+</script>
+</body>
+</html>

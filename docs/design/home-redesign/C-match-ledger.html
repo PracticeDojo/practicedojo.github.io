@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Home · C · Match ledger</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="_shared.css">
+<style>
+  body { height: 100dvh; overflow: hidden; }
+  .app { height: 100dvh; display: grid; grid-template-rows: auto 1fr; }
+  .hd { display: flex; align-items: center; gap: 12px; padding: 12px 20px; border-bottom: 1px solid var(--border-soft); background: var(--surface); }
+  .hd h1 { margin: 0; font-size: 16px; font-weight: 600; display: flex; gap: 9px; align-items: center; }
+  .hd .ver { font: 11px var(--font-mono); color: var(--text-faint); }
+  .seg { margin-left: 18px; display: inline-flex; padding: 3px; border-radius: 9px; background: var(--bg); border: 1px solid var(--border-soft); }
+  .seg button { border: 0; background: none; padding: 6px 12px; border-radius: 6px; color: var(--text-dim); font-weight: 500; font-size: 13px; }
+  .seg button[aria-pressed="true"] { background: var(--surface-3); color: var(--text); }
+
+  .body { display: grid; grid-template-columns: 400px 1fr; min-height: 0; }
+  .list { border-right: 1px solid var(--border-soft); overflow-y: auto; padding: 12px 10px 16px; display: flex; flex-direction: column; gap: 2px; background: var(--surface); }
+  .grp { font: 600 10.5px/1 var(--font-sans); letter-spacing: .12em; text-transform: uppercase; color: var(--text-dim); padding: 16px 10px 8px; }
+
+  .row { display: grid; grid-template-columns: 6px 1fr auto; gap: 12px; align-items: center; width: 100%; text-align: left; padding: 10px 10px 10px 8px; border-radius: 10px; border: 1px solid transparent; background: none; }
+  .row:hover { background: var(--surface-2); }
+  .row[aria-selected="true"] { background: var(--surface-2); border-color: var(--border); }
+  .row .t, .row .m, .race .track, .race .fill, .opt .n { display: block; }
+  .row .t { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .row .m { font: 11px var(--font-mono); color: var(--text-dim); margin-top: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  /* Spine: P1 split on top, P2 barber pole underneath, as on multiverse nodes */
+  .spine { align-self: stretch; border-radius: 3px; overflow: hidden; display: grid; grid-template-rows: 1fr 1fr; gap: 2px; }
+  .spine i { display: block; }
+  .newrow { grid-template-columns: 6px 1fr auto; }
+  .newrow .plus { align-self: stretch; border-radius: 3px; background: var(--accent); }
+  .newrow .t { color: var(--accent-hi); }
+
+  /* SIGNATURE — the race to 20 lore, per session */
+  .race { width: 92px; display: grid; gap: 4px; }
+  .race .lane { display: grid; grid-template-columns: 1fr 18px; gap: 6px; align-items: center; font: 10.5px var(--font-mono); color: var(--text-2); text-align: right; }
+  .race .track { height: 4px; border-radius: 2px; background: var(--surface-3); overflow: hidden; }
+  .race .fill { height: 100%; border-radius: 2px; background: var(--c); width: calc(var(--v) / 20 * 100%); }
+  .race .lane.won { color: var(--accent-hi); }
+
+  .list-ft { margin-top: auto; padding: 14px 10px 4px; display: flex; flex-direction: column; gap: 6px; }
+  .list-ft .lbl { font-size: 12px; color: var(--text-dim); }
+  .list-ft .btns { display: flex; gap: 6px; }
+  .list-ft .btn { flex: 1; font-size: 12.5px; }
+
+  .detail { overflow-y: auto; padding: 40px 48px; }
+  .detail-in { max-width: 680px; display: flex; flex-direction: column; gap: 22px; }
+  .back { display: none; }
+  .eyebrow { font: 12px var(--font-mono); color: var(--text-dim); }
+  .detail h2 { margin: 6px 0 0; font-size: 30px; line-height: 1.1; letter-spacing: -0.03em; font-weight: 600; }
+  .matchup { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .side { display: flex; gap: 12px; align-items: center; padding: 12px 14px; border-radius: 12px; background: var(--surface); border: 1px solid var(--border-soft); }
+  .side .box { width: 26px; height: 36px; border-radius: 4px; flex: 0 0 auto; box-shadow: inset 0 0 0 1px oklch(0 0 0 / .4); }
+  .side .who { font: 600 10px/1 var(--font-sans); letter-spacing: .12em; text-transform: uppercase; color: var(--text-dim); }
+  .side .n { font-weight: 600; margin-top: 4px; }
+
+  .bigrace { padding: 18px; border-radius: 14px; background: var(--surface); border: 1px solid var(--border-soft); display: grid; gap: 14px; }
+  .bigrace .lane { display: grid; grid-template-columns: 74px 1fr 44px; gap: 14px; align-items: center; }
+  .bigrace .who { font: 600 10.5px/1 var(--font-sans); letter-spacing: .1em; text-transform: uppercase; color: var(--text-dim); }
+  .bigrace .ticks { display: grid; grid-template-columns: repeat(20, 1fr); gap: 3px; }
+  .bigrace .ticks i { height: 14px; border-radius: 2px; background: var(--surface-3); }
+  .bigrace .ticks i.on { background: var(--c); }
+  .bigrace .num { font: 600 22px/1 var(--font-mono); text-align: right; }
+  .bigrace .num.won { color: var(--accent-hi); }
+  .bigrace .cap { display: flex; justify-content: space-between; font: 11px var(--font-mono); color: var(--text-faint); padding-left: 88px; padding-right: 58px; }
+  .facts { display: flex; gap: 22px; flex-wrap: wrap; font-size: 13px; color: var(--text-2); }
+  .facts b { font: 600 15px var(--font-mono); color: var(--text); margin-right: 4px; }
+  .acts { display: flex; gap: 8px; flex-wrap: wrap; }
+  .acts .btn-primary { padding: 11px 22px; }
+  .danger { color: oklch(0.80 0.18 25); }
+
+  /* New match composer */
+  .seats { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .seat { border-radius: 14px; background: var(--surface); border: 1px solid var(--border-soft); overflow: hidden; }
+  .seat-hd { padding: 12px 14px; border-bottom: 1px solid var(--border-soft); display: flex; justify-content: space-between; align-items: center; }
+  .seat-hd .who { font: 600 10.5px/1 var(--font-sans); letter-spacing: .12em; text-transform: uppercase; color: var(--text-dim); }
+  .seat-hd a { font-size: 12px; color: var(--text-2); }
+  .seat-list { padding: 6px; max-height: 300px; overflow-y: auto; }
+  .opt { display: flex; gap: 10px; align-items: center; width: 100%; padding: 8px; border-radius: 8px; border: 0; background: none; text-align: left; }
+  .opt:hover { background: var(--surface-2); }
+  .opt[aria-checked="true"] { background: var(--accent-soft); }
+  .opt .box { width: 16px; height: 22px; border-radius: 3px; flex: 0 0 auto; box-shadow: inset 0 0 0 1px oklch(0 0 0 / .4); }
+  .opt .n { font-weight: 500; font-size: 13px; flex: 1; min-width: 0; }
+  .opt .src { font: 10.5px var(--font-mono); color: var(--text-faint); }
+  .welcome { font-size: 14px; color: var(--text-2); margin: 0; max-width: 56ch; }
+
+  @media (max-width: 860px) {
+    .body { grid-template-columns: 1fr; }
+    .list { border-right: 0; }
+    .detail { display: none; padding: 16px 16px 90px; }
+    .app.show-detail .list { display: none; }
+    .app.show-detail .detail { display: block; }
+    .back { display: inline-flex; align-self: flex-start; }
+    .seg { margin-left: auto; }
+    .hd .ver { display: none; }
+    .matchup, .seats { grid-template-columns: 1fr; }
+    .detail h2 { font-size: 24px; }
+    .bigrace .lane { grid-template-columns: 78px 1fr 34px; gap: 8px; }
+    .bigrace .ticks { gap: 2px; }
+    .bigrace .cap { padding-left: 86px; padding-right: 42px; }
+    .acts .btn { flex: 1 1 auto; min-height: 44px; }
+    .row, .opt, .btn { min-height: 44px; }
+  }
+</style>
+</head>
+<body>
+<div class="app" id="app">
+  <header class="hd">
+    <h1><span class="brand-mark"></span> Practice Dojo</h1>
+    <span class="ver">v2.19.0</span>
+    <div class="seg" role="group" aria-label="Show">
+      <button aria-pressed="true" id="seg-s" onclick="setMode('sessions')">Sessions</button>
+      <button aria-pressed="false" id="seg-d" onclick="setMode('decks')">Decks</button>
+    </div>
+  </header>
+  <div class="body">
+    <nav class="list" id="list" aria-label="Sessions"></nav>
+    <main class="detail" id="detail"></main>
+  </div>
+</div>
+
+<script src="_data.js"></script>
+<script>
+  let mode = 'sessions';
+  let sel = DATA.sessions.length ? DATA.sessions[0].id : 'new';
+  const seat = { 1: 'd1', 2: FIRST ? 'd2' : 'm1' };
+  const deckById = (id) => allDecks().find(d => d.id === id) || null;
+  const w = (cls, inks) => `class="${cls}" style="--i1:${inkVar(inks[0])};--i2:${inkVar(inks[1] || inks[0])}"`;
+
+  function raceMini(s) {
+    return `<span class="race" aria-label="Lore ${s.lore[0]} to ${s.lore[1]}">` + [0, 1].map(p =>
+      `<span class="lane ${s.lore[p] >= 20 ? 'won' : ''}"><span class="track"><span class="fill" style="--v:${Math.min(s.lore[p], 20)};--c:${inkVar(s.inks[p][0])}"></span></span>${s.lore[p]}</span>`).join('') + `</span>`;
+  }
+  function spine(s) { return `<span class="spine"><i ${w('weave-p1', s.inks[0])}></i><i ${w('weave-p2', s.inks[1])}></i></span>`; }
+
+  function renderList() {
+    const el = document.getElementById('list');
+    if (mode === 'decks') {
+      let h = `<button class="row newrow" aria-selected="${sel === 'newdeck'}" onclick="select('newdeck')"><span class="plus"></span><span><span class="t">New deck</span><span class="m">Paste a list, a .txt, or a Duels.ink replay</span></span><span></span></button>`;
+      h += `<div class="grp">My decks</div>` + (DATA.myDecks.length ? DATA.myDecks.map(deckRow).join('') : `<div class="m" style="padding:4px 10px;color:var(--text-dim);font-size:12.5px">None yet.</div>`);
+      DATA.defaults.forEach(g => { h += `<div class="grp">Default decks · ${esc(g.title)}</div>` + g.decks.map(deckRow).join(''); });
+      el.innerHTML = h; return;
+    }
+    let h = `<button class="row newrow" aria-selected="${sel === 'new'}" onclick="select('new')"><span class="plus"></span><span><span class="t">New match</span><span class="m">Pick two decks</span></span><span><i class="fa-solid fa-plus" style="color:var(--accent-hi)"></i></span></button>`;
+    let last = null;
+    DATA.sessions.forEach(s => {
+      if (s.when !== last) { h += `<div class="grp">${s.when}</div>`; last = s.when; }
+      h += `<button class="row" aria-selected="${sel === s.id}" onclick="select('${s.id}')">${spine(s)}
+        <span style="min-width:0"><span class="t">${esc(s.title)}</span><span class="m">Turn ${s.turn} · ${s.nodes} nodes · ${s.ago}</span></span>${raceMini(s)}</button>`;
+    });
+    h += `<div class="grp">Demos</div>` + DATA.demos.map(d => `<button class="row" aria-selected="${sel === d.id}" onclick="select('${d.id}')">${spine(d)}<span style="min-width:0"><span class="t">${esc(d.title)}</span><span class="m">Opens as your own copy</span></span><span></span></button>`).join('');
+    h += `<div class="list-ft"><span class="lbl">Bring a game in</span><div class="btns"><button class="btn"><i class="fa-solid fa-film"></i> Duels.ink game</button><button class="btn"><i class="fa-solid fa-file-arrow-up"></i> Session file</button></div></div>`;
+    el.innerHTML = h;
+  }
+  function deckRow(d) {
+    return `<button class="row" aria-selected="${sel === d.id}" onclick="select('${d.id}')"><span class="spine" style="grid-template-rows:1fr"><i ${w('weave-p1', d.inks)}></i></span>
+      <span style="min-width:0"><span class="t">${esc(d.name)}</span><span class="m">${inkText(d.inks)} · ${d.count} cards</span></span><span></span></button>`;
+  }
+
+  function renderDetail() {
+    const el = document.getElementById('detail');
+    const back = `<button class="btn btn-ghost back" onclick="document.getElementById('app').classList.remove('show-detail')"><i class="fa-solid fa-arrow-left"></i> ${mode === 'decks' ? 'Decks' : 'Sessions'}</button>`;
+    if (sel === 'new') { el.innerHTML = `<div class="detail-in">${back}${composer()}</div>`; return; }
+    const s = DATA.sessions.find(x => x.id === sel) || DATA.demos.find(x => x.id === sel);
+    if (s && s.turn) {
+      const lane = (p, who) => `<div class="lane"><span class="who">${who}</span><span class="ticks">${Array.from({ length: 20 }, (_, i) => `<i class="${i < s.lore[p] ? 'on' : ''}" style="--c:${inkVar(s.inks[p][0])}"></i>`).join('')}</span><span class="num ${s.lore[p] >= 20 ? 'won' : ''}">${s.lore[p]}</span></div>`;
+      el.innerHTML = `<div class="detail-in">${back}
+        <div><div class="eyebrow">Turn ${s.turn} · last played ${s.ago}</div><h2>${esc(s.title)}</h2></div>
+        <div class="matchup">${[0, 1].map(p => `<div class="side"><span ${w(p ? 'box weave-p2' : 'box weave-p1', s.inks[p])}></span><div><div class="who">${p ? 'Opponent' : 'You'}</div><div class="n">${inkText(s.inks[p])}</div></div></div>`).join('')}</div>
+        <div class="bigrace">${lane(0, 'You')}${lane(1, 'Opponent')}<div class="cap"><span>0</span><span>20 lore wins</span></div></div>
+        <div class="facts"><span><b>${s.nodes}</b>nodes</span><span><b>${s.lines}</b>${s.lines === 1 ? 'line' : 'lines'}</span></div>
+        <div class="acts"><button class="btn btn-primary"><i class="fa-solid fa-play"></i> Resume</button>
+          <button class="btn"><i class="fa-solid fa-pen"></i> Rename</button><button class="btn"><i class="fa-regular fa-copy"></i> Duplicate</button>
+          <button class="btn"><i class="fa-solid fa-file-export"></i> Export</button><button class="btn btn-ghost danger"><i class="fa-solid fa-trash"></i> Delete</button></div>
+      </div>`;
+      return;
+    }
+    if (s) {
+      el.innerHTML = `<div class="detail-in">${back}<div><div class="eyebrow">Demo</div><h2>${esc(s.title)}</h2></div>
+        <p class="welcome">A finished multiverse to click through. Opening it makes your own copy in Sessions; the demo itself never changes.</p>
+        <div class="acts"><button class="btn btn-primary"><i class="fa-solid fa-play"></i> Open my copy</button></div></div>`;
+      return;
+    }
+    const d = deckById(sel);
+    if (d) {
+      el.innerHTML = `<div class="detail-in">${back}<div><div class="eyebrow">${DATA.myDecks.includes(d) ? 'My deck' : 'Default deck'} · ${d.count} cards</div><h2>${esc(d.name)}</h2></div>
+        <div class="matchup"><div class="side"><span ${w('box weave-p1', d.inks)}></span><div><div class="who">Inks</div><div class="n">${inkText(d.inks)}</div></div></div></div>
+        <div class="acts"><button class="btn btn-primary" onclick="seat[1]='${d.id}';setMode('sessions');select('new')">Play it as you</button><button class="btn" onclick="seat[2]='${d.id}';setMode('sessions');select('new')">Play against it</button>
+        <button class="btn"><i class="fa-solid fa-pen"></i> ${DATA.myDecks.includes(d) ? 'Edit' : 'Copy to My decks'}</button></div></div>`;
+      return;
+    }
+    el.innerHTML = `<div class="detail-in">${back}<div><div class="eyebrow">My decks</div><h2>New deck</h2></div><p class="welcome">Paste a decklist, import a .txt, or take your exact list from a Duels.ink replay.</p></div>`;
+  }
+
+  function composer() {
+    const list = (n) => {
+      const opts = (ds, src) => ds.map(d => `<button class="opt" role="radio" aria-checked="${seat[n] === d.id}" onclick="seat[${n}]='${d.id}';renderDetail()">
+        <span ${w(n === 1 ? 'box weave-p1' : 'box weave-p2', d.inks)}></span><span class="n">${esc(d.name)}</span><span class="src">${src}</span></button>`).join('');
+      return opts(DATA.myDecks, 'mine') + DATA.defaults.map(g => opts(g.decks, esc(g.title))).join('')
+        + `<button class="opt" role="radio" aria-checked="${!seat[n]}" onclick="seat[${n}]=null;renderDetail()"><span class="box" style="border:1.5px dashed var(--border);box-shadow:none"></span><span class="n">Random cards</span></button>`;
+    };
+    return `<div><div class="eyebrow">${FIRST ? 'Welcome to the Dojo' : 'New match'}</div><h2>${FIRST ? 'Pick two decks and play' : 'New match'}</h2></div>
+      ${FIRST ? `<p class="welcome">Two default decks are picked for you. Every match you play is kept in the list on the left, so you can come back to any of them.</p>` : ''}
+      <div class="seats">${[1, 2].map(n => `<div class="seat"><div class="seat-hd"><span class="who">${n === 1 ? 'You' : 'Opponent'}</span><a href="#">Paste a list</a></div><div class="seat-list" role="radiogroup" aria-label="${n === 1 ? 'Your deck' : "Opponent's deck"}">${list(n)}</div></div>`).join('')}</div>
+      <div class="acts"><button class="btn btn-primary"><i class="fa-solid fa-play"></i> Start match</button></div>`;
+  }
+
+  function select(id) { sel = id; renderList(); renderDetail(); document.getElementById('app').classList.add('show-detail'); }
+  function setMode(m) {
+    mode = m;
+    document.getElementById('seg-s').setAttribute('aria-pressed', String(m === 'sessions'));
+    document.getElementById('seg-d').setAttribute('aria-pressed', String(m === 'decks'));
+    sel = m === 'decks' ? (DATA.myDecks[0] || DATA.defaults[0].decks[0]).id : (DATA.sessions[0] ? DATA.sessions[0].id : 'new');
+    renderList(); renderDetail();
+  }
+  renderList(); renderDetail(); reviewBar();
+</script>
+</body>
+</html>
