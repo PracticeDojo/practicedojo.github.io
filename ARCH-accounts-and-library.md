@@ -3,7 +3,7 @@
 > **Status:** v0.3. Design agreed and ready to break into features. Nothing here is implemented yet.
 > **Scope:** Practice Dojo (`practice_dojo/practice_dojo.html`), designed to move with the app to
 > `PracticeDojo/practicedojo.github.io`.
-> The decision log is in [§14](#14-decision-log). The two small remaining questions are in [§15](#15-remaining-questions).
+> The decision log is in [§14](#14-decision-log). There are no open questions; next step is Phase 0 (§12.1).
 
 ### What changed since v0.2
 - **Anonymous identity for session links: accepted**, with the security analysis and hardening in §9.3–§9.4.
@@ -537,7 +537,7 @@ Device storage belongs to the site address, so we **move first** (decided). Devi
 Phases 2 and 3 can swap order if you'd rather have accounts first.
 
 ### 12.1 Phase 0: the move, step by step
-1. **Seed the new repo.** Optionally keep the Dojo's git history (❓Q1): on a fresh clone of `heavenideas.github.io`, run `git filter-repo --subdirectory-filter practice_dojo`. That keeps only the Dojo's history and moves its files to the root. Push the result to `PracticeDojo/practicedojo.github.io` `main`.
+1. **Seed the new repo, keeping the Dojo's git history** (D17): on a fresh clone of `heavenideas.github.io`, run `git filter-repo --subdirectory-filter practice_dojo`. That keeps only the Dojo's history and moves its files to the root. Push the result to `PracticeDojo/practicedojo.github.io` `main`.
 2. **Reorganize in one commit:**
    ```
    /index.html                ← landing page (was practice_dojo/index.html)
@@ -555,7 +555,7 @@ Phases 2 and 3 can swap order if you'd rather have accounts first.
    - `practice_dojo/practice_dojo.html` becomes a **"We've moved"** page. It links to the new app and, if this browser has a saved Continue session, offers **Download my last session**. That's the same v1 file *Export* makes today, which the new site can import.
    - `practice_dojo/index.html` redirects to the new landing page.
    - The link card in the root `index.html` points to the new site.
-   - Remove the rest of `practice_dojo/` (❓Q2).
+   - Everything else in `practice_dojo/` stays as it is (D18).
 
 ### 12.2 Supabase setup checklist (Phase 2)
 1. Create a new project (free plan, closest region).
@@ -606,12 +606,5 @@ Phases 2 and 3 can swap order if you'd rather have accounts first.
 | D14 | Weekly keep-alive via GitHub Actions | 2026-10-04 |
 | D15 | Shares are limited by count and the Storage cap, with no time limit | 2026-10-04 |
 | D16 | No validation check for default decks yet | 2026-10-04 |
-
----
-
-## 15. Remaining questions
-
-| # | Question | Default if unanswered |
-|---|---|---|
-| **Q1** | Keep the Dojo's git history in the new repo (`git filter-repo`, §12.1 step 1), or start the new repo with a clean first commit? | **Keep history** |
-| **Q2** | On the old site, delete everything in `practice_dojo/` except the two "we moved" pages? | **Yes** |
+| D17 | The new repo keeps the Dojo's git history (`git filter-repo --subdirectory-filter practice_dojo`) | 2026-10-04 |
+| D18 | On the old site, only the two entry pages become "we moved" pages. The rest of `practice_dojo/` is left as it is. | 2026-10-04 |
