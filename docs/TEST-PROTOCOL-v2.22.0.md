@@ -8,7 +8,7 @@ Scope: **Feature 41 · Duels.ink text logs in both formats.** Fixtures in `docs/
 | 2 | *Study this game* | 26 nodes; final lore 20–14; title "… (Duels.ink)" |
 | 3 | Turn 2 node | Your hand has 8 cards including *Besties, Assemble!* (comma name kept whole); opponent has 1 ink |
 | 4 | Turn 11 node | Your board: Alma Madrigal (1 damage), Cheshire Cat, Hamm (1 damage); no Junior Woodchuck Guidebook (banished by its ability) |
-| 5 | Turn 15 node | Cheshire Cat and Ursula each have a card under them; Chernabog has 2 damage |
+| 5 | Turn 15 node, then Turn 17 | Turn 15: Cheshire Cat has 1 card under it and the opponent's Chernabog has 2 damage. Turn 17: Ursula has 1 card under it too |
 | 6 | Any opponent node | Opponent's hand is face-down unknown cards; cards they've played are named |
 | 7 | Turn 2 node comment | Lists your plays without "You"; on your Turn 20 node "Opponent drew a card" keeps its prefix |
 | 8 | Import `01a08b6d-…_p1.replay.gz` too, compare nodes | Same lore, hand, deck, ink, discard counts on every node, except turns 9–10 (Guidebook on board in the text import) and turn 18 (Chernabog exerted in the replay) |
