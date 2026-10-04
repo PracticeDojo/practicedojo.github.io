@@ -6,7 +6,8 @@ This file provides system instructions and context for AI agents working in this
 1. **`docs/features.md`**: The single source of truth for current and planned features, user stories, and progress. Always refer to it when working on a feature, and update its progress checkboxes when a feature is completed.
 2. **`docs/personal_dojo_dev_guide.md`**: The dev guide. Read it to understand how the tool works.
 3. **`docs/ARCH-accounts-and-library.md`**: The agreed architecture for the deck and session library, share links, and optional accounts. Follow its phases and decision log.
-4. **`app/index.html`**: Where the tool lives and where the user is going to be asking for changes. Treat it with respect. Don't change anything that isn't specifically asked for.
+4. **`docs/TODO-accounts-and-library.md`**: The checklist of what's done and what's left in that plan. Tick items (with how they were verified) when they reach `main`, and add new work to it.
+5. **`app/index.html`**: Where the tool lives and where the user is going to be asking for changes. Treat it with respect. Don't change anything that isn't specifically asked for.
 
 ## Repository layout
 

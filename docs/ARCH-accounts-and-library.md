@@ -2,7 +2,7 @@
 
 > **Status:** v0.3. Phase 0 (move, v2.18.1), Phase 1 (library, v2.19.0, Feature 38) and **Phase 2 (share links, v2.21.0, Feature 40)** are done; see §12.3 for how Phase 1 was built and §9.2 for the shares SQL as built. Next step is Phase 3 (accounts).
 > **Scope:** Practice Dojo (`app/index.html` in `PracticeDojo/practicedojo.github.io`).
-> The decision log is in [§14](#14-decision-log).
+> The decision log is in [§14](#14-decision-log). What's done and what's left is tracked in [`TODO-accounts-and-library.md`](TODO-accounts-and-library.md).
 
 ### What changed since v0.2
 - **Anonymous identity for session links: accepted**, with the security analysis and hardening in §9.3–§9.4.
