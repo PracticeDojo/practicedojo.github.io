@@ -1257,3 +1257,33 @@ public by design; RLS is the lock). **Never** put the secret / `service_role` ke
 * The CDN caches public files; a deleted share's file can stay downloadable at its exact URL for a while,
   but the row is gone, so the app reports the link as no longer available.
 
+---
+
+## **22\. Feature 41: Duels.ink Text Logs, Both Formats (v2.22.0)**
+
+`parseDojoLog(text)` reads v1 ("Player 1 / Player 2") and v2 ("You / Opponent"); `buildSessionFromLog`
+replays it. Test fixtures: `docs/samples/log_example_v01.md` (v1), `new_log_style_v01.md` (v2, same game),
+and `new_log_20261004.txt` with its replay `01a08b6d-…_p1.replay.gz` (the same game as text and as replay).
+
+### 22.1 Events, not buckets
+Each turn holds `events` in log order, each with the acting player `p` (You / Player 1 → 0). Types:
+`draw` (name or `null`), `reveal`, `ink`, `inkTop`, `play`, `sing`, `discard`, `quest`, `challenge`
+(with damage from the `| …` detail line), `banish`, `toDeck`, `toHand`, `under`, `moveDmg`, `activate`,
+`loreGain`, `loreSet`. Lines that change nothing (timers, ability announcements) are ignored but stay
+in the node's comment. "took back their action" deletes that player's last event. The first draw after
+`Draw step` is flagged `step` and applied, with the ready step, **before** the node's snapshot.
+
+### 22.2 Zones and unknowns
+Zones hold card names; `null` is a card the log never named. v2 hides the opponent's hand, so it starts
+as seven `null`s. `fromHand()` takes the named copy, else an unknown slot, else the discard (cards played
+from discard), in that order for a known hand and unknown-first for a hidden one. The deck is always
+`60 − everything else`, with known future draws on top. Banish picks the lethally damaged copy when both
+sides hold the same card. Cards under a character follow it to the deck, otherwise go to the discard.
+
+### 22.3 Things to know
+* `splitCardList()` keeps comma names whole by checking joins against `cardDB`; use it for any
+  comma-separated card list.
+* Activated abilities read the printed cost (`abilities[].costs`): "Banish this …" → to discard, ⟳ → exert.
+* Deck strings (`deck1/deck2`) are the most copies of each card seen at once, a lower bound.
+* Known gap: "X's ABILITY exerts a character" names no target, so that exert is lost.
+

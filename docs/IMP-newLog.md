@@ -1,5 +1,7 @@
 # Plan: New Log Format Compatibility (v2 "You/Opponent" Perspective)
 
+> **Status: done in v2.22.0 (Feature 41).** Built as an ordered event list per turn rather than Option B below, because real logs also needed undo, cards returned to deck or hand, boost, discards, songs and abilities. See the dev guide §22.
+
 ## Context
 
 Duels.ink changed its log export format. The old format ("v1") named both players explicitly (`Player 1`, `Player 2`) and revealed both players' draws. The new format ("v2") uses a first-person perspective (`You` / `Opponent`) and **hides the opponent's drawn cards**. This is a privacy/UX change on Duels.ink's side.

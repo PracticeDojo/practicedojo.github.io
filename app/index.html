@@ -7787,7 +7787,7 @@
     <script>
         let cardFuse = null;
 
-        const APP_VERSION = "v2.21.0"; // Centralized version string (redesign)
+        const APP_VERSION = "v2.22.0"; // Centralized version string (redesign)
 
         // Tweaks panel accent presets (hue values for the OKLCH accent ramp)
         const ACCENT_PRESETS = {
@@ -9111,9 +9111,7 @@
                     if (obj.format === 'duels-replay-v1') return { kind: 'replay', data: obj };
                     try { return { kind: 'session', file: DojoLibrary.decodeText(t) }; } catch (e) { return { kind: 'unknown', why: 'json' }; }
                 }
-                // Duels.ink's newer "You / Opponent" export isn't parsed yet (docs/IMP-newLog.md).
-                if (/^Your starting hand:/m.test(t) || /^(Your|Opponent's) turn begins$/m.test(t)) return { kind: 'newlog' };
-                if (/^---\s*Turn \d+\s*---/m.test(t) || /^Player \d+'s starting hand:/m.test(t)) {
+                if (/^---\s*Turn \d+\s*---/m.test(t) || /^(?:Player \d+'s|Your) starting hand:/m.test(t)) {
                     const check = this.validateDojoLog(t);
                     return check.valid ? { kind: 'log', check, turns: (t.match(/^---\s*Turn \d+\s*---/mg) || []).length }
                         : { kind: 'unknown', why: 'log' };
@@ -9165,11 +9163,6 @@
                     detail = r.check.level === 'warn' ? esc(r.check.message)
                         : 'Every turn becomes a node in the multiverse. Cards the log never names stay unknown until you fill them in.';
                     acts = btn('study', '<i class="fa-solid fa-film"></i> Study this game', 'btn btn-primary');
-                } else if (r.kind === 'newlog') {
-                    unknown = true;
-                    kind = 'Duels.ink log';
-                    what = 'This newer log format can’t be imported yet';
-                    detail = 'Download the game’s replay from Duels.ink (.replay.gz) and drop it here instead. Replays import every turn.';
                 } else if (r.kind === 'replay') {
                     const j = r.data;
                     const turns = (j.frames || []).filter(f => f.actionType === 'END_TURN').length;
@@ -10430,206 +10423,376 @@
                 return this.makeCardInstance(-999);
             },
 
+            // --- Duels.ink text logs, both formats (docs/IMP-newLog.md) ---
+            // v1 names the players "Player 1" / "Player 2" and shows both hands.
+            // v2 (the current export) is first-person, "You" / "Opponent", and hides
+            // the opponent's hand and draws. Either way Player 1 / You is the log's
+            // owner and becomes players[0].
+            //
+            // The parser turns each meaningful line into an event for the player who
+            // did it, in log order; buildSessionFromLog replays those events. An
+            // undo ("took back their action") removes that player's last event.
+
+            // "A, B, C" → card names, keeping names that contain commas whole
+            // ("Besties, Assemble!", "Fix-It Felix, Jr. - …") by checking joins
+            // against the card DB.
+            splitCardList(str) {
+                const tokens = String(str || '').split(/,\s*/).map(s => s.trim()).filter(Boolean);
+                const out = [];
+                for (let i = 0; i < tokens.length;) {
+                    let take = 1;
+                    for (let j = Math.min(tokens.length, i + 4); j > i + 1; j--) {
+                        if (this.cardDB[tokens.slice(i, j).join(', ').toLowerCase()]) { take = j - i; break; }
+                    }
+                    out.push(tokens.slice(i, i + take).join(', '));
+                    i += take;
+                }
+                return out;
+            },
+
             parseDojoLog(logText) {
-                const lines = logText.split('\n').map(l => l.trim());
-
-                const players = [
-                    { openingHand: [], mulliganedCards: [], drawnAfterMulligan: [], finalHand: [] },
-                    { openingHand: [], mulliganedCards: [], drawnAfterMulligan: [], finalHand: [] }
-                ];
+                const text = String(logText || '');
+                const lines = text.split('\n').map(l => l.trim());
+                const isV2 = /^Your starting hand:/m.test(text) || /^(Your|Opponent's) turn begins$/m.test(text);
+                const players = [0, 1].map(() => ({
+                    openingHand: [], mulliganedCards: [], drawnAfterMulligan: [], finalHand: [], handHidden: false
+                }));
+                // v2 never names the opponent's hand or draws.
+                if (isV2) players[1].handHidden = true;
                 const turns = [];
-                let currentTurn = null;
-                const currentLore = [0, 0];
-
-                // Helper: split a comma-separated card list string
-                const splitCards = (str) => str.split(',').map(s => s.trim()).filter(s => s.length > 0);
-
-                // Helper: detect "Player N" → index 0 or 1
-                const playerIdx = (n) => parseInt(n, 10) - 1;
+                let cur = null;
+                const list = (s) => this.splitCardList(s);
+                const named = (s) => (/^a card$/i.test(String(s).trim()) ? null : String(s).trim());
+                // "You" / "Opponent" / "Player N" → 0 | 1
+                const who = (w) => (w === 'You' ? 0 : w === 'Opponent' ? 1 : parseInt(w.slice(7), 10) - 1);
+                // "your" / "Opponent's" / "Player N's" / "their" (= fallback) → 0 | 1
+                const whose = (w, fallback) => {
+                    if (/^your$/i.test(w)) return 0;
+                    if (/^opponent's$/i.test(w)) return 1;
+                    const n = /Player ([12])/.exec(w);
+                    return n ? parseInt(n[1], 10) - 1 : fallback;
+                };
+                const WHO = '(You|Opponent|Player [12])';
+                const re = (src) => new RegExp('^' + src.split('WHO').join(WHO) + '$');
+                const RX = {
+                    hand: /^(?:Player ([12])'s|Your) starting hand:\s*(.+)$/,
+                    mull: re('WHO mulliganed \\d+ cards?:\\s*(.+)\\.\\s*Drew:\\s*(.+)'),
+                    turn: /^---\s*Turn (\d+)\s*---$/,
+                    begins: /^(Player [12]'s|Your|Opponent's) turn begins$/,
+                    undo: re('WHO took back (?:their|your) action.*'),
+                    drewList: re('WHO drew \\d+ cards?:\\s*(.+)'),
+                    drewN: re('WHO drew (\\d+) cards?'),
+                    drewOne: re('WHO drew a card'),
+                    drew: re('WHO drew (.+)'),
+                    reveal: re('WHO revealed (.+?)\\s*\\([^)]*\\)\\s*-\\s*put into (?:\\w+ )?hand'),
+                    ink: re('WHO added (.+) to ink'),
+                    inkTop: /^A card was put into (their|your|Opponent's|Player [12]'s) inkwell$/,
+                    play: re('WHO played (.+?) \\(cost [^)]*\\)'),
+                    sang: re('WHO sang (.+?) with (.+)'),
+                    discard: re('WHO discarded (.+)'),
+                    quest: re('WHO quested with (.+?) \\(\\+\\d+.*?,\\s*(\\d+)\\s*->\\s*(\\d+)\\)'),
+                    challengeHit: re('WHO challenged (.+?) with (.+?) \\| (.*)'),
+                    challenge: re('WHO challenged (.+?) with (.+)'),
+                    banish: /^(.+) was banished$/,
+                    toDeck: /^(.+) was returned to (your|their|Opponent's|Player [12]'s) deck$/,
+                    toHand: /^.+'s .+? returns (.+?) to (?:\w+'s |their |your )?hand$/,
+                    boost: re('WHO boosted (.+?) \\((\\d+) cards? under\\)'),
+                    under: /^A card was put under (.+)$/,
+                    moveDmg: /^Moved (\d+) damage counters? from (.+?) to (.+)$/,
+                    activate: re('WHO activated (.+?) on (.+)'),
+                    setLore: re('Set step: .+ grants WHO \\+(\\d+) \\[LORE\\].*'),
+                    won: re('WHO won with (\\d+) \\[LORE\\]!?')
+                };
 
                 for (const line of lines) {
                     if (!line.length) continue;
+                    let m;
 
-                    // Opening hand
-                    let m = line.match(/^Player (\d+)'s starting hand:\s*(.+)$/);
-                    if (m) {
-                        const idx = playerIdx(m[1]);
-                        if (idx >= 0 && idx <= 1) players[idx].openingHand = splitCards(m[2]);
+                    if ((m = RX.hand.exec(line))) {
+                        const p = m[1] ? parseInt(m[1], 10) - 1 : 0;
+                        players[p].openingHand = list(m[2]);
                         continue;
                     }
+                    if ((m = RX.mull.exec(line))) {
+                        const p = who(m[1]);
+                        players[p].mulliganedCards = list(m[2]);
+                        players[p].drawnAfterMulligan = list(m[3]);
+                        continue;
+                    }
+                    if ((m = RX.turn.exec(line))) {
+                        if (cur) turns.push(cur);
+                        cur = { turnNumber: parseInt(m[1], 10), activePlayerIndex: -1, events: [], rawLines: [line] };
+                        continue;
+                    }
+                    if (!cur) continue;
+                    cur.rawLines.push(line);
+                    // The first draw after "Draw step" is the turn's draw: it happens
+                    // before the turn's snapshot, like the ready step.
+                    const ev = (e) => {
+                        if (cur.drawStep && e.t === 'draw' && e.p === cur.activePlayerIndex) { e.step = true; cur.drawStep = false; }
+                        cur.events.push(e);
+                    };
+                    if (line === 'Draw step') { cur.drawStep = true; continue; }
 
-                    // Mulligan
-                    m = line.match(/^Player (\d+) mulliganed \d+ cards?:\s*(.+)\.\s*Drew:\s*(.+)$/);
-                    if (m) {
-                        const idx = playerIdx(m[1]);
-                        if (idx >= 0 && idx <= 1) {
-                            players[idx].mulliganedCards = splitCards(m[2]);
-                            players[idx].drawnAfterMulligan = splitCards(m[3]);
+                    if ((m = RX.begins.exec(line))) { cur.activePlayerIndex = whose(m[1], 0); continue; }
+                    if ((m = RX.undo.exec(line))) {
+                        const p = who(m[1]);
+                        for (let i = cur.events.length - 1; i >= 0; i--) {
+                            if (cur.events[i].p === p) { cur.events.splice(i, 1); break; }
                         }
                         continue;
                     }
-
-                    // Turn delimiter
-                    m = line.match(/^---\s*Turn (\d+)\s*---$/);
-                    if (m) {
-                        if (currentTurn) turns.push(currentTurn);
-                        currentTurn = {
-                            turnNumber: parseInt(m[1], 10),
-                            activePlayerIndex: -1,
-                            draws: [],
-                            inked: [],
-                            played: [],
-                            quested: [],
-                            banished: [],
-                            challenged: [],
-                            lore: [...currentLore],
-                            rawLines: [line]  // include the "--- Turn N ---" header
-                        };
+                    if ((m = RX.drewList.exec(line))) { list(m[2]).forEach(n => ev({ t: 'draw', p: who(m[1]), name: n })); continue; }
+                    if ((m = RX.drewN.exec(line))) { for (let i = 0; i < parseInt(m[2], 10); i++) ev({ t: 'draw', p: who(m[1]), name: null }); continue; }
+                    if ((m = RX.drewOne.exec(line))) { ev({ t: 'draw', p: who(m[1]), name: null }); continue; }
+                    if ((m = RX.drew.exec(line))) { ev({ t: 'draw', p: who(m[1]), name: named(m[2]) }); continue; }
+                    if ((m = RX.reveal.exec(line))) { ev({ t: 'reveal', p: who(m[1]), name: m[2].trim() }); continue; }
+                    if ((m = RX.ink.exec(line))) { ev({ t: 'ink', p: who(m[1]), name: named(m[2]) }); continue; }
+                    if ((m = RX.inkTop.exec(line))) { ev({ t: 'inkTop', p: whose(m[1], cur.activePlayerIndex < 0 ? 0 : cur.activePlayerIndex) }); continue; }
+                    if ((m = RX.play.exec(line))) { ev({ t: 'play', p: who(m[1]), name: m[2].trim() }); continue; }
+                    if ((m = RX.sang.exec(line))) { ev({ t: 'sing', p: who(m[1]), name: m[2].trim(), singers: list(m[3]) }); continue; }
+                    if ((m = RX.discard.exec(line))) { ev({ t: 'discard', p: who(m[1]), name: named(m[2]) }); continue; }
+                    if ((m = RX.quest.exec(line))) {
+                        ev({ t: 'quest', p: who(m[1]), name: m[2].trim(), loreBefore: parseInt(m[3], 10), loreAfter: parseInt(m[4], 10) });
                         continue;
                     }
-
-                    if (!currentTurn) continue;
-
-                    // Always capture every line that belongs to this turn
-                    currentTurn.rawLines.push(line);
-
-                    // Active player
-                    m = line.match(/^Player (\d+)'s turn begins$/);
-                    if (m) { currentTurn.activePlayerIndex = playerIdx(m[1]); continue; }
-
-                    // Draw: single card
-                    m = line.match(/^Player (\d+) drew ([^:]+)$(?!\s*:)/);
-                    if (m && !m[2].match(/^\d+$/)) {
-                        const pIdx = playerIdx(m[1]);
-                        if (pIdx === currentTurn.activePlayerIndex) currentTurn.draws.push(m[2].trim());
+                    if ((m = RX.challengeHit.exec(line))) {
+                        const detail = m[4];
+                        const tgt = /dealt \d+ dmg to .+?\((\d+)\//.exec(detail);
+                        const att = /took \d+ dmg \((\d+)\//.exec(detail);
+                        ev({
+                            t: 'challenge', p: who(m[1]), target: m[2].trim(), attacker: m[3].trim(),
+                            targetDamage: tgt ? parseInt(tgt[1], 10) : null, attackerDamage: att ? parseInt(att[1], 10) : null
+                        });
                         continue;
                     }
-
-                    // Draw: multiple cards "Player N drew K cards: A, B, C"
-                    m = line.match(/^Player (\d+) drew \d+ cards?:\s*(.+)$/);
-                    if (m) {
-                        const pIdx = playerIdx(m[1]);
-                        if (pIdx === currentTurn.activePlayerIndex) {
-                            splitCards(m[2]).forEach(c => currentTurn.draws.push(c));
-                        }
-                        continue;
-                    }
-
-                    // Draw: single card variant (catches "Player N drew CardName" even with dashes)
-                    m = line.match(/^Player (\d+) drew (.+)$/);
-                    if (m && !m[2].match(/^\d+ cards?:/)) {
-                        const pIdx = playerIdx(m[1]);
-                        if (pIdx === currentTurn.activePlayerIndex) currentTurn.draws.push(m[2].trim());
-                        continue;
-                    }
-
-                    // Ink
-                    m = line.match(/^Player (\d+) added (.+) to ink$/);
-                    if (m) {
-                        const pIdx = playerIdx(m[1]);
-                        if (pIdx === currentTurn.activePlayerIndex) currentTurn.inked.push(m[2].trim());
-                        continue;
-                    }
-
-                    // Play
-                    m = line.match(/^Player (\d+) played (.+?) \(cost \d+\)$/);
-                    if (m) {
-                        const pIdx = playerIdx(m[1]);
-                        if (pIdx === currentTurn.activePlayerIndex) currentTurn.played.push(m[2].trim());
-                        continue;
-                    }
-
-                    // Quest: "Player N quested with X (+N [LORE], old -> new)"
-                    m = line.match(/^Player (\d+) quested with (.+?) \(\+\d+.*?,\s*(\d+)\s*->\s*(\d+)\)$/);
-                    if (m) {
-                        const pIdx = playerIdx(m[1]);
-                        const loreBefore = parseInt(m[3], 10);
-                        const loreAfter = parseInt(m[4], 10);
-                        currentLore[pIdx] = loreAfter;
-                        currentTurn.lore = [...currentLore];
-                        currentTurn.quested.push({ name: m[2].trim(), loreBefore, loreAfter, playerIdx: pIdx });
-                        continue;
-                    }
-
-                    // Banish
-                    m = line.match(/^(.+) was banished$/);
-                    if (m) { currentTurn.banished.push(m[1].trim()); continue; }
-
-                    // Challenge
-                    m = line.match(/^Player (\d+) challenged (.+?) with (.+?)(?:\s*\|.*)?$/);
-                    if (m) {
-                        currentTurn.challenged.push({ attacker: m[3].trim(), target: m[2].trim(), playerIdx: playerIdx(m[1]) });
-                        continue;
-                    }
+                    if ((m = RX.challenge.exec(line))) { ev({ t: 'challenge', p: who(m[1]), target: m[2].trim(), attacker: m[3].trim() }); continue; }
+                    if ((m = RX.banish.exec(line))) { if (named(m[1])) ev({ t: 'banish', name: m[1].trim() }); continue; }
+                    if ((m = RX.toDeck.exec(line))) { ev({ t: 'toDeck', owner: whose(m[2], -1), name: m[1].trim() }); continue; }
+                    if ((m = RX.toHand.exec(line))) { ev({ t: 'toHand', name: m[1].trim() }); continue; }
+                    if ((m = RX.boost.exec(line))) { ev({ t: 'under', p: who(m[1]), name: m[2].trim(), n: parseInt(m[3], 10) }); continue; }
+                    if ((m = RX.under.exec(line))) { ev({ t: 'under', p: -1, name: m[1].trim(), n: 1 }); continue; }
+                    if ((m = RX.moveDmg.exec(line))) { ev({ t: 'moveDmg', n: parseInt(m[1], 10), from: m[2].trim(), to: m[3].trim() }); continue; }
+                    if ((m = RX.activate.exec(line))) { ev({ t: 'activate', p: who(m[1]), ability: m[2].trim(), name: m[3].trim() }); continue; }
+                    if ((m = RX.setLore.exec(line))) { ev({ t: 'loreGain', p: who(m[1]), n: parseInt(m[2], 10) }); continue; }
+                    if ((m = RX.won.exec(line))) { ev({ t: 'loreSet', p: who(m[1]), n: parseInt(m[2], 10) }); continue; }
                 }
+                if (cur) turns.push(cur);
 
-                if (currentTurn) turns.push(currentTurn);
-
-                // Build final hands post-mulligan
-                for (let p = 0; p < 2; p++) {
-                    const mulliSet = [...players[p].mulliganedCards];
+                // Hands after the mulligan. A hidden hand is seven unknown cards.
+                for (const pl of players) {
+                    if (pl.handHidden) { pl.finalHand = Array(7).fill(null); continue; }
+                    const back = [...pl.mulliganedCards];
                     const kept = [];
-                    for (const c of players[p].openingHand) {
-                        const idx = mulliSet.indexOf(c);
-                        if (idx !== -1) mulliSet.splice(idx, 1);
+                    for (const c of pl.openingHand) {
+                        const i = back.indexOf(c);
+                        if (i !== -1) back.splice(i, 1);
                         else kept.push(c);
                     }
-                    players[p].finalHand = [...kept, ...players[p].drawnAfterMulligan];
+                    pl.finalHand = [...kept, ...pl.drawnAfterMulligan];
                 }
 
-                return { players, turns };
+                return { players, turns, format: isV2 ? 'v2' : 'v1' };
             },
 
             buildSessionFromLog(parsedLog) {
                 const { players, turns } = parsedLog;
+                const cache = new Map();
+                const resolve = (name) => {
+                    if (!name) return null;
+                    if (!cache.has(name)) cache.set(name, this.resolveCardName(name));
+                    return cache.get(name);
+                };
+                const idOf = (name) => { const c = resolve(name); return c ? c.id : -999; };
+                const isActionCard = (name) => { const c = resolve(name); return !!(c && (c.type === 'Action' || c.type === 'Song')); };
+                const willpower = (name) => { const c = resolve(name); return c && c.willpower != null ? c.willpower : Infinity; };
 
-                // Pre-collect all draws per player across all turns (to know future draws at any snapshot)
+                // Every card a player draws or reveals, in order, so a snapshot's deck
+                // can put the known future draws on top.
                 const allDraws = [[], []];
-                for (const t of turns) {
-                    const p = t.activePlayerIndex;
-                    if (p >= 0 && p <= 1) allDraws[p].push(...t.draws);
+                for (const t of turns) for (const e of t.events) {
+                    if ((e.t === 'draw' || e.t === 'reveal') && e.p >= 0 && e.p <= 1) allDraws[e.p].push(e.name);
                 }
+                const drawn = [0, 0];
 
-                // Mutable state per player: store as arrays of name strings for simplicity
-                const hands = [
-                    players[0].finalHand.slice(),
-                    players[1].finalHand.slice()
-                ];
-                // Field stores objects {name, exerted}
-                const fields = [[], []];
+                // Zones hold card names; null = a card the log never named.
+                const hands = [players[0].finalHand.slice(), players[1].finalHand.slice()];
+                const fields = [[], []]; // { name, exerted, damage, under }
                 const inkwells = [[], []];
                 const discards = [[], []];
                 const lore = [0, 0];
-                const drawnPointers = [0, 0]; // how many from allDraws[p] have been consumed
 
-                // Track all known card names per player for deck string
-                const knownCards = [
-                    [...players[0].openingHand, ...players[0].mulliganedCards, ...players[0].drawnAfterMulligan],
-                    [...players[1].openingHand, ...players[1].mulliganedCards, ...players[1].drawnAfterMulligan]
-                ];
-
-                const bookmarks = [];
-                let previousNodeId = null;
-
-                const buildDeckForSnapshot = (p) => {
-                    const handLen = hands[p].length;
-                    const fieldLen = fields[p].length;
-                    const inkLen = inkwells[p].length;
-                    const discLen = discards[p].length;
-                    const deckSize = Math.max(0, 60 - handLen - fieldLen - inkLen - discLen);
-                    const futureDraws = allDraws[p].slice(drawnPointers[p]);
-                    const deck = [];
-                    for (let i = 0; i < deckSize; i++) {
-                        if (i < futureDraws.length) {
-                            const dbCard = this.resolveCardName(futureDraws[i]);
-                            deck.push(this.makeCardInstance(dbCard ? dbCard.id : -999));
-                        } else {
-                            deck.push(this.makeUnknownCardInstance());
-                        }
+                // Deck lists: the most copies of each card ever seen at once.
+                const seen = [new Map(), new Map()];
+                const noteSeen = () => {
+                    for (let p = 0; p < 2; p++) {
+                        const now = new Map();
+                        const add = (n) => { if (n) now.set(n, (now.get(n) || 0) + 1); };
+                        hands[p].forEach(add); inkwells[p].forEach(add); discards[p].forEach(add);
+                        fields[p].forEach(f => add(f.name));
+                        now.forEach((c, n) => { if (c > (seen[p].get(n) || 0)) seen[p].set(n, c); });
                     }
-                    return deck;
+                };
+                [0, 1].forEach(p => {
+                    const open = new Map();
+                    players[p].openingHand.forEach(n => open.set(n, (open.get(n) || 0) + 1));
+                    open.forEach((c, n) => seen[p].set(n, c));
+                });
+                noteSeen();
+
+                // Takes a card out of p's hand: the named copy, else (hidden hand) an
+                // unknown slot, else from discard (played from discard), else nothing.
+                const fromHand = (p, name) => {
+                    const hidden = players[p].handHidden;
+                    const iNamed = name ? hands[p].indexOf(name) : -1;
+                    if (iNamed !== -1) { hands[p].splice(iNamed, 1); return 'hand'; }
+                    const iUnknown = hands[p].indexOf(null);
+                    if (hidden && iUnknown !== -1) { hands[p].splice(iUnknown, 1); return 'hand'; }
+                    const iDisc = name ? discards[p].indexOf(name) : -1;
+                    if (iDisc !== -1) { discards[p].splice(iDisc, 1); return 'discard'; }
+                    if (iUnknown !== -1) { hands[p].splice(iUnknown, 1); return 'hand'; }
+                    return null;
+                };
+                const fieldCard = (p, name, pred) => fields[p].find(f => f.name === name && (!pred || pred(f)));
+                // Where a named card is on the board: prefer `pref`'s side.
+                const locate = (name, pref) => {
+                    const order = pref === 1 ? [1, 0] : [0, 1];
+                    for (const p of order) {
+                        const i = fields[p].findIndex(f => f.name === name);
+                        if (i !== -1) return { p, i };
+                    }
+                    return null;
+                };
+                // Cards under a character go to the discard when it leaves play,
+                // and back into the deck with it when it's returned to the deck.
+                const leavePlay = (p, i, underTo = 'discard') => {
+                    const fc = fields[p].splice(i, 1)[0];
+                    if (underTo === 'discard') for (let k = 0; k < (fc.under || 0); k++) discards[p].push(null);
+                    return fc;
+                };
+                // An activated ability's printed cost says whether it exerts the card
+                // or banishes it (Junior Woodchuck Guidebook: "⟳, 1 ⬡, Banish this item").
+                const abilityCost = (cardName, abilityName) => {
+                    const c = resolve(cardName);
+                    const ab = c && (c.abilities || []).find(a => a.type === 'activated' &&
+                        (!abilityName || String(a.name || '').toLowerCase() === abilityName.toLowerCase()));
+                    const costs = ab ? (ab.costs || [ab.costsText || '']).join(' ') : '';
+                    return { banish: /banish this/i.test(costs), exert: !ab || /⟳/.test(costs) };
                 };
 
+                const apply = (e, active) => {
+                    const p = e.p;
+                    switch (e.t) {
+                        case 'draw':
+                        case 'reveal':
+                            hands[p].push(e.name);
+                            drawn[p]++;
+                            break;
+                        case 'ink':
+                            fromHand(p, e.name);
+                            inkwells[p].push(e.name);
+                            break;
+                        case 'inkTop':
+                            inkwells[p].push(null);
+                            break;
+                        case 'play':
+                        case 'sing':
+                            fromHand(p, e.name);
+                            if (isActionCard(e.name)) discards[p].push(e.name);
+                            else fields[p].push({ name: e.name, exerted: false, damage: 0, under: 0 });
+                            if (e.t === 'sing') (e.singers || []).forEach(s => { const f = fieldCard(p, s, x => !x.exerted); if (f) f.exerted = true; });
+                            break;
+                        case 'discard':
+                            fromHand(p, e.name);
+                            discards[p].push(e.name);
+                            break;
+                        case 'quest': {
+                            lore[p] = e.loreAfter;
+                            const f = fieldCard(p, e.name, x => !x.exerted) || fieldCard(p, e.name);
+                            if (f) f.exerted = true;
+                            break;
+                        }
+                        case 'challenge': {
+                            const a = fieldCard(p, e.attacker, x => !x.exerted) || fieldCard(p, e.attacker);
+                            if (a) {
+                                a.exerted = true;
+                                if (e.attackerDamage != null) a.damage = e.attackerDamage;
+                            }
+                            if (e.targetDamage != null) {
+                                const d = fieldCard(1 - p, e.target);
+                                if (d) d.damage = e.targetDamage;
+                            }
+                            break;
+                        }
+                        case 'banish': {
+                            // Both sides can hold the same card; the lethally damaged one goes first.
+                            let hit = null;
+                            for (const q of [1 - active, active]) {
+                                const i = fields[q].findIndex(f => f.name === e.name && f.damage >= willpower(f.name));
+                                if (i !== -1) { hit = { p: q, i }; break; }
+                            }
+                            hit = hit || locate(e.name, 1 - active);
+                            if (hit) {
+                                leavePlay(hit.p, hit.i);
+                                discards[hit.p].push(e.name);
+                            }
+                            break;
+                        }
+                        case 'toDeck': {
+                            const hit = (e.owner >= 0 && fields[e.owner].some(f => f.name === e.name))
+                                ? { p: e.owner, i: fields[e.owner].findIndex(f => f.name === e.name) }
+                                : locate(e.name, e.owner);
+                            if (hit) leavePlay(hit.p, hit.i, 'deck');
+                            break;
+                        }
+                        case 'toHand': {
+                            const hit = locate(e.name, 1 - active);
+                            if (hit) {
+                                leavePlay(hit.p, hit.i);
+                                hands[hit.p].push(e.name);
+                            }
+                            break;
+                        }
+                        case 'under': {
+                            const hit = p >= 0 && fieldCard(p, e.name) ? { p } : locate(e.name, active);
+                            const f = hit && fieldCard(hit.p, e.name);
+                            if (f) f.under = (f.under || 0) + (e.n || 1);
+                            break;
+                        }
+                        case 'moveDmg': {
+                            const from = locate(e.from, active);
+                            const to = locate(e.to, 1 - active);
+                            if (from) fields[from.p][from.i].damage = Math.max(0, fields[from.p][from.i].damage - e.n);
+                            if (to) fields[to.p][to.i].damage += e.n;
+                            break;
+                        }
+                        case 'activate': {
+                            const cost = abilityCost(e.name, e.ability);
+                            const f = fieldCard(p, e.name, x => !x.exerted) || fieldCard(p, e.name);
+                            if (!f) break;
+                            if (cost.banish) {
+                                leavePlay(p, fields[p].indexOf(f));
+                                discards[p].push(e.name);
+                            } else if (cost.exert) {
+                                f.exerted = true;
+                            }
+                            break;
+                        }
+                        case 'loreGain': lore[p] += e.n; break;
+                        case 'loreSet': lore[p] = e.n; break;
+                    }
+                };
+
+                const cardOf = (name) => (name ? this.makeCardInstance(idOf(name)) : this.makeUnknownCardInstance());
+                const buildDeck = (p) => {
+                    const underCount = fields[p].reduce((s, f) => s + (f.under || 0), 0);
+                    const used = hands[p].length + fields[p].length + underCount + inkwells[p].length + discards[p].length;
+                    const size = Math.max(0, 60 - used);
+                    const future = allDraws[p].slice(drawn[p]);
+                    const deck = [];
+                    for (let i = 0; i < size; i++) deck.push(cardOf(i < future.length ? future[i] : null));
+                    return deck;
+                };
                 const buildPlayerState = (p) => ({
                     id: p,
                     name: `Player ${p + 1}`,
@@ -10637,36 +10800,47 @@
                     inkTotal: inkwells[p].length,
                     inkReady: inkwells[p].length,
                     hasMulliganed: true,
-                    deck: buildDeckForSnapshot(p),
-                    hand: hands[p].map(name => {
-                        const dbCard = this.resolveCardName(name);
-                        return this.makeCardInstance(dbCard ? dbCard.id : -999);
-                    }),
+                    deck: buildDeck(p),
+                    hand: hands[p].map(cardOf),
                     field: fields[p].map(fc => {
-                        const dbCard = this.resolveCardName(fc.name);
-                        const card = this.makeCardInstance(dbCard ? dbCard.id : -999);
-                        card.exerted = fc.exerted;
+                        const card = cardOf(fc.name);
+                        card.exerted = !!fc.exerted;
+                        card.damage = fc.damage || 0;
+                        for (let k = 0; k < (fc.under || 0); k++) card.stackedCards.push(this.makeUnknownCardInstance());
                         return card;
                     }),
-                    inkwell: inkwells[p].map(name => {
-                        const dbCard = this.resolveCardName(name);
-                        return this.makeCardInstance(dbCard ? dbCard.id : -999);
-                    }),
-                    discard: discards[p].map(name => {
-                        const dbCard = this.resolveCardName(name);
-                        return this.makeCardInstance(dbCard ? dbCard.id : -999);
-                    })
+                    inkwell: inkwells[p].map(cardOf),
+                    discard: discards[p].map(cardOf)
                 });
 
-                // Helper: remove first occurrence of a card name from an array of name strings
-                const removeFirst = (arr, name) => {
-                    const idx = arr.indexOf(name);
-                    if (idx !== -1) arr.splice(idx, 1);
-                };
+                const SKIP_PATTERNS = [
+                    /^---\s*Turn \d+\s*---$/,
+                    /^(Player \d+'s|Your|Opponent's) turn begins$/,
+                    /^(Player \d+'s|Your|Opponent's) timer started/,
+                    /^Ready step/,
+                    /^Set step$/,
+                    /^Draw step$/,
+                    /^(Player \d+|You|Opponent) gained \d+ seconds/,
+                    /^(Player \d+ ended Player \d+'s|You ended your|Opponent ended their) turn$/,
+                    /^Game started!$/,
+                    /^(Player \d+|You|Opponent) requested an undo$/,
+                    /^(Player \d+|You|Opponent) took back (their|your) action/
+                ];
+                const ids = (names) => names.filter(Boolean).map(n => resolve(n)).filter(Boolean).map(c => c.id);
+
+                const bookmarks = [];
+                let previousNodeId = null;
+                let lastActive = 0;
 
                 for (const t of turns) {
-                    const p = t.activePlayerIndex;
-                    if (p < 0 || p > 1) continue;
+                    const p = t.activePlayerIndex >= 0 ? t.activePlayerIndex : 1 - lastActive;
+                    lastActive = p;
+
+                    // Ready step and draw step happen before the snapshot, so a node
+                    // shows the board the active player actually acts on (as a
+                    // replay import and live play do).
+                    for (const fc of fields[p]) fc.exerted = false;
+                    for (const e of t.events) if (e.step) { apply(e, p); noteSeen(); }
 
                     // SNAPSHOT before this turn's actions
                     const nodeId = this.uuid();
@@ -10682,68 +10856,49 @@
                         players: [buildPlayerState(0), buildPlayerState(1)]
                     };
 
-                    const color = p === 0 ? '#a86b32' : '#3f2e70';
-                    const stats = `Turn ${t.turnNumber} | P1: ${lore[0]} - P2: ${lore[1]}`;
-                    const nodeName = `Turn ${t.turnNumber} – ${p === 0 ? 'P1' : 'P2'} Active`;
-
-                    // Build cardsPlayedData: resolve played card names → cardIds
-                    const resolveIds = (names) => (names || []).map(name => {
-                        const dbCard = this.resolveCardName(name);
-                        return dbCard ? dbCard.id : null;
-                    }).filter(id => id !== null);
-                    const cardsPlayedData = resolveIds(t.played);
-                    // Feature 31 node sections
+                    // This turn's actions by the active player, for the node's sections.
+                    const mine = t.events.filter(e => e.p === p);
+                    const names = (type) => mine.filter(e => e.t === type).map(e => e.name);
+                    const played = names('play').concat(names('sing'));
+                    const inked = names('ink');
+                    const drawnNames = names('draw');
+                    const discarded = names('discard');
+                    const cardsPlayedData = ids(played);
                     const nodeSections = {
                         played: cardsPlayedData.slice(),
-                        inked: resolveIds(t.inked),
-                        drawn: resolveIds(t.draws),
-                        discarded: [], // the .md log has no discard lines to parse
-                        banished: resolveIds(t.banished),
-                        // `t.quested` entries are objects: { name, loreBefore, loreAfter, playerIdx }
-                        quested: resolveIds((t.quested || []).map(q => q.name)),
-                        // Starting hand = the hand at the snapshot (pre-draw, since the
-                        // draw is one of this turn's events) plus this turn's draws.
-                        // The log has no instanceIds, so "left" is inferred by cardId
-                        // against what was played or inked this turn — an import is a
-                        // reconstruction, not a live capture.
+                        inked: ids(inked),
+                        drawn: ids(drawnNames),
+                        discarded: ids(discarded),
+                        banished: ids(t.events.filter(e => e.t === 'banish').map(e => e.name)),
+                        quested: ids(names('quest')),
+                        // The hand at the snapshot (after the draw step). The log has no
+                        // instanceIds, so "left" is inferred by cardId against what was
+                        // played, inked or discarded this turn.
                         startingHand: (() => {
-                            const startIds = resolveIds(hands[p]).concat(resolveIds(t.draws));
                             const gone = {};
-                            resolveIds(t.played).concat(resolveIds(t.inked))
-                                .forEach(id => { gone[id] = (gone[id] || 0) + 1; });
-                            return startIds.map(id => {
+                            ids(played.concat(inked, discarded)).forEach(id => { gone[id] = (gone[id] || 0) + 1; });
+                            return ids(hands[p]).map(id => {
                                 if (gone[id]) { gone[id]--; return { id, left: true }; }
                                 return { id, left: false };
                             });
                         })()
                     };
 
-                    // Filter rawLines down to meaningful actions only
-                    const SKIP_PATTERNS = [
-                        /^---\s*Turn \d+\s*---$/,
-                        /^Player \d+'s turn begins$/,
-                        /^Player \d+'s timer started/,
-                        /^Ready step/,
-                        /^Set step$/,
-                        /^Draw step$/,
-                        /^Player \d+ gained \d+ seconds/,
-                        /^Player \d+ ended Player \d+'s turn$/,
-                        /^Game started!$/,
-                        /^Player \d+ requested an undo$/,
-                        /^Player \d+ took back their action/,
-                    ];
+                    // The active player's name is implied by the node; the other
+                    // player's stays ("Opponent drew a card" on your turn).
+                    const mePrefix = p === 0 ? /^(?:Player 1|You) / : /^(?:Player 2|Opponent) /;
                     const turnComment = (t.rawLines || [])
-                        .filter(l => !SKIP_PATTERNS.some(re => re.test(l)))
-                        .map(l => `- ${l.replace(/^Player \d+ /, '')}`)
+                        .filter(l => !SKIP_PATTERNS.some(r => r.test(l)))
+                        .map(l => `- ${l.replace(mePrefix, '')}`)
                         .join('\n');
 
                     bookmarks.push({
                         id: nodeId,
                         parentId: previousNodeId,
-                        name: nodeName,
-                        stats,
+                        name: `Turn ${t.turnNumber} – ${p === 0 ? 'P1' : 'P2'} Active`,
+                        stats: `Turn ${t.turnNumber} | P1: ${lore[0]} - P2: ${lore[1]}`,
                         comment: turnComment,
-                        color,
+                        color: p === 0 ? '#a86b32' : '#3f2e70',
                         gradient: null,
                         state: JSON.stringify(this.compressState(snapshot, true)),
                         timestamp: Date.now(),
@@ -10753,68 +10908,18 @@
                     });
                     previousNodeId = nodeId;
 
-                    // PROCESS events for this turn
-                    // Ready step: uneexert field cards for this player
-                    for (const fc of fields[p]) fc.exerted = false;
-
-                    // Draws
-                    for (const cardName of t.draws) {
-                        hands[p].push(cardName);
-                        drawnPointers[p]++;
-                        knownCards[p].push(cardName);
-                    }
-
-                    // Inks
-                    for (const cardName of t.inked) {
-                        removeFirst(hands[p], cardName);
-                        inkwells[p].push(cardName);
-                        knownCards[p].push(cardName);
-                    }
-
-                    // Plays — actions/songs go straight to discard, characters/locations go to field
-                    for (const cardName of t.played) {
-                        removeFirst(hands[p], cardName);
-                        knownCards[p].push(cardName);
-                        const dbCard = this.resolveCardName(cardName);
-                        const isAction = dbCard && (dbCard.type === 'Action' || dbCard.type === 'Song');
-                        if (isAction) {
-                            discards[p].push(cardName);
-                        } else {
-                            fields[p].push({ name: cardName, exerted: false });
-                        }
-                    }
-
-                    // Quests → exert the card
-                    for (const q of t.quested) {
-                        lore[q.playerIdx] = q.loreAfter;
-                        const fc = fields[q.playerIdx].find(f => f.name === q.name);
-                        if (fc) fc.exerted = true;
-                    }
-
-                    // Challenges → exert attacker
-                    for (const ch of t.challenged) {
-                        const fc = fields[ch.playerIdx].find(f => f.name === ch.attacker);
-                        if (fc) fc.exerted = true;
-                    }
-
-                    // Banishments → find which player owns it, move to discard
-                    for (const cardName of t.banished) {
-                        let owner = -1;
-                        for (let pi = 0; pi < 2; pi++) {
-                            const fi = fields[pi].findIndex(f => f.name === cardName);
-                            if (fi !== -1) { owner = pi; fields[pi].splice(fi, 1); break; }
-                        }
-                        if (owner >= 0) discards[owner].push(cardName);
-                    }
+                    // Then the rest of the turn, in log order.
+                    for (const e of t.events) if (!e.step) { apply(e, p); noteSeen(); }
                 }
 
-                // Final state = last turn's snapshot re-built after all processing
+                // Final state: after the last turn, with the next player up.
                 const finalNodeId = this.uuid();
+                const nextUp = turns.length ? 1 - lastActive : 0;
                 const finalState = {
                     activeBookmarkId: finalNodeId,
                     turn: turns.length > 0 ? turns[turns.length - 1].turnNumber : 1,
-                    activePlayer: turns.length > 0 ? (1 - turns[turns.length - 1].activePlayerIndex) : 0,
-                    inactivePlayer: turns.length > 0 ? turns[turns.length - 1].activePlayerIndex : 1,
+                    activePlayer: nextUp,
+                    inactivePlayer: 1 - nextUp,
                     opponentHandRevealed: false,
                     activeTimelineColor: null,
                     turnComments: {},
@@ -10822,15 +10927,14 @@
                     players: [buildPlayerState(0), buildPlayerState(1)]
                 };
 
-                // Build deck text strings from all known cards per player
-                const buildDeckString = (known) => {
+                const deckString = (p) => {
                     const counts = {};
-                    for (const name of known) {
-                        const dbCard = this.resolveCardName(name);
-                        if (!dbCard) continue;
-                        const key = dbCard.fullName || dbCard.name;
-                        counts[key] = (counts[key] || 0) + 1;
-                    }
+                    seen[p].forEach((c, name) => {
+                        const db = resolve(name);
+                        if (!db) return;
+                        const key = db.fullName || db.name;
+                        counts[key] = Math.max(counts[key] || 0, c);
+                    });
                     return Object.entries(counts).map(([name, cnt]) => `${cnt} ${name}`).join('\n');
                 };
 
@@ -10840,8 +10944,8 @@
                     bookmarks,
                     autoSaves: [],
                     history: [],
-                    deck1: buildDeckString(knownCards[0]),
-                    deck2: buildDeckString(knownCards[1])
+                    deck1: deckString(0),
+                    deck2: deckString(1)
                 };
             },
 
@@ -11300,7 +11404,7 @@
                     return { valid: false, level: 'error', message: 'This JSON is not a recognized Duels.ink replay (expected "format": "duels-replay-v1").' };
                 }
                 const hasTurns = /^---\s*Turn \d+\s*---/m.test(text);
-                const hasOpeningHand = /^Player \d+'s starting hand:/m.test(text);
+                const hasOpeningHand = /^(?:Player \d+'s|Your) starting hand:/m.test(text);
                 const turnCount = (text.match(/^---\s*Turn \d+\s*---/mg) || []).length;
 
                 if (hasTurns && hasOpeningHand) {

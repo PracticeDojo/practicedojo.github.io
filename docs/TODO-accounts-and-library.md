@@ -7,7 +7,7 @@ The working checklist for [`ARCH-accounts-and-library.md`](ARCH-accounts-and-lib
 **(you)** need someone with access to a dashboard or another repo. New work found along the way goes
 into the right phase, or into *Parked* if it's outside the plan.
 
-*Last updated: 2026-10-04 · live: v2.21.0*
+*Last updated: 2026-10-04 · live: v2.21.0 (v2.22.0 on the branch)*
 
 | Phase | Status |
 |---|---|
@@ -105,5 +105,5 @@ App:
 
 ## Parked (outside the ARCH plan)
 
-- [ ] Duels.ink's newer "You / Opponent" log format (`docs/IMP-newLog.md`). *Today the home screen declines these logs and points to the replay file; the in-game Log import still crashes on them*
+- [x] Duels.ink's newer "You / Opponent" log format (`docs/IMP-newLog.md`). *Done in v2.22.0 (Feature 41); checked against the replay of the same game*
 - Deliberately not doing until a trigger fires: captcha, share expiry, backend-free deck links, slimmer session format, public gallery, background sync, profiles. See §13
