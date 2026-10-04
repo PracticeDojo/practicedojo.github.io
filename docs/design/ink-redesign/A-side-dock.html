@@ -1,0 +1,84 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Side Dock Inkwell</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="board.css">
+
+<div class="page" id="proto">
+  <header class="intro">
+    <div>
+      <div class="eyebrow"><span>RED_20261004_1</span><span>Inkwell redesign</span><b>Proposal A of 3</b></div>
+      <h1>Side <em>dock</em></h1>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <p>Lore, ink, discard and deck stack into one slim column at the outer edge of each half. The full-width ink row goes away and the battlefield gets that height back. Both inkwells end up beside the centre line, level with each other, so you can compare them at a glance.</p>
+      <div class="others" aria-label="The three proposals"><span aria-current="page">A · Side dock</span><span>B · Hand bar</span><span>C · Scoreboard</span></div>
+    </div>
+  </header>
+
+  <div class="stage-wrap">
+    <div class="stage-col">
+      <div class="toolbar">
+        <div class="seg" role="group" aria-label="Layout">
+          <button class="is-prop" data-view="layout:dock" id="v-prop">A · Side dock</button>
+          <button data-view="layout:cur" id="v-cur">Today</button>
+        </div>
+        <div class="seg" role="group" aria-label="Screen">
+          <button data-view="device:desk" id="v-desk">Desktop</button>
+          <button data-view="device:phone" id="v-phone">Phone</button>
+        </div>
+        <button class="tbtn" data-view="measure:1" id="v-measure">Show space</button>
+        <span class="grow"></span>
+        <button class="tbtn" data-do="reset" id="do-reset">Reset</button>
+        <button class="tbtn primary" data-do="next" id="do-next">Next turn</button>
+      </div>
+      <div class="metrics" data-metrics aria-live="polite"></div>
+      <div class="stage"></div>
+    </div>
+    <aside class="side">
+      <section>
+        <h3>Try it</h3>
+        <ul>
+          <li>Drag a card from your hand onto the <b>Ink</b> well, or tap it and choose <kbd>Ink it</kbd>.</li>
+          <li>Click the well for Spend 1, Ready 1, Ready all and the per-card controls.</li>
+          <li><kbd>Next turn</kbd> readies everything and turns last turn's ink face down.</li>
+          <li>Switch to <kbd>Today</kbd> to compare, and <kbd>Show space</kbd> to see the boxes.</li>
+        </ul>
+      </section>
+      <section class="gain">
+        <h3>Gains</h3>
+        <ul>
+          <li>The battlefield runs the full height of each half.</li>
+          <li>The well fills from the bottom, one hexagon per ink, and holds 16+ ink without a second row.</li>
+          <li>Lore joins the other numbers, so no badge floats over the cards.</li>
+          <li>Same shape on desktop and phone.</li>
+        </ul>
+      </section>
+      <section class="cost">
+        <h3>Costs</h3>
+        <ul>
+          <li>Takes about 100 px of width per half on desktop (60 px on phone). Fields rarely use their full width, so cards barely shrink.</li>
+          <li>The panel opens sideways and covers the outer edge of the field.</li>
+          <li>The count reads top-down, which is less familiar than a row.</li>
+        </ul>
+      </section>
+    </aside>
+  </div>
+
+  <section class="build">
+    <h2>Building it in app/index.html</h2>
+    <ol>
+          <li>Make <code>.board-half</code> a two-column grid and replace both <code>.pile-row</code>s with a <code>.dock</code> in the second column. Move <code>.lore-badge</code> into it.</li>
+          <li><code>renderInkCounter()</code> keeps its pip markup. Only the container changes, to a two-column <code>wrap-reverse</code> grid so it fills upward.</li>
+          <li><code>openInkPanel()</code> anchors to the left of the dock instead of above or below the counter.</li>
+          <li>The desktop overrides for <code>.board-half.top .pile-row</code> and <code>.inkwell</code> are no longer needed.</li>
+          <li>Drop targets and every panel action stay as they are, so <code>App.drop(event, 'inkwell', …)</code> just moves onto the well.</li>
+    </ol>
+  </section>
+</div>
+
+<script src="board.js"></script>
+<script>Board.mount(document.getElementById('proto'), { layout: 'dock' });</script>

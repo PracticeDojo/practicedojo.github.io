@@ -604,6 +604,18 @@ Implements `docs/IMP-newLog.md`, and goes further where real logs needed it. Old
 - **Node snapshots** are taken after the ready and draw steps, like a replay import, so each node shows the board the active player acts on.
 - Checked against the replay of the same game (`docs/samples/new_log_20261004.txt` + `01a08b6d-…_p1.replay.gz`): 24 of 27 nodes identical. Of the other three, two are the text import keeping an item on the board that the replay import drops, and one is an exert the log doesn't name a target for.
 
+## Feature 42: Inkwell redesign (RED_20261004_1, proposed)
+
+### User Story
+- As a player I want the ink on the board to take as little room as it needs, so the battlefield gets the space.
+
+### Details
+The Feature 37 ink counter sits in a full-width pile row (884 × 110 px per half on desktop, 110 px tall per half on phones) that is mostly empty. Three live prototypes in `docs/design/ink-redesign/`, each with a toggle back to today's layout and a battlefield-space readout:
+- **A · Side dock** (`A-side-dock.html`): lore, ink, discard and deck in a slim column at the outer edge of each half; the ink is a well of hexagons that fills from the bottom.
+- **B · Hand bar** (`B-hand-bar.html`): ink becomes a segmented ring in one bar with the hand, piles and lore.
+- **C · Scoreboard** (`C-scoreboard.html`): the centre line becomes two lanes holding both players' ink and lore; deck and discard move into the hand row.
+- Pick one, then build it. Drop targets and every inkwell panel action stay as they are in all three.
+
 ## Refactor 2: Own repository (v2.18.1)
 
 ### Details
@@ -659,3 +671,4 @@ Implements `docs/IMP-newLog.md`, and goes further where real logs needed it. Old
 - [x] Feature 39: Home screen redesign — "The inkwell"
 - [x] Feature 40: Share links for decks and sessions (ARCH Phase 2)
 - [x] Feature 41: Import Duels.ink's current text logs ("You / Opponent")
+- [ ] Feature 42: Inkwell redesign (proposals A / B / C in `docs/design/ink-redesign/`)

@@ -1,0 +1,84 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Scoreboard Inkwell</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="board.css">
+
+<div class="page" id="proto">
+  <header class="intro">
+    <div>
+      <div class="eyebrow"><span>RED_20261004_1</span><span>Inkwell redesign</span><b>Proposal C of 3</b></div>
+      <h1>The <em>scoreboard</em></h1>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <p>The centre line becomes a two-lane scoreboard, with your opponent's ink and lore on the top lane and yours on the bottom. Deck and discard move into the hand row, beside the hand. Both pile rows and both lore badges go.</p>
+      <div class="others" aria-label="The three proposals"><span>A · Side dock</span><span>B · Hand bar</span><span aria-current="page">C · Scoreboard</span></div>
+    </div>
+  </header>
+
+  <div class="stage-wrap">
+    <div class="stage-col">
+      <div class="toolbar">
+        <div class="seg" role="group" aria-label="Layout">
+          <button class="is-prop" data-view="layout:score" id="v-prop">C · Scoreboard</button>
+          <button data-view="layout:cur" id="v-cur">Today</button>
+        </div>
+        <div class="seg" role="group" aria-label="Screen">
+          <button data-view="device:desk" id="v-desk">Desktop</button>
+          <button data-view="device:phone" id="v-phone">Phone</button>
+        </div>
+        <button class="tbtn" data-view="measure:1" id="v-measure">Show space</button>
+        <span class="grow"></span>
+        <button class="tbtn" data-do="reset" id="do-reset">Reset</button>
+        <button class="tbtn primary" data-do="next" id="do-next">Next turn</button>
+      </div>
+      <div class="metrics" data-metrics aria-live="polite"></div>
+      <div class="stage"></div>
+    </div>
+    <aside class="side">
+      <section>
+        <h3>Try it</h3>
+        <ul>
+          <li>Drag a card onto your lane, the lower one. The whole lane is the drop target.</li>
+          <li>Click either lane for that player's inkwell panel.</li>
+          <li>Compare open ink across the two lanes: 6 of 6 against 1 of 6.</li>
+          <li>Switch to <kbd>Today</kbd> to compare, and <kbd>Show space</kbd> to see the boxes.</li>
+        </ul>
+      </section>
+      <section class="gain">
+        <h3>Gains</h3>
+        <ul>
+          <li>Both players' ink and lore fit in one strip about 64 px tall. This proposal gives back the most height.</li>
+          <li>You can see "they have 1 open, I have 6" without moving your eyes.</li>
+          <li>The lane is a wide, easy drop target on phones.</li>
+          <li>The hand row already had spare width either side, so deck and discard cost no height there.</li>
+        </ul>
+      </section>
+      <section class="cost">
+        <h3>Costs</h3>
+        <ul>
+          <li>Inking means dragging across your own field, which is the longest drag of the three.</li>
+          <li>Deck and discard sit at the end of the hand row, which leaves the hand about 120 px less width on each side.</li>
+          <li>Past about 20 ink the pips have to shrink to fit the lane.</li>
+        </ul>
+      </section>
+    </aside>
+  </div>
+
+  <section class="build">
+    <h2>Building it in app/index.html</h2>
+    <ol>
+          <li>Turn <code>#board-divider</code> into a <code>.band</code> with two lanes, and render both ink counters and lore values into it.</li>
+          <li>Remove both <code>.pile-row</code>s and both <code>.lore-badge</code>s, and move <code>.pile-cluster</code> to the end of each <code>.hand-wrap</code>.</li>
+          <li>Pips stay as one row per lane. Shrink <code>--pw</code> once the lane overflows.</li>
+          <li>The panel anchors above or below the lane, which is today's logic.</li>
+          <li>Phones use the same band with shorter labels and no lore buttons (tap the number instead).</li>
+    </ol>
+  </section>
+</div>
+
+<script src="board.js"></script>
+<script>Board.mount(document.getElementById('proto'), { layout: 'score' });</script>
