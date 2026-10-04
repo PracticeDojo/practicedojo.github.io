@@ -604,6 +604,22 @@ Implements `docs/IMP-newLog.md`, and goes further where real logs needed it. Old
 - **Node snapshots** are taken after the ready and draw steps, like a replay import, so each node shows the board the active player acts on.
 - Checked against the replay of the same game (`docs/samples/new_log_20261004.txt` + `01a08b6d-…_p1.replay.gz`): 24 of 27 nodes identical. Of the other three, two are the text import keeping an item on the board that the replay import drops, and one is an exert the log doesn't name a target for.
 
+## Feature 42: Optional accounts — Discord & Google sign-in (ARCH Phase 3, v2.23.0)
+
+### User Story
+- As a player who uses the Dojo on more than one device, I want to sign in so my decks and sessions are on all of them.
+- As a player who doesn't want an account, I want nothing to change.
+
+### Details
+Phase 3 of `docs/ARCH-accounts-and-library.md` (§8). Database: `supabase/migrations/20261004200000_accounts.sql`.
+- **Sign in** (home header): *Continue with Discord* / *Continue with Google*. Optional; signed out, nothing loads or calls Supabase. A browser that already shared links is *linked* to the account, so its links come along. If that Discord/Google account already exists, the Dojo offers to sign in to it instead (the links stay with the browser).
+- **First sign-in on a device with decks or sessions:** "Save N decks and M sessions from this device to your account?" *All / Choose… / Not now*.
+- **Sessions:** autosave stays on the device. **Save** writes the device and the account (revision-checked); a session already in the account is also saved when the tab is hidden with unsaved changes. If it changed on another device: *Overwrite with mine* or *Save mine as a copy*.
+- **Library · Sessions** shows *This device · Account*, *Changes not in account* (cloud button saves) or *Newer in account* (cloud button downloads), plus an *Only in your account* group (Open downloads it once). Delete asks *This device / Account / Both*.
+- **Decks follow you:** saving a deck when signed in also saves it to the account; account decks are pulled onto the device when you sign in or open Library · Decks. Deleting a linked deck removes it from both.
+- **Account menu:** who you're signed in as, usage (sessions of 50, decks of 200), *Sign out*, which asks whether to keep or remove this device's account copies.
+- Limits: 200 decks and 50 sessions per account; no new account sessions once the project's storage passes 900 MB. Anonymous share identities can't touch account data.
+
 ## Refactor 2: Own repository (v2.18.1)
 
 ### Details
@@ -659,3 +675,4 @@ Implements `docs/IMP-newLog.md`, and goes further where real logs needed it. Old
 - [x] Feature 39: Home screen redesign — "The inkwell"
 - [x] Feature 40: Share links for decks and sessions (ARCH Phase 2)
 - [x] Feature 41: Import Duels.ink's current text logs ("You / Opponent")
+- [x] Feature 42: Optional accounts — Discord & Google sign-in (ARCH Phase 3)

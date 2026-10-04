@@ -1798,6 +1798,62 @@
             }
         }
 
+        /* Account (Feature 42) */
+        .acct-btn {
+            max-width: 220px;
+        }
+
+        .acct-btn #acct-label {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .acct-avatar {
+            width: 20px;
+            height: 20px;
+            flex: 0 0 auto;
+            border-radius: 999px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: 600;
+            background: var(--surface-3) center / cover no-repeat;
+            color: var(--text-2);
+        }
+
+        .acct-btn.is-signed-in .acct-avatar {
+            background-color: color-mix(in oklch, var(--accent) 30%, var(--surface-3));
+            color: var(--text);
+        }
+
+        .acct-avatar img {
+            width: 100%;
+            height: 100%;
+            border-radius: 999px;
+            object-fit: cover;
+        }
+
+        .lib-meta .lib-badge {
+            margin-left: 0;
+            margin-right: 2px;
+        }
+
+        .lib-badge.is-account {
+            color: var(--p2-hi);
+        }
+
+        .lib-badge.is-dirty {
+            color: oklch(0.82 0.13 85);
+        }
+
+        @media (max-width: 760px) {
+            .acct-btn #acct-label {
+                display: none;
+            }
+        }
+
         /* Shared session banner (Feature 40) */
         .shared-banner {
             position: fixed;
@@ -3554,6 +3610,15 @@
             display: flex;
             justify-content: flex-end;
             gap: 10px;
+        }
+
+        .dlg-foot.is-stacked {
+            flex-wrap: wrap;
+        }
+
+        .dlg-foot.is-stacked .btn {
+            flex: 1 1 auto;
+            justify-content: center;
         }
 
         /* TOASTS (token port of the legacy purple pill) */
@@ -6992,6 +7057,11 @@
                 <button class="btn btn-ghost hidden" id="btn-setup-back" onclick="App.closeSetup()">
                     <i class="fa-solid fa-arrow-left"></i> Back to match
                 </button>
+                <button class="btn btn-ghost acct-btn" id="btn-account" onclick="App.openAccount()"
+                    title="Optional: keep your decks and sessions on every device">
+                    <span class="acct-avatar" id="acct-avatar" aria-hidden="true"><i class="fa-regular fa-user"></i></span>
+                    <span id="acct-label">Sign in</span>
+                </button>
                 <button class="btn btn-ghost" id="btn-open-library" onclick="App.openLibrary('sessions')">
                     <i class="fa-solid fa-book-bookmark"></i> Library <span class="ht-count" id="home-count-sessions"></span>
                 </button>
@@ -7787,7 +7857,7 @@
     <script>
         let cardFuse = null;
 
-        const APP_VERSION = "v2.22.0"; // Centralized version string (redesign)
+        const APP_VERSION = "v2.23.0"; // Centralized version string (redesign)
 
         // Tweaks panel accent presets (hue values for the OKLCH accent ramp)
         const ACCENT_PRESETS = {
@@ -7808,7 +7878,7 @@
             try { App.bindTweaks(); } catch (e) { console.warn('Tweaks init failed', e); }
             // Autosave is debounced; write it out before the tab can be closed or frozen.
             document.addEventListener('visibilitychange', () => {
-                if (document.visibilityState === 'hidden') App.flushDeviceSave();
+                if (document.visibilityState === 'hidden') { App.flushDeviceSave(); App.pushOnHide(); }
             });
             window.addEventListener('pagehide', () => App.flushDeviceSave());
             // Reconnecting retries every card image that never made it down.
@@ -8060,9 +8130,16 @@
                 if (!this.session) return;
                 this._sessionDirty = true;
                 const ok = await this.flushDeviceSave();
-                if (ok) {
-                    DojoLibrary.persist();
-                    this.showToast(`Saved “${this.session.title}” on this device`);
+                if (!ok) return;
+                DojoLibrary.persist();
+                if (!this.account) { this.showToast(`Saved “${this.session.title}” on this device`); return; }
+                // Signed in: the account copy too (§8.1).
+                try {
+                    const rev = await this.saveSessionToAccount(this.session.id);
+                    if (rev) this.showToast(`Saved “${this.session.title}” on this device and in your account`);
+                } catch (e) {
+                    console.warn('Account save failed:', e);
+                    this.dialogAlert(this.shareErrorMessage(e), 'Saved on this device only');
                 }
             },
 
@@ -8710,6 +8787,10 @@
                     // otherwise the home screen, which re-reads the library.
                     if (!(await this.openShareFromUrl())) this.showSetup();
 
+                    // Optional account: does nothing (and loads nothing) unless this
+                    // browser is signed in or just came back from signing in.
+                    this.initAccount();
+
                 } catch (e) {
                     document.getElementById('loading-text').innerText = "Error loading database. Please refresh.";
                     console.error("Initialization error:", e);
@@ -9218,8 +9299,9 @@
                     });
                     if (!name) return;
                     try {
-                        const row = await DojoLibrary.saveDeck({ name, decklist: text });
+                        let row = await DojoLibrary.saveDeck({ name, decklist: text });
                         DojoLibrary.persist();
+                        if (this.account) row = await this.pushDeckToAccount(row).catch(e => { this.showToast(this.shareErrorMessage(e)); return row; });
                         await this.refreshDeckIndex();
                         this.showToast(`Saved “${row.name}” to My decks`);
                     } catch (e) {
@@ -9360,6 +9442,14 @@
                         return 'Too many new sharers from this network in the last hour. Try again later.';
                     case 'gone':
                         return 'The person who shared it may have deleted it.';
+                    case 'deck_quota':
+                        return 'Your account holds up to 200 decks. Delete some in Library → Decks to make room.';
+                    case 'session_quota':
+                        return 'Your account holds up to 50 sessions. Delete some account copies in Library → Sessions to make room; they can stay on this device.';
+                    case 'account_storage_full':
+                        return "The Dojo's storage is nearly full, so new sessions can't go into accounts right now. Sessions already in your account can still be saved.";
+                    case 'signed_out':
+                        return "You're signed out. Sign in again to save to your account.";
                     case 'offline':
                         return "Couldn't reach the sharing service. Check your connection and try again.";
                     default:
@@ -9557,6 +9647,303 @@
                 }
             },
 
+            // --- Account (Feature 42, ARCH §8) ---
+            // Optional. Signed out, none of this loads or calls anything. Signed in,
+            // Save also writes the account copy (revision-checked), decks follow you
+            // automatically, and the Library shows what's where.
+            // A device copy linked to the account carries account: { revision, uid }.
+            account: null, // { id, name, email, avatar, provider } while signed in
+            _accountSessions: null,
+
+            isLinked(row) {
+                return !!(row && row.account && this.account && row.account.uid === this.account.id);
+            },
+
+            async initAccount() {
+                let res;
+                try { res = await DojoCloud.initAuth(); } catch (e) { console.warn('Account start failed:', e); return; }
+                this.account = res.user;
+                this.renderAccountButton();
+                if (res.error) await this.handleSignInError(res.error);
+                if (!this.account) return;
+                this.syncAccountDecks().catch(e => console.warn('Deck sync failed:', e));
+                if (res.justSignedIn) {
+                    this.showToast(`Signed in as ${this.account.name}`);
+                    await this.offerUploadAfterSignIn();
+                }
+            },
+
+            async handleSignInError(err) {
+                const code = String(err.code || '');
+                if (code === 'access_denied') return; // cancelled at Discord / Google
+                if (/identity_already_exists|already.*(linked|exists)/i.test(code + ' ' + (err.description || ''))) {
+                    const provider = DojoCloud.lastSignInProvider();
+                    const name = provider ? provider.charAt(0).toUpperCase() + provider.slice(1) : 'That';
+                    const go = await this.dialog({
+                        title: 'That account already exists',
+                        message: `${name} account is already a Practice Dojo account. Sign in to it instead? Links you shared from this browser before signing in stay with this browser.`,
+                        icon: 'fa-user',
+                        choices: [{ label: 'Not now', value: null }, { label: 'Sign in', value: true, kind: 'primary' }]
+                    });
+                    if (go && provider) DojoCloud.signIn(provider, { fresh: true }).catch(e => this.dialogAlert(this.shareErrorMessage(e), "Couldn't sign in"));
+                    return;
+                }
+                this.dialogAlert(`Signing in didn't finish${err.description ? `: ${err.description}` : '.'} Try again.`, "Couldn't sign in");
+            },
+
+            renderAccountButton() {
+                const btn = document.getElementById('btn-account');
+                if (!btn) return;
+                const a = this.account;
+                btn.classList.toggle('is-signed-in', !!a);
+                document.getElementById('acct-label').textContent = a ? a.name : 'Sign in';
+                btn.title = a ? `Signed in as ${a.name}` : 'Optional: keep your decks and sessions on every device';
+                const av = document.getElementById('acct-avatar');
+                av.innerHTML = '';
+                if (a && /^https:\/\//.test(a.avatar || '')) {
+                    const img = new Image();
+                    img.alt = '';
+                    img.referrerPolicy = 'no-referrer';
+                    img.src = a.avatar;
+                    img.onerror = () => { av.textContent = (a.name || '?').trim().charAt(0).toUpperCase(); };
+                    av.appendChild(img);
+                } else if (a) {
+                    av.textContent = (a.name || '?').trim().charAt(0).toUpperCase();
+                } else {
+                    av.innerHTML = '<i class="fa-regular fa-user"></i>';
+                }
+            },
+
+            async openAccount() {
+                if (!this.account) {
+                    const provider = await this.dialog({
+                        title: 'Sign in (optional)', icon: 'fa-user',
+                        message: "Signing in keeps your decks and sessions in your account, so they're on every device you use. Everything in the Dojo works without it.",
+                        choices: [
+                            { label: 'Continue with Discord', value: 'discord', kind: 'primary', icon: 'fa-brands fa-discord' },
+                            { label: 'Continue with Google', value: 'google', kind: 'primary', icon: 'fa-brands fa-google' },
+                            { label: 'Not now', value: null }
+                        ]
+                    });
+                    if (!provider) return;
+                    await this.flushDeviceSave();
+                    try { await DojoCloud.signIn(provider); } catch (e) { this.dialogAlert(this.shareErrorMessage(e), "Couldn't sign in"); }
+                    return;
+                }
+                const a = this.account;
+                let usage = '';
+                try {
+                    const u = await DojoCloud.accountUsage();
+                    usage = `In your account: ${u.sessions} of ${u.maxSessions} sessions, ${u.decks} of ${u.maxDecks} decks.`;
+                } catch (e) { usage = ''; }
+                const via = a.provider ? ` with ${a.provider.charAt(0).toUpperCase() + a.provider.slice(1)}` : '';
+                const act = await this.dialog({
+                    title: a.name, icon: 'fa-user',
+                    message: [`Signed in${via}${a.email ? ` · ${a.email}` : ''}`, usage,
+                        'Save keeps a match on this device and in your account. Decks you save follow you automatically.'].filter(Boolean).join('\n'),
+                    choices: [{ label: 'Sign out', value: 'out' }, { label: 'Close', value: null, kind: 'primary' }]
+                });
+                if (act === 'out') this.signOutFlow();
+            },
+
+            async signOutFlow() {
+                const choice = await this.dialog({
+                    title: 'Sign out', icon: 'fa-right-from-bracket',
+                    message: "Keep this device's copies of your account's decks and sessions? On a shared computer, remove them. Your account keeps everything either way.",
+                    choices: [
+                        { label: 'Cancel', value: null },
+                        { label: 'Remove from this device', value: 'remove', kind: 'danger' },
+                        { label: 'Keep on this device', value: 'keep', kind: 'primary' }
+                    ]
+                });
+                if (!choice) return;
+                await this.flushDeviceSave();
+                if (choice === 'remove') {
+                    if (this.session) {
+                        const meta = await DojoLibrary.getSession(this.session.id);
+                        if (this.isLinked(meta)) {
+                            // The board's session is going; detach it so nothing saves it back.
+                            this.session = null;
+                            this.syncSessionTitle();
+                            const back = document.getElementById('btn-setup-back');
+                            if (back) back.classList.add('hidden');
+                        }
+                    }
+                    await DojoLibrary.deleteAccountCopies();
+                }
+                try { await DojoCloud.signOut(); } catch (e) { console.warn('Sign out failed:', e); }
+                this.account = null;
+                this._accountSessions = null;
+                this.renderAccountButton();
+                await this.refreshDeckIndex();
+                this.renderRecent();
+                if (this.isLibraryOpen()) this.libTab(this._libTab);
+                this.showToast(choice === 'remove' ? 'Signed out and removed account copies from this device' : 'Signed out');
+            },
+
+            // First sign-in on a device that already has decks or sessions (§8.1).
+            async offerUploadAfterSignIn() {
+                const key = `uploadAsked:${this.account.id}`;
+                if (await DojoLibrary.getPref(key)) return;
+                const [sessions, decks] = await Promise.all([DojoLibrary.listSessions(), DojoLibrary.listDecks()]);
+                const ls = sessions.filter(r => !this.isLinked(r));
+                const ld = decks.filter(r => !this.isLinked(r));
+                if (!ls.length && !ld.length) { DojoLibrary.setPref(key, true); return; }
+                const parts = [];
+                if (ld.length) parts.push(`${ld.length} ${ld.length === 1 ? 'deck' : 'decks'}`);
+                if (ls.length) parts.push(`${ls.length} ${ls.length === 1 ? 'session' : 'sessions'}`);
+                const v = await this.dialog({
+                    title: `Save ${parts.join(' and ')} from this device to your account?`, icon: 'fa-cloud-arrow-up',
+                    message: "Then they're on every device you sign in on. They stay on this device either way.",
+                    choices: [{ label: 'Not now', value: 'no' }, { label: 'Choose…', value: 'choose' }, { label: 'All', value: 'all', kind: 'primary' }]
+                });
+                if (!v) return; // dismissed: ask again next sign-in
+                DojoLibrary.setPref(key, true);
+                if (v === 'all') await this.uploadToAccount(ld, ls);
+                else if (v === 'choose') {
+                    this.openLibrary('sessions');
+                    this.showToast('Use the cloud button on a session or deck to save it to your account');
+                }
+            },
+
+            async uploadToAccount(decks, sessions) {
+                let okD = 0, okS = 0, firstError = null;
+                this.showToast('Saving to your account…');
+                for (const d of decks) {
+                    try { await this.pushDeckToAccount(d); okD++; } catch (e) { firstError = firstError || e; }
+                }
+                for (const s of sessions) {
+                    try { if (await this.saveSessionToAccount(s.id, { quiet: true })) okS++; } catch (e) { firstError = firstError || e; }
+                }
+                await this.refreshDeckIndex();
+                if (this.isLibraryOpen()) this.libTab(this._libTab);
+                const parts = [];
+                if (okD) parts.push(`${okD} ${okD === 1 ? 'deck' : 'decks'}`);
+                if (okS) parts.push(`${okS} ${okS === 1 ? 'session' : 'sessions'}`);
+                if (firstError) this.dialogAlert(`${parts.length ? `Saved ${parts.join(' and ')}. ` : ''}${this.shareErrorMessage(firstError)}`, 'Not everything was saved to your account');
+                else if (parts.length) this.showToast(`Saved ${parts.join(' and ')} to your account`);
+            },
+
+            // --- Account · decks: saved decks follow you; last save wins ---
+            async pushDeckToAccount(row) {
+                if (!this.account) return row;
+                const base = { id: row.id, name: row.name, decklist: row.decklist, notes: row.notes };
+                let rev;
+                try {
+                    rev = await DojoCloud.saveAccountDeck({ ...base, revision: this.isLinked(row) ? row.account.revision : null });
+                } catch (e) {
+                    if (e.code !== 'conflict' || e.current == null) throw e;
+                    rev = await DojoCloud.saveAccountDeck({ ...base, revision: e.current });
+                }
+                return DojoLibrary.saveDeck({ ...row, account: { revision: rev, uid: this.account.id }, accountDirty: false });
+            },
+
+            async syncAccountDecks() {
+                if (!this.account) return;
+                const uid = this.account.id;
+                const [acc, dev] = await Promise.all([DojoCloud.listAccountDecks(), DojoLibrary.listDecks()]);
+                const byId = new Map(dev.map(d => [d.id, d]));
+                for (const a of acc) {
+                    const d = byId.get(a.id);
+                    if (d && this.isLinked(d) && d.accountDirty) {
+                        await this.pushDeckToAccount(d).catch(e => console.warn('Deck push failed:', e));
+                    } else if (!d || !this.isLinked(d) || d.account.revision < a.revision) {
+                        await DojoLibrary.saveDeck({
+                            id: a.id, name: a.name, decklist: a.decklist, notes: a.notes || '',
+                            createdAt: Date.parse(a.created_at) || Date.now(), updatedAt: Date.parse(a.updated_at) || Date.now(),
+                            account: { revision: a.revision, uid }, accountDirty: false
+                        });
+                    }
+                }
+                // Deleted from the account on another device: keep it here, unlinked.
+                const ids = new Set(acc.map(a => a.id));
+                for (const d of dev) {
+                    if (this.isLinked(d) && !ids.has(d.id)) await DojoLibrary.saveDeck({ ...d, account: null, accountDirty: false });
+                }
+                await this.refreshDeckIndex();
+                if (this.isLibraryOpen() && this._libTab === 'decks') this.renderHomeDecks();
+            },
+
+            // --- Account · sessions: explicit Save, revision-checked (§8.1, §8.3) ---
+            // → the new account revision, or null if nothing was saved.
+            async saveSessionToAccount(id, { quiet = false } = {}) {
+                if (!this.account) return null;
+                const [meta, packed] = await Promise.all([DojoLibrary.getSession(id), DojoLibrary.getSessionBlob(id)]);
+                if (!meta || packed == null) throw new Error('That session is no longer on this device.');
+                const blob = typeof packed === 'string' ? new Blob([packed], { type: 'application/json' }) : new Blob([packed], { type: 'application/gzip' });
+                const fields = { id, title: meta.title, summary: meta.summary, blob };
+                let rev;
+                try {
+                    rev = await DojoCloud.saveAccountSession({ ...fields, revision: this.isLinked(meta) ? meta.account.revision : null });
+                } catch (e) {
+                    if (e.code !== 'conflict') throw e;
+                    if (quiet) {
+                        this.showToast(`“${meta.title}” changed on another device. Open it and press Save to choose which to keep.`);
+                        return null;
+                    }
+                    const v = await this.dialog({
+                        title: 'This session changed on another device', icon: 'fa-code-branch',
+                        message: `The copy of “${meta.title}” in your account was saved from somewhere else after this device last saved it. Which should your account keep?`,
+                        choices: [
+                            { label: 'Cancel', value: null },
+                            { label: 'Save mine as a copy', value: 'copy' },
+                            { label: 'Overwrite with mine', value: 'over', kind: 'danger' }
+                        ]
+                    });
+                    if (v === 'over' && e.current != null) {
+                        rev = await DojoCloud.saveAccountSession({ ...fields, revision: e.current });
+                    } else if (v === 'copy') {
+                        const copy = await DojoLibrary.duplicateSession(id, `${meta.title} (copy)`.slice(0, 120));
+                        if (this.session && this.session.id === id) {
+                            this.session = { ...this.session, id: copy.id, title: copy.title };
+                            DojoLibrary.setPref('lastSessionId', copy.id);
+                            this.syncSessionTitle();
+                        }
+                        return this.saveSessionToAccount(copy.id);
+                    } else {
+                        return null;
+                    }
+                }
+                // An autosave that landed while uploading means the account is already behind again.
+                const now = await DojoLibrary.getSession(id);
+                await DojoLibrary.updateSessionMeta(id, {
+                    account: { revision: rev, uid: this.account.id },
+                    accountDirty: !!(now && now.updatedAt !== meta.updatedAt)
+                });
+                return rev;
+            },
+
+            // Tab hidden with unsaved changes in an account session: save it quietly.
+            pushOnHide() {
+                if (!this.account || !this.session) return;
+                const id = this.session.id;
+                this.flushDeviceSave()
+                    .then(() => DojoLibrary.getSession(id))
+                    .then(meta => (this.isLinked(meta) && meta.accountDirty ? this.saveSessionToAccount(id, { quiet: true }) : null))
+                    .catch(e => console.warn('Account save on hide failed:', e));
+            },
+
+            // Downloads an account session into the device library (§8.1).
+            async pullAccountSession(id) {
+                const row = (this._accountSessions || []).find(r => r.id === id);
+                if (!row) throw new Error('That session is no longer in your account.');
+                const packed = await DojoCloud.downloadAccountSession(id);
+                const existing = await DojoLibrary.getSession(id);
+                await DojoLibrary.putSessionRaw({
+                    id, title: row.title, summary: row.summary || {},
+                    createdAt: Date.parse(row.created_at) || Date.now(),
+                    updatedAt: Date.parse(row.updated_at) || Date.now(),
+                    lastOpenedAt: existing ? existing.lastOpenedAt : Date.now(),
+                    account: { revision: row.revision, uid: this.account.id },
+                    accountDirty: false
+                }, packed);
+                if (this.session && this.session.id === id) {
+                    // The board had the older copy: reload it from the fresh one.
+                    this.session = null;
+                    await this.openDeviceSession(id);
+                }
+            },
+
             // --- Library drawer: every session and deck on this device ---
             isLibraryOpen() {
                 const d = document.getElementById('library-drawer');
@@ -9594,7 +9981,10 @@
                     document.getElementById(`lib-panel-${t}`).hidden = !on;
                 });
                 if (tab === 'sessions') this.renderHomeSessions();
-                else if (tab === 'decks') this.renderHomeDecks();
+                else if (tab === 'decks') {
+                    this.renderHomeDecks();
+                    if (this.account) this.syncAccountDecks().catch(e => console.warn('Deck sync failed:', e));
+                }
                 else this.renderLibShared();
             },
 
@@ -9607,34 +9997,112 @@
                     list.innerHTML = `<div class="lib-empty">This browser isn't letting the Dojo keep a library (private window?). Use Export to keep a session.</div>`;
                     return;
                 }
-                if (!rows.length) {
+                // Signed in: the account's sessions too, so you can see what's where.
+                let acc = null;
+                if (this.account) {
+                    try { acc = await DojoCloud.listAccountSessions(); } catch (e) { console.warn('Account sessions unavailable:', e); }
+                    this._accountSessions = acc;
+                }
+                const accById = new Map((acc || []).map(r => [r.id, r]));
+                const accountOnly = (acc || []).filter(r => !rows.some(d => d.id === r.id));
+                if (!rows.length && !accountOnly.length) {
                     list.innerHTML = `<div class="lib-empty">No sessions yet. Start a match or study a Duels.ink game, and it shows up here.</div>`;
                     return;
                 }
                 const esc = (v) => this.escapeHtml(v);
                 const live = this.hasLiveMatch() && this.session ? this.session.id : null;
-                list.innerHTML = rows.map(r => `
+                const icon = (act, title, fa, label) => `<button class="icon-btn ghost" data-act="${act}" title="${title}" aria-label="${esc(label)}"><i class="${fa}"></i></button>`;
+
+                const deviceRow = (r) => {
+                    const ar = accById.get(r.id);
+                    const linked = this.isLinked(r) && !!ar;
+                    let badge = '', sync = '';
+                    if (this.account) {
+                        if (!linked) {
+                            sync = icon('push', 'Save to your account', 'fa-solid fa-cloud-arrow-up', `Save ${r.title} to your account`);
+                        } else if (ar.revision > r.account.revision && !r.accountDirty) {
+                            badge = '<span class="lib-badge is-account">Newer in account</span>';
+                            sync = icon('pull', 'Get the newer copy from your account', 'fa-solid fa-cloud-arrow-down', `Get the newer copy of ${r.title}`);
+                        } else if (r.accountDirty || ar.revision > r.account.revision) {
+                            badge = '<span class="lib-badge is-dirty">Changes not in account</span>';
+                            sync = icon('push', 'Save changes to your account', 'fa-solid fa-cloud-arrow-up', `Save ${r.title} to your account`);
+                        } else {
+                            badge = '<span class="lib-badge is-account">This device · Account</span>';
+                        }
+                    }
+                    return `
                     <div class="lib-row${r.id === live ? ' is-live' : ''}" data-id="${esc(r.id)}">
                         <div class="lib-main">
                             <div class="lib-title">${esc(r.title)}${r.id === live ? '<span class="lib-badge">on the board</span>' : ''}</div>
-                            <div class="lib-meta">${this.sessionMetaHtml(r.summary, r.updatedAt)}</div>
+                            <div class="lib-meta">${badge}${this.sessionMetaHtml(r.summary, r.updatedAt)}</div>
                         </div>
                         <div class="lib-actions">
                             <button class="btn btn-primary" data-act="open">${r.id === live ? 'Back to it' : 'Open'}</button>
-                            <button class="icon-btn ghost" data-act="rename" title="Rename" aria-label="Rename ${esc(r.title)}"><i class="fa-solid fa-pen"></i></button>
-                            <button class="icon-btn ghost" data-act="share" title="Share a link" aria-label="Share ${esc(r.title)}"><i class="fa-solid fa-share-nodes"></i></button>
-                            <button class="icon-btn ghost" data-act="duplicate" title="Duplicate" aria-label="Duplicate ${esc(r.title)}"><i class="fa-regular fa-copy"></i></button>
-                            <button class="icon-btn ghost" data-act="export" title="Export (.dojo.json.gz)" aria-label="Export ${esc(r.title)}"><i class="fa-solid fa-file-export"></i></button>
-                            <button class="icon-btn ghost" data-act="delete" title="Delete" aria-label="Delete ${esc(r.title)}"><i class="fa-solid fa-trash"></i></button>
+                            ${sync}
+                            ${icon('rename', 'Rename', 'fa-solid fa-pen', `Rename ${r.title}`)}
+                            ${icon('share', 'Share a link', 'fa-solid fa-share-nodes', `Share ${r.title}`)}
+                            ${icon('duplicate', 'Duplicate', 'fa-regular fa-copy', `Duplicate ${r.title}`)}
+                            ${icon('export', 'Export (.dojo.json.gz)', 'fa-solid fa-file-export', `Export ${r.title}`)}
+                            ${icon('delete', 'Delete', 'fa-solid fa-trash', `Delete ${r.title}`)}
                         </div>
-                    </div>`).join('');
+                    </div>`;
+                };
+                const accountRow = (r) => `
+                    <div class="lib-row" data-id="${esc(r.id)}">
+                        <div class="lib-main">
+                            <div class="lib-title">${esc(r.title)}</div>
+                            <div class="lib-meta"><span class="lib-badge is-account">Account</span>${this.sessionMetaHtml(r.summary, Date.parse(r.updated_at))}</div>
+                        </div>
+                        <div class="lib-actions">
+                            <button class="btn btn-primary" data-act="open-account">Open</button>
+                            ${icon('pull', 'Download to this device', 'fa-solid fa-cloud-arrow-down', `Download ${r.title} to this device`)}
+                            ${icon('delete-account', 'Delete from your account', 'fa-solid fa-trash', `Delete ${r.title} from your account`)}
+                        </div>
+                    </div>`;
+                list.innerHTML = rows.map(deviceRow).join('') +
+                    (accountOnly.length ? `<div class="lib-group-title">Only in your account</div>` + accountOnly.map(accountRow).join('') : '');
             },
 
             async onSessionAction(act, id, btn) {
                 const isLive = !!(this.session && this.session.id === id);
+                const accRow = (this._accountSessions || []).find(r => r.id === id) || null;
+
+                // Account-side actions (§8.1)
+                if (act === 'pull' || act === 'open-account') {
+                    try {
+                        this.showToast('Downloading from your account…');
+                        await this.pullAccountSession(id);
+                        if (act === 'open-account') { await this.openDeviceSession(id); return; }
+                        this.showToast('Downloaded to this device');
+                    } catch (e) { this.dialogAlert(e.code ? this.shareErrorMessage(e) : e.message, "Couldn't download"); }
+                    this.renderHomeSessions();
+                    this.renderRecent();
+                    return;
+                }
+                if (act === 'delete-account' && accRow) {
+                    const ok = await this.dialog({
+                        title: `Delete “${accRow.title}” from your account?`, danger: true, confirmText: 'Delete', cancelText: 'Keep it',
+                        message: "It's removed from your account on every device. This can't be undone."
+                    });
+                    if (!ok) return;
+                    try { await DojoCloud.deleteAccountSession(id); this.showToast(`Deleted “${accRow.title}” from your account`); }
+                    catch (e) { this.dialogAlert(this.shareErrorMessage(e), "Couldn't delete"); }
+                    this.renderHomeSessions();
+                    return;
+                }
+
                 let meta;
                 try { meta = await DojoLibrary.getSession(id); } catch (e) { meta = null; }
                 if (!meta) { this.renderHomeSessions(); return; }
+
+                if (act === 'push') {
+                    try {
+                        if (isLive) { this._sessionDirty = true; await this.flushDeviceSave(); }
+                        if (await this.saveSessionToAccount(id)) this.showToast(`Saved “${meta.title}” to your account`);
+                    } catch (e) { this.dialogAlert(e.code ? this.shareErrorMessage(e) : e.message, "Couldn't save to your account"); }
+                    this.renderHomeSessions();
+                    return;
+                }
 
                 if (act === 'open') {
                     await this.openDeviceSession(id);
@@ -9667,6 +10135,39 @@
                         const { data } = await DojoLibrary.loadSession(id);
                         await this.downloadSessionFile(meta, data);
                     } catch (e) { this.dialogAlert(e.message, "Couldn't export"); }
+                } else if (act === 'delete' && this.isLinked(meta) && accRow) {
+                    const where = await this.dialog({
+                        title: `Delete “${meta.title}”?`, danger: true,
+                        message: "It's on this device and in your account. This can't be undone.",
+                        choices: [
+                            { label: 'Cancel', value: null },
+                            { label: 'This device', value: 'device', kind: 'danger' },
+                            { label: 'Account', value: 'account', kind: 'danger' },
+                            { label: 'Both', value: 'both', kind: 'danger' }
+                        ]
+                    });
+                    if (!where) return;
+                    try {
+                        if (where !== 'device') await DojoCloud.deleteAccountSession(id);
+                        if (where === 'account') {
+                            await DojoLibrary.updateSessionMeta(id, { account: null, accountDirty: false });
+                        } else {
+                            if (isLive) {
+                                clearTimeout(this._deviceSaveTimer);
+                                this._sessionDirty = false;
+                                this.session = null;
+                                this.syncSessionTitle();
+                                await (this._deviceSaveChain || Promise.resolve());
+                                const back = document.getElementById('btn-setup-back');
+                                if (back) back.classList.add('hidden');
+                            }
+                            await DojoLibrary.deleteSession(id);
+                            if ((await DojoLibrary.getPref('lastSessionId')) === id) await DojoLibrary.setPref('lastSessionId', null);
+                        }
+                        this.showToast(`Deleted “${meta.title}” from ${where === 'both' ? 'this device and your account' : where === 'device' ? 'this device' : 'your account'}`);
+                    } catch (e) { this.dialogAlert(e.code ? this.shareErrorMessage(e) : e.message, "Couldn't delete"); }
+                    this.renderHomeSessions();
+                    this.renderRecent();
                 } else if (act === 'delete') {
                     const ok = await this.dialog({
                         title: `Delete “${meta.title}”?`,
@@ -9707,15 +10208,21 @@
                 meta.push(esc(`${info.count} cards`));
                 if (info.unmatched.length) meta.push(`<span class="is-warn">⚠ ${esc(info.unmatched.length)} not recognised</span>`);
                 const notes = d.notes ? ` title="${esc(d.notes)}"` : '';
+                let badge = '', sync = '';
+                if (src === 'my' && this.account) {
+                    if (this.isLinked(d) && !d.accountDirty) badge = '<span class="lib-badge is-account">Account</span>';
+                    else sync = `<button class="icon-btn ghost" data-act="push" title="Save to your account" aria-label="Save ${esc(d.name)} to your account"><i class="fa-solid fa-cloud-arrow-up"></i></button>`;
+                }
                 return `
                     <div class="lib-row" data-id="${esc(d.id)}">
                         <div class="lib-main"${notes}>
                             <div class="lib-title">${esc(d.name)}</div>
-                            <div class="lib-meta">${meta.join(sep)}</div>
+                            <div class="lib-meta">${badge}${meta.join(sep)}</div>
                         </div>
                         <div class="lib-actions">
                             <button class="btn btn-ghost" data-act="p1" title="Seat as your deck">You</button>
                             <button class="btn btn-ghost" data-act="p2" title="Seat as the opponent's deck">Opponent</button>
+                            ${sync}
                             <button class="icon-btn ghost" data-act="share" title="Share a link" aria-label="Share ${esc(d.name)}"><i class="fa-solid fa-share-nodes"></i></button>
                             ${src === 'my'
                         ? `<button class="icon-btn ghost" data-act="edit" title="Edit" aria-label="Edit ${esc(d.name)}"><i class="fa-solid fa-pen"></i></button>
@@ -9754,17 +10261,33 @@
                     this.setSeat(n, { key: `${src}:${id}`, name: deck.name, decklist: deck.decklist });
                     this.closeLibrary();
                     this.showToast(`${deck.name} is ${n === 1 ? 'your' : "the opponent's"} deck`);
+                } else if (act === 'push') {
+                    try {
+                        await this.pushDeckToAccount(await DojoLibrary.getDeck(id));
+                        await this.refreshDeckIndex();
+                        this.renderHomeDecks();
+                        this.showToast(`Saved “${deck.name}” to your account`);
+                    } catch (e) { this.dialogAlert(this.shareErrorMessage(e), "Couldn't save to your account"); }
                 } else if (act === 'share') {
                     await this.shareDeck(deck.name, deck.decklist);
                 } else if (act === 'edit') {
                     this.openDeckEditor(src === 'my' ? deck : null,
                         src === 'def' ? { name: `${deck.name} (copy)`, decklist: deck.decklist, notes: deck.notes } : null);
                 } else if (act === 'delete') {
+                    // Decks follow the account, so a linked deck goes from both.
+                    const linked = this.isLinked(deck);
                     const ok = await this.dialog({
-                        title: `Delete “${deck.name}”?`, message: 'It will be removed from My decks on this device. Matches already played with it keep their cards.',
+                        title: `Delete “${deck.name}”?`,
+                        message: linked
+                            ? 'It will be removed from this device and your account. Matches already played with it keep their cards.'
+                            : 'It will be removed from My decks on this device. Matches already played with it keep their cards.',
                         danger: true, confirmText: 'Delete', cancelText: 'Keep it'
                     });
                     if (!ok) return;
+                    if (linked) {
+                        try { await DojoCloud.deleteAccountDeck(id); }
+                        catch (e) { this.dialogAlert(this.shareErrorMessage(e), "Couldn't delete from your account"); return; }
+                    }
                     await DojoLibrary.deleteDeck(id);
                     [1, 2].forEach(n => { if (this.seats[n] && this.seats[n].key === `my:${id}`) this.seats[n] = null; });
                     await this.refreshDeckIndex();
@@ -9811,6 +10334,11 @@
                     });
                     DojoLibrary.persist();
                     this.closeDeckEditor();
+                    if (this.account) {
+                        this.pushDeckToAccount(row)
+                            .then(() => this.refreshDeckIndex()).then(() => { if (this.isLibraryOpen() && this._libTab === 'decks') this.renderHomeDecks(); })
+                            .catch(e => this.showToast(this.shareErrorMessage(e)));
+                    }
                     // A seated copy of this deck picks up the edit.
                     [1, 2].forEach(n => { if (this.seats[n] && this.seats[n].key === `my:${row.id}`) this.seats[n] = { key: `my:${row.id}`, name: row.name, decklist: row.decklist }; });
                     await this.refreshDeckIndex();
@@ -12074,6 +12602,7 @@
                     if (opts.message) {
                         const p = document.createElement('div');
                         p.textContent = opts.message;
+                        if (/\n/.test(opts.message)) p.style.whiteSpace = 'pre-line';
                         body.appendChild(p);
                     }
                     if (opts.stat) {
@@ -12107,33 +12636,50 @@
                         resolve(val);
                     };
 
-                    if (opts.cancelText !== undefined || opts.prompt) {
-                        const cancel = document.createElement('button');
-                        cancel.className = 'btn btn-ghost';
-                        cancel.textContent = opts.cancelText || 'Cancel';
-                        cancel.addEventListener('click', () => done(opts.prompt ? null : false));
-                        foot.appendChild(cancel);
-                    }
-                    const ok = document.createElement('button');
-                    ok.className = 'btn btn-primary';
-                    ok.textContent = opts.confirmText || 'OK';
-                    ok.addEventListener('click', () => {
-                        if (opts.prompt) {
-                            const v = inputEl.value.trim();
-                            if (!v) { inputEl.focus(); return; }
-                            done(v);
-                        } else {
-                            done(true);
+                    // opts.choices: [{ label, value, kind: 'primary' | 'danger' | 'ghost', icon }]
+                    // resolves with the chosen value; Escape / backdrop resolve null.
+                    let ok;
+                    if (Array.isArray(opts.choices) && opts.choices.length) {
+                        if (opts.choices.length > 2) foot.classList.add('is-stacked');
+                        opts.choices.forEach(c => {
+                            const b = document.createElement('button');
+                            b.className = 'btn ' + (c.kind === 'primary' ? 'btn-primary' : c.kind === 'danger' ? 'btn-danger-ghost' : 'btn-ghost');
+                            if (c.icon) { const i = document.createElement('i'); i.className = c.icon; b.appendChild(i); b.appendChild(document.createTextNode(' ')); }
+                            b.appendChild(document.createTextNode(c.label));
+                            b.addEventListener('click', () => done(c.value));
+                            foot.appendChild(b);
+                            if (c.kind === 'primary' && !ok) ok = b;
+                        });
+                        ok = ok || foot.lastChild;
+                    } else {
+                        if (opts.cancelText !== undefined || opts.prompt) {
+                            const cancel = document.createElement('button');
+                            cancel.className = 'btn btn-ghost';
+                            cancel.textContent = opts.cancelText || 'Cancel';
+                            cancel.addEventListener('click', () => done(opts.prompt ? null : false));
+                            foot.appendChild(cancel);
                         }
-                    });
-                    foot.appendChild(ok);
+                        ok = document.createElement('button');
+                        ok.className = 'btn btn-primary';
+                        ok.textContent = opts.confirmText || 'OK';
+                        ok.addEventListener('click', () => {
+                            if (opts.prompt) {
+                                const v = inputEl.value.trim();
+                                if (!v) { inputEl.focus(); return; }
+                                done(v);
+                            } else {
+                                done(true);
+                            }
+                        });
+                        foot.appendChild(ok);
+                    }
 
                     // Escape cancels, Enter confirms; capture phase so game hotkeys never fire.
                     const onKey = (e) => {
                         if (e.key === 'Escape') {
                             e.stopPropagation();
                             e.preventDefault();
-                            done(opts.prompt ? null : (opts.cancelText !== undefined ? false : true));
+                            done(opts.choices ? null : opts.prompt ? null : (opts.cancelText !== undefined ? false : true));
                         } else if (e.key === 'Enter') {
                             e.stopPropagation();
                             e.preventDefault();
@@ -12145,8 +12691,8 @@
                     };
                     document.addEventListener('keydown', onKey, true);
                     backdrop.addEventListener('click', (e) => {
-                        if (e.target === backdrop && (opts.cancelText !== undefined || opts.prompt)) {
-                            done(opts.prompt ? null : false);
+                        if (e.target === backdrop && (opts.choices || opts.cancelText !== undefined || opts.prompt)) {
+                            done(opts.choices || opts.prompt ? null : false);
                         }
                     });
 

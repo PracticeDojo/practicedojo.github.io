@@ -158,8 +158,11 @@ const DojoLibrary = (() => {
     }
 
     // --- Sessions ---------------------------------------------------------------
-    // meta: { id, title, summary, createdAt, updatedAt, lastOpenedAt }
+    // meta: { id, title, summary, createdAt, updatedAt, lastOpenedAt,
+    //         account?: { revision }, accountDirty? }
     // blob: the gzipped v2 file (ArrayBuffer; plain text if gzip is unavailable)
+    // `account` marks a device copy that is also in the signed-in account, at
+    // that revision; `accountDirty` means it changed here since (§8.1).
 
     async function listSessions() {
         const all = await getAll('sessions');
@@ -181,11 +184,29 @@ const DojoLibrary = (() => {
             lastOpenedAt: meta.lastOpenedAt || now
         };
         const packed = await gzipText(JSON.stringify(encodeFile({ ...row, data: file.data, appVersion: file.appVersion })));
-        await tx(['sessions', 'session_blobs'], 'readwrite', s => {
+        return tx(['sessions', 'session_blobs'], 'readwrite', async s => {
+            // Keep the account link; a save after it means the account copy is behind.
+            const prev = await reqP(s.sessions.get(row.id));
+            const account = meta.account !== undefined ? meta.account : (prev && prev.account);
+            if (account) {
+                row.account = account;
+                row.accountDirty = meta.accountDirty !== undefined ? !!meta.accountDirty : true;
+            }
             s.sessions.put(row);
             s.session_blobs.put(packed, row.id);
+            return row;
         });
-        return row;
+    }
+
+    // The stored file as-is (gzipped bytes), for uploading to the account.
+    const getSessionBlob = (id) => get('session_blobs', id);
+
+    // Writes a meta row and an already-packed file (a download from the account).
+    function putSessionRaw(meta, packed) {
+        return tx(['sessions', 'session_blobs'], 'readwrite', s => {
+            s.sessions.put(meta);
+            s.session_blobs.put(packed, meta.id);
+        });
     }
 
     async function loadSession(id) {
@@ -212,6 +233,8 @@ const DojoLibrary = (() => {
         if (!meta || packed == null) throw new Error('That session is no longer on this device.');
         const now = Date.now();
         const copy = { ...meta, id: newId(), title, createdAt: now, updatedAt: now, lastOpenedAt: now };
+        delete copy.account;      // a copy starts life on this device only
+        delete copy.accountDirty;
         await tx(['sessions', 'session_blobs'], 'readwrite', s => {
             s.sessions.put(copy);
             s.session_blobs.put(packed, copy.id);
@@ -236,6 +259,7 @@ const DojoLibrary = (() => {
 
     const getDeck = (id) => get('decks', id);
 
+    // deck.account / deck.accountDirty as for sessions.
     async function saveDeck(deck) {
         const now = Date.now();
         const row = {
@@ -244,13 +268,34 @@ const DojoLibrary = (() => {
             decklist: String(deck.decklist || ''),
             notes: String(deck.notes || ''),
             createdAt: deck.createdAt || now,
-            updatedAt: now
+            updatedAt: deck.updatedAt || now
         };
-        await tx('decks', 'readwrite', s => { s.decks.put(row); });
-        return row;
+        return tx('decks', 'readwrite', async s => {
+            const prev = await reqP(s.decks.get(row.id));
+            const account = deck.account !== undefined ? deck.account : (prev && prev.account);
+            if (account) {
+                row.account = account;
+                row.accountDirty = deck.accountDirty !== undefined ? !!deck.accountDirty : true;
+            }
+            s.decks.put(row);
+            return row;
+        });
     }
 
     const deleteDeck = (id) => tx('decks', 'readwrite', s => { s.decks.delete(id); });
+
+    // Sign out on a shared computer: drop every device copy that came from or
+    // went to the account. Returns how many sessions and decks were removed.
+    async function deleteAccountCopies() {
+        const [sessions, decks] = await Promise.all([getAll('sessions'), getAll('decks')]);
+        const ss = sessions.filter(r => r.account);
+        const ds = decks.filter(r => r.account);
+        await tx(['sessions', 'session_blobs', 'decks'], 'readwrite', s => {
+            ss.forEach(r => { s.sessions.delete(r.id); s.session_blobs.delete(r.id); });
+            ds.forEach(r => s.decks.delete(r.id));
+        });
+        return { sessions: ss.length, decks: ds.length };
+    }
 
     // --- Prefs (kv) -------------------------------------------------------------
     async function getPref(key) {
@@ -355,7 +400,8 @@ const DojoLibrary = (() => {
         canGzip, newId,
         readText, decode, decodeText, encodeFile, encodeBlob,
         listSessions, getSession, saveSession, loadSession, updateSessionMeta, duplicateSession, deleteSession,
-        listDecks, getDeck, saveDeck, deleteDeck,
+        getSessionBlob, putSessionRaw,
+        listDecks, getDeck, saveDeck, deleteDeck, deleteAccountCopies,
         getPref, setPref, persist, migrateLegacySlot,
         loadDefaultDecks, loadDemoManifest, fetchDemo
     };

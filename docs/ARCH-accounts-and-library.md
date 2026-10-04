@@ -1,6 +1,6 @@
 # ARCH: Deck & Session Library, Share Links, Optional Accounts
 
-> **Status:** v0.3. Phase 0 (move, v2.18.1), Phase 1 (library, v2.19.0, Feature 38) and **Phase 2 (share links, v2.21.0, Feature 40)** are done; see §12.3 for how Phase 1 was built and §9.2 for the shares SQL as built. Next step is Phase 3 (accounts).
+> **Status:** v0.3. Phase 0 (move, v2.18.1), Phase 1 (library, v2.19.0, Feature 38) and **Phase 2 (share links, v2.21.0, Feature 40)** are done, and **Phase 3 (accounts, v2.23.0, Feature 42)** is built; see §12.3 for how Phase 1 was built, §9.2 for the shares SQL and §8.5 for accounts as built.
 > **Scope:** Practice Dojo (`app/index.html` in `PracticeDojo/practicedojo.github.io`).
 > The decision log is in [§14](#14-decision-log). What's done and what's left is tracked in [`TODO-accounts-and-library.md`](TODO-accounts-and-library.md).
 
@@ -256,6 +256,11 @@ One IndexedDB database `practice_dojo` (the existing `lorcana_dojo_cache` card c
 - **Sign out** asks whether to keep the downloaded account copies on this device (relevant on shared computers).
 
 That's the entire "sync". There's no background engine, outbox, or tombstones. If it later proves too manual, §13 has the upgrade path.
+
+### 8.5 As built (v2.23.0)
+- SQL: `supabase/migrations/20261004200000_accounts.sql`. Beyond the sketch below: explicit grants (only `authenticated`), a guard trigger that sets `owner_id` / `created_at` / `updated_at` and enforces the §8.4 quotas, RLS `using` also requires `is_real_user()`, and the private bucket's insert policy requires a matching `sessions` row so the bucket can't outgrow the 50-session quota.
+- Decks follow the account automatically (save pushes, opening Library · Decks pulls; last save wins). Sessions stay explicit as described above.
+- A device copy remembers `account: { revision, uid }`; another person's copies on a shared device count as device-only.
 
 ### 8.2 Tables (migration `supabase/migrations/0001_init.sql`)
 

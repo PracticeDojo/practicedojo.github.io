@@ -7,14 +7,14 @@ The working checklist for [`ARCH-accounts-and-library.md`](ARCH-accounts-and-lib
 **(you)** need someone with access to a dashboard or another repo. New work found along the way goes
 into the right phase, or into *Parked* if it's outside the plan.
 
-*Last updated: 2026-10-04 · live: v2.22.0*
+*Last updated: 2026-10-04 · live: v2.22.0 · branch: v2.23.0*
 
 | Phase | Status |
 |---|---|
 | 0 · Move | ✅ Done (v2.18.1) |
 | 1 · Library | 🟢 Built (v2.19.0, v2.20.0); content and manual tests open |
 | 2 · Share links | 🟢 Live (v2.21.0); a few checks open |
-| 3 · Accounts | ⚪ Not started |
+| 3 · Accounts | 🟡 Built (v2.23.0, on the branch); needs your Discord / Google setup to go live |
 
 ---
 
@@ -44,7 +44,7 @@ Built:
 - [x] `AGENTS.md` and the dev guide carry the YAGNI splitting rule (§11)
 
 Open:
-- [ ] **(you)** Real default decks for each current set. *Today: one placeholder, Set 12 Amethyst/Ruby from the sample replay* (§4.1–§4.3)
+- [x] **(you)** Real default decks: Set 13 Princess Aggro, Amethyst/Amber Control, Evasive Tempo (+ the Set 12 sample). *All 60/60 cards recognised, 2026-10-04* (§4.1–§4.3)
 - [ ] **(you)** First demos in `app/defaults/demos/`. *Manifest is empty, so they don't appear yet* (§4.4)
 - [ ] Manual pass of `TEST-PROTOCOL-v2.19.0.md` and `v2.20.0.md` on a real phone and in Safari / Firefox. *So far only automated Chromium runs*
 
@@ -72,7 +72,10 @@ Open:
 - [ ] Manual pass of `TEST-PROTOCOL-v2.21.0.md`, including the 21st-link limit and offline
 - [ ] **(you, optional)** Delete the 3 anonymous test users from today's tests (Authentication → Users)
 
-## Phase 3 · Accounts (§8) — not started
+## Phase 3 · Accounts (§8) — v2.23.0 Feature 42, built on the branch
+
+*Built items below are ticked when they reach `main` and work with a real Discord / Google sign-in.
+So far: SQL tested on Postgres 16; app UI tested end to end against an in-memory stand-in for the account service.*
 
 Setup **(you)**:
 - [ ] Discord OAuth app (Discord Developer Portal), with its client id / secret in Supabase → Authentication → Providers → Discord

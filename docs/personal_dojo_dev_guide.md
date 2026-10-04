@@ -1287,3 +1287,44 @@ sides hold the same card. Cards under a character follow it to the deck, otherwi
 * Deck strings (`deck1/deck2`) are the most copies of each card seen at once, a lower bound.
 * Known gap: "X's ABILITY exerts a character" names no target, so that exert is lost.
 
+---
+
+## **23\. Feature 42: Optional Accounts (v2.23.0)**
+
+Phase 3 of `docs/ARCH-accounts-and-library.md` (§8). Database: `supabase/migrations/20261004200000_accounts.sql`.
+
+### 23.1 The rule that keeps signed-out visits free
+`DojoCloud.initAuth()` runs at the end of `init()` but returns immediately unless the stored session
+(`localStorage['practicedojo-auth']`) is a real account or the URL is an OAuth redirect (`?code=`, or an
+`error` / `error_code`). Only then is supabase-js loaded. The client uses `flowType: 'pkce'` and
+`detectSessionInUrl: true`, so the SDK exchanges `?code=` on start; `cleanAuthParams()` then removes it.
+
+### 23.2 Signing in
+`signIn(provider)` links an anonymous identity (`linkIdentity`) when this browser has one, so its share
+links move to the account; otherwise `signInWithOAuth`. The provider is remembered in `sessionStorage`
+so an `identity_already_exists` redirect can offer `signIn(provider, { fresh: true })`.
+
+### 23.3 Device ↔ account
+A device row linked to the account carries `account: { revision, uid }`; `accountDirty` means it
+changed here since (set by `DojoLibrary.saveSession` / `saveDeck` whenever a linked row is saved).
+`App.isLinked(row)` also checks the uid, so another person's copies on a shared device count as
+device-only. Writes go through `DojoCloud` `revisedWrite`: update `where revision = N` (→ N+1), insert when
+there's no revision, and throw `code: 'conflict'` with `e.current`. Session saves claim the row first, then
+upload `sessions/{uid}/{id}.json.gz`, so a conflict never overwrites the other device's file.
+
+* Sessions: `saveSessionToAccount(id)` (Save, Library cloud button, first-sign-in *All*, `pushOnHide`).
+  `pullAccountSession(id)` downloads into the device library with `putSessionRaw` (no re-encoding).
+* Decks: `pushDeckToAccount(row)` on every deck save while signed in; conflicts resolve to the last save.
+  `syncAccountDecks()` pulls on sign-in and when Library · Decks opens; a deck deleted from the account
+  elsewhere stays on the device, unlinked.
+* Sign out → `deleteAccountCopies()` if the user chooses *Remove from this device*.
+
+### 23.4 Dialog choices
+`App.dialog({ choices: [{ label, value, kind, icon }] })` resolves with the chosen `value` (Escape → `null`).
+Used for sign-in providers, *This device / Account / Both*, conflicts and sign-out.
+
+### 23.5 Testing
+Real OAuth can't run headless. The UI was tested with `DojoCloud`'s account functions replaced by an
+in-memory stand-in with the same revision and quota behaviour; the SQL with Postgres 16 and stand-in
+`auth` / `storage` schemas (owner, anonymous identity, stranger, quotas, storage ceiling, overwrite).
+
