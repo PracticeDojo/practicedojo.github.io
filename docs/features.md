@@ -575,6 +575,22 @@ Chosen from three prototypes in `docs/design/home-redesign/` (option **B**). Rep
 - **Library drawer** (header button): Sessions (open, rename, duplicate, export, delete, import file) and Decks (seat as You / Opponent, edit, delete, copy a default, new deck, import .txt, from a replay).
 - Game hotkeys (M, T, Q, Space…) no longer act on the board hidden behind the home screen. Escape closes the Library first.
 
+## Feature 40: Share links for decks and sessions (ARCH Phase 2, v2.21.0)
+
+### User Story
+- As a player I want to send a friend a short link to a deck or a whole multiverse, without either of us making an account.
+- As the person who shared, I want to see my links and delete them.
+
+### Details
+Phase 2 of `docs/ARCH-accounts-and-library.md` (§9), on the Dojo's own Supabase project (`supabase/migrations/20261004120000_shares.sql`).
+- **Share** from the topbar (the match on the board), from Library → Sessions (any saved session) and from Library → Decks (my decks and default decks). The dialog shows the short link `…/app/?s=<10 characters>` with **Copy link**.
+- **Creating a link** signs the browser in anonymously, invisibly (no login screen). supabase-js loads only at that moment, pinned with an integrity hash; startup makes no Supabase calls.
+- **Opening a deck link** puts the list in the home-screen field as a *Shared deck* with *Play it as you* / *Play against it* / *Save to My decks*.
+- **Opening a session link** loads it on the board with a banner, "Shared · <title> · not saved yet · **Save a copy**". Nothing is saved to the viewer's library until they choose to (topbar Save does the same). A reload reopens the link.
+- **Library → Shared** lists this browser's links: Copy link, Open in a new tab, Delete (the link then opens as "This share is no longer available").
+- Links are frozen snapshots. Limits fail closed with plain messages: 20 links a day and 100 in total per person, sessions up to 10 MB compressed, and new session links pause if shared storage passes 700 MB.
+- `.github/workflows/supabase-keepalive.yml` pings the project on Mondays and Thursdays so it never pauses.
+
 ## Refactor 2: Own repository (v2.18.1)
 
 ### Details
@@ -628,3 +644,4 @@ Chosen from three prototypes in `docs/design/home-redesign/` (option **B**). Rep
 - [x] Refactor 2: Own repository
 - [x] Feature 38: Deck & session library on this device (ARCH Phase 1)
 - [x] Feature 39: Home screen redesign — "The inkwell"
+- [x] Feature 40: Share links for decks and sessions (ARCH Phase 2)

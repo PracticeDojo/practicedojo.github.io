@@ -1224,3 +1224,36 @@ Decks: add a `.txt` under `app/defaults/decks/<set>/` and a line to `manifest.js
 Demos: export a session (**Export** gives `<title>.dojo.json.gz`), drop it in `app/defaults/demos/` and
 add `{ id, title, file }` to its manifest. No database step.
 
+---
+
+## **21\. Feature 40: Share Links (v2.21.0)**
+
+Phase 2 of `docs/ARCH-accounts-and-library.md` (§9). Database: `supabase/migrations/20261004120000_shares.sql`,
+applied by the Supabase GitHub integration when it reaches `main`.
+
+### 21.1 `app/js/cloud.js` (`DojoCloud`)
+
+The only file that knows Supabase exists. Project URL and **publishable** key live at its top (both are
+public by design; RLS is the lock). **Never** put the secret / `service_role` key anywhere in the repo.
+
+* **Reading needs no SDK:** `getShare(slug)` is one `fetch` to `rpc/get_share`; `fetchShareBlob(row)`
+  downloads `shares/{owner_id}/{slug}.json.gz` from the public bucket. Opening a link never signs anyone in.
+* **Writing loads supabase-js on first use** (pinned `2.117.2`, with an SRI hash; bump both together).
+  `ensureUser()` signs in anonymously the first time (session kept in `localStorage['practicedojo-auth']`).
+  `hasIdentity()` checks that key without loading anything, so Library → Shared doesn't create an identity.
+* `createSessionShare` inserts the row, then uploads; if the upload fails it deletes the row.
+  Slugs are 10 chars of `[A-Za-z0-9]` from `crypto.getRandomValues` (no modulo bias), retried on collision.
+* Errors carry `e.code` (`limit`, `storage_full`, `too_big`, `no_gzip`, `rate_limited`, `gone`, `offline`,
+  `unavailable`); `App.shareErrorMessage(e)` turns them into the copy the user sees.
+
+### 21.2 In the app
+
+* `openShareFromUrl()` runs at the end of `init()` instead of `showSetup()` when `?s=` is present. A deck
+  goes into the inkwell (`_sharedDeck = { title }` makes the readout say *Shared deck*); a session goes on
+  the board through `_applySessionData()` (so §9.4 sanitising applies) with `_sharedView = { slug, title }`
+  and **no** `session`, so nothing autosaves. `saveSharedCopy()` / topbar Save start a real session and
+  drop `?s=` from the address bar. `endSharedView()` is called by `_applySessionData` and `startGame`.
+* `hasLiveMatch()` counts a shared view as a live match (so *Back to match* works).
+* The CDN caches public files; a deleted share's file can stay downloadable at its exact URL for a while,
+  but the row is gone, so the app reports the link as no longer available.
+

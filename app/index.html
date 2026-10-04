@@ -23,6 +23,9 @@
     <!-- Device library: IndexedDB decks & sessions, session file codec, repo defaults -->
     <script src="js/library.js"></script>
 
+    <!-- Share links (Supabase, loaded on first share; reading a link needs no SDK) -->
+    <script src="js/cloud.js"></script>
+
     <!-- Unified Win Probability Utilities Library -->
     <script
         src="https://cdn.jsdelivr.net/gh/heavenideas/heavenideas.github.io@main/utilities/unified_win_probability_utilities.js"></script>
@@ -1792,6 +1795,66 @@
             .ro-pips .ro-pip,
             .lib-drawer {
                 animation: none;
+            }
+        }
+
+        /* Shared session banner (Feature 40) */
+        .shared-banner {
+            position: fixed;
+            top: calc(var(--topbar-h) + 8px);
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 60;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            max-width: min(480px, calc(100vw - 24px));
+            padding: 5px 5px 5px 12px;
+            border-radius: 999px;
+            background: color-mix(in oklch, var(--accent) 14%, var(--surface));
+            border: 1px solid color-mix(in oklch, var(--accent) 40%, transparent);
+            box-shadow: var(--shadow-2);
+            font-size: 12.5px;
+            color: var(--text-2);
+        }
+
+        .shared-banner.hidden {
+            display: none;
+        }
+
+        .shared-banner > i {
+            color: var(--accent-hi);
+        }
+
+        .shared-banner b {
+            color: var(--text);
+            font-weight: 600;
+        }
+
+        .shared-banner .sb-text {
+            min-width: 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .shared-banner .sb-note {
+            flex: 0 0 auto;
+            font-size: 11.5px;
+            color: var(--text-dim);
+            white-space: nowrap;
+        }
+
+        .shared-banner .btn {
+            padding: 6px 12px;
+            border-radius: 999px;
+            white-space: nowrap;
+        }
+
+        @media (max-width: 760px) {
+            .shared-banner {
+                border-radius: 12px;
+                font-size: 12px;
             }
         }
 
@@ -6880,6 +6943,8 @@
                     title="Save to this device" aria-label="Save session"><i class="fa-solid fa-floppy-disk"></i></button>
                 <button class="icon-btn ghost session-copy" onclick="App.saveSessionAsCopy()"
                     title="Save as copy" aria-label="Save session as a copy"><i class="fa-regular fa-copy"></i></button>
+                <button class="icon-btn ghost" id="btn-session-share" onclick="App.shareCurrentSession()"
+                    title="Share a link to this session" aria-label="Share session"><i class="fa-solid fa-share-nodes"></i></button>
             </div>
         </div>
         <div class="topbar-center">
@@ -6907,6 +6972,14 @@
                 aria-label="Reset or change decks"><i class="fa-solid fa-rotate-right"></i></button>
         </div>
     </header>
+
+    <!-- Viewing someone else's shared session: nothing saves until you keep a copy -->
+    <div class="shared-banner hidden" id="shared-banner" role="status">
+        <i class="fa-solid fa-share-nodes"></i>
+        <span class="sb-text">Shared · <b id="shared-banner-title"></b></span>
+        <span class="sb-note">not saved yet</span>
+        <button class="btn btn-primary" onclick="App.saveSharedCopy()">Save a copy</button>
+    </div>
 
     <!-- Home screen: "The inkwell" (Feature 39). One field takes a decklist, a
          Duels.ink log or replay, or a session file, and says what it understood. -->
@@ -6985,6 +7058,9 @@
             <button type="button" class="home-tab" role="tab" id="lib-tab-decks" data-tab="decks"
                 aria-selected="false" aria-controls="lib-panel-decks" tabindex="-1" onclick="App.libTab('decks')">
                 <i class="fa-solid fa-layer-group"></i> Decks</button>
+            <button type="button" class="home-tab" role="tab" id="lib-tab-shared" data-tab="shared"
+                aria-selected="false" aria-controls="lib-panel-shared" tabindex="-1" onclick="App.libTab('shared')">
+                <i class="fa-solid fa-share-nodes"></i> Shared</button>
         </div>
 
         <section class="lib-panel" id="lib-panel-sessions" role="tabpanel" aria-labelledby="lib-tab-sessions">
@@ -7036,6 +7112,13 @@
             <div class="lib-group-title">My decks</div>
             <div class="lib-list" id="home-mydecks-list"></div>
             <div id="home-defaultdecks"></div>
+        </section>
+
+        <section class="lib-panel" id="lib-panel-shared" role="tabpanel" aria-labelledby="lib-tab-shared" hidden>
+            <div class="lib-toolbar">
+                <span class="lib-hint">Links you've shared from this browser. A link is a snapshot; deleting it stops it opening for everyone.</span>
+            </div>
+            <div class="lib-list" id="lib-shared-list"></div>
         </section>
     </aside>
 
@@ -7704,7 +7787,7 @@
     <script>
         let cardFuse = null;
 
-        const APP_VERSION = "v2.20.0"; // Centralized version string (redesign)
+        const APP_VERSION = "v2.21.0"; // Centralized version string (redesign)
 
         // Tweaks panel accent presets (hue values for the OKLCH accent ramp)
         const ACCENT_PRESETS = {
@@ -7943,8 +8026,10 @@
 
             syncSessionTitle() {
                 const el = document.getElementById('session-title');
-                if (el && document.activeElement !== el) el.value = this.session ? this.session.title : '';
-                document.title = this.session ? `${this.session.title} · Practice Dojo` : 'Lorcana Practice Dojo';
+                const title = this.session ? this.session.title : (this._sharedView ? this._sharedView.title : '');
+                if (el && document.activeElement !== el) el.value = title;
+                document.title = this.session ? `${title} · Practice Dojo`
+                    : this._sharedView ? `Shared · ${title} · Practice Dojo` : 'Lorcana Practice Dojo';
             },
 
             // "Amethyst/Ruby vs Amber/Steel", or the player names a Duels.ink import carries.
@@ -7971,6 +8056,7 @@
             // Topbar Save. Autosave already keeps the device copy current; this
             // writes immediately and says so. (Phase 3 adds the account copy here.)
             async saveSessionNow() {
+                if (!this.session && this._sharedView) { this.saveSharedCopy(); return; }
                 if (!this.session) return;
                 this._sessionDirty = true;
                 const ok = await this.flushDeviceSave();
@@ -8068,6 +8154,7 @@
                 }
                 this.flushDeviceSave();
                 this.session = null;
+                this.endSharedView();
                 this.state = nextState;
                 this.bookmarks = clean.bookmarks;
                 this.autoSaves = clean.autoSaves;
@@ -8619,9 +8706,9 @@
                     // beyond this site's own defaults/ files.
                     await this.initLibrary();
 
-                    // showSetup() re-reads the library and renders the Continue card,
-                    // so a mid-session reset offers the same resume path as a cold start.
-                    this.showSetup();
+                    // A share link (?s=<slug>) opens straight onto what it points to;
+                    // otherwise the home screen, which re-reads the library.
+                    if (!(await this.openShareFromUrl())) this.showSetup();
 
                 } catch (e) {
                     document.getElementById('loading-text').innerText = "Error loading database. Please refresh.";
@@ -8837,7 +8924,7 @@
             },
 
             hasLiveMatch() {
-                return !!(this.session && this.state && this.state.players &&
+                return !!((this.session || this._sharedView) && this.state && this.state.players &&
                     this.state.players[0].deck.length + this.state.players[0].hand.length > 0);
             },
 
@@ -8926,6 +9013,7 @@
                 on('home-sessions-list', (act, id, row, btn) => this.onSessionAction(act, id, btn));
                 on('home-mydecks-list', (act, id) => this.onDeckAction(act, 'my', id));
                 on('home-defaultdecks', (act, id) => this.onDeckAction(act, 'def', id));
+                on('lib-shared-list', (act, id) => this.onSharedAction(act, id));
                 on('home-recent', (act, id, row) => {
                     if (act === 'open-session') this.openDeviceSession(id);
                     else if (act === 'open-demo') this.openDemo(id, row);
@@ -8988,7 +9076,9 @@
                 const tabs = document.querySelector('.lib-drawer .home-tabs');
                 if (tabs) tabs.addEventListener('keydown', (e) => {
                     if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
-                    const next = this._libTab === 'sessions' ? 'decks' : 'sessions';
+                    const order = ['sessions', 'decks', 'shared'];
+                    const i = order.indexOf(this._libTab);
+                    const next = order[(i + (e.key === 'ArrowRight' ? 1 : order.length - 1)) % order.length];
                     this.libTab(next);
                     document.getElementById(`lib-tab-${next}`).focus();
                     e.preventDefault();
@@ -9004,6 +9094,7 @@
 
             onIntakeInput() {
                 this._intake = null;
+                this._sharedDeck = null;
                 clearTimeout(this._intakeTimer);
                 this._intakeTimer = setTimeout(() => this.readIntake(), 120);
             },
@@ -9057,8 +9148,11 @@
                         detail = 'Check the spelling against a card name, like “4 Tinker Bell - Giant Fairy”.';
                     } else {
                         const label = this.inkSlashLabel(inks) || 'custom';
-                        kind = 'Decklist';
-                        what = `<span class="ro-pips">${inks.slice(0, 2).map(i => `<span class="ro-pip" style="--pip:${this.inkCss(i)}"></span>`).join('')}</span> ${esc(`A ${count}-card ${label} deck`)}`;
+                        const pips = `<span class="ro-pips">${inks.slice(0, 2).map(i => `<span class="ro-pip" style="--pip:${this.inkCss(i)}"></span>`).join('')}</span>`;
+                        kind = this._sharedDeck ? 'Shared deck' : 'Decklist';
+                        what = this._sharedDeck
+                            ? `${pips} ${esc(this._sharedDeck.title)}`
+                            : `${pips} ${esc(`A ${count}-card ${label} deck`)}`;
                         detail = unmatched.length
                             ? `${count} of 60 cards recognised · <span class="is-warn">skipped ${esc(unmatched.slice(0, 2).join(', '))}${unmatched.length > 2 ? ` +${unmatched.length - 2} more` : ''}</span>`
                             : `${count} of 60 cards recognised`;
@@ -9111,21 +9205,23 @@
             clearIntake() {
                 document.getElementById('intake').value = '';
                 this._intake = null;
+                this._sharedDeck = null;
                 this.readIntake();
             },
 
             async onIntakeAction(act) {
                 const r = this._intakeResult || {};
                 const text = this.intakeText();
+                const deckName = this._sharedDeck ? this._sharedDeck.title.slice(0, 80) : this.deckAutoName(text);
                 if (act === 'seat1' || act === 'seat2') {
                     const n = act === 'seat1' ? 1 : 2;
-                    this.setSeat(n, { key: null, name: this.deckAutoName(text), decklist: text });
+                    this.setSeat(n, { key: null, name: deckName, decklist: text });
                     this.clearIntake();
                     this.showToast(n === 1 ? 'That list is your deck' : "That list is the opponent's deck");
                 } else if (act === 'savedeck') {
                     const name = await this.dialog({
                         title: 'Save to My decks', icon: 'fa-bookmark', prompt: true,
-                        value: this.deckAutoName(text), maxLength: 80, confirmText: 'Save deck'
+                        value: deckName, maxLength: 80, confirmText: 'Save deck'
                     });
                     if (!name) return;
                     try {
@@ -9177,6 +9273,7 @@
                     return;
                 }
                 const ta = document.getElementById('intake');
+                this._sharedDeck = null;
                 if (!text.trim().startsWith('{') && text.length < 300000) {
                     ta.value = text;
                     this._intake = null;
@@ -9189,6 +9286,7 @@
 
             async intakeExample(kind) {
                 const ta = document.getElementById('intake');
+                this._sharedDeck = null;
                 if (kind === 'deck') {
                     const key = Object.keys(this._deckIndex).find(k => k.startsWith('def:'));
                     if (!key) { this.showToast("The example deck couldn't be loaded."); return; }
@@ -9249,6 +9347,223 @@
                 el.innerHTML = html;
             },
 
+            // --- Share links (Feature 40, ARCH §9) ---
+            // A share is a frozen snapshot behind ?s=<slug>. Creating one signs the
+            // visitor in anonymously (DojoCloud); opening one needs nothing.
+
+            shareErrorMessage(e) {
+                switch (e && e.code) {
+                    case 'limit':
+                        return "You've reached the sharing limit: 20 links a day and 100 in total. Delete old links in Library → Shared, or try again tomorrow.";
+                    case 'storage_full':
+                        return "Sharing sessions is paused because the Dojo's shared storage is full. Deck links still work.";
+                    case 'too_big': {
+                        const mb = (Number(e.message) / 1048576).toFixed(1);
+                        return `This session is ${mb} MB compressed, and shared sessions can be up to 10 MB. Delete auto-saves or dead-end branches, then share again.`;
+                    }
+                    case 'no_gzip':
+                        return "This browser can't compress session files, so it can't share them. Try a current Chrome, Edge, Firefox or Safari.";
+                    case 'rate_limited':
+                        return 'Too many new sharers from this network in the last hour. Try again later.';
+                    case 'gone':
+                        return 'The person who shared it may have deleted it.';
+                    case 'offline':
+                        return "Couldn't reach the sharing service. Check your connection and try again.";
+                    default:
+                        return "The sharing service didn't answer as expected. Try again in a moment.";
+                }
+            },
+
+            async copyText(text) {
+                try { await navigator.clipboard.writeText(text); this.showToast('Link copied'); return true; }
+                catch (e) { this.showToast('Select the link and copy it'); return false; }
+            },
+
+            async showShareLink(url, what) {
+                const ok = await this.dialog({
+                    title: 'Link ready', icon: 'fa-share-nodes',
+                    message: `Anyone with this link can open ${what}. It's a snapshot: later changes aren't included, so share again for a new link. Your links are listed in Library → Shared.`,
+                    prompt: true, readOnly: true, value: url, confirmText: 'Copy link', cancelText: 'Done'
+                });
+                if (ok) this.copyText(url);
+            },
+
+            async shareSessionData(meta, data, summary) {
+                if (this._sharing) return;
+                this._sharing = true;
+                this.showToast('Creating a link…');
+                try {
+                    const file = DojoLibrary.encodeFile({ id: meta.id, title: meta.title, summary, data, appVersion: APP_VERSION });
+                    const blob = await DojoLibrary.encodeBlob(file);
+                    const res = await DojoCloud.createSessionShare({ title: meta.title, summary, blob });
+                    await this.showShareLink(res.url, `“${meta.title}”`);
+                } catch (e) {
+                    console.warn('Session share failed:', e);
+                    this.dialogAlert(this.shareErrorMessage(e), "Couldn't share");
+                } finally {
+                    this._sharing = false;
+                }
+            },
+
+            // Topbar Share: the board as it is now.
+            async shareCurrentSession() {
+                if (!this.state || !this.state.players) return;
+                if (this.session) { this._sessionDirty = true; await this.flushDeviceSave(); }
+                const meta = this.session || { id: DojoLibrary.newId(), title: this._sharedView ? this._sharedView.title : this.defaultSessionTitle() };
+                await this.shareSessionData(meta, this.buildSessionData(), this.buildSessionSummary());
+            },
+
+            async shareDeck(name, decklist) {
+                if (this._sharing) return;
+                if (!String(decklist || '').trim()) return;
+                this._sharing = true;
+                try {
+                    const res = await DojoCloud.createDeckShare({ title: name, deckText: decklist });
+                    await this.showShareLink(res.url, `the deck “${name}”`);
+                } catch (e) {
+                    console.warn('Deck share failed:', e);
+                    this.dialogAlert(this.shareErrorMessage(e), "Couldn't share");
+                } finally {
+                    this._sharing = false;
+                }
+            },
+
+            // ?s=<slug> on load. Returns true when it handled the page (the home
+            // screen or a board is showing either way).
+            async openShareFromUrl() {
+                const params = new URLSearchParams(location.search);
+                const slug = params.get('s');
+                if (!slug) return false;
+                const dropParam = () => history.replaceState(null, '', location.pathname + location.hash);
+                const failTo = (msg, title) => { dropParam(); this.showSetup(); this.dialogAlert(msg, title); return true; };
+                if (!DojoCloud.SLUG_RE.test(slug)) return failTo("That share link isn't complete. Check you copied all of it.", 'Link not recognised');
+
+                const loading = document.getElementById('loading-screen');
+                const loadingText = document.getElementById('loading-text');
+                if (loading) loading.classList.remove('hidden');
+                if (loadingText) loadingText.innerText = 'Opening the shared link…';
+                const done = () => { if (loading) loading.classList.add('hidden'); };
+
+                let row;
+                try { row = await DojoCloud.getShare(slug); } catch (e) { done(); return failTo(this.shareErrorMessage(e), "Couldn't open the link"); }
+                if (!row) { done(); return failTo('The person who shared it may have deleted it.', 'This share is no longer available'); }
+
+                if (row.kind === 'deck') {
+                    done();
+                    dropParam();
+                    this.showSetup();
+                    document.getElementById('intake').value = row.deck_text || '';
+                    this._intake = null;
+                    this._sharedDeck = { title: String(row.title || 'Shared deck') };
+                    this.readIntake();
+                    return true;
+                }
+
+                try {
+                    const file = await DojoLibrary.decode(await DojoCloud.fetchShareBlob(row));
+                    this._applySessionData(file.data);
+                    // The link stays in the address bar so a reload reopens it,
+                    // until a copy is saved.
+                    this._sharedView = { slug, title: String(row.title || 'Shared session') };
+                    this.syncSessionTitle();
+                    this.renderSharedBanner();
+                    done();
+                } catch (e) {
+                    done();
+                    console.warn('Opening shared session failed:', e);
+                    return failTo(e.code ? this.shareErrorMessage(e) : (e.message || "That session couldn't be read."),
+                        e.code === 'gone' ? 'This share is no longer available' : "Couldn't open the link");
+                }
+                return true;
+            },
+
+            renderSharedBanner() {
+                const b = document.getElementById('shared-banner');
+                if (!b) return;
+                const on = !!(this._sharedView && !this.session);
+                b.classList.toggle('hidden', !on);
+                if (on) {
+                    document.getElementById('shared-banner-title').textContent = this._sharedView.title;
+                    b.title = `${this._sharedView.title}: changes aren't saved until you save a copy`;
+                }
+            },
+
+            endSharedView() {
+                if (!this._sharedView) return;
+                this._sharedView = null;
+                if (new URLSearchParams(location.search).has('s')) history.replaceState(null, '', location.pathname + location.hash);
+                this.renderSharedBanner();
+            },
+
+            // "Save a copy": the shared board becomes a session in your library.
+            async saveSharedCopy() {
+                if (!this._sharedView) return;
+                const title = this._sharedView.title;
+                this.endSharedView();
+                const ok = await this._startNewSession(title);
+                if (ok) {
+                    DojoLibrary.persist();
+                    this.showToast(`Saved a copy of “${title}” to your library`);
+                }
+            },
+
+            // Library · Shared: the links this browser created.
+            async renderLibShared() {
+                const el = document.getElementById('lib-shared-list');
+                const esc = (v) => this.escapeHtml(v);
+                const empty = `<div class="lib-empty">No links yet. Use Share on a match (topbar), a session or a deck, and the link is listed here so you can copy or delete it.</div>`;
+                if (!DojoCloud.hasIdentity()) { el.innerHTML = empty; return; }
+                el.innerHTML = `<div class="lib-empty">Loading your links…</div>`;
+                let rows;
+                try { rows = await DojoCloud.listMyShares(); } catch (e) {
+                    el.innerHTML = `<div class="lib-empty">${esc(this.shareErrorMessage(e))}</div>`;
+                    return;
+                }
+                this._myShares = rows;
+                if (!rows.length) { el.innerHTML = empty; return; }
+                const sep = '<span class="cc-sep">·</span>';
+                el.innerHTML = rows.map(r => {
+                    const bits = [r.kind === 'deck' ? 'Deck' : 'Session', this.relativeTime(Date.parse(r.created_at))];
+                    if (r.kind === 'session' && r.blob_bytes) bits.push(`${Math.max(1, Math.round(r.blob_bytes / 1024))} KB`);
+                    return `
+                    <div class="lib-row" data-id="${esc(r.id)}">
+                        <div class="lib-main">
+                            <div class="lib-title">${esc(r.title)}</div>
+                            <div class="lib-meta">${bits.map(esc).join(sep)}${sep}<span>${esc(r.url.replace(/^https?:\/\//, ''))}</span></div>
+                        </div>
+                        <div class="lib-actions">
+                            <button class="btn btn-primary" data-act="copy">Copy link</button>
+                            <button class="icon-btn ghost" data-act="open" title="Open in a new tab" aria-label="Open ${esc(r.title)} in a new tab"><i class="fa-solid fa-arrow-up-right-from-square"></i></button>
+                            <button class="icon-btn ghost" data-act="delete" title="Delete link" aria-label="Delete link to ${esc(r.title)}"><i class="fa-solid fa-trash"></i></button>
+                        </div>
+                    </div>`;
+                }).join('');
+            },
+
+            async onSharedAction(act, id) {
+                const row = (this._myShares || []).find(r => r.id === id);
+                if (!row) return;
+                if (act === 'copy') {
+                    this.copyText(row.url);
+                } else if (act === 'open') {
+                    window.open(row.url, '_blank', 'noopener');
+                } else if (act === 'delete') {
+                    const ok = await this.dialog({
+                        title: `Delete the link to “${row.title}”?`,
+                        message: 'Anyone who opens it will see “This share is no longer available”. Your own copy on this device is not affected.',
+                        danger: true, confirmText: 'Delete link', cancelText: 'Keep it'
+                    });
+                    if (!ok) return;
+                    try {
+                        await DojoCloud.deleteShare(row);
+                        this.showToast('Link deleted');
+                    } catch (e) {
+                        this.dialogAlert(this.shareErrorMessage(e), "Couldn't delete the link");
+                    }
+                    this.renderLibShared();
+                }
+            },
+
             // --- Library drawer: every session and deck on this device ---
             isLibraryOpen() {
                 const d = document.getElementById('library-drawer');
@@ -9277,7 +9592,7 @@
 
             libTab(tab) {
                 this._libTab = tab;
-                ['sessions', 'decks'].forEach(t => {
+                ['sessions', 'decks', 'shared'].forEach(t => {
                     const on = t === tab;
                     const b = document.getElementById(`lib-tab-${t}`);
                     b.classList.toggle('is-active', on);
@@ -9285,7 +9600,9 @@
                     b.tabIndex = on ? 0 : -1;
                     document.getElementById(`lib-panel-${t}`).hidden = !on;
                 });
-                if (tab === 'sessions') this.renderHomeSessions(); else this.renderHomeDecks();
+                if (tab === 'sessions') this.renderHomeSessions();
+                else if (tab === 'decks') this.renderHomeDecks();
+                else this.renderLibShared();
             },
 
             // --- Library · Sessions ---
@@ -9312,6 +9629,7 @@
                         <div class="lib-actions">
                             <button class="btn btn-primary" data-act="open">${r.id === live ? 'Back to it' : 'Open'}</button>
                             <button class="icon-btn ghost" data-act="rename" title="Rename" aria-label="Rename ${esc(r.title)}"><i class="fa-solid fa-pen"></i></button>
+                            <button class="icon-btn ghost" data-act="share" title="Share a link" aria-label="Share ${esc(r.title)}"><i class="fa-solid fa-share-nodes"></i></button>
                             <button class="icon-btn ghost" data-act="duplicate" title="Duplicate" aria-label="Duplicate ${esc(r.title)}"><i class="fa-regular fa-copy"></i></button>
                             <button class="icon-btn ghost" data-act="export" title="Export (.dojo.json.gz)" aria-label="Export ${esc(r.title)}"><i class="fa-solid fa-file-export"></i></button>
                             <button class="icon-btn ghost" data-act="delete" title="Delete" aria-label="Delete ${esc(r.title)}"><i class="fa-solid fa-trash"></i></button>
@@ -9327,6 +9645,12 @@
 
                 if (act === 'open') {
                     await this.openDeviceSession(id);
+                } else if (act === 'share') {
+                    try {
+                        if (isLive) { this._sessionDirty = true; await this.flushDeviceSave(); }
+                        const { data } = await DojoLibrary.loadSession(id);
+                        await this.shareSessionData(meta, data, meta.summary);
+                    } catch (e) { this.dialogAlert(e.message, "Couldn't share"); }
                 } else if (act === 'rename') {
                     const title = await this.dialog({
                         title: 'Rename session', icon: 'fa-pen', prompt: true, value: meta.title, maxLength: 120, confirmText: 'Rename'
@@ -9399,6 +9723,7 @@
                         <div class="lib-actions">
                             <button class="btn btn-ghost" data-act="p1" title="Seat as your deck">You</button>
                             <button class="btn btn-ghost" data-act="p2" title="Seat as the opponent's deck">Opponent</button>
+                            <button class="icon-btn ghost" data-act="share" title="Share a link" aria-label="Share ${esc(d.name)}"><i class="fa-solid fa-share-nodes"></i></button>
                             ${src === 'my'
                         ? `<button class="icon-btn ghost" data-act="edit" title="Edit" aria-label="Edit ${esc(d.name)}"><i class="fa-solid fa-pen"></i></button>
                                <button class="icon-btn ghost" data-act="delete" title="Delete" aria-label="Delete ${esc(d.name)}"><i class="fa-solid fa-trash"></i></button>`
@@ -9436,6 +9761,8 @@
                     this.setSeat(n, { key: `${src}:${id}`, name: deck.name, decklist: deck.decklist });
                     this.closeLibrary();
                     this.showToast(`${deck.name} is ${n === 1 ? 'your' : "the opponent's"} deck`);
+                } else if (act === 'share') {
+                    await this.shareDeck(deck.name, deck.decklist);
                 } else if (act === 'edit') {
                     this.openDeckEditor(src === 'my' ? deck : null,
                         src === 'def' ? { name: `${deck.name} (copy)`, decklist: deck.decklist, notes: deck.notes } : null);
@@ -9747,6 +10074,7 @@
                 // so nothing below can autosave into it.
                 this.flushDeviceSave();
                 this.session = null;
+                this.endSharedView();
 
                 // Seat the same saved decks next time (pasted lists aren't kept).
                 DojoLibrary.setPref('lastDecks', {
@@ -11658,6 +11986,10 @@
                         inputEl.placeholder = opts.placeholder || '';
                         if (opts.value) inputEl.value = opts.value;
                         if (opts.maxLength) inputEl.maxLength = opts.maxLength;
+                        if (opts.readOnly) {
+                            inputEl.readOnly = true;
+                            inputEl.addEventListener('focus', () => inputEl.select());
+                        }
                         inputEl.setAttribute('aria-label', opts.title || 'Value');
                         body.appendChild(inputEl);
                     }

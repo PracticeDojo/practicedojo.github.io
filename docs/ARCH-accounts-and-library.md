@@ -1,6 +1,6 @@
 # ARCH: Deck & Session Library, Share Links, Optional Accounts
 
-> **Status:** v0.3. Phase 0 (move, v2.18.1) and **Phase 1 (library, v2.19.0, Feature 38)** are done; see §12.3 for how Phase 1 was built. Next step is Phase 2 (share links).
+> **Status:** v0.3. Phase 0 (move, v2.18.1), Phase 1 (library, v2.19.0, Feature 38) and **Phase 2 (share links, v2.21.0, Feature 40)** are done; see §12.3 for how Phase 1 was built and §9.2 for the shares SQL as built. Next step is Phase 3 (accounts).
 > **Scope:** Practice Dojo (`app/index.html` in `PracticeDojo/practicedojo.github.io`).
 > The decision log is in [§14](#14-decision-log).
 
@@ -334,7 +334,7 @@ https://practicedojo.github.io/app/?s=k3J9xQ2mPa
 | Kind | Where the content lives | What opening the link does |
 |---|---|---|
 | **Deck** | The decklist text sits **inside the `shares` row** (a few KB at most) | Shows the deck with *Play as P1*, *Play as P2*, and *Save to My decks* |
-| **Session** | The gzipped session file sits in the public Storage bucket `shares`. The row holds the title, summary, and size. | Loads straight onto the board with a banner: *"Shared session · Save a copy"* |
+| **Session** | The gzipped session file sits in the public Storage bucket `shares`. The row holds the title, summary, and size. | Loads straight onto the board with a banner: *"Shared session · Save a copy"*. As built, nothing is saved to the viewer's library until they press it. |
 
 - **Anyone can open a link** without signing in.
 - **A share is a frozen snapshot.** Later edits to your deck or session don't change the link. Share again to get a new one.
