@@ -557,11 +557,7 @@ Phases 2 and 3 can swap order if you'd rather have accounts first.
    **Left behind:** `multiverse_examples/` (90 MB) and `_bundle/` (the old chunked-restore loader).
 3. **Fix the links:** landing → `app/`, and the app's image path → `../img/`. Bump the patch version (v2.18.1).
 4. **Turn on GitHub Pages:** *Settings → Pages → Deploy from a branch → `main` / root*. Smoke-test: start a match, import a Duels.ink replay, export a session and import it back.
-5. **Old site** (`heavenideas.github.io`):
-   - `practice_dojo/practice_dojo.html` becomes a **"We've moved"** page. It links to the new app and, if this browser has a saved Continue session, offers **Download my last session**. That's the same v1 file *Export* makes today, which the new site can import.
-   - `practice_dojo/index.html` redirects to the new landing page.
-   - The link card in the root `index.html` points to the new site.
-   - Everything else in `practice_dojo/` stays as it is (D18).
+5. **Old site:** left exactly as it is (D19).
 
 ### 12.2 Supabase setup checklist (Phase 2)
 1. Create a new project (free plan, closest region). Keep the Data API on.
@@ -622,3 +618,4 @@ Phases 2 and 3 can swap order if you'd rather have accounts first.
 | D16 | No validation check for default decks yet | 2026-10-04 |
 | D17 | The new repo keeps the Dojo's git history (`git filter-repo --subdirectory-filter practice_dojo`) | 2026-10-04 |
 | D18 | On the old site, only the two entry pages become "we moved" pages. The rest of `practice_dojo/` is left as it is. | 2026-10-04 |
+| D19 | The old site is not changed at all. Supersedes D18. | 2026-10-04 |

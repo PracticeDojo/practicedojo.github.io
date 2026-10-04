@@ -11,7 +11,7 @@ into the right phase, or into *Parked* if it's outside the plan.
 
 | Phase | Status |
 |---|---|
-| 0 · Move | 🟡 New repo done; old site still to switch over |
+| 0 · Move | ✅ Done (v2.18.1) |
 | 1 · Library | 🟢 Built (v2.19.0, v2.20.0); content and manual tests open |
 | 2 · Share links | 🟢 Live (v2.21.0); a few checks open |
 | 3 · Accounts | ⚪ Not started |
@@ -24,9 +24,6 @@ into the right phase, or into *Parked* if it's outside the plan.
 - [x] New layout: `/` landing, `/app/` Dojo, `/img/`, `/docs/`, `/docs/samples/`, `AGENTS.md`, `.nojekyll`
 - [x] Links fixed (landing → `app/`, images → `../img/`), v2.18.1
 - [x] GitHub Pages serving `main` / root: https://practicedojo.github.io/app/
-- [ ] **(you)** Old site: `practice_dojo/practice_dojo.html` becomes a "We've moved" page with **Download my last session**. *2026-10-04: still the full v2.18.0 app.* Lives in `heavenideas/heavenideas.github.io`, not this repo
-- [ ] **(you)** Old site: `practice_dojo/index.html` redirects to https://practicedojo.github.io/
-- [ ] **(you)** Old site: the link card in the root `index.html` points to the new site
 
 ## Phase 1 · Library (§4–§7, §9.4) — v2.19.0 Feature 38, v2.20.0 Feature 39
 
