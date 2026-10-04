@@ -77,7 +77,7 @@ Open:
 *Built items below are ticked when they reach `main` and work with a real Discord / Google sign-in.
 So far: SQL tested on Postgres 16; app UI tested end to end against an in-memory stand-in for the account service.*
 
-Setup **(you)**:
+Setup **(you)**, step by step in [`SETUP-sign-in.md`](SETUP-sign-in.md):
 - [ ] Discord OAuth app (Discord Developer Portal), with its client id / secret in Supabase → Authentication → Providers → Discord
 - [ ] Google OAuth client (Google Cloud console), with its client id / secret in Supabase → Providers → Google
 - [ ] URL Configuration done (see Phase 2)
