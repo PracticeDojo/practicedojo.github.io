@@ -1,0 +1,423 @@
+Your starting hand: Tigger - Bouncing All the Way, Besties, Assemble!, Junior Woodchuck Guidebook, Alma Madrigal - Leading the Way, Hades - Looking for a Deal, Besties, Assemble!, Junior Woodchuck Guidebook
+Opponent mulliganed 5 cards
+You mulliganed 6 cards: Junior Woodchuck Guidebook, Besties, Assemble!, Tigger - Bouncing All the Way, Hades - Looking for a Deal, Besties, Assemble!, Junior Woodchuck Guidebook. Drew: Demona - Scourge of the Wyvern Clan, Alma Madrigal - Leading the Way, Junior Woodchuck Guidebook, Raging Storm, Hades - Looking for a Deal, Hamm - Piggy Bank
+Game started!
+
+--- Turn 1 ---
+Opponent's turn begins
+Ready step: cards readied
+Set step
+Opponent added Lenny - Toy Binoculars to ink
+Opponent gained 45 seconds (turn end)
+Opponent ended their turn
+
+--- Turn 2 ---
+Your turn begins
+Your timer started (1:00)
+Ready step: cards readied
+Set step
+Draw step
+You drew Besties, Assemble!
+You added Demona - Scourge of the Wyvern Clan to ink
+You played Besties, Assemble! (cost 1)
+You revealed Luisa Madrigal - Pushing Through(BESTIES, ASSEMBLE!) - put into hand
+You gained 45 seconds (turn end)
+You ended your turn
+
+--- Turn 3 ---
+Opponent's turn begins
+Opponent's timer started (1:43)
+Ready step: cards readied
+Set step
+Draw step
+Opponent drew a card
+Opponent added Ursula - Deceiver to ink
+Opponent played Ursula - Deceiver (cost 2)
+Ursula - Deceiver's YOU'LL NEVER EVEN MISS IT looks at opponent's hand
+Opponent gained 45 seconds (turn end)
+Opponent ended their turn
+
+--- Turn 4 ---
+Your turn begins
+Your timer started (1:49)
+Ready step: cards readied
+Set step
+Draw step
+You drew Agustin Madrigal - Exceptionally Kind
+You added Alma Madrigal - Leading the Way to ink
+You played Luisa Madrigal - Pushing Through (cost 1)
+You gained 45 seconds (turn end)
+You ended your turn
+
+--- Turn 5 ---
+Opponent's turn begins
+Opponent's timer started (2:00)
+Ready step: cards readied
+Set step
+Draw step
+Opponent drew a card
+Opponent played Mickey Mouse - Bob Cratchit (cost 2)
+Opponent added Mickey Mouse - Steamboat Pilot to ink
+Opponent gained 45 seconds (turn end)
+Opponent ended their turn
+
+--- Turn 6 ---
+Your turn begins
+Your timer started (2:00)
+Ready step: cards readied
+Set step
+Draw step
+You drew Dumbo - Ninth Wonder of the Universe
+You added Dumbo - Ninth Wonder of the Universe to ink
+You played Alma Madrigal - Leading the Way (cost 2)
+Alma Madrigal - Leading the Way's PROTECTING THE FAMILY exerts a character
+You challenged Mickey Mouse - Bob Cratchit with Luisa Madrigal - Pushing Through
+You challenged Mickey Mouse - Bob Cratchit with Luisa Madrigal - Pushing Through | 0+2=2 [STRENGTH] dealt 2 dmg to Mickey Mouse - Bob Cratchit (2/2 [WILLPOWER] - banished!), took 3 dmg (3/3 [WILLPOWER] - banished!)
+Luisa Madrigal - Pushing Through was banished
+Mickey Mouse - Bob Cratchit was banished
+You gained 45 seconds (turn end)
+You ended your turn
+
+--- Turn 7 ---
+Opponent's turn begins
+Opponent's timer started (2:00)
+Ready step: cards readied
+Set step
+Draw step
+Opponent drew a card
+Opponent added Scuttle - Birdbrained to ink
+Opponent quested with Ursula - Deceiver (+1 [LORE], 0 -> 1)
+Opponent gained 45 seconds (turn end)
+Opponent ended their turn
+
+--- Turn 8 ---
+Your turn begins
+Your timer started (2:00)
+Ready step: cards readied
+Set step
+Draw step
+You drew Ursula - Whisper of Vanessa
+You added Hades - Looking for a Deal to ink
+You played Hamm - Piggy Bank (cost 2)
+You played Junior Woodchuck Guidebook (cost 2)
+You quested with Alma Madrigal - Leading the Way (+1 [LORE], 0 -> 1)
+You gained 45 seconds (turn end)
+You ended your turn
+
+--- Turn 9 ---
+Opponent's turn begins
+Opponent's timer started (2:00)
+Ready step: cards readied
+Set step
+Draw step
+Opponent drew a card
+Opponent added Mickey Mouse & Minnie Mouse - Adventuring Duo to ink
+Opponent played Dr. Bushroot - Evil Botanist (cost 5)
+Opponent quested with Ursula - Deceiver (+1 [LORE], 1 -> 2)
+Opponent gained 45 seconds (turn end)
+Opponent ended their turn
+
+--- Turn 10 ---
+Your turn begins
+Your timer started (2:00)
+Ready step: cards readied
+Set step
+Draw step
+You drew Junior Woodchuck Guidebook
+You activated THE BOOK KNOWS EVERYTHING on Junior Woodchuck Guidebook
+Junior Woodchuck Guidebook's THE BOOK KNOWS EVERYTHING draws 2 cards
+You drew 2 cards: Agustin Madrigal - Exceptionally Kind, Cheshire Cat - Inexplicable
+You played Cheshire Cat - Inexplicable (cost 3)
+You added Agustin Madrigal - Exceptionally Kind to ink
+You challenged Ursula - Deceiver with Alma Madrigal - Leading the Way
+You challenged Ursula - Deceiver with Alma Madrigal - Leading the Way | 1 [STRENGTH] dealt 1 dmg to Ursula - Deceiver (1/3 [WILLPOWER]), took 1 dmg (1/2 [WILLPOWER])
+You challenged Ursula - Deceiver with Hamm - Piggy Bank
+You challenged Ursula - Deceiver with Hamm - Piggy Bank | 2 [STRENGTH] dealt 2 dmg to Ursula - Deceiver (3/3 [WILLPOWER] - banished!), took 1 dmg (1/3 [WILLPOWER])
+Ursula - Deceiver was banished
+You gained 45 seconds (turn end)
+You ended your turn
+
+--- Turn 11 ---
+Opponent's turn begins
+Opponent's timer started (2:00)
+Ready step: cards readied
+Set step
+Draw step
+Opponent drew a card
+Opponent quested with Dr. Bushroot - Evil Botanist (+3 [LORE], 2 -> 5)
+Opponent played Mickey Mouse - Detective (cost 3)
+Mickey Mouse - Detective's GET A CLUE puts top card into inkwell exerted
+A card was put into their inkwell
+Opponent gained 45 seconds (turn end)
+Opponent ended their turn
+
+--- Turn 12 ---
+Your turn begins
+Your timer started (2:00)
+Ready step: cards readied
+Set step
+Draw step
+You drew The Horseman Strikes!
+You challenged Dr. Bushroot - Evil Botanist with Cheshire Cat - Inexplicable
+Opponent's timer started (2:00)
+Your timer started (1:47)
+Opponent's timer started (2:00)
+You discarded The Horseman Strikes!
+Dr. Bushroot - Evil Botanist's FAIR IS FAIR Discarded a card
+Your timer started (1:46)
+You challenged Dr. Bushroot - Evil Botanist with Cheshire Cat - Inexplicable | 3 [STRENGTH] dealt 3 dmg to Dr. Bushroot - Evil Botanist (3/3 [WILLPOWER] - banished!), took 4 dmg (4/4 [WILLPOWER] - banished!)
+Cheshire Cat - Inexplicable was banished
+Dr. Bushroot - Evil Botanist was banished
+You played Junior Woodchuck Guidebook (cost 2)
+You activated THE BOOK KNOWS EVERYTHING on Junior Woodchuck Guidebook
+Junior Woodchuck Guidebook's THE BOOK KNOWS EVERYTHING draws 2 cards
+You drew 2 cards: Luisa Madrigal - Pushing Through, Dumbo - Ninth Wonder of the Universe
+You added Luisa Madrigal - Pushing Through to ink
+You activated LOOSE CHANGE on Hamm - Piggy Bank
+Hamm - Piggy Bank's LOOSE CHANGE You pay 1 less for the next character this turn this turn
+You played Dumbo - Ninth Wonder of the Universe (cost 4 → 3, LOOSE CHANGE)
+You quested with Alma Madrigal - Leading the Way (+1 [LORE], 1 -> 2)
+You gained 45 seconds (turn end)
+You ended your turn
+
+--- Turn 13 ---
+Opponent's turn begins
+Opponent's timer started (2:00)
+Ready step: cards readied
+Set step
+Draw step
+Opponent drew a card
+Opponent played Chernabog - Unnatural Force (cost 5)
+Opponent declined Chernabog - Unnatural Force's DARK DANCE
+Opponent took back their action (free undo)
+Opponent played Chernabog - Unnatural Force (cost 5)
+Your timer started (2:00)
+Chernabog - Unnatural Force's DARK DANCE chose "Play a character"
+Opponent's timer started (1:03)
+Chernabog - Unnatural Force's DARK DANCE Played Cheshire Cat - Inexplicable for free
+Dumbo - Ninth Wonder of the Universe was returned to your deck
+You played Cheshire Cat - Inexplicable (cost 3 → 0)
+Your timer started (1:58)
+Opponent's timer started (1:03)
+Opponent challenged Alma Madrigal - Leading the Way with Mickey Mouse - Detective
+Opponent challenged Alma Madrigal - Leading the Way with Mickey Mouse - Detective | 1 [STRENGTH] dealt 1 dmg to Alma Madrigal - Leading the Way (2/2 [WILLPOWER] - banished!), took 1 dmg (1/3 [WILLPOWER])
+Alma Madrigal - Leading the Way was banished
+Opponent gained 45 seconds (turn end)
+Opponent ended their turn
+
+--- Turn 14 ---
+Your turn begins
+Your timer started (2:00)
+Ready step: cards readied
+Set step
+Draw step
+You drew Agustin Madrigal - Exceptionally Kind
+You added Agustin Madrigal - Exceptionally Kind to ink
+You challenged Mickey Mouse - Detective with Hamm - Piggy Bank
+You challenged Mickey Mouse - Detective with Hamm - Piggy Bank | 2 [STRENGTH] dealt 2 dmg to Mickey Mouse - Detective (3/3 [WILLPOWER] - banished!), took 1 dmg (2/3 [WILLPOWER])
+Mickey Mouse - Detective was banished
+You played Ursula - Whisper of Vanessa (cost 5)
+You boosted Cheshire Cat - Inexplicable (1 card under)
+Cheshire Cat - Inexplicable's IT'S LOADS OF FUN moves 2 damage from Hamm - Piggy Bank to Chernabog - Unnatural Force (destination was not banished)
+Moved 2 damage counters from Hamm - Piggy Bank to Chernabog - Unnatural Force
+You gained 45 seconds (turn end)
+You ended your turn
+
+--- Turn 15 ---
+Opponent's turn begins
+Opponent's timer started (1:46)
+Ready step: cards readied
+Set step
+Draw step
+Opponent drew a card
+Opponent quested with Chernabog - Unnatural Force (+2 [LORE], 5 -> 7)
+Opponent played Scuttle - Birdbrained (cost 5)
+Opponent gained 45 seconds (turn end)
+Opponent ended their turn
+
+--- Turn 16 ---
+Your turn begins
+Your timer started (2:00)
+Ready step: cards readied
+Set step
+Draw step
+You drew Agustin Madrigal - Exceptionally Kind
+You played Agustin Madrigal - Exceptionally Kind (cost 4)
+You boosted Ursula - Whisper of Vanessa (1 card under)
+You challenged Chernabog - Unnatural Force with Hamm - Piggy Bank
+You challenged Chernabog - Unnatural Force with Hamm - Piggy Bank | 2 [STRENGTH] dealt 2 dmg to Chernabog - Unnatural Force (4/4 [WILLPOWER] - banished!), took 5 dmg (5/3 [WILLPOWER] - banished!)
+Hamm - Piggy Bank was banished
+Chernabog - Unnatural Force was banished
+You quested with Cheshire Cat - Inexplicable (+1 [LORE], 2 -> 3)
+You quested with Ursula - Whisper of Vanessa (+3 [LORE], 3 -> 6)
+You gained 45 seconds (turn end)
+You ended your turn
+
+--- Turn 17 ---
+Opponent's turn begins
+Opponent's timer started (2:00)
+Ready step: cards readied
+Set step
+Draw step
+Opponent drew a card
+Opponent played Chernabog - Unnatural Force (cost 5)
+Your timer started (2:00)
+Chernabog - Unnatural Force's DARK DANCE chose "Play a character"
+Opponent's timer started (2:00)
+Chernabog - Unnatural Force's DARK DANCE Played Alma Madrigal - Leading the Way for free
+Ursula - Whisper of Vanessa was returned to your deck
+You played Alma Madrigal - Leading the Way (cost 2 → 0)
+Your timer started (1:48)
+Alma Madrigal - Leading the Way's PROTECTING THE FAMILY exerts a character
+Opponent's timer started (1:59)
+Opponent challenged Cheshire Cat - Inexplicable with Scuttle - Birdbrained
+Opponent challenged Cheshire Cat - Inexplicable with Scuttle - Birdbrained | 5 [STRENGTH] dealt 5 dmg to Cheshire Cat - Inexplicable (5/4 [WILLPOWER] - banished!), took 3 dmg (3/5 [WILLPOWER])
+Cheshire Cat - Inexplicable was banished
+Opponent gained 45 seconds (turn end)
+Opponent ended their turn
+
+--- Turn 18 ---
+Your turn begins
+Your timer started (1:57)
+Ready step: cards readied
+Set step
+Draw step
+You drew Demona - Scourge of the Wyvern Clan
+You quested with Agustin Madrigal - Exceptionally Kind (+1 [LORE], 6 -> 7)
+You quested with Alma Madrigal - Leading the Way (+1 [LORE], 7 -> 8)
+You added Agustin Madrigal - Exceptionally Kind to ink
+You played Raging Storm (cost 8)
+Raging Storm's RAGING STORM banishes a card
+Agustin Madrigal - Exceptionally Kind was banished
+Alma Madrigal - Leading the Way was banished
+Scuttle - Birdbrained was banished
+Chernabog - Unnatural Force was banished
+You gained 45 seconds (turn end)
+You ended your turn
+
+--- Turn 19 ---
+Opponent's turn begins
+Opponent's timer started (2:00)
+Ready step: cards readied
+Set step
+Draw step
+Opponent drew a card
+Opponent added Milo Thatch - Getting His Hands Dirty to ink
+Opponent played Mickey Mouse & Minnie Mouse - Adventuring Duo (cost 7)
+Opponent gained 45 seconds (turn end)
+Opponent ended their turn
+
+--- Turn 20 ---
+Your turn begins
+Your timer started (2:00)
+Ready step: cards readied
+Set step
+Draw step
+You drew Dumbo - Ninth Wonder of the Universe
+You added Dumbo - Ninth Wonder of the Universe to ink
+You played Demona - Scourge of the Wyvern Clan (cost 6)
+Demona - Scourge of the Wyvern Clan's AD SAXUM COMMUTATE exerts a character
+Demona - Scourge of the Wyvern Clan's AD SAXUM COMMUTATE each player with fewer than 3 cards draws until they have 3
+You drew 3 cards: Luisa Madrigal - Pushing Through, Hades - Looking for a Deal, Ursula - Whisper of Vanessa
+Opponent drew a card
+You played Luisa Madrigal - Pushing Through (cost 1)
+You gained 45 seconds (turn end)
+You ended your turn
+
+--- Turn 21 ---
+Opponent's turn begins
+Opponent's timer started (2:00)
+Ready step: cards readied
+Set step
+Draw step
+Opponent drew a card
+Opponent played Strike a Good Match (cost 2)
+Opponent discarded Under the Sea
+Strike a Good Match's STRIKE A GOOD MATCH draws 2 cards
+Strike a Good Match's STRIKE A GOOD MATCH Discarded a card
+Opponent drew 2 cards
+Opponent played Mickey Mouse - Detective (cost 3)
+Mickey Mouse - Detective's GET A CLUE puts top card into inkwell exerted
+A card was put into their inkwell
+Opponent quested with Mickey Mouse & Minnie Mouse - Adventuring Duo (+5 [LORE], 7 -> 12)
+Opponent played Mickey Mouse - Bob Cratchit (cost 2)
+Opponent gained 45 seconds (turn end)
+Opponent ended their turn
+
+--- Turn 22 ---
+Your turn begins
+Your timer started (2:00)
+Ready step: cards readied
+Set step
+Draw step
+You drew Hamm - Piggy Bank
+You played Hades - Looking for a Deal (cost 5)
+Opponent's timer started (2:00)
+Hades - Looking for a Deal's WHAT D'YA SAY? chose "Put on bottom"
+Your timer started (2:00)
+Mickey Mouse & Minnie Mouse - Adventuring Duo was returned to Opponent's deck
+You quested with Demona - Scourge of the Wyvern Clan (+2 [LORE], 8 -> 10)
+You added Hamm - Piggy Bank to ink
+You played Ursula - Whisper of Vanessa (cost 5)
+You quested with Luisa Madrigal - Pushing Through (+1 [LORE], 10 -> 11)
+You gained 45 seconds (turn end)
+You ended your turn
+
+--- Turn 23 ---
+Opponent's turn begins
+Opponent's timer started (1:30)
+Ready step: cards readied
+Set step
+Draw step
+Opponent drew a card
+Opponent played Mickey Mouse - Steamboat Pilot (cost 3)
+Opponent played Minnie Mouse - Practical Traveler (cost 1)
+Opponent quested with Mickey Mouse - Detective (+1 [LORE], 12 -> 13)
+Opponent quested with Mickey Mouse - Bob Cratchit (+1 [LORE], 13 -> 14)
+A card was put under Mickey Mouse - Bob Cratchit
+Opponent gained 45 seconds (turn end)
+Opponent ended their turn
+
+--- Turn 24 ---
+Your turn begins
+Your timer started (2:00)
+Ready step: cards readied
+Set step
+Draw step
+You drew Tigger - Bouncing All the Way
+You played Tigger - Bouncing All the Way (cost 4)
+Tigger - Bouncing All the Way's SPLENDERIFFIC BOUNCE returns Minnie Mouse - Practical Traveler to hand
+A card was returned to their hand
+You boosted Ursula - Whisper of Vanessa (1 card under)
+You quested with Demona - Scourge of the Wyvern Clan (+2 [LORE], 11 -> 13)
+You quested with Luisa Madrigal - Pushing Through (+1 [LORE], 13 -> 14)
+You quested with Hades - Looking for a Deal (+1 [LORE], 14 -> 15)
+You quested with Ursula - Whisper of Vanessa (+3 [LORE], 15 -> 18)
+You gained 45 seconds (turn end)
+You ended your turn
+
+--- Turn 25 ---
+Opponent's turn begins
+Opponent's timer started (2:00)
+Ready step: cards readied
+Set step
+Draw step
+Opponent drew a card
+Opponent played Mickey Mouse - Bob Cratchit (cost 2)
+Opponent played Minnie Mouse - Practical Traveler (cost 1)
+Opponent sang Under the Sea with Mickey Mouse - Detective, Mickey Mouse - Steamboat Pilot, Mickey Mouse - Bob Cratchit
+Under the Sea's UNDER THE SEA putting Luisa Madrigal - Pushing Through on bottom of deck
+Luisa Madrigal - Pushing Through was returned to your deck
+Opponent gained 45 seconds (turn end)
+Opponent ended their turn
+
+--- Turn 26 ---
+Your turn begins
+Your timer started (2:00)
+Ready step: cards readied
+Set step
+Draw step
+You drew Isis Vanderchill - Ice Queen of St. Canard
+You quested with Demona - Scourge of the Wyvern Clan (+2 [LORE], 18 -> 20)
+You won with 20 [LORE]!
+You won with 20 [LORE]!

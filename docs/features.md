@@ -591,6 +591,19 @@ Phase 2 of `docs/ARCH-accounts-and-library.md` (§9), on the Dojo's own Supabase
 - Links are frozen snapshots. Limits fail closed with plain messages: 20 links a day and 100 in total per person, sessions up to 10 MB compressed, and new session links pause if shared storage passes 700 MB.
 - `.github/workflows/supabase-keepalive.yml` pings the project on Mondays and Thursdays so it never pauses.
 
+## Feature 41: Import Duels.ink's current text logs ("You / Opponent", v2.22.0)
+
+### User Story
+- As a player I want to paste the log Duels.ink gives me today and study the game, not only the older "Player 1 / Player 2" logs.
+
+### Details
+Implements `docs/IMP-newLog.md`, and goes further where real logs needed it. Old-format logs still import.
+- **Both formats, one parser.** "You" / "Player 1" is the log's owner (P1); "Opponent" / "Player 2" is P2. Every line becomes an event for the player who did it, replayed in log order, so actions on the other player's turn count (e.g. the opponent drawing from Demona on your turn).
+- **Hidden information:** the opponent's hand starts as 7 unknown cards; their hidden draws are unknown cards; anything they play, ink or discard is named from then on.
+- **Now understood:** card names with commas ("Besties, Assemble!"), discounted plays ("cost 4 → 3, LOOSE CHANGE"), cards revealed into hand, discards, songs and their singers, boost / cards put under, cards returned to deck or hand (with the cards under them), damage from challenges, moved damage counters, undo ("took back their action"), cards put into the inkwell from the deck, and activated abilities (exert or banish, read from the card's printed cost).
+- **Node snapshots** are taken after the ready and draw steps, like a replay import, so each node shows the board the active player acts on.
+- Checked against the replay of the same game (`docs/samples/new_log_20261004.txt` + `01a08b6d-…_p1.replay.gz`): 24 of 27 nodes identical. Of the other three, two are the text import keeping an item on the board that the replay import drops, and one is an exert the log doesn't name a target for.
+
 ## Refactor 2: Own repository (v2.18.1)
 
 ### Details
@@ -645,3 +658,4 @@ Phase 2 of `docs/ARCH-accounts-and-library.md` (§9), on the Dojo's own Supabase
 - [x] Feature 38: Deck & session library on this device (ARCH Phase 1)
 - [x] Feature 39: Home screen redesign — "The inkwell"
 - [x] Feature 40: Share links for decks and sessions (ARCH Phase 2)
+- [x] Feature 41: Import Duels.ink's current text logs ("You / Opponent")
