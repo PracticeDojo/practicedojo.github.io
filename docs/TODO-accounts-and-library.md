@@ -7,14 +7,14 @@ The working checklist for [`ARCH-accounts-and-library.md`](ARCH-accounts-and-lib
 **(you)** need someone with access to a dashboard or another repo. New work found along the way goes
 into the right phase, or into *Parked* if it's outside the plan.
 
-*Last updated: 2026-10-04 · live: v2.22.0 · branch: v2.23.0*
+*Last updated: 2026-10-04 · live: v2.23.0*
 
 | Phase | Status |
 |---|---|
 | 0 · Move | ✅ Done (v2.18.1) |
 | 1 · Library | 🟢 Built (v2.19.0, v2.20.0); content and manual tests open |
 | 2 · Share links | 🟢 Live (v2.21.0); a few checks open |
-| 3 · Accounts | 🟡 Built (v2.23.0, on the branch); needs your Discord / Google setup to go live |
+| 3 · Accounts | 🟡 Live (v2.23.0); database verified, waiting on a real Discord sign-in test |
 
 ---
 
@@ -72,21 +72,21 @@ Open:
 - [ ] Manual pass of `TEST-PROTOCOL-v2.21.0.md`, including the 21st-link limit and offline
 - [ ] **(you, optional)** Delete the 3 anonymous test users from today's tests (Authentication → Users)
 
-## Phase 3 · Accounts (§8) — v2.23.0 Feature 42, built on the branch
+## Phase 3 · Accounts (§8) — v2.23.0 Feature 42, live
 
-*Built items below are ticked when they reach `main` and work with a real Discord / Google sign-in.
-So far: SQL tested on Postgres 16; app UI tested end to end against an in-memory stand-in for the account service.*
+*App items below are ticked once they work with a real Discord sign-in (`TEST-PROTOCOL-v2.23.0.md`).
+So far: app UI tested end to end against an in-memory stand-in for the account service; the database is live and checked over the API.*
 
 Setup **(you)**, step by step in [`SETUP-sign-in.md`](SETUP-sign-in.md):
 - [x] Discord OAuth app, enabled in Supabase. *Verified: `discord: true` in the project's auth settings, 2026-10-04*
 - [ ] *(parked)* Google OAuth client. The sign-in dialog only lists providers that are switched on, so Google appears by itself once it's enabled (`SETUP-sign-in.md` §2)
-- [ ] URL Configuration done (see Phase 2)
+- [ ] URL Configuration done (see Phase 2). *Discord's side is right (verified: Supabase sends Discord the correct callback); the return to the app can only be checked in the dashboard or by signing in*
 
 Database (a new migration in `supabase/migrations/`):
-- [ ] `decks` and `sessions` tables (§8.2)
-- [ ] `is_real_user()` and the owner-only RLS that excludes anonymous identities (§8.3)
-- [ ] Private `sessions` bucket (10 MB, `application/gzip`) and its policies (§8.3)
-- [ ] Quota triggers: 200 decks and 50 sessions per account; no *new* account sessions past 900 MB total storage (§8.4, §9.3)
+- [x] `decks` and `sessions` tables (§8.2). *Migration `20261004200000_accounts.sql` applied by the GitHub integration; verified over the API, 2026-10-04*
+- [x] `is_real_user()` and the owner-only RLS that excludes anonymous identities (§8.3). *Verified live: public key refused, an anonymous identity sees no rows and can't insert*
+- [x] Private `sessions` bucket (10 MB, `application/gzip`) and its policies (§8.3). *Verified live: bucket exists, anonymous upload refused*
+- [x] Quota triggers: 200 decks and 50 sessions per account; no *new* account sessions past 900 MB total storage (§8.4, §9.3). *Tested on Postgres 16; live with the same migration*
 
 App:
 - [ ] *Sign in* menu (Discord, Google) with PKCE redirect back; account menu with usage; *Sign out* (§8.1)
