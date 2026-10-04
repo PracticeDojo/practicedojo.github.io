@@ -2908,8 +2908,11 @@
             right: 16px;
         }
 
-        /* Mobile-only floating quick actions — hidden on desktop (drawer has the full set). */
-        .mobile-quick-actions {
+        /* Mobile-only quick actions and in-bar lore — hidden on desktop (drawer has the full
+           set; the lore badge floats over the board). */
+        .mobile-quick-actions,
+        .lore-chip,
+        .pile-num {
             display: none;
         }
 
@@ -5246,53 +5249,296 @@
                 margin-left: var(--hand-overlap, -40px);
             }
 
-            /* Lore badges: anchor to the LEFT so they never sit over the right-side deck/discard,
-       and keep both inside view (the bottom one was previously hidden under the hand). */
+            /* Phones: lore lives in each player's bar; the floating badge is hidden. */
             .lore-badge {
-                transform: scale(0.72);
-                min-width: 0;
-                padding: 6px 9px;
-            }
-
-            .board-half.top .lore-badge {
-                top: 4px;
-                bottom: auto;
-                left: 6px;
-                right: auto;
-                transform-origin: top left;
-            }
-
-            .board-half.bottom .lore-badge {
-                bottom: 4px;
-                top: auto;
-                left: 6px;
-                right: auto;
-                transform-origin: bottom left;
+                display: none;
             }
 
             .notes-panel {
                 display: none;
             }
 
-            /* Floating Quest / End-turn cluster, anchored bottom-right (opposite the
-               bottom-left lore badge) so it stays clear of the centered hand fan. */
+            .pile-row .pile-num {
+                display: inline;
+            }
+
+            /* Quest / End turn live in the hand tray (it is fixed to the bottom edge). */
             .mobile-quick-actions {
+                position: absolute;
                 display: flex;
-                flex-direction: column;
-                gap: 6px;
-                position: fixed;
-                right: 8px;
-                bottom: 10px;
-                z-index: 35;
                 pointer-events: none;
             }
 
             .mobile-quick-actions .mqa-btn {
                 pointer-events: auto;
-                padding: 9px 13px;
-                font-size: 12.5px;
                 white-space: nowrap;
+            }
+
+            body.hand-open .mobile-quick-actions {
+                display: none;
+            }
+
+            /* Each player's bar: big lore and ink numbers straight on the bar, ink pips, and
+               mini-card piles (discard shows its top card, deck its count). */
+            .pile-row,
+            .board-half.top .pile-row {
+                display: flex;
+                align-items: center;
+                gap: 0;
+                padding: 4px 6px 4px 12px;
+            }
+
+            .pile-row .ink-cluster.is-counter {
+                flex: none;
+            }
+
+            .pile-row .pile-cluster {
+                margin-left: auto;
+                gap: 6px;
+            }
+
+            .lore-chip,
+            .pile-row .ink-cluster.is-counter {
+                position: relative;
+                display: grid;
+                grid-template-columns: auto auto;
+                grid-template-areas:
+                    "label btns"
+                    "value btns";
+                column-gap: 8px;
+                row-gap: 3px;
+                align-items: center;
+                padding: 0 14px 0 0;
+                background: none;
+                border: none;
+            }
+
+            .pile-row .ink-cluster.is-counter {
+                grid-template-columns: auto auto;
+                grid-template-areas:
+                    "label label"
+                    "value pips";
+                padding: 0 0 0 14px;
+                border-left: 1px solid var(--border-soft);
+            }
+
+            .lore-chip-label,
+            .pile-row .ink-cluster.is-counter::before {
+                grid-area: label;
+                position: static;
+                font-size: 9px;
+                font-weight: 600;
+                line-height: 1;
+                letter-spacing: 0.1em;
+                text-transform: uppercase;
+                color: var(--text-faint);
+            }
+
+            .pile-row .ink-cluster.is-counter::before { content: 'Ink'; }
+
+            .lore-chip-value,
+            .pile-row .ink-cluster.is-counter .ink-readout {
+                grid-area: value;
+                position: static;
+                transform: none;
+                display: inline-flex;
+                align-items: center;
+                gap: 6px;
+                padding: 0;
+                background: none;
+                border: none;
+                font: 700 24px/1 var(--font-mono);
+                font-variant-numeric: tabular-nums;
+                color: var(--text);
+            }
+
+            .board-half.is-p1 .lore-chip-value { color: var(--p1-hi); }
+            .board-half.is-p2 .lore-chip-value { color: var(--p2-hi); }
+
+            .pile-row .inkwell.is-counter {
+                grid-area: pips;
+                height: auto;
+                /* rows of five: 5 × 8px + 4 × 3px */
+                max-width: 52px;
+                flex-wrap: wrap;
+                gap: 3px;
+            }
+
+            .pile-row .ink-pip {
+                width: 8px;
+                height: 9px;
+            }
+
+            /* Ink this turn: a labelled count beside "INK"; your own bar also says when
+               you haven't inked yet. The fresh pips are marked (renderInkCounter). */
+            .pile-row .ink-new {
+                top: -2px;
+                left: 50px;
+                right: auto;
+                padding: 2px 7px;
+                font: 700 10px/1.2 var(--font-mono);
+                letter-spacing: 0.02em;
+                white-space: nowrap;
+            }
+
+            .pile-row .ink-new::after {
+                content: ' inked';
+            }
+
+            .board-half.bottom .pile-row .ink-new.is-zero {
+                display: inline-block;
+                background: none;
+                border: 1px dashed var(--border-strong);
+                color: var(--text-dim);
+            }
+
+            .board-half.bottom .pile-row .ink-new.is-zero::after {
+                content: 'No ink yet';
+            }
+
+            .lore-chip-btns {
+                grid-area: btns;
+                position: static;
+                display: flex;
+                flex-direction: column;
+                gap: 4px;
+            }
+
+            .lore-chip-btns button {
+                width: 26px;
+                height: 20px;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                padding: 0;
+                background: var(--surface);
+                border: 1px solid var(--border-soft);
+                border-radius: 6px;
+                color: var(--text-dim);
+                font-size: 12px;
+                line-height: 1;
+                cursor: pointer;
+            }
+
+            /* Piles: small cards. Discard shows its top card, deck its count. */
+            .pile-row .pile {
+                --pile-w: 36px;
+                --pile-h: 50px;
+                width: 36px;
+                height: 50px;
+                border-radius: 5px;
+            }
+
+            .pile-row .pile > .card-wrap {
+                --card-w: 36px;
+                --card-h: 50px;
+                left: 0 !important;
+                top: 0 !important;
+            }
+
+            .pile-row .pile .pile-label { display: none; }
+
+            .pile-row .pile .pile-count {
+                top: 34%;
+                left: 50%;
+                bottom: auto;
+                right: auto;
+                transform: translate(-50%, -50%);
+                padding: 0;
+                background: none;
+                border: none;
+                font: 700 14px/1 var(--font-mono);
+            }
+
+            .pile-row .pile-num {
+                position: absolute;
+                right: -6px;
+                bottom: -5px;
+                z-index: 201;
+                min-width: 18px;
+                padding: 2px 4px;
+                border-radius: 999px;
+                background: var(--surface-3);
+                border: 1px solid var(--border);
+                font: 700 10px/1 var(--font-mono);
+                text-align: center;
+                color: var(--text);
+            }
+
+            .pile-row .pile-inspect {
+                top: 2px;
+                left: 2px;
+                width: 18px;
+                height: 18px;
+                font-size: 9px;
+            }
+
+            .pile-row .pile.deck .pile-inspect {
+                top: auto;
+                bottom: 2px;
+                left: 50%;
+                transform: translateX(-50%);
+            }
+
+            /* Small phones: smaller numbers and tighter spacing so 10/10 ink still fits. */
+            @media (max-width: 360px) {
+                .lore-chip-value,
+                .pile-row .ink-cluster.is-counter .ink-readout {
+                    font-size: 20px;
+                }
+
+                .lore-chip,
+                .pile-row .ink-cluster.is-counter {
+                    column-gap: 6px;
+                }
+
+                .lore-chip {
+                    padding-right: 10px;
+                }
+
+                .pile-row .ink-cluster.is-counter {
+                    padding-left: 10px;
+                }
+
+                .pile-row .ink-new {
+                    left: 40px;
+                }
+
+                .pile-row .ink-readout .ink-icon {
+                    display: none;
+                }
+            }
+
+            /* Quest / End turn flank the hand label, just above the fan. */
+            body #bottom-board .hand-wrap::before {
+                content: 'Hand · ' attr(data-count);
+                bottom: 74px;
+            }
+
+            .mobile-quick-actions {
+                left: 10px;
+                right: 10px;
+                bottom: 66px;
+                justify-content: space-between;
+            }
+
+            .mobile-quick-actions .mqa-btn {
+                height: 36px;
+                padding: 0 16px;
+                gap: 8px;
+                border-radius: 999px;
+                font-size: 14px;
                 box-shadow: var(--shadow-3);
+            }
+
+            .mobile-quick-actions .mqa-quest {
+                background: var(--bg);
+                border-color: var(--border);
+                color: var(--text);
+            }
+
+            .mobile-quick-actions .mqa-count {
+                color: var(--text-faint);
             }
 
             /* --- Opponent (top) hand: collapsed by default; only the count/peek button shows.
@@ -6543,6 +6789,19 @@
             background: oklch(1 0 0 / 0.16);
         }
 
+        /* Inked this turn: a bright core marks the new pips. */
+        .ink-pip.fresh {
+            background: radial-gradient(circle, oklch(0.97 0.03 230) 0 34%, var(--bcr) 38%);
+        }
+
+        .ink-pip.fresh.used {
+            background: radial-gradient(circle, oklch(0.97 0.03 230) 0 34%, oklch(1 0 0 / 0.16) 38%);
+        }
+
+        .ink-new.is-zero {
+            display: none;
+        }
+
         .ink-new {
             position: absolute;
             top: -8px;
@@ -6829,10 +7088,6 @@
 
             .play {
                 padding-bottom: 104px;
-            }
-
-            .mobile-quick-actions {
-                bottom: 104px;
             }
 
             /* The hand leaves the board flow and peeks up from the bottom edge. */
@@ -7602,6 +7857,17 @@
 
                 <!-- pile row (ink + discard + deck) -->
                 <div class="pile-row">
+                    <!-- Phones: lore lives in the bar (the floating badge is hidden there). -->
+                    <div class="lore-chip">
+                        <span class="lore-chip-label">Lore</span>
+                        <span class="lore-chip-value" id="top-lore-chip">0</span>
+                        <div class="lore-chip-btns">
+                            <button class="minus" onclick="App.changeLore(App.state.inactivePlayer, -1)"
+                                title="Decrease Lore">&minus;</button>
+                            <button class="plus" onclick="App.changeLore(App.state.inactivePlayer, 1)"
+                                title="Increase Lore">+</button>
+                        </div>
+                    </div>
                     <div class="ink-cluster is-counter drop-zone" ondragover="App.allowDrop(event)"
                         ondragenter="App.dragEnter(event)" ondragleave="App.dragLeave(event)"
                         ondrop="App.drop(event, 'inkwell', 'top')" role="button" tabindex="0"
@@ -7618,6 +7884,7 @@
                             ondrop="App.drop(event, 'discard', 'top')"
                             oncontextmenu="App.showDiscardContextMenu(event, App.state.inactivePlayer)">
                             <span class="pile-label">Discard</span>
+                            <span class="pile-num" id="top-discard-count">0</span>
                             <button class="pile-inspect" title="Inspect discard pile"
                                 onclick="event.stopPropagation(); App.inspectDiscard(App.state.inactivePlayer)"><i
                                     class="fa-solid fa-magnifying-glass"></i></button>
@@ -7678,6 +7945,17 @@
 
                 <!-- pile row -->
                 <div class="pile-row">
+                    <!-- Phones: lore lives in the bar (the floating badge is hidden there). -->
+                    <div class="lore-chip">
+                        <span class="lore-chip-label">Lore</span>
+                        <span class="lore-chip-value" id="bottom-lore-chip">0</span>
+                        <div class="lore-chip-btns">
+                            <button class="minus" onclick="App.changeLore(App.state.activePlayer, -1)"
+                                title="Decrease Lore">&minus;</button>
+                            <button class="plus" onclick="App.changeLore(App.state.activePlayer, 1)"
+                                title="Increase Lore">+</button>
+                        </div>
+                    </div>
                     <div class="ink-cluster is-counter drop-zone" ondragover="App.allowDrop(event)"
                         ondragenter="App.dragEnter(event)" ondragleave="App.dragLeave(event)"
                         ondrop="App.drop(event, 'inkwell', 'bottom')" role="button" tabindex="0"
@@ -7688,12 +7966,13 @@
                                 class="ink-new" id="bottom-ink-new" hidden>+1</span></div>
                         <div class="inkwell is-counter" id="bottom-inkwell-cards"></div>
                     </div>
-                    <div class="pile-cluster">
+<div class="pile-cluster">
                         <div class="pile drop-zone" id="bottom-discard" ondragover="App.allowDrop(event)"
                             ondragenter="App.dragEnter(event)" ondragleave="App.dragLeave(event)"
                             ondrop="App.drop(event, 'discard', 'bottom')"
                             oncontextmenu="App.showDiscardContextMenu(event, App.state.activePlayer)">
                             <span class="pile-label">Discard</span>
+                            <span class="pile-num" id="bottom-discard-count">0</span>
                             <button class="pile-inspect" title="Inspect discard pile"
                                 onclick="event.stopPropagation(); App.inspectDiscard(App.state.activePlayer)"><i
                                     class="fa-solid fa-magnifying-glass"></i></button>
@@ -7714,6 +7993,20 @@
 
                 <!-- hand -->
                 <div class="hand-wrap">
+                <!-- Mobile-only quick actions: the two most-used current-player actions
+                     (Quest with all, End turn), in the hand tray. Hidden on desktop. -->
+                <div class="mobile-quick-actions" id="mobile-quick-actions">
+                    <button class="btn mqa-btn mqa-quest" onclick="App.questWithAll()"
+                        title="Quest with all available characters">
+                        <i class="fa-solid fa-diamond" style="color:var(--lvi)"></i>
+                        <span class="mqa-label">Quest</span>
+                        <span class="mqa-count" id="quest-count-mobile">0</span>
+                    </button>
+                    <button class="btn btn-p1 mqa-btn mqa-end" onclick="App.endTurn()" title="End turn">
+                        <span class="mqa-label">End turn</span>
+                        <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                </div>
                     <div class="hand-meta" title="Total potential metrics of all cards in hand">
                         <span><span class="meta-key">CTL</span><span id="bottom-hand-ctl">0.0</span></span>
                         <span><span class="meta-key is-bcr">BCR</span><span id="bottom-hand-bcr">0.0</span></span>
@@ -7725,19 +8018,6 @@
                         <div id="bottom-hand" style="display:flex;justify-content:center;"></div>
                     </div>
                 </div>
-            </div>
-
-            <!-- Mobile-only quick actions: surface the two most-used current-player
-                 actions (Quest with all, End turn) without opening the sidebar drawer.
-                 Hidden on desktop; anchored bottom-right (opposite the bottom-left lore badge). -->
-            <div class="mobile-quick-actions" id="mobile-quick-actions">
-                <button class="btn mqa-btn" onclick="App.questWithAll()" title="Quest with all available characters">
-                    <i class="fa-solid fa-diamond" style="color:var(--lvi)"></i> Quest
-                    <span class="mono dim" id="quest-count-mobile">0</span>
-                </button>
-                <button class="btn btn-p1 mqa-btn" onclick="App.endTurn()" title="End turn">
-                    End turn <i class="fa-solid fa-arrow-right"></i>
-                </button>
             </div>
         </main>
 
@@ -7857,7 +8137,7 @@
     <script>
         let cardFuse = null;
 
-        const APP_VERSION = "v2.23.0"; // Centralized version string (redesign)
+        const APP_VERSION = "v2.24.0"; // Centralized version string (redesign)
 
         // Tweaks panel accent presets (hue values for the OKLCH accent ramp)
         const ACCENT_PRESETS = {
@@ -14507,9 +14787,11 @@
             renderInkCounter(player, pipsEl, newEl) {
                 pipsEl.innerHTML = '';
                 const total = player.inkTotal || 0, ready = Math.min(total, player.inkReady || 0);
+                const fresh = Math.min(total, player.inkwell.filter(c => c.faceUp).length);
                 for (let i = 0; i < total; i++) {
                     const pip = document.createElement('span');
-                    pip.className = 'ink-pip' + (i < ready ? '' : ' used');
+                    // The last `fresh` pips are the cards inked this turn (still face up).
+                    pip.className = 'ink-pip' + (i < ready ? '' : ' used') + (i >= total - fresh ? ' fresh' : '');
                     pip.setAttribute('aria-hidden', 'true');
                     pipsEl.appendChild(pip);
                 }
@@ -14519,7 +14801,12 @@
                     hint.textContent = 'drop a card to ink it';
                     pipsEl.appendChild(hint);
                 }
-                if (newEl) newEl.hidden = !player.inkwell.some(c => c.faceUp);
+                if (newEl) {
+                    newEl.textContent = fresh ? `+${fresh}` : '';
+                    newEl.title = `${fresh} card${fresh === 1 ? '' : 's'} inked this turn`;
+                    newEl.classList.toggle('is-zero', !fresh);
+                    newEl.hidden = false;
+                }
             },
             openInkPanel(playerIndex, ev) {
                 if (ev && ev.stopPropagation) ev.stopPropagation();
@@ -16400,8 +16687,10 @@
                 // --- TOP BOARD (Inactive Player) ---
                 document.getElementById('top-player-bg-text').innerText = `P${ip.id + 1}`;
                 document.getElementById('top-lore').innerText = ip.lore;
+                document.getElementById('top-lore-chip').innerText = ip.lore;
                 document.getElementById('top-ink').innerText = `${ip.inkReady}/${ip.inkTotal}`;
                 document.getElementById('top-deck-count').innerText = ip.deck.length;
+                document.getElementById('top-discard-count').innerText = ip.discard.length;
 
                 // Note: Reveal button state is handled dynamically by setHandReveal to prevent animation stuttering
                 // Top Hand (Hidden by default unless currently held down)
@@ -16445,8 +16734,10 @@
                 // --- BOTTOM BOARD (Active Player) ---
                 document.getElementById('bottom-player-bg-text').innerText = `P${ap.id + 1}`;
                 document.getElementById('bottom-lore').innerText = ap.lore;
+                document.getElementById('bottom-lore-chip').innerText = ap.lore;
                 document.getElementById('bottom-ink').innerText = `${ap.inkReady}/${ap.inkTotal}`;
                 document.getElementById('bottom-deck-count').innerText = ap.deck.length;
+                document.getElementById('bottom-discard-count').innerText = ap.discard.length;
 
                 // Turn Comment Box Update
                 document.getElementById('turn-comment-header-num').innerText = this.state.turn;

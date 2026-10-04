@@ -620,6 +620,20 @@ Phase 3 of `docs/ARCH-accounts-and-library.md` (§8). Database: `supabase/migrat
 - **Account menu:** who you're signed in as, usage (sessions of 50, decks of 200), *Sign out*, which asks whether to keep or remove this device's account copies.
 - Limits: 200 decks and 50 sessions per account; no new account sessions once the project's storage passes 900 MB. Anonymous share identities can't touch account data.
 
+## Feature 43: Phone player bars, Quest / End turn in the hand tray, ink this turn (v2.24.0)
+
+### User Story
+- As a player on a phone I want lore, ink and my piles in one tidy bar per player, with nothing floating on top of the deck or discard.
+- As a player I want Quest and End turn where my thumb already is, by my hand.
+- As a player I want to see at a glance whether (and how much) I've inked this turn.
+
+### Details
+Chosen from three phone mock-ups: the bars of "C · Open bar" with the buttons of "A · Slim strip".
+- **Player bars (≤760px):** lore and ink are large numbers straight on each player's bar; lore's −/+ sit stacked beside it, ink pips beside the count in rows of five. Discard and deck are mini cards on the right: discard shows its top card and a count, deck its count; the inspect / deck-menu buttons stay on them. The floating lore badges are hidden on phones. ≤360px: smaller numbers and tighter spacing so 10/10 ink still fits.
+- **Quest / End turn** sit in the hand tray, either side of the *Hand · N* label, and hide while the hand is fanned open.
+- **Ink this turn (all sizes):** the ink tag now shows the real count (`+2`), and the pips for cards inked this turn get a bright core. On phones the tag reads *+N inked* beside INK, and the current player's bar shows a dashed *No ink yet* until they ink. The opponent's bar keeps showing what they inked on their last turn.
+- Desktop layout unchanged.
+
 ## Refactor 2: Own repository (v2.18.1)
 
 ### Details
@@ -676,3 +690,4 @@ Phase 3 of `docs/ARCH-accounts-and-library.md` (§8). Database: `supabase/migrat
 - [x] Feature 40: Share links for decks and sessions (ARCH Phase 2)
 - [x] Feature 41: Import Duels.ink's current text logs ("You / Opponent")
 - [x] Feature 42: Optional accounts — Discord & Google sign-in (ARCH Phase 3)
+- [x] Feature 43: Phone player bars, Quest / End turn in the hand tray, ink this turn
