@@ -7,7 +7,7 @@ The working checklist for [`ARCH-accounts-and-library.md`](ARCH-accounts-and-lib
 **(you)** need someone with access to a dashboard or another repo. New work found along the way goes
 into the right phase, or into *Parked* if it's outside the plan.
 
-*Last updated: 2026-10-04 · live: v2.21.0 (v2.22.0 on the branch)*
+*Last updated: 2026-10-04 · live: v2.22.0*
 
 | Phase | Status |
 |---|---|
