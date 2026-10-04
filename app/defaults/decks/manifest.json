@@ -1,6 +1,29 @@
 {
   "groups": [
     {
+      "title": "Set 13",
+      "decks": [
+        {
+          "id": "s13-princess-aggro",
+          "name": "Amber/Sapphire - Princess Aggro",
+          "file": "set-13/princess-aggro.txt",
+          "notes": "Amber/Sapphire Princess Aggro deck"
+        },
+        {
+          "id": "s13-purple-yellow-control",
+          "name": "Amethyst/Amber - Control",
+          "file": "set-13/purple-yellow-control.txt",
+          "notes": "Amethyst/Amber Control deck"
+        },
+        {
+          "id": "s13-evasive-tempo",
+          "name": "Evasive Tempo",
+          "file": "set-13/evasive-tempo.txt",
+          "notes": "Evasive Tempo deck"
+        }
+      ]
+    },
+    {
       "title": "Set 12",
       "decks": [
         {
