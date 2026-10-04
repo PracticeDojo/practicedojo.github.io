@@ -612,7 +612,7 @@ Implements `docs/IMP-newLog.md`, and goes further where real logs needed it. Old
 
 ### Details
 Phase 3 of `docs/ARCH-accounts-and-library.md` (§8). Database: `supabase/migrations/20261004200000_accounts.sql`.
-- **Sign in** (home header): *Continue with Discord* / *Continue with Google*. Optional; signed out, nothing loads or calls Supabase. A browser that already shared links is *linked* to the account, so its links come along. If that Discord/Google account already exists, the Dojo offers to sign in to it instead (the links stay with the browser).
+- **Sign in** (home header): *Continue with Discord* (and *Google* once it's switched on in Supabase; the dialog lists whichever providers are enabled). Optional; signed out, nothing loads or calls Supabase. A browser that already shared links is *linked* to the account, so its links come along. If that Discord/Google account already exists, the Dojo offers to sign in to it instead (the links stay with the browser).
 - **First sign-in on a device with decks or sessions:** "Save N decks and M sessions from this device to your account?" *All / Choose… / Not now*.
 - **Sessions:** autosave stays on the device. **Save** writes the device and the account (revision-checked); a session already in the account is also saved when the tab is hidden with unsaved changes. If it changed on another device: *Overwrite with mine* or *Save mine as a copy*.
 - **Library · Sessions** shows *This device · Account*, *Changes not in account* (cloud button saves) or *Newer in account* (cloud button downloads), plus an *Only in your account* group (Open downloads it once). Delete asks *This device / Account / Both*.

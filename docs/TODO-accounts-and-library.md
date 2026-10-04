@@ -78,8 +78,8 @@ Open:
 So far: SQL tested on Postgres 16; app UI tested end to end against an in-memory stand-in for the account service.*
 
 Setup **(you)**, step by step in [`SETUP-sign-in.md`](SETUP-sign-in.md):
-- [ ] Discord OAuth app (Discord Developer Portal), with its client id / secret in Supabase → Authentication → Providers → Discord
-- [ ] Google OAuth client (Google Cloud console), with its client id / secret in Supabase → Providers → Google
+- [x] Discord OAuth app, enabled in Supabase. *Verified: `discord: true` in the project's auth settings, 2026-10-04*
+- [ ] *(parked)* Google OAuth client. The sign-in dialog only lists providers that are switched on, so Google appears by itself once it's enabled (`SETUP-sign-in.md` §2)
 - [ ] URL Configuration done (see Phase 2)
 
 Database (a new migration in `supabase/migrations/`):

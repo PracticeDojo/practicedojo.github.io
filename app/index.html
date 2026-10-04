@@ -9716,14 +9716,13 @@
 
             async openAccount() {
                 if (!this.account) {
+                    const NAMES = { discord: 'Discord', google: 'Google' };
+                    const providers = await DojoCloud.enabledProviders();
                     const provider = await this.dialog({
                         title: 'Sign in (optional)', icon: 'fa-user',
                         message: "Signing in keeps your decks and sessions in your account, so they're on every device you use. Everything in the Dojo works without it.",
-                        choices: [
-                            { label: 'Continue with Discord', value: 'discord', kind: 'primary', icon: 'fa-brands fa-discord' },
-                            { label: 'Continue with Google', value: 'google', kind: 'primary', icon: 'fa-brands fa-google' },
-                            { label: 'Not now', value: null }
-                        ]
+                        choices: providers.map(p => ({ label: `Continue with ${NAMES[p] || p}`, value: p, kind: 'primary', icon: `fa-brands fa-${p}` }))
+                            .concat([{ label: 'Not now', value: null }])
                     });
                     if (!provider) return;
                     await this.flushDeviceSave();

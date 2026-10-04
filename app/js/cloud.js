@@ -250,6 +250,21 @@ const DojoCloud = (() => {
         return { user: u && !u.is_anonymous ? userInfo(u) : null, justSignedIn: !!(redirect && redirect.code && u && !u.is_anonymous), error };
     }
 
+    // Sign-in providers switched on in Supabase (one small request, only when
+    // someone opens the sign-in dialog). Falls back to Discord.
+    const PROVIDERS = ['discord', 'google'];
+    async function enabledProviders() {
+        try {
+            const r = await fetch(`${URL}/auth/v1/settings`, { headers: { apikey: KEY } });
+            if (!r.ok) throw new Error(`HTTP ${r.status}`);
+            const ext = (await r.json()).external || {};
+            const on = PROVIDERS.filter(p => ext[p]);
+            return on.length ? on : ['discord'];
+        } catch (e) {
+            return ['discord'];
+        }
+    }
+
     function redirectTo() {
         return location.origin + location.pathname;
     }
@@ -386,7 +401,7 @@ const DojoCloud = (() => {
         SLUG_RE, MAX_BLOB,
         getShare, fetchShareBlob, hasIdentity,
         createDeckShare, createSessionShare, listMyShares, deleteShare, shareUrl,
-        isSignedIn, currentUser: () => userInfo(storedUser()), initAuth, signIn, signOut, lastSignInProvider,
+        isSignedIn, currentUser: () => userInfo(storedUser()), initAuth, enabledProviders, signIn, signOut, lastSignInProvider,
         listAccountDecks, saveAccountDeck, deleteAccountDeck,
         listAccountSessions, saveAccountSession, downloadAccountSession, deleteAccountSession, accountUsage
     };
