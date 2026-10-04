@@ -531,6 +531,15 @@ Chosen from the head-to-head prototypes (Option A + "Challenge mode" + "A on pho
 - **Animations**: exert/ready rotate, damage shakes + flashes + floats the amount, quest lifts the card, played/shifted cards arrive, banished cards fade; challenge lunges the attacker. All off under *prefers-reduced-motion*.
 
 
+## Refactor 2: Own repository (v2.18.1)
+
+### Details
+- The Dojo moved from `heavenideas/heavenideas.github.io/practice_dojo/` to `PracticeDojo/practicedojo.github.io`, keeping its git history. See `docs/ARCH-accounts-and-library.md` §12.1.
+- New layout: landing page at `/`, the Dojo at `/app/`, shared images in `/img/`, docs in `/docs/`, sample logs in `/docs/samples/`.
+- The two large `multiverse_examples/` files and the `_bundle/` restore loader were left behind and removed from history.
+- No behaviour change.
+
+
 # Progress
 
 - [x] Feature 1: Manual Lore Scoring
@@ -572,4 +581,4 @@ Chosen from the head-to-head prototypes (Option A + "Challenge mode" + "A on pho
 - [x] Feature 35: Cards Quested section on multiverse nodes
 - [x] Feature 36: "Competition" player palette
 - [x] Feature 37: Card interaction redesign (Option A, challenge mode, phone hand & card drawer, ink counter)
-
+- [x] Refactor 2: Own repository

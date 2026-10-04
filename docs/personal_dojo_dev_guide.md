@@ -8,7 +8,7 @@ The Lorcana Practice Dojo is a single-file, client-side web application designed
 
 ## **2\. Tech Stack & Dependencies**
 
-The application strictly adheres to a single-file structure (index.html) containing all HTML, CSS, and JavaScript.
+The application lives in `app/index.html`, which contains the HTML, CSS, and JavaScript of the core game. New, separate concerns may get their own small script file (see §5.1).
 
 * **Styling:** Tailwind CSS (via CDN) \+ Custom CSS in \<style\> tags.  
 * **Icons:** FontAwesome 6.4.0 (via CDN).  
@@ -101,7 +101,7 @@ The app uses the native HTML5 Drag and Drop API.
 
 ## **5\. Guidelines for Future AI Development**
 
-1. **Never alter the Single-File Structure:** All code must remain in one .html file.  
+1. **Split only when it pays (YAGNI):** A new concern with its own reason to change (e.g. device storage, Supabase) gets its own classic `<script src>` file in `app/js/`, exposing one global. Existing code is only extracted when a feature has to change it substantially anyway. No build step, bundler or framework.  
 2. **Preserve the Sandbox:** Do not add strict Phase/Step state machines. The user is the referee.  
 3. **Respect the Color Palette:** Use Tailwind classes. Main backgrounds: bg-gray-900. Sidebar: bg-\[\#1a1a1e\], \#151518. Player boards: \#3f2e70 (Top), \#a86b32 (Bottom). Accent colors: Purple (System/P2), Orange (P1), Blue (BCR), Yellow (LVI/Lore).  
 4. **DOM Manipulations:** Do not use jQuery or complex manual DOM tracking. App.render() clears innerHTML of containers and rebuilds card elements from scratch based on state. Only mutate state, then call render.  

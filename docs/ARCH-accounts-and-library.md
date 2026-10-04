@@ -542,14 +542,14 @@ Phases 2 and 3 can swap order if you'd rather have accounts first.
    ```
    /index.html                ← landing page (was practice_dojo/index.html)
    /app/index.html            ← the Dojo (was practice_dojo/practice_dojo.html)
-   /app/img/…                 ← images the app uses
-   /img/…                     ← images the landing page uses
+   /img/…                     ← images (shared by the landing page and the app)
+   /README.md, /.nojekyll     ← short readme; .nojekyll so Pages serves files as-is
    /docs/                     ← features.md, personal_dojo_dev_guide.md, ARCH-*, IMP-*, RSC-*, TEST-PROTOCOL-*
    /docs/samples/             ← logs/*.md and the Duels.ink replay .json (test fixtures)
    /AGENTS.md                 ← paths updated + the new splitting rule (§11)
    ```
    **Left behind:** `multiverse_examples/` (90 MB) and `_bundle/` (the old chunked-restore loader).
-3. **Fix the links:** landing → `app/`, the app's "home" → `../`, and image paths. Bump the patch version.
+3. **Fix the links:** landing → `app/`, and the app's image path → `../img/`. Bump the patch version (v2.18.1).
 4. **Turn on GitHub Pages:** *Settings → Pages → Deploy from a branch → `main` / root*. Smoke-test: start a match, import a Duels.ink replay, export a session and import it back.
 5. **Old site** (`heavenideas.github.io`):
    - `practice_dojo/practice_dojo.html` becomes a **"We've moved"** page. It links to the new app and, if this browser has a saved Continue session, offers **Download my last session**. That's the same v1 file *Export* makes today, which the new site can import.

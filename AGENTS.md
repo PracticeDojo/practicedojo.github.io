@@ -1,28 +1,38 @@
 # AI Agents Context and Instructions
 
-This file provides system instructions and context for AI agents working in this directory.
+This file provides system instructions and context for AI agents working in this repository.
 
 ## Read the main context files
-1. **`features.md`**: This document is the single source of truth for current and planned features, user stories, and progress. Always refer to this file when working on a feature, and ensure its progress checkboxes are updated when a feature is completed.
-2. **`personal_dojo_dev_guide.md`**: This document is a dev guide that you should read to understand how the tool works.
-3. **`practice_dojo/practice_dojo.html#`**: This is where the whole tool lives and where the user is going to be asking for changes. Treat it with respect. Don't change anything that isn't specificially asked for
+1. **`docs/features.md`**: The single source of truth for current and planned features, user stories, and progress. Always refer to it when working on a feature, and update its progress checkboxes when a feature is completed.
+2. **`docs/personal_dojo_dev_guide.md`**: The dev guide. Read it to understand how the tool works.
+3. **`docs/ARCH-accounts-and-library.md`**: The agreed architecture for the deck and session library, share links, and optional accounts. Follow its phases and decision log.
+4. **`app/index.html`**: Where the tool lives and where the user is going to be asking for changes. Treat it with respect. Don't change anything that isn't specifically asked for.
+
+## Repository layout
+
+| Path | What it is |
+|---|---|
+| `index.html` | Landing page (`https://practicedojo.github.io/`) |
+| `app/index.html` | The Practice Dojo (`https://practicedojo.github.io/app/`) |
+| `app/js/` | Small modules split out of the app (see "Splitting rule") |
+| `img/` | Images used by the landing page and the app |
+| `docs/` | Feature list, dev guide, architecture, implementation and research notes, test protocols |
+| `docs/samples/` | Sample Duels.ink logs and replays for testing imports |
+
+## Splitting rule (YAGNI)
+The app started as a single HTML file. A new concern with its own reason to change (for example device storage or Supabase) gets its own classic `<script src>` file in `app/js/`, exposing one global. Existing code is only extracted when a feature has to change it substantially anyway. No build step, no bundler, no framework.
 
 ## Versioning Convention
 
 This project uses Semantic Versioning (`MAJOR.MINOR.PATCH`) to track progress, and this version number is displayed in the UI (e.g., `v1.12.0`).
 
 - **MAJOR**: Increment when making massive, incompatible rewrites to the core application (e.g., `v2.0.0`).
-- **MINOR**: Increment this every time you complete a new Feature listed in the `features.md` document. Reset `PATCH` to `0` when you do this.
+- **MINOR**: Increment this every time you complete a new Feature listed in `docs/features.md`. Reset `PATCH` to `0` when you do this.
 - **PATCH**: Increment this for pure bug fixes or minor refactors that don't add new functionality.
 
 **Whenever you complete a feature or patch that requires a version bump:**
-1. Update the version number in all `.html` files in this directory (e.g., `practice_dojo.html`, `2player_practice_dojo.html`, etc.) by finding the old version string and replacing it with the new one.
-2. Ensure you update all instances (e.g., in the loading screen, the setup modal, and the sidebar).
-
-## Key Files
-
-- **`features.md`**: Located in the same folder as this file (`./practice_dojo/features.md`). This document is the single source of truth for current and planned features, user stories, and progress. Always refer to this file when working on a feature, and ensure its progress checkboxes are updated when a feature is completed.
-- **`personal_dojo_dev_guide.md`**: Located in the same folder as this file (`./practice_dojo/personal_dojo_dev_guide.md`). This document is a dev guide that you should read to understand how the tool works.
+1. Update `APP_VERSION` in `app/index.html` (the UI reads it from there).
+2. Update the version label in the landing page (`index.html`).
 
 ## Keeping a dev guide
-- whenever the user asks to `update the dev guide`, you need to update a concise destilation of the session into a dev guide section in the `personal_dojo_dev_guide.md` file.
+- Whenever the user asks to `update the dev guide`, add a concise distillation of the session as a section in `docs/personal_dojo_dev_guide.md`.
