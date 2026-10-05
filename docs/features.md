@@ -633,6 +633,7 @@ Chosen from three phone mock-ups: the bars of "C · Open bar" with the buttons o
 - **Quest / End turn** sit in the hand tray, either side of the *Hand · N* label, and hide while the hand is fanned open.
 - **Ink this turn (all sizes):** the ink tag now shows the real count (`+2`), and the pips for cards inked this turn get a bright core. On phones the tag reads *+N inked* beside INK, and the current player's bar shows a dashed *No ink yet* until they ink. The opponent's bar keeps showing what they inked on their last turn.
 - Desktop layout unchanged.
+- **v2.24.1, bigger drop targets:** on phones the ink counter fills its bar from lore to the piles, so the whole stretch takes a card to ink. On all sizes the field fills its strip, so a card dropped anywhere in the play area (not only on the row of cards) is played.
 
 ## Refactor 2: Own repository (v2.18.1)
 

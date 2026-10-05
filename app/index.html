@@ -2526,10 +2526,12 @@
             opacity: 0.5;
         }
 
+        /* The field stretches to fill its strip, so the whole play area takes a drop
+           (cards stay centred inside it). */
         .field-strip {
             flex: 1 1 auto;
             display: flex;
-            align-items: center;
+            align-items: stretch;
             justify-content: center;
             min-height: calc(var(--card-h) + 8px);
             position: relative;
@@ -5288,8 +5290,15 @@
                 padding: 4px 6px 4px 12px;
             }
 
+            /* The ink counter fills the bar between lore and the piles, so the whole
+               stretch is one big target for dropping a card to ink it. */
             .pile-row .ink-cluster.is-counter {
-                flex: none;
+                flex: 1 1 auto;
+                align-self: stretch;
+                align-content: center;
+                justify-content: start;
+                margin: -4px 8px -4px 0;
+                border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
             }
 
             .pile-row .pile-cluster {
@@ -8137,7 +8146,7 @@
     <script>
         let cardFuse = null;
 
-        const APP_VERSION = "v2.24.0"; // Centralized version string (redesign)
+        const APP_VERSION = "v2.24.1"; // Centralized version string (redesign)
 
         // Tweaks panel accent presets (hue values for the OKLCH accent ramp)
         const ACCENT_PRESETS = {
