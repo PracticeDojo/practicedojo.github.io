@@ -3746,13 +3746,23 @@ body.palette-competition .tree-node.is-victory.tn-p2::before {
     }
 }
 
-/* ----- Phones (≤760px): the well goes edge to edge; the bars inside it
-       keep their Feature 43 layout, re-read in Field Unit tokens. ----- */
+/* ----- Phones (≤760px): the well is framed like the multiverse canvas,
+       8px of chassis round it and 16px corners; the bars inside it keep
+       their Feature 43 layout, re-read in Field Unit tokens. ----- */
 @media (max-width: 760px) {
     .play {
-        margin: 0;
-        border-radius: 0;
-        box-shadow: none;
+        margin: 8px;
+        margin-bottom: calc(8px + env(safe-area-inset-bottom, 0px));
+    }
+
+    /* The hand tray (Quest, End turn, the peeking hand) is fixed to the
+       bottom of the screen: it sits on the well's bottom edge instead, and
+       the peeking cards are clipped at the well's rounded corners. */
+    #bottom-board .hand-wrap {
+        left: 8px;
+        right: 8px;
+        bottom: calc(8px + env(safe-area-inset-bottom, 0px));
+        clip-path: inset(-100vh 0 0 0 round 0 0 var(--radius-well) var(--radius-well));
     }
 
     .sidebar {

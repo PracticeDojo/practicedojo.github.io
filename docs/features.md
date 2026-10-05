@@ -700,6 +700,12 @@ Implements version 2 of `docs/DESIGN-field-unit.md` (Kiln dark mode, signal fami
 - **Signal family.** By day the signal is Ember `#E4572E`; on Kiln it is Radio `#E86B2A` with dark text on the key. Tweaks → Accent offers only the approved swaps: **Signal** (the theme's own), **Coral**, **Olive** (its lore numeral lifts to `#C6C45A` on the well) and **Trace**. Each carries the text colour that sits on it. The old Amber / Rose / Emerald / Violet / Azure accents were ink colours, so a saved pick of one falls back to Signal.
 - **CSS file.** The Field Unit tokens, themes, palettes and component styles moved from the inline `<style>` to `app/css/field-unit.css`, loaded right after it (pixel-identical move). The older inline rules stay put.
 
+## Patch: Framed phone board (v3.2.1)
+
+### Details
+- On phones the playfield is framed like the multiverse canvas and like the desktop well: 8px of chassis round it (plus the bottom safe area) and 16px corners, where it used to run edge to edge.
+- The hand tray (Quest, the hand label, End turn and the peeking hand) moves in with it and sits on the well's bottom edge; the peeking cards are clipped at the well's rounded corners. Desktop is unchanged.
+
 ## Feature 49: Phone hand in the card drawer (v3.2.0)
 
 ### User Story
@@ -810,3 +816,4 @@ The public page (`index.html`) follows Field Unit too, as `docs/DESIGN-field-uni
 - [x] Landing page: Field Unit
 - [x] Feature 48: Phone card drawer and hand as function keys
 - [x] Feature 49: Phone hand in the card drawer
+- [x] Patch: Framed phone board

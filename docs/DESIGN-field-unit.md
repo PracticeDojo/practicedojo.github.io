@@ -179,7 +179,7 @@ The match board is a fixed instrument, not a scrolling marketing page.
 
 - Top bar: 46px, chassis, 1px `#D5CFC4` bottom rule, 12px horizontal padding, 8px gaps.
 - Columns: players/log 292px, board fluid, draw odds 286px. Minimum board width 720px before the odds column collapses under the board.
-- Playfield: 8px margin from the columns, 16px radius, split in half by a 1px `#242424` rule. Opponent on top, you on bottom.
+- Playfield: 8px margin from the columns, 16px radius, split in half by a 1px `#242424` rule. Opponent on top, you on bottom. Phones frame it the same way, like the multiverse canvas: 8px of chassis all round (plus the bottom safe area) and 16px corners. The phone hand tray sits on the well's bottom edge and its peeking cards are clipped by the well's corners.
 - Each half: discard column 168px, field fluid, deck 92px, gap 8px.
 - Multiverse: chassis frame, glass canvas with 16px radius, nodes absolutely placed, edges 1.2px `#6A655E`, live edge 1.6px signal.
 
