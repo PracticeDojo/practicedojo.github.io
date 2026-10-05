@@ -1,0 +1,3772 @@
+/* Practice Dojo · Field Unit (Feature 46)
+   The app's design system: tokens, the day/night themes, the palettes and the
+   component layer. Loaded after the inline <style> in app/index.html, so it
+   wins over the older layers there where they collide. Spec:
+   docs/DESIGN-field-unit.md. */
+
+/* ===================================================================
+   FIELD UNIT DESIGN SYSTEM (Feature 46)
+   A calibrated instrument: a warm mineral shell (chassis + paper) outside,
+   the match and the multiverse inside a recessed black glass well. One
+   signal orange is a state (End turn, live lore, the branch you are on,
+   auto-save on, a new card), never a theme. Ink colours identify players
+   and cards as ticks and cost pips, never as a wash. Source: the
+   design.md "Field Unit" spec (docs/DESIGN-field-unit.md).
+
+   Token model. The --fu-* tokens are the raw palette. The role tokens the
+   rest of the stylesheet has always read (--bg, --surface, --text,
+   --border, …) are defined twice: here for the shell, and again on the
+   glass scopes below (.play, the multiverse canvas, the card preview …),
+   so every existing rule picks up the right side of the instrument
+   without being rewritten.
+=================================================================== */
+@font-face {
+    font-family: 'Liberation Mono';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: local('Liberation Mono'), local('LiberationMono'), url('../fonts/LiberationMono-Regular.woff2') format('woff2');
+}
+
+@font-face {
+    font-family: 'Liberation Mono';
+    font-style: normal;
+    font-weight: 700;
+    font-display: swap;
+    src: local('Liberation Mono Bold'), local('LiberationMono-Bold'), url('../fonts/LiberationMono-Bold.woff2') format('woff2');
+}
+
+:root {
+    /* --- Raw palette (design.md · colors) --- */
+    --fu-chassis: #E7E2D8;
+    --fu-paper: #F4F0E8;
+    --fu-paper-sunk: #EDE9E1;
+    --fu-glass: #121212;
+    --fu-glass-raised: #1A1A1A;
+    --fu-ink: #161513;
+    --fu-body: #3C3934;
+    --fu-mute: #8A847A;
+    --fu-zero: #A39E94;
+    --fu-line: #D5CFC4;
+    --fu-line-soft: #E0DBD1;
+    --fu-row-rule: #E4DFD6;
+    --fu-signal-ink: #FFF8F4;
+    --fu-glass-line: #2A2A2A;
+    --fu-glass-rule: #242424;
+    --fu-glass-2: #C9C3B8;
+    --fu-glass-mute: #9A948A;
+    --fu-edge: #6A655E;
+    --ink-amber: #E0A23A;
+    --ink-amethyst: #7A5CFF;
+    --ink-ruby: #D64545;
+    --ink-emerald: #1F9D6A;
+    --ink-sapphire: #3C7DFF;
+    --ink-steel: #8E8C88;
+
+    /* --- Signal. Tweaks → Accent rewrites these three on <html>; every
+           accent token below is derived from them. Default = signal
+           #E4572E (hover #C94A24, active #B3411E). --- */
+    --accent-l: 0.637;
+    --accent-c: 0.184;
+    --accent-h: 36.5;
+
+    /* --- Shell roles (chassis + paper) --- */
+    --bg: var(--fu-chassis);
+    --bg-grid: var(--fu-line-soft);
+    --surface: var(--fu-paper);
+    --surface-2: var(--fu-paper-sunk);
+    --surface-3: #E5E0D6;
+    --surface-hi: #FBF9F5;
+    --border: var(--fu-line);
+    --border-soft: var(--fu-line-soft);
+    --border-strong: #BDB6AA;
+    --text: var(--fu-ink);
+    --text-2: var(--fu-body);
+    --text-dim: var(--fu-mute);
+    --text-faint: var(--fu-zero);
+
+    /* Players: Modern = Amber / Sapphire. Competition and Classic write
+       their own values onto <html> from JS. Ticks only, never a wash. */
+    --p1: oklch(0.754 0.137 76.3);
+    --p1-hi: oklch(0.70 0.137 76.3);
+    --p1-soft: oklch(0.754 0.137 76.3 / 0.18);
+    --p1-faint: oklch(0.754 0.137 76.3 / 0.07);
+    --p2: oklch(0.62 0.205 262.2);
+    --p2-hi: oklch(0.58 0.205 262.2);
+    --p2-soft: oklch(0.62 0.205 262.2 / 0.20);
+    --p2-faint: oklch(0.62 0.205 262.2 / 0.08);
+
+    /* Zone figures are engraved, not colour-coded (CTL · BCR · RDS · LVI). */
+    --bcr: var(--text);
+    --lvi: var(--text);
+    --rds: var(--text);
+    --ctl: var(--text);
+    --danger: oklch(0.56 0.18 24.5);
+    --danger-soft: oklch(0.597 0.182 24.5 / 0.14);
+    --ok: oklch(0.618 0.131 160.2);
+
+    /* --- Geometry (design.md · layout, radius) --- */
+    --topbar-h: 46px;
+    --sidebar-w: 292px;
+    --odds-w: 286px;
+    --card-scale: 1;
+    --card-w: calc(80px * var(--card-scale));
+    --card-h: calc(112px * var(--card-scale));
+    --pile-w: calc(72px * var(--card-scale));
+    --pile-h: calc(100px * var(--card-scale));
+    --radius: 12px;
+    --radius-sm: 8px;
+    --radius-inset: 10px;
+    --radius-well: 16px;
+    --dur: 120ms;
+    --ease: ease-out;
+
+    /* --- Type (design.md · typography) --- */
+    --font-sans: 'Inter', 'Noto Sans Display', system-ui, -apple-system, sans-serif;
+    --font-display: 'Inter', 'Noto Sans Display', system-ui, -apple-system, sans-serif;
+    --font-mono: 'Liberation Mono', 'DejaVu Sans Mono', ui-monospace, monospace;
+    --label-track: 0.14em;
+
+    --shadow-1: 0 1px 0 oklch(0.2 0.01 80 / 0.04);
+    --shadow-2: 0 14px 30px -16px oklch(0.2 0.02 80 / 0.38);
+    --shadow-3: 0 28px 64px -24px oklch(0.15 0.02 80 / 0.5);
+
+}
+
+/* Derived tokens, declared wherever an input can change: Tweaks writes the
+   accent on <html>, the Mono palette overrides on <body>, and the glass
+   and paper scopes re-tune it. On the shell, "hi" is the hover/pressed
+   tone and the readable-on-paper text tone; on glass it is lighter. */
+:root,
+body,
+.play,
+#tree-viewport,
+.preview-pane,
+.chal-fc,
+.hand-focus,
+.touch-drag-ghost,
+.turn-pill,
+.fu-glass,
+.tree-node,
+.fu-paper {
+    --accent: oklch(var(--accent-l) var(--accent-c) var(--accent-h));
+    --accent-hi: oklch(calc(var(--accent-l) - 0.06) var(--accent-c) var(--accent-h));
+    --accent-dim: oklch(calc(var(--accent-l) - 0.108) calc(var(--accent-c) * 0.85) var(--accent-h));
+    --accent-soft: oklch(var(--accent-l) var(--accent-c) var(--accent-h) / 0.16);
+    --accent-faint: oklch(var(--accent-l) var(--accent-c) var(--accent-h) / 0.08);
+    --accent-ink: var(--fu-signal-ink);
+}
+
+/* Player identity ticks: two 3×16 bars for the ink pair. P2's bars are
+   striped (Feature 36's barber pole), so a mirror match still reads. */
+:root,
+body {
+    --tick-p1: linear-gradient(90deg, var(--p1) 0 3px, transparent 3px 5px, var(--p1-2) 5px 8px);
+    --tick-p2: repeating-linear-gradient(135deg, var(--p2) 0 2px, var(--p2-2) 2px 4px);
+    --tick-mask: linear-gradient(90deg, #000 0 3px, transparent 3px 5px, #000 5px 8px);
+}
+
+/* --- The glass well: the match, the multiverse canvas, the card preview,
+       and the overlays that float over the board. Same role tokens,
+       glass values. --- */
+.play,
+#tree-viewport,
+.preview-pane,
+.chal-fc,
+.hand-focus,
+.touch-drag-ghost,
+.turn-pill,
+.fu-glass {
+    --bg: var(--fu-glass);
+    --bg-grid: #1E1E1E;
+    --surface: var(--fu-glass-raised);
+    --surface-2: #202020;
+    --surface-3: #2A2A2A;
+    --surface-hi: #333230;
+    --border: var(--fu-glass-line);
+    --border-soft: var(--fu-glass-rule);
+    --border-strong: #3B3A37;
+    --text: var(--fu-paper);
+    --text-2: var(--fu-glass-2);
+    --text-dim: var(--fu-glass-mute);
+    --text-faint: #6F6A62;
+    --bcr: var(--fu-glass-2);
+    --lvi: var(--fu-glass-2);
+    --rds: var(--fu-glass-2);
+    --ctl: var(--fu-glass-2);
+    --danger: oklch(0.64 0.19 24.5);
+    --accent-hi: oklch(calc(var(--accent-l) + 0.07) var(--accent-c) var(--accent-h));
+    --shadow-1: 0 1px 0 oklch(1 0 0 / 0.03) inset, 0 1px 2px oklch(0 0 0 / 0.35);
+    --shadow-2: 0 12px 32px -8px oklch(0 0 0 / 0.6);
+    --shadow-3: 0 24px 60px -12px oklch(0 0 0 / 0.7);
+    color: var(--text);
+}
+
+/* Paper sits on glass in two places: multiverse nodes and card faces. */
+.tree-node,
+.fu-paper {
+    --bg: var(--fu-chassis);
+    --surface: var(--fu-paper);
+    --surface-2: var(--fu-paper-sunk);
+    --surface-3: #E5E0D6;
+    --surface-hi: #FBF9F5;
+    --border: var(--fu-line);
+    --border-soft: var(--fu-line-soft);
+    --border-strong: #BDB6AA;
+    --text: var(--fu-ink);
+    --text-2: var(--fu-body);
+    --text-dim: var(--fu-mute);
+    --text-faint: var(--fu-zero);
+    --danger: oklch(0.56 0.18 24.5);
+    --accent-hi: oklch(calc(var(--accent-l) - 0.06) var(--accent-c) var(--accent-h));
+    color: var(--text);
+}
+
+/* MONO PALETTE — the whole interface desaturated.
+   Two layers, and both are needed:
+
+   1. `filter: saturate(0)` on <body>: the catch-all for every colour — the
+      chassis, the signal, the ink hexes JS writes inline (card ink strips,
+      deck pips, victory gradients) and the card artwork itself.
+
+   2. Token overrides for what desaturating alone would lose. Amber P1 and
+      Sapphire P2 land on nearly the same grey, so mono separates the players
+      by LIGHTNESS — P1 light, P2 heavy — at values that still read as ticks
+      on paper and on glass. The signal becomes a near-black key on the
+      shell and a near-white numeral in the well.
+
+   The filter sits on <body> deliberately: body is `height:100%; overflow:hidden`,
+   a viewport-sized non-scrolling box, so the containing block a filter creates
+   for `position:fixed` descendants matches the viewport and nothing shifts.
+   Moving this filter onto a smaller element means rechecking all 12 fixed
+   elements. Known trade-off: the accent swatches in Tweaks are grey while mono
+   is on (their tooltips and the accent name label still identify them). */
+body.palette-mono {
+    filter: saturate(0);
+
+    --accent-c: 0;
+    --accent-l: 0.34;
+
+    /* Player identity by lightness: P1 reads light, P2 reads heavy. */
+    --p1: oklch(0.80 0 0);
+    --p1-hi: oklch(0.72 0 0);
+    --p1-soft: oklch(0.80 0 0 / 0.24);
+    --p1-faint: oklch(0.80 0 0 / 0.10);
+    --p2: oklch(0.42 0 0);
+    --p2-hi: oklch(0.36 0 0);
+    --p2-soft: oklch(0.42 0 0 / 0.26);
+    --p2-faint: oklch(0.42 0 0 / 0.10);
+    --danger: oklch(0.40 0 0);
+    --danger-soft: oklch(0.40 0 0 / 0.14);
+    --ok: oklch(0.50 0 0);
+}
+
+body.palette-mono :is(.play, #tree-viewport, .preview-pane, .chal-fc, .hand-focus, .touch-drag-ghost, .turn-pill, .fu-glass) {
+    --accent-l: 0.90;
+    --accent-ink: var(--fu-ink);
+    --danger: oklch(0.80 0 0);
+}
+
+body.palette-mono :is(.tree-node, .fu-paper) {
+    --accent-l: 0.34;
+    --accent-ink: var(--fu-signal-ink);
+    --danger: oklch(0.40 0 0);
+}
+
+/* ===================================================================
+   COMPETITION PALETTE · Feature 36 — the default.
+
+   The players' identity marks take their colours from what the two
+   players actually brought: each side's ticks are that deck's two inks.
+
+   Token model: --p1 / --p2 stay the deck's FIRST ink, so every rule
+   already reading them keeps working untouched; --p1-2 / --p2-2 carry
+   the second ink. Both pairs are written onto <html> by
+   applyCompetitionPalette() from the live decks — no ink is hardcoded
+   here, and with no game loaded the tokens fall back to Modern.
+
+   Field Unit (Feature 46) keeps the inks as ticks — the sidebar player
+   rows, the board's player label, every multiverse node and auto-save —
+   and drops the board washes. The two weaves stay: P1's pair is two
+   solid bars, P2's two striped bars (the barber pole), which is what
+   keeps a mirror match readable when colour alone can't. */
+:root {
+    --p1-2: var(--p1);
+    --p1-2-hi: var(--p1-hi);
+    --p2-2: var(--p2);
+    --p2-2-hi: var(--p2-hi);
+}
+
+body.palette-competition {
+    /* Along a vertical spine. */
+    --weave-p1: linear-gradient(180deg, var(--p1) 0 50%, var(--p1-2) 50% 100%);
+    --weave-p2: repeating-linear-gradient(45deg, var(--p2) 0 12px, var(--p2-2) 12px 24px);
+    /* Along a horizontal rule. The barber pole is direction-agnostic. */
+    --weave-p1-h: linear-gradient(90deg, var(--p1) 0 50%, var(--p1-2) 50% 100%);
+    --weave-p2-h: repeating-linear-gradient(45deg, var(--p2) 0 4px, var(--p2-2) 4px 8px);
+}
+
+/* =====================================================================
+   FIELD UNIT · component layer (Feature 46)
+   Appended last, so it wins over the older layers where they collide.
+   Reads the role tokens defined at the top of this sheet. Section order
+   follows design.md: base → controls → top bar → rail (sidebar) →
+   playfield → draw odds → overlays → multiverse → home / library.
+   ===================================================================== */
+
+/* ----- Base ----- */
+html,
+body {
+    font-family: var(--font-sans);
+    letter-spacing: 0;
+    font-optical-sizing: auto;
+}
+
+/* html keeps 14px so Tailwind's rem-based utilities don't shift. */
+body {
+    font-size: 13px;
+}
+
+body {
+    background: var(--bg);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--border-strong);
+    border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--text-dim);
+}
+
+/* label/sm: mono, uppercase, 0.14em. Every label, index and column head. */
+.fu-label,
+.sidebar-section .section-head h3,
+.metric-label,
+.toggle-row .toggle-label,
+.prob-head h3,
+.prob-cols,
+.drawer-list-head,
+.tweak-label,
+.tweaks-head h3,
+.drawer-head h2,
+.home-box h3,
+.lib-group-title,
+.ctx-section,
+.notes-panel .notes-head,
+.preview-placeholder,
+.pm-label,
+.tn-sec-label,
+.seat .seat-who,
+.readout .ro-kind {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 500;
+    line-height: 1.3;
+    letter-spacing: var(--label-track);
+    text-transform: uppercase;
+}
+
+.mono {
+    font-family: var(--font-mono);
+    font-size: 0.82em;
+    font-variant-numeric: tabular-nums;
+}
+
+.dim {
+    color: var(--text-dim);
+}
+
+/* ----- Controls: paper tools, the one signal key, inputs ----- */
+.icon-btn,
+.btn {
+    background: var(--surface);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-family: var(--font-sans);
+    font-size: 12px;
+    font-weight: 500;
+    transition: background var(--dur) var(--ease), color var(--dur) var(--ease), border-color var(--dur) var(--ease);
+}
+
+.icon-btn:hover,
+.btn:hover {
+    background: var(--surface-2);
+    border-color: var(--border-strong);
+    color: var(--text);
+}
+
+.icon-btn:active,
+.btn:active {
+    transform: none;
+    background: var(--surface-3);
+}
+
+.icon-btn i,
+.btn i {
+    color: inherit;
+}
+
+.icon-btn.ghost,
+.btn-ghost {
+    background: transparent;
+}
+
+.icon-btn.ghost {
+    border-color: transparent;
+}
+
+.icon-btn.ghost:hover,
+.btn-ghost:hover {
+    background: var(--surface-2);
+    border-color: var(--border);
+}
+
+/* The signal key: End turn, Start match, the primary confirm. One per view. */
+.btn-primary,
+.icon-btn.primary,
+.btn-p1 {
+    background: var(--accent);
+    color: var(--accent-ink);
+    border: 1px solid transparent;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 600;
+    justify-content: center;
+    min-height: 36px;
+    padding: 0 16px;
+}
+
+.btn-primary:hover,
+.icon-btn.primary:hover,
+.btn-p1:hover {
+    background: var(--accent-hi);
+    color: var(--accent-ink);
+    border-color: transparent;
+}
+
+.btn-primary:active,
+.icon-btn.primary:active,
+.btn-p1:active {
+    background: var(--accent-dim);
+}
+
+.btn-primary:disabled,
+.icon-btn.primary:disabled,
+.btn-p1:disabled {
+    opacity: 1;
+    background: var(--fu-line-soft);
+    color: var(--fu-mute);
+}
+
+.btn-danger-ghost {
+    background: transparent;
+    color: var(--danger);
+    border-color: color-mix(in oklch, var(--danger) 40%, transparent);
+}
+
+.btn-danger-ghost:hover {
+    background: var(--danger-soft);
+    color: var(--danger);
+    border-color: var(--danger);
+}
+
+.input,
+.select,
+.dojo-textarea {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    font-size: 12.5px;
+}
+
+.input:focus,
+.select:focus,
+.dojo-textarea:focus {
+    border-color: var(--text);
+    background: var(--surface);
+}
+
+.input::placeholder,
+.dojo-textarea::placeholder {
+    color: var(--text-faint);
+}
+
+.deck-note.is-warn,
+.lib-meta .is-warn,
+.readout .ro-detail .is-warn,
+.seat .seat-count.is-warn,
+.lib-badge.is-dirty {
+    color: oklch(0.55 0.13 70);
+}
+
+.input:focus-visible,
+.select:focus-visible,
+.dojo-textarea:focus-visible,
+.btn:focus-visible,
+.icon-btn:focus-visible,
+.card-wrap:focus-visible,
+.card:focus-visible {
+    outline: 2px solid var(--text);
+    outline-offset: 2px;
+}
+
+.switch:has(input:focus-visible) .slider {
+    outline: 2px solid var(--text);
+}
+
+.divider-v {
+    height: 18px;
+    background: var(--border);
+    margin: 0 2px;
+}
+
+/* ----- Top bar: chassis, 46px, a hairline under it ----- */
+.topbar {
+    height: var(--topbar-h);
+    padding: 0 12px;
+    gap: 8px;
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+}
+
+.topbar-left,
+.topbar-right {
+    gap: 8px;
+}
+
+.topbar-right {
+    gap: 6px;
+}
+
+.brand {
+    gap: 8px;
+    padding-left: 2px;
+}
+
+.brand-name {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: var(--label-track);
+    text-transform: uppercase;
+    color: var(--text);
+    white-space: nowrap;
+}
+
+.brand-tag {
+    font-size: 9.5px;
+    letter-spacing: 0.1em;
+    border-color: var(--border);
+    color: var(--text-dim);
+    border-radius: 4px;
+    padding: 2px 5px;
+}
+
+.session-ctl {
+    gap: 4px;
+    margin-left: 4px;
+}
+
+.session-title {
+    font-size: 12px;
+    color: var(--text);
+    padding: 0 8px;
+    height: 28px;
+    border-radius: var(--radius-sm);
+}
+
+.session-title:hover {
+    border-color: var(--border);
+}
+
+.session-title:focus {
+    border-color: var(--text);
+    background: var(--surface);
+}
+
+.topbar .icon-btn {
+    height: 28px;
+    padding: 0 10px;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--text);
+    background: var(--surface);
+    border-color: var(--border);
+}
+
+.topbar .icon-btn i {
+    font-size: 11px;
+    color: var(--text-2);
+}
+
+.session-ctl .icon-btn,
+.topbar-right>.icon-btn:not(:has(span)) {
+    width: 28px;
+    padding: 0;
+    justify-content: center;
+}
+
+/* An open tool inverts to glass. */
+#btn-challenge-mode.is-active,
+body:has(#timeline-drawer.is-open) #btn-timelines,
+body:has(#tree-modal:not(.hidden)) #btn-multiverse,
+body:has(#tweaks-panel.is-open) #btn-tweaks {
+    background: var(--fu-glass);
+    border-color: var(--fu-glass);
+    color: var(--fu-paper);
+}
+
+#btn-challenge-mode.is-active i,
+body:has(#timeline-drawer.is-open) #btn-timelines i,
+body:has(#tree-modal:not(.hidden)) #btn-multiverse i,
+body:has(#tweaks-panel.is-open) #btn-tweaks i {
+    color: var(--fu-paper);
+}
+
+/* The turn chip is a little piece of the well: glass, signal numeral. */
+.turn-pill {
+    height: 28px;
+    gap: 8px;
+    padding: 0 10px;
+    background: var(--fu-glass);
+    border: 1px solid var(--fu-glass);
+    border-radius: var(--radius-sm);
+    color: var(--fu-glass-2);
+    font-size: 12px;
+}
+
+.turn-pill .mono {
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: var(--label-track);
+    color: var(--fu-glass-mute);
+}
+
+.turn-pill .turn-num,
+.turn-pill.is-p1 .turn-num,
+.turn-pill.is-p2 .turn-num {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--accent);
+    font-variant-numeric: tabular-nums;
+}
+
+.turn-pill .turn-arrow {
+    color: var(--fu-glass-mute);
+}
+
+.turn-pill .turn-actor {
+    color: var(--fu-paper);
+    font-weight: 560;
+}
+
+/* Viewing a shared session: a paper strip under the bar; nothing is
+   saved yet, so the note is mute and "Save a copy" is a paper tool. */
+.shared-banner {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-2);
+    color: var(--text-2);
+    border-radius: 999px;
+}
+
+.shared-banner>i {
+    color: var(--text-dim);
+}
+
+.shared-banner .sb-note {
+    color: var(--text-dim);
+}
+
+.shared-banner .btn.btn-primary {
+    background: var(--surface);
+    color: var(--text);
+    border: 1px solid var(--border);
+    min-height: 28px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.shared-banner .btn.btn-primary:hover {
+    background: var(--surface-2);
+}
+
+/* ----- App shell: rail · well · odds ----- */
+.app {
+    background: var(--bg);
+}
+
+/* ----- The rail (sidebar): chassis, paper modules on it ----- */
+.sidebar {
+    background: var(--bg);
+    border-right: 0;
+    gap: 8px;
+    padding-top: 8px;
+}
+
+.sidebar-section {
+    padding: 0 8px 0 10px;
+    border-bottom: 0;
+    gap: 6px;
+}
+
+.sidebar-section .section-head {
+    padding: 0 2px;
+}
+
+.sidebar-section .section-head h3 {
+    color: var(--text-dim);
+}
+
+.sidebar-section .section-head .hint {
+    font-size: 10px;
+    color: var(--text-dim);
+}
+
+/* Win probability is a paper module: the head and both meters inside. */
+.sidebar-section.is-module {
+    margin: 0 8px 0 10px;
+    padding: 8px 10px 9px;
+    background: var(--surface);
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius);
+    gap: 8px;
+}
+
+/* Player row: two ink ticks, the name, then `24 deck · 2 hand`. */
+.player-rows {
+    gap: 4px;
+}
+
+.player-row,
+body.palette-competition .player-row {
+    position: relative;
+    gap: 8px;
+    padding: 6px 8px 6px 24px;
+    background: var(--surface);
+    border: 1px solid var(--border-soft);
+    border-left-width: 1px;
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    font-size: 12.5px;
+}
+
+.player-row.is-p1,
+.player-row.is-p2 {
+    color: var(--text);
+}
+
+.player-row::before,
+body.palette-competition .player-row::before {
+    content: '';
+    position: absolute;
+    left: 9px;
+    top: 50%;
+    bottom: auto;
+    width: 8px;
+    height: 16px;
+    margin-top: -8px;
+    border-radius: 0;
+}
+
+.player-row.is-p1::before,
+body.palette-competition .player-row.is-p1::before {
+    background: var(--tick-p1);
+}
+
+.player-row.is-p2::before,
+body.palette-competition .player-row.is-p2::before {
+    background: var(--tick-p2);
+    -webkit-mask-image: var(--tick-mask);
+    mask-image: var(--tick-mask);
+}
+
+.player-row .player-name {
+    flex: 1 1 auto;
+    min-width: 0;
+    color: var(--text);
+    font-weight: 560;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.player-row .player-count {
+    font-size: 11px;
+    color: var(--text-dim);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+.player-row.is-active {
+    background: var(--surface);
+    border-color: var(--text);
+}
+
+/* Meter: a 3px track, a 7px ink marker at P1's share, figures at both
+   ends. No coloured fill, no gradient. */
+.metric {
+    gap: 5px;
+}
+
+.metric-label {
+    color: var(--text-dim);
+    font-weight: 500;
+}
+
+.metric-label .metric-icon {
+    display: none;
+}
+
+.bar {
+    position: relative;
+    height: 3px;
+    margin: 3px 4px;
+    background: var(--fu-line-soft);
+    border-radius: 999px;
+    overflow: visible;
+}
+
+.bar-p1,
+.bar-p2 {
+    background: transparent;
+    transition: width .2s var(--ease);
+}
+
+.bar-p1 {
+    position: relative;
+}
+
+.bar-p1::after {
+    content: '';
+    position: absolute;
+    right: -3.5px;
+    top: 50%;
+    width: 7px;
+    height: 7px;
+    margin-top: -3.5px;
+    border-radius: 50%;
+    background: var(--text);
+}
+
+.metric-values {
+    font-size: 11px;
+    color: var(--text-dim);
+    font-variant-numeric: tabular-nums;
+}
+
+.metric-values .val-p1,
+.metric-values .val-p2 {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--text-2);
+}
+
+.metric-values .val-p1::before,
+.metric-values .val-p2::after {
+    content: '';
+    width: 8px;
+    height: 10px;
+}
+
+.metric-values .val-p1::before {
+    background: var(--tick-p1);
+}
+
+.metric-values .val-p2::after {
+    background: var(--tick-p2);
+    -webkit-mask-image: var(--tick-mask);
+    mask-image: var(--tick-mask);
+}
+
+/* Hover details: a paper module holding a glass inset (the card sits on
+   glass) and the card's CTL · BCR · RDS · LVI. */
+.hover-module {
+    flex: 0 0 auto;
+    margin: 0 8px 0 10px;
+    padding: 6px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    background: var(--surface);
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius);
+}
+
+.preview-pane {
+    height: 184px;
+    background: var(--fu-glass);
+    border: 0;
+    border-radius: var(--radius-inset);
+}
+
+.preview-pane.is-text {
+    min-height: 184px;
+}
+
+.preview-placeholder {
+    color: var(--fu-glass-mute);
+}
+
+.preview-metrics {
+    padding: 0 6px 2px;
+    background: transparent;
+    border: 0;
+}
+
+.preview-metrics .pm-cell {
+    align-items: flex-start;
+    gap: 1px;
+}
+
+.preview-metrics .pm-label {
+    color: var(--text-dim);
+}
+
+.preview-metrics .pm-val,
+.preview-metrics .pm-cell.is-bcr .pm-val,
+.preview-metrics .pm-cell.is-lvi .pm-val,
+.preview-metrics .pm-cell.is-rds .pm-val {
+    color: var(--text);
+    font-weight: 400;
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+}
+
+/* The log scrolls inside the rail. Steps are mute; banishes, challenges
+   and quests are ink; a turn boundary is a mono rule. */
+.log-pane {
+    padding: 2px 12px 6px 14px;
+    gap: 1px;
+    min-height: 60px;
+}
+
+.log-line {
+    position: relative;
+    padding: 1px 0 1px 10px;
+    font-size: 11px;
+    line-height: 1.35;
+    color: var(--text-2);
+    overflow-wrap: anywhere;
+    user-select: text;
+}
+
+.log-line.is-p1::before,
+.log-line.is-p2::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 4px;
+    width: 3px;
+    height: 9px;
+    background: var(--p1);
+}
+
+.log-line.is-p2::before {
+    background: repeating-linear-gradient(135deg, var(--p2) 0 2px, var(--p2-2) 2px 4px);
+}
+
+.log-line.is-step {
+    color: var(--text-dim);
+}
+
+.log-line.is-key {
+    color: var(--text);
+    font-weight: 560;
+}
+
+.log-line.is-turn {
+    padding: 7px 0 3px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--text-dim);
+    letter-spacing: 0.02em;
+    text-align: left;
+}
+
+.log-line.is-turn::before {
+    display: none;
+}
+
+/* The turn note: glass, paper text. Not a toast, not a card. */
+.log-note {
+    margin: 3px 0 5px;
+    padding: 7px 8px;
+    border-radius: var(--radius-sm);
+    background: var(--fu-glass);
+    color: var(--fu-paper);
+    font-size: 11px;
+    line-height: 1.35;
+}
+
+.log-note .log-note-head {
+    margin-bottom: 3px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: var(--label-track);
+    text-transform: uppercase;
+    color: var(--fu-glass-mute);
+}
+
+.log-note .log-note-body {
+    white-space: pre-wrap;
+    user-select: text;
+}
+
+.sidebar-foot {
+    padding: 10px 10px 12px;
+    gap: 8px;
+    background: var(--bg);
+    border-top: 1px solid var(--border);
+}
+
+.toggle-row {
+    padding: 0 2px 8px;
+    margin-bottom: 0;
+    border-bottom: 1px solid var(--border-soft);
+}
+
+.toggle-row .toggle-label {
+    color: var(--text-dim);
+}
+
+/* Auto-save: a 26×14 pill. On = signal with a paper knob. */
+.switch {
+    width: 26px;
+    height: 14px;
+}
+
+.switch .slider {
+    background: var(--fu-line-soft);
+    box-shadow: inset 0 0 0 1px var(--border);
+}
+
+.switch .slider::before {
+    top: 2px;
+    left: 2px;
+    width: 10px;
+    height: 10px;
+    background: var(--fu-ink);
+}
+
+.switch input:checked+.slider {
+    background: var(--accent);
+    box-shadow: none;
+}
+
+.switch input:checked+.slider::before {
+    transform: translateX(12px);
+    background: var(--fu-paper);
+}
+
+.action-row {
+    gap: 6px;
+}
+
+.action-row .btn,
+.action-row .icon-btn {
+    min-height: 32px;
+    padding: 0 10px;
+    justify-content: center;
+    font-size: 12px;
+}
+
+.action-row .btn i,
+.action-row .btn i[style] {
+    color: var(--text-2) !important;
+}
+
+.action-row .btn-p1 {
+    min-height: 38px;
+    font-size: 13px;
+}
+
+.action-row.three {
+    align-items: center;
+}
+
+.action-row.three .icon-btn {
+    width: 32px;
+    padding: 0;
+}
+
+/* ----- The well: playfield in black glass, 16px radius, 8px off the
+       columns, split by a 1px rule. Opponent on top, you on bottom. ----- */
+.play {
+    margin: 8px;
+    border-radius: var(--radius-well);
+    background: var(--fu-glass);
+    box-shadow: inset 0 1px 0 oklch(0 0 0 / 0.5), 0 0 0 1px oklch(0.2 0.01 80 / 0.12);
+}
+
+.board-half.top,
+.board-half.bottom,
+.board-half.is-p1,
+.board-half.is-p2 {
+    background: none;
+    color: var(--text);
+}
+
+.board-divider {
+    height: 1px;
+    margin: 0 12px;
+    background: var(--fu-glass-rule);
+    opacity: 1;
+    box-shadow: none;
+}
+
+/* The branch you are on (a saved timeline is loaded) — the rule turns signal. */
+.board-divider.is-live {
+    background: var(--accent);
+}
+
+/* Engraved player tag: ticks, `P2`, and who is to play. */
+.board-bg-letter {
+    position: static;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 500;
+    line-height: 1.3;
+    letter-spacing: var(--label-track);
+    text-transform: uppercase;
+    color: var(--fu-glass-2);
+    opacity: 1;
+    pointer-events: none;
+    white-space: nowrap;
+}
+
+.board-bg-letter::before {
+    content: '';
+    flex: none;
+    width: 8px;
+    height: 14px;
+}
+
+.board-half.is-p1 .board-bg-letter::before {
+    background: var(--tick-p1);
+}
+
+.board-half.is-p2 .board-bg-letter::before {
+    background: var(--tick-p2);
+    -webkit-mask-image: var(--tick-mask);
+    mask-image: var(--tick-mask);
+}
+
+.board-half.top .board-bg-letter::after {
+    content: '· waiting';
+    color: var(--fu-glass-mute);
+}
+
+.board-half.bottom .board-bg-letter::after {
+    content: '· to play';
+    color: var(--fu-glass-mute);
+}
+
+/* Drop targets: a paper hairline, never orange. */
+.drop-target,
+.drop-zone.drop-target-active {
+    border-color: var(--fu-glass-2) !important;
+    background: oklch(0.96 0.01 85 / 0.05) !important;
+    box-shadow: 0 0 0 1px oklch(0.96 0.01 85 / 0.35) inset;
+}
+
+.drop-target-challenge {
+    border-color: var(--danger) !important;
+    background: color-mix(in oklch, var(--danger) 12%, transparent) !important;
+    box-shadow: 0 0 0 1px color-mix(in oklch, var(--danger) 45%, transparent) inset;
+}
+
+.field-strip .field {
+    border-radius: var(--radius-inset);
+}
+
+.field-strip .field.is-empty::before {
+    content: 'Drop a card to play it';
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: var(--label-track);
+    color: var(--fu-glass-mute);
+}
+
+/* ----- Lore box: glass raised, signal numeral, the zone stats under it ----- */
+.lore-badge,
+.lore-badge.is-p1,
+.lore-badge.is-p2 {
+    background: var(--fu-glass-raised);
+    border: 1px solid var(--fu-glass-line);
+    border-radius: var(--radius-inset);
+    box-shadow: none;
+    padding: 7px 8px 8px;
+    min-width: 0;
+    gap: 2px;
+}
+
+.lore-badge .lore-row {
+    width: 100%;
+    justify-content: space-between;
+    gap: 4px;
+    margin-bottom: 0;
+}
+
+.lore-badge .lore-row .lore-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: var(--label-track);
+    color: var(--fu-glass-mute);
+}
+
+.lore-badge .lore-row button {
+    width: 18px;
+    height: 18px;
+    padding: 0;
+    display: inline-grid;
+    place-items: center;
+    background: transparent;
+    border: 1px solid var(--fu-glass-line);
+    border-radius: 6px;
+    color: var(--fu-glass-2);
+    font-size: 11px;
+    line-height: 1;
+}
+
+.lore-badge .lore-row button:hover,
+.lore-badge .lore-row button.plus:hover,
+.lore-badge .lore-row button.minus:hover {
+    background: var(--surface-3);
+    color: var(--fu-paper);
+}
+
+.lore-badge .lore-value,
+.lore-badge.is-p1 .lore-value,
+.lore-badge.is-p2 .lore-value {
+    font-family: var(--font-display);
+    font-size: 32px;
+    font-weight: 520;
+    line-height: 1;
+    letter-spacing: -0.04em;
+    font-variation-settings: 'opsz' 32;
+    font-variant-numeric: tabular-nums;
+    color: var(--accent);
+    padding: 2px 0 1px;
+}
+
+/* Zone stats: figure/sm glass-mute, one per line so they fit the column.
+   (.board-half prefix: outranks the old top-half hand-meta squeeze.) */
+.board-half .lore-badge .hand-meta {
+    display: grid;
+    grid-template-columns: auto auto;
+    justify-content: space-between;
+    gap: 1px 6px;
+    width: 100%;
+    margin-top: 5px;
+    padding: 5px 0 0;
+    background: none;
+    border: 0;
+    border-top: 1px solid var(--fu-glass-rule);
+    border-radius: 0;
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    line-height: 1.35;
+    color: var(--fu-glass-2);
+    font-variant-numeric: tabular-nums;
+    transform: none;
+}
+
+.lore-badge .hand-meta>span {
+    display: contents;
+}
+
+.lore-badge .hand-meta .meta-key,
+.lore-badge .hand-meta .meta-key.is-bcr,
+.lore-badge .hand-meta .meta-key.is-lvi,
+.lore-badge .hand-meta .meta-key.is-rds {
+    margin: 0;
+    font-size: 10px;
+    letter-spacing: 0.06em;
+    color: var(--fu-glass-mute);
+}
+
+.lore-badge .hand-meta>span>span:last-child {
+    text-align: right;
+}
+
+.lore-badge .hand-meta::before {
+    content: 'Hand';
+    grid-column: 1 / -1;
+    font-size: 9.5px;
+    letter-spacing: var(--label-track);
+    text-transform: uppercase;
+    color: var(--fu-glass-mute);
+    margin-bottom: 1px;
+}
+
+/* ----- Ready row: `2 / 9 ready`, then −, +, Ready all as glass outlines ----- */
+.ink-readout {
+    background: transparent;
+    border: 1px solid var(--fu-glass-line);
+    color: var(--fu-paper);
+    font-family: var(--font-mono);
+}
+
+.ink-readout .ink-icon,
+.ii-count .ink-icon {
+    background: var(--fu-glass-2);
+}
+
+.ink-pip {
+    background: var(--fu-glass-2);
+}
+
+.ink-pip.used {
+    background: oklch(1 0 0 / 0.14);
+}
+
+.ink-pip.fresh {
+    background: radial-gradient(circle, var(--fu-glass) 0 30%, var(--fu-paper) 34%);
+}
+
+.ink-pip.fresh.used {
+    background: radial-gradient(circle, var(--fu-glass) 0 30%, oklch(1 0 0 / 0.22) 34%);
+}
+
+.ink-new,
+.ip-fresh {
+    background: transparent;
+    border: 1px solid var(--fu-glass-2);
+    color: var(--fu-paper);
+    font-family: var(--font-mono);
+}
+
+.ink-panel .ip-fresh {
+    border-color: var(--border-strong);
+    color: var(--text);
+}
+
+.ink-tile {
+    border: 1px solid var(--fu-glass-line);
+    border-radius: 5px;
+    background-color: var(--fu-glass-raised);
+}
+
+.ink-tile.is-fresh {
+    box-shadow: 0 0 0 1.5px var(--fu-paper);
+}
+
+.ink-tile.is-sel {
+    outline: 1.5px solid var(--fu-paper);
+    outline-offset: 2px;
+}
+
+.ink-hint,
+.ii-empty {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.06em;
+    color: var(--fu-glass-mute);
+}
+
+@media (min-width: 761px) {
+    .ink-cluster.is-inline {
+        padding: 6px 8px;
+        border: 1px solid var(--fu-glass-rule);
+        border-radius: var(--radius-inset);
+        background: transparent;
+    }
+
+    .ii-ctl {
+        gap: 7px;
+        padding-right: 10px;
+        border-right: 1px solid var(--fu-glass-rule);
+    }
+
+    .ii-count {
+        align-items: baseline;
+        gap: 0;
+        font-family: var(--font-mono);
+        font-size: 10px;
+        font-weight: 500;
+        letter-spacing: 0.04em;
+        color: var(--fu-glass-mute);
+        white-space: nowrap;
+    }
+
+    .ii-count .ink-icon {
+        display: none;
+    }
+
+    .ii-count b {
+        margin-right: 4px;
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--fu-paper);
+        font-variant-numeric: tabular-nums;
+    }
+
+    .ii-count small {
+        margin: 0 6px 0 4px;
+        font-size: 10px;
+        letter-spacing: var(--label-track);
+        color: var(--fu-glass-mute);
+    }
+
+    .ii-count .ip-fresh {
+        padding: 0 5px;
+        font-size: 9.5px;
+        line-height: 14px;
+    }
+
+    .ii-btns {
+        gap: 4px;
+    }
+
+    .ii-step {
+        gap: 4px;
+        border: 0;
+        border-radius: 0;
+        overflow: visible;
+    }
+
+    .ii-step button,
+    .ii-step button+button,
+    .ii-all {
+        height: 22px;
+        min-height: 22px;
+        padding: 0 7px;
+        border: 1px solid var(--fu-glass-line);
+        border-radius: 6px;
+        background: transparent;
+        color: var(--fu-glass-2);
+        font-family: var(--font-sans);
+        font-size: 11px;
+        font-weight: 500;
+    }
+
+    .ii-step button {
+        width: 22px;
+        padding: 0;
+        font-size: 9px;
+    }
+
+    .ii-step button:hover:not(:disabled),
+    .ii-all:hover:not(:disabled) {
+        background: var(--surface-3);
+        color: var(--fu-paper);
+    }
+
+    .ii-slot.is-sel {
+        background: var(--fu-glass-raised);
+        box-shadow: 0 0 0 1px var(--fu-glass-line), 0 8px 18px oklch(0 0 0 / 0.5);
+    }
+
+    .ii-name {
+        color: var(--fu-paper);
+        font-weight: 600;
+    }
+
+    .ii-acts button {
+        border: 1px solid var(--fu-glass-line);
+        border-radius: 6px;
+        background: transparent;
+        color: var(--fu-glass-2);
+        font-weight: 500;
+    }
+
+    .ii-acts button:hover {
+        border-color: var(--fu-glass-2);
+        color: var(--fu-paper);
+    }
+}
+
+/* ----- Cards: they sit on glass. Real art when there is art; otherwise a
+       paper face with name, subtitle and the figures. No gold frame. ----- */
+.card {
+    border-radius: 7px;
+    background-color: var(--fu-glass-raised);
+    border: 1px solid oklch(0.96 0.01 85 / 0.07);
+}
+
+.card.drying {
+    filter: saturate(0.6) brightness(0.84);
+}
+
+/* The one "new" pip: signal, 8px type, only on cards that entered this turn. */
+.card.drying::after {
+    content: 'NEW';
+    top: calc(5px * var(--badge-scale));
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--accent);
+    color: var(--accent-ink);
+    border: 0;
+    font-family: var(--font-mono);
+    font-size: calc(8px * var(--badge-scale));
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    line-height: 1;
+    padding: calc(3px * var(--badge-scale)) calc(5px * var(--badge-scale));
+    border-radius: 999px;
+}
+
+.card .damage-counter {
+    background: var(--danger);
+    color: #fff;
+    border-color: var(--fu-glass);
+    font-family: var(--font-mono);
+}
+
+.card-fallback {
+    background: var(--fu-paper);
+    color: var(--fu-ink);
+    --text-dim: var(--fu-mute);
+    font-family: var(--font-sans);
+    font-weight: 600;
+}
+
+.card-fallback .cf-version {
+    color: var(--fu-mute);
+    opacity: 1;
+    font-weight: 400;
+}
+
+.card-fallback::before {
+    width: 4%;
+}
+
+/* Cost pip in the card's own ink: a disc when it can be inked, a hexagon
+   when it can't (the shape still carries inkability). */
+.card-fallback .cf-cost.is-inkable,
+.card-fallback .cf-cost.is-uninkable {
+    background: var(--cf-ink-1, var(--fu-ink));
+    color: #fff;
+    box-shadow: none;
+    font-family: var(--font-mono);
+    font-weight: 700;
+}
+
+.card-fallback .cf-cost.is-inkable {
+    border-radius: 50%;
+}
+
+body.cards-text .card-fallback,
+body.cards-text .card-fallback.is-uninkable {
+    background: var(--fu-paper);
+    box-shadow: none;
+}
+
+/* Uninkable faces stay a step flatter so the cue survives the smallest tiles. */
+body.cards-text .card-fallback.is-uninkable {
+    background: var(--fu-paper-sunk);
+}
+
+body.cards-text .card.card-back,
+body.cards-text .ink-tile.is-back {
+    background-image: repeating-linear-gradient(135deg, #222 0 5px, #1A1A1A 5px 10px);
+    background-color: var(--fu-glass-raised);
+}
+
+/* Figures: strength on a #E0DBD1 pip, lore on a signal pip, willpower plain. */
+.card-fallback .cf-stats {
+    left: 8%;
+    right: 6%;
+    bottom: 4%;
+    gap: 0.25em;
+    justify-content: flex-start;
+    align-items: center;
+    font-family: var(--font-mono);
+    font-size: 1em;
+    font-weight: 700;
+    opacity: 1;
+}
+
+.card-fallback .cf-str,
+.card-fallback .cf-lore {
+    display: inline-grid;
+    place-items: center;
+    width: 1.75em;
+    height: 1.75em;
+    border-radius: 50%;
+    line-height: 1;
+}
+
+.card-fallback .cf-str {
+    background: var(--fu-line-soft);
+    color: var(--fu-ink);
+}
+
+.card-fallback .cf-str::after {
+    content: none;
+}
+
+.card-fallback .cf-lore {
+    background: var(--accent);
+    color: var(--accent-ink);
+}
+
+.card-fallback .cf-wp {
+    margin-left: auto;
+    color: var(--fu-body);
+}
+
+.card-fallback .cf-wp::after {
+    content: 'W';
+    opacity: 0.55;
+}
+
+/* Hand chips (Play / Ink): outline chips, never signal. */
+.card-actions {
+    background: linear-gradient(to top, oklch(0.12 0 0 / 0.92), oklch(0.12 0 0 / 0));
+    border-radius: 0 0 7px 7px;
+}
+
+.card-actions .chip {
+    background: oklch(0.12 0 0 / 0.86);
+    color: var(--fu-paper);
+    border: 1px solid oklch(0.96 0.01 85 / 0.38);
+    border-radius: 6px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+}
+
+.card-actions .chip:hover {
+    background: var(--fu-paper);
+    color: var(--fu-ink);
+    border-color: var(--fu-paper);
+}
+
+/* Field hover controls: glass, paper glyphs. Challenge keeps its red. */
+.dmg-step,
+.card-verbs .chip,
+.cm-badge {
+    background: oklch(0.13 0 0 / 0.94);
+    border-color: var(--fu-glass-line);
+}
+
+.card-verbs .chip {
+    border-radius: calc(6px * var(--badge-scale));
+}
+
+.card-verbs .chip:hover {
+    background: var(--fu-paper);
+    color: var(--fu-ink);
+    border-color: var(--fu-paper);
+}
+
+.card-verbs .chip.is-challenge {
+    background: color-mix(in oklch, var(--danger) 40%, var(--fu-glass));
+    border-color: var(--danger);
+}
+
+.dmg-pip::before {
+    background: oklch(1 0 0 / 0.14);
+}
+
+/* ----- Notes: the turn note is glass with paper text ----- */
+.notes-panel {
+    background: var(--fu-glass);
+    border: 1px solid var(--fu-glass-line);
+    border-radius: var(--radius-sm);
+    padding: 7px 8px;
+    gap: 4px;
+}
+
+.notes-panel .notes-head {
+    gap: 6px;
+    color: var(--fu-glass-mute);
+}
+
+.notes-panel .notes-head i {
+    display: none;
+}
+
+.notes-panel textarea {
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    padding: 0;
+    min-height: 40px;
+    font-family: var(--font-sans);
+    font-size: 11px;
+    line-height: 1.35;
+    color: var(--fu-paper);
+    outline: none;
+}
+
+.notes-panel textarea::placeholder {
+    color: var(--fu-glass-mute);
+}
+
+.notes-panel:focus-within {
+    border-color: var(--fu-glass-2);
+}
+
+.notes-panel textarea:focus {
+    min-height: 96px;
+}
+
+/* ----- Piles. The deck is a paper slab; the discard shows the real pile. ----- */
+.pile {
+    border: 1px dashed var(--fu-glass-line);
+    background: var(--fu-glass);
+}
+
+.pile .pile-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: var(--label-track);
+    color: var(--fu-glass-mute);
+}
+
+.pile.deck {
+    background: var(--fu-paper);
+    border: 1px solid var(--fu-line-soft);
+    border-radius: var(--radius-sm);
+}
+
+.pile.deck .pile-label {
+    color: var(--fu-mute);
+}
+
+.pile.deck .pile-count {
+    color: var(--fu-ink);
+    background: none;
+    border: 0;
+}
+
+.pile-inspect {
+    background: var(--fu-glass-raised);
+    border: 1px solid var(--fu-glass-line);
+    color: var(--fu-glass-2);
+    border-radius: 6px;
+}
+
+.pile.deck .pile-inspect {
+    background: var(--fu-paper);
+    border-color: var(--fu-line);
+    color: var(--fu-body);
+}
+
+/* Discard rows (desktop): name left, cost / strength / lore right. */
+.discard-list {
+    display: none;
+}
+
+.dl-row {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    width: 100%;
+    padding: 3px 0;
+    border: 0;
+    border-top: 1px solid #222;
+    background: none;
+    font-family: var(--font-sans);
+    font-size: 10px;
+    line-height: 1.3;
+    color: var(--fu-glass-2);
+    text-align: left;
+    cursor: grab;
+}
+
+.dl-row:first-child {
+    border-top: 0;
+}
+
+.dl-row:hover,
+.dl-row:focus-visible {
+    color: var(--fu-paper);
+    background: oklch(1 0 0 / 0.04);
+    outline: none;
+}
+
+.dl-name {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.dl-figs {
+    flex: none;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--fu-glass-mute);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+.dl-more {
+    justify-content: center;
+    cursor: pointer;
+    font-family: var(--font-mono);
+    letter-spacing: 0.06em;
+    color: var(--fu-glass-mute);
+}
+
+.dl-empty {
+    padding: 4px 0;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.06em;
+    color: var(--fu-glass-mute);
+}
+
+/* ----- Desktop board: each half is discard 168 · field · deck 92 ----- */
+@media (min-width: 761px) {
+    .board-half {
+        display: grid;
+        grid-template-columns: 168px minmax(0, 1fr) 92px;
+        column-gap: 8px;
+        row-gap: 6px;
+        padding: 10px 12px;
+    }
+
+    .board-half.top {
+        padding: 10px 12px 8px;
+        gap: 6px 8px;
+        grid-template-rows: auto auto minmax(0, 1fr);
+        grid-template-areas:
+            "tag  hand  lore"
+            "disc ink   lore"
+            "disc field deck";
+    }
+
+    .board-half.bottom {
+        padding: 8px 12px 10px;
+        grid-template-rows: auto minmax(0, 1fr) auto auto;
+        grid-template-areas:
+            "tag  field deck"
+            "disc field deck"
+            "disc ink   lore"
+            "note hand  lore";
+    }
+
+    /* The pile row and its cluster dissolve; their children take grid cells. */
+    .board-half .pile-row,
+    .board-half.top .pile-row,
+    .board-half .pile-cluster {
+        display: contents;
+    }
+
+    .board-half .lore-chip {
+        display: none;
+    }
+
+    .board-half .board-bg-letter {
+        grid-area: tag;
+        align-self: center;
+    }
+
+    .board-half.top .board-bg-letter {
+        align-self: start;
+        padding-top: 4px;
+    }
+
+    .board-half .hand-wrap {
+        grid-area: hand;
+        min-width: 0;
+    }
+
+    .board-half .ink-cluster {
+        grid-area: ink;
+        min-width: 0;
+    }
+
+    .board-half .field-strip {
+        grid-area: field;
+        min-width: 0;
+    }
+
+    .board-half.top .field-strip {
+        min-height: calc(var(--card-h) + 22px);
+    }
+
+    .board-half .lore-badge {
+        grid-area: lore;
+        position: static;
+        width: 92px;
+    }
+
+    .board-half.top .lore-badge {
+        align-self: start;
+    }
+
+    .board-half.bottom .lore-badge {
+        align-self: end;
+    }
+
+    .board-half .notes-panel {
+        grid-area: note;
+        position: static;
+        width: auto;
+        align-self: end;
+    }
+
+    .board-half .pile.deck,
+    .board-half.top .pile-row .pile.deck {
+        grid-area: deck;
+        justify-self: center;
+        width: 72px;
+        height: 96px;
+        padding: 8px;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        justify-content: space-between;
+    }
+
+    .board-half.top .pile.deck {
+        align-self: end;
+    }
+
+    .board-half.bottom .pile.deck {
+        align-self: end;
+    }
+
+    .board-half .pile.deck .pile-label {
+        color: var(--fu-mute);
+    }
+
+    .board-half .pile.deck .pile-count {
+        position: static;
+        padding: 0;
+        font-family: var(--font-display);
+        font-size: 22px;
+        font-weight: 520;
+        line-height: 1;
+        letter-spacing: -0.02em;
+        font-variant-numeric: tabular-nums;
+    }
+
+    /* The discard column: header, then the rows. contain:size keeps a long
+       pile from stretching the board; the list scrolls inside instead. */
+    .board-half .pile:not(.deck) {
+        grid-area: disc;
+        width: auto;
+        height: auto;
+        min-height: 0;
+        contain: size;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto auto;
+        grid-template-rows: auto minmax(0, 1fr);
+        align-items: center;
+        align-content: stretch;
+        column-gap: 6px;
+        padding: 6px 8px;
+        background: transparent;
+        border: 1px solid var(--fu-glass-rule);
+        border-radius: var(--radius-inset);
+        overflow: hidden;
+        cursor: default;
+    }
+
+    .board-half .pile:not(.deck)>.card-wrap {
+        display: none;
+    }
+
+    .board-half .pile:not(.deck) .pile-num {
+        display: inline;
+        font-family: var(--font-mono);
+        font-size: 10px;
+        color: var(--fu-glass-2);
+        font-variant-numeric: tabular-nums;
+    }
+
+    .board-half .pile:not(.deck) .pile-inspect {
+        position: static;
+        display: inline-grid;
+        place-items: center;
+        width: 20px;
+        height: 20px;
+        font-size: 9px;
+        color: var(--fu-glass-mute);
+        background: transparent;
+    }
+
+    .board-half .pile:not(.deck) .pile-inspect:hover {
+        color: var(--fu-paper);
+        border-color: var(--fu-glass-2);
+    }
+
+    .board-half .discard-list {
+        grid-column: 1 / -1;
+        align-self: stretch;
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+        margin-top: 4px;
+        overflow-y: auto;
+        scrollbar-width: thin;
+    }
+
+    /* Your hand sits in a tray of raised glass. */
+    .board-half.bottom .hand-wrap {
+        padding: 6px 8px 8px;
+        background: var(--fu-glass-raised);
+        border: 1px solid var(--fu-glass-line);
+        border-radius: var(--radius-sm);
+    }
+
+    .board-half.top .hand-wrap {
+        gap: 4px;
+    }
+
+    .board-half.top .hand {
+        transform: none;
+    }
+}
+
+.peek-toggle {
+    height: 22px;
+    padding: 0 9px;
+    background: transparent;
+    border: 1px solid var(--fu-glass-line);
+    border-radius: 6px;
+    color: var(--fu-glass-2);
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.peek-toggle:hover {
+    background: var(--surface-3);
+    color: var(--fu-paper);
+}
+
+.peek-toggle i {
+    font-size: 10px;
+}
+
+/* Challenge mode: the well gets a red hairline, not a wash. */
+body.challenge-mode .board-half {
+    box-shadow: inset 0 0 0 1px color-mix(in oklch, var(--danger) 55%, transparent);
+    border-radius: var(--radius-well);
+}
+
+/* ----- Draw odds: a paper module on the chassis. Card, copies left, next
+       draw, in 2, in 4. Zero-copy rows stay, in #A39E94 with em dashes. ----- */
+.prob-pane {
+    width: var(--odds-w);
+    margin: 8px 8px 8px 0;
+    background: var(--surface);
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius);
+}
+
+.prob-pane.is-collapsed {
+    width: 34px;
+}
+
+.prob-head {
+    padding: 8px 8px 8px 12px;
+    border-bottom: 1px solid var(--fu-row-rule);
+}
+
+.prob-head h3 {
+    color: var(--text-dim);
+}
+
+.prob-head h3 .mono {
+    font-size: 10px;
+    color: var(--text);
+    letter-spacing: 0.04em;
+}
+
+.prob-toggle {
+    width: 22px;
+    height: 22px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--surface);
+    color: var(--text-2);
+    font-size: 10px;
+}
+
+.prob-toggle:hover {
+    background: var(--surface-2);
+}
+
+.prob-cols {
+    padding: 5px 12px;
+    color: var(--text-dim);
+    border-bottom: 1px solid var(--fu-row-rule);
+}
+
+.prob-cols .prob-name,
+.prob-row .prob-name {
+    order: 0;
+}
+
+.prob-count {
+    order: 1;
+    width: 28px;
+    margin-right: 2px;
+    text-align: right;
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    color: var(--text-dim);
+    font-variant-numeric: tabular-nums;
+}
+
+.prob-cols .prob-count {
+    font-size: 10px;
+}
+
+.prob-val,
+.prob-win {
+    order: 2;
+    width: 37px;
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    color: var(--text-dim);
+    font-variant-numeric: tabular-nums;
+}
+
+.prob-win {
+    border-bottom: 1px dashed var(--border-strong);
+    color: var(--text);
+}
+
+.prob-win:focus {
+    border-bottom-color: var(--text);
+}
+
+.prob-list {
+    padding: 0;
+}
+
+.prob-row {
+    padding: 4px 12px;
+    border-top: 1px solid var(--fu-row-rule);
+    font-size: 11px;
+}
+
+.prob-row:first-child {
+    border-top: 0;
+}
+
+.prob-row:hover {
+    background: var(--surface-2);
+}
+
+.prob-row .prob-name {
+    color: var(--text);
+    padding-right: 4px;
+}
+
+.prob-row:not(.is-out) .prob-name+.prob-val {
+    color: var(--text-dim);
+}
+
+.prob-row.is-unknown .prob-name {
+    color: var(--text-dim);
+}
+
+.prob-row.is-out .prob-name,
+.prob-row.is-out .prob-count,
+.prob-row.is-out .prob-val {
+    color: var(--fu-zero);
+    opacity: 1;
+}
+
+.prob-empty {
+    color: var(--text-dim);
+}
+
+.mull-odds {
+    border-left-color: var(--fu-row-rule);
+}
+
+/* ----- Context menu: a paper module ----- */
+#context-menu {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-inset);
+    box-shadow: var(--shadow-2);
+    padding: 4px;
+}
+
+.ctx-item {
+    color: var(--text);
+    font-size: 12px;
+    border-radius: 6px;
+}
+
+.ctx-item:hover,
+button.ctx-item:focus-visible {
+    background: var(--surface-2);
+    color: var(--text);
+}
+
+.ctx-item .ctx-key {
+    background: transparent;
+    border-color: var(--border);
+    color: var(--text-dim);
+}
+
+.ctx-item.is-danger {
+    color: var(--danger);
+}
+
+.ctx-divider {
+    background: var(--fu-row-rule);
+}
+
+.ctx-section {
+    color: var(--text-dim);
+}
+
+.ctx-step-box {
+    background: var(--surface-2);
+    border-color: var(--border);
+}
+
+.ctx-stepper {
+    color: var(--text);
+}
+
+/* ----- Modals and dialogs: paper on a dimmed chassis ----- */
+.modal-backdrop,
+.dlg-backdrop {
+    background: oklch(0.2 0.01 80 / 0.42);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+}
+
+.modal-card,
+.dlg {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-3);
+    color: var(--text);
+}
+
+.modal-head,
+.modal-foot,
+.dlg-foot {
+    border-color: var(--fu-row-rule);
+}
+
+.modal-head h2,
+.dlg-head h2 {
+    font-size: 16px;
+    font-weight: 560;
+    letter-spacing: -0.02em;
+}
+
+.modal-head h2 i {
+    color: var(--text-2) !important;
+}
+
+.modal-head .close {
+    border-color: var(--border);
+    background: var(--surface);
+    color: var(--text-2);
+}
+
+.modal-head .close:hover {
+    background: var(--surface-2);
+    color: var(--text);
+}
+
+.modal-foot .btn-primary,
+.dlg-foot .btn-primary {
+    min-height: 34px;
+}
+
+/* Cards in a modal sit on glass. */
+.modal-body .card-grid,
+#mulligan-hand {
+    padding: 12px;
+    background: var(--fu-glass);
+    border-radius: var(--radius-inset);
+}
+
+.card-grid .card-slot {
+    background-color: var(--fu-glass-raised);
+    border-color: var(--fu-glass-line);
+}
+
+.card-grid .card-slot:hover {
+    border-color: var(--fu-glass-2);
+}
+
+.card-grid .card-slot.is-selected {
+    box-shadow: 0 0 0 2px var(--fu-paper) inset;
+}
+
+.card-grid .card-slot.is-unknown {
+    color: var(--fu-glass-mute);
+}
+
+.dlg.is-celebrate {
+    background: var(--surface);
+    border-color: var(--border);
+}
+
+.dlg-head .dlg-icon {
+    width: auto;
+    height: auto;
+    background: none;
+    border-radius: 0;
+    color: var(--text-2);
+    font-size: 14px;
+}
+
+.dlg.is-celebrate .dlg-icon {
+    color: var(--accent);
+}
+
+.dlg.is-danger .dlg-icon {
+    background: none;
+    color: var(--danger);
+}
+
+.dlg-body {
+    color: var(--text-2);
+    font-size: 13px;
+}
+
+.dlg-body .dlg-stat {
+    color: var(--text-dim);
+}
+
+/* Legacy Tailwind tints in the import modal, re-read on paper. */
+#import-log-validation.bg-green-900\/50,
+#import-log-validation.bg-yellow-900\/50,
+#import-log-validation.bg-red-900\/50 {
+    background: var(--surface-2) !important;
+    border-color: var(--border) !important;
+    color: var(--text) !important;
+}
+
+#import-log-textarea {
+    background: var(--surface-2) !important;
+    border-color: var(--border) !important;
+    color: var(--text) !important;
+}
+
+/* ----- Toasts: a glass pill, paper text ----- */
+.toast {
+    background: var(--fu-glass);
+    border: 1px solid var(--fu-glass-line);
+    color: var(--fu-paper);
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 500;
+    box-shadow: var(--shadow-2);
+}
+
+.toast i {
+    color: var(--fu-glass-2);
+}
+
+.toast .toast-action {
+    background: transparent;
+    border: 1px solid var(--fu-glass-2);
+    color: var(--fu-paper);
+}
+
+.toast .toast-action:hover {
+    background: var(--fu-paper);
+    color: var(--fu-ink);
+}
+
+#time-flash {
+    background: var(--accent-faint);
+}
+
+/* ----- Tweaks: a paper module. The chosen segment inverts to glass. ----- */
+.tweaks-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-3);
+    color: var(--text);
+    top: calc(var(--topbar-h) + 8px);
+    bottom: auto;
+    right: 8px;
+    max-height: calc(100vh - var(--topbar-h) - 16px);
+    overflow-y: auto;
+}
+
+.tweaks-head {
+    border-bottom-color: var(--fu-row-rule);
+}
+
+.tweaks-head h3 {
+    color: var(--text);
+    font-weight: 700;
+}
+
+.tweak-label {
+    color: var(--text-dim);
+}
+
+.tweak-label .tweak-val {
+    color: var(--text);
+    letter-spacing: 0.02em;
+    text-transform: none;
+}
+
+.tweak-hint {
+    color: var(--text-dim);
+    font-size: 10.5px;
+}
+
+.tweak-radio {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+}
+
+.tweak-radio button {
+    color: var(--text-2);
+    border-radius: 6px;
+    font-size: 11.5px;
+}
+
+.tweak-radio button:hover {
+    color: var(--text);
+}
+
+.tweak-radio button.is-active {
+    background: var(--fu-glass);
+    color: var(--fu-paper);
+}
+
+.swatch {
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+}
+
+.swatch.is-active {
+    border-color: var(--text);
+    box-shadow: 0 0 0 2px var(--surface), 0 0 0 3px var(--text);
+}
+
+.tweak-inks .ink-chip {
+    width: 8px;
+    height: 14px;
+    border: 0;
+    border-radius: 0;
+}
+
+.tweak-inks .ink-pair:first-child .ink-chip {
+    background: var(--tick-p1) !important;
+}
+
+.tweak-inks .ink-pair:last-child .ink-chip {
+    background: var(--tick-p2) !important;
+    -webkit-mask-image: var(--tick-mask);
+    mask-image: var(--tick-mask);
+}
+
+input[type="range"]::-webkit-slider-runnable-track {
+    height: 3px;
+    background: var(--fu-line-soft);
+}
+
+input[type="range"]::-webkit-slider-thumb {
+    width: 13px;
+    height: 13px;
+    margin-top: -5px;
+    background: var(--text);
+    border: 2px solid var(--surface);
+}
+
+input[type="range"]::-moz-range-track {
+    height: 3px;
+    background: var(--fu-line-soft);
+}
+
+input[type="range"]::-moz-range-thumb {
+    background: var(--text);
+    border: 2px solid var(--surface);
+}
+
+/* ----- Timelines drawer: chassis glass-pane over the rail (Feature 11) ----- */
+.drawer-overlay {
+    background: color-mix(in oklch, var(--fu-chassis) 86%, transparent);
+    border-right: 1px solid var(--border);
+}
+
+.drawer-head {
+    border-bottom-color: var(--border);
+}
+
+.drawer-head h2 {
+    color: var(--text);
+    font-weight: 700;
+}
+
+.drawer-head h2 i {
+    color: var(--text-2) !important;
+}
+
+.drawer-row {
+    margin: 8px 10px 0;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--surface);
+    overflow: hidden;
+}
+
+.drawer-row .icon-btn {
+    height: 30px;
+    padding: 0 4px;
+    border-right: 1px solid var(--border-soft);
+    color: var(--text);
+    font-size: 11.5px;
+    font-weight: 500;
+}
+
+.drawer-row .icon-btn i {
+    color: var(--text-2);
+}
+
+.drawer-row .icon-btn.is-accent,
+.drawer-row .icon-btn.is-ok {
+    color: var(--text);
+}
+
+.drawer-row .icon-btn:hover {
+    background: var(--surface-2);
+}
+
+.drawer-section {
+    border-bottom-color: var(--border-soft);
+    padding: 10px;
+}
+
+.drawer-section .btn-block:not(.btn-primary) {
+    min-height: 32px;
+}
+
+.drawer-section .btn i[style] {
+    color: var(--text-2) !important;
+}
+
+.drawer-list {
+    padding: 10px;
+}
+
+.drawer-list-head {
+    color: var(--text-dim);
+}
+
+/* Auto-saves and bookmarks: paper rows with the player's ticks. */
+.autosave-item,
+body.palette-competition .autosave-item.is-p1,
+body.palette-competition .autosave-item.is-p2 {
+    background: var(--surface);
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius-sm);
+    padding: 7px 9px 7px 24px;
+}
+
+.autosave-item:hover {
+    background: var(--surface);
+    border-color: var(--border-strong);
+}
+
+.autosave-item.is-p1::before,
+.autosave-item.is-p2::before,
+body.palette-competition .autosave-item.is-p1::before,
+body.palette-competition .autosave-item.is-p2::before {
+    content: '';
+    position: absolute;
+    left: 9px;
+    top: 9px;
+    bottom: auto;
+    width: 8px;
+    height: 14px;
+    border-radius: 0;
+    background: var(--tick-p1);
+}
+
+.autosave-item.is-p2::before,
+body.palette-competition .autosave-item.is-p2::before {
+    background: var(--tick-p2);
+    -webkit-mask-image: var(--tick-mask);
+    mask-image: var(--tick-mask);
+}
+
+.autosave-item .as-name {
+    color: var(--text);
+    font-size: 11.5px;
+    font-weight: 560;
+}
+
+.autosave-item .as-stats {
+    font-size: 10px;
+    color: var(--text-dim);
+}
+
+.autosave-item .as-restore {
+    background: oklch(0.13 0 0 / 0.86);
+    color: var(--fu-paper);
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: var(--label-track);
+    text-transform: uppercase;
+}
+
+.autosave-empty {
+    color: var(--text-dim);
+}
+
+.bookmark {
+    background: var(--surface);
+    border: 1px solid var(--border-soft);
+    border-left: 3px solid var(--border-strong);
+    border-radius: var(--radius-sm);
+}
+
+.bookmark:hover {
+    background: var(--surface);
+    border-color: var(--border-strong);
+}
+
+.bookmark.is-p1 {
+    border-left-color: var(--p1);
+}
+
+.bookmark.is-p2 {
+    border-left-color: var(--p2);
+}
+
+/* ----- Challenge banner (paper) and forecast (glass) ----- */
+.chal-banner {
+    background: var(--surface);
+    border: 1px solid color-mix(in oklch, var(--danger) 55%, var(--border));
+    box-shadow: var(--shadow-2);
+    color: var(--text-2);
+}
+
+.chal-banner .cb-key {
+    color: var(--danger);
+    letter-spacing: var(--label-track);
+}
+
+.chal-banner .cb-seg {
+    background: var(--surface-2);
+    border-color: var(--border);
+}
+
+.chal-banner .cb-seg span {
+    color: var(--text-dim);
+}
+
+.chal-banner .cb-seg button {
+    color: var(--text-2);
+}
+
+.chal-banner .cb-seg button.is-active {
+    background: var(--fu-glass);
+    color: var(--fu-paper);
+}
+
+.chal-banner .cb-done {
+    background: var(--surface);
+    border-color: var(--border);
+    color: var(--text);
+}
+
+.chal-banner .cb-done:hover {
+    background: var(--surface-2);
+}
+
+.chal-fc {
+    background: oklch(0.13 0 0 / 0.97);
+    border-color: var(--fu-glass-line);
+}
+
+/* ----- Phone sheets (card drawer, inkwell): paper ----- */
+.sheet-scrim {
+    background: oklch(0.2 0.01 80 / 0.42);
+}
+
+.card-sheet,
+.ink-panel {
+    background: var(--surface);
+    border-color: var(--border);
+    color: var(--text);
+    box-shadow: var(--shadow-3);
+}
+
+.cs-grab {
+    background: var(--border-strong);
+}
+
+.cs-btn,
+.cs-seg,
+.ip-btn,
+.ip-step button {
+    background: var(--surface);
+    border-color: var(--border);
+    color: var(--text);
+}
+
+.cs-btn.is-primary {
+    background: var(--accent);
+    border-color: transparent;
+    color: var(--accent-ink);
+}
+
+.cs-btn.is-challenge {
+    background: color-mix(in oklch, var(--danger) 14%, var(--surface));
+    border-color: var(--danger);
+    color: var(--text);
+}
+
+.cs-btn.is-danger {
+    color: var(--danger);
+}
+
+.cs-btn.is-short {
+    background: var(--fu-glass);
+    border-color: var(--fu-glass);
+    color: var(--fu-paper);
+}
+
+.cs-seg.on {
+    background: var(--danger);
+    border-color: var(--danger);
+    color: #fff;
+}
+
+.cs-label b.is-lethal {
+    color: var(--danger);
+}
+
+.ip-count b {
+    color: var(--text);
+}
+
+.ip-bar {
+    background: var(--surface-2);
+    border-color: var(--border-soft);
+}
+
+.ink-panel .ink-tile {
+    border-color: var(--border);
+}
+
+.ink-panel .ink-tile.is-fresh {
+    box-shadow: 0 0 0 1.5px var(--text);
+}
+
+.ink-panel .ink-tile.is-sel {
+    outline-color: var(--text);
+}
+
+/* Phone hand focus: the big card floats over a glass scrim. */
+.hand-focus {
+    background: oklch(0.1 0 0 / 0.82);
+}
+
+.hf-more .cs-btn {
+    background: var(--fu-glass-raised);
+    border-color: var(--fu-glass-line);
+    color: var(--fu-paper);
+}
+
+.hf-acts .cs-btn:not(.is-primary) {
+    background: var(--fu-glass-raised);
+    border-color: var(--fu-glass-line);
+    color: var(--fu-paper);
+}
+
+/* ----- Multiverse: chassis frame, glass canvas, paper nodes. Edges are
+       #6A655E at 1.2px; the path to the node you are on is signal. ----- */
+#tree-modal {
+    background: var(--bg);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+}
+
+.tree-head {
+    height: var(--topbar-h);
+    padding: 0 12px;
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+}
+
+.tree-head h2 {
+    font-size: 14px;
+    font-weight: 560;
+    letter-spacing: -0.01em;
+    gap: 10px;
+}
+
+.tree-head h2 i {
+    color: var(--text-2);
+    font-size: 12px;
+}
+
+.tree-head .hint {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    font-weight: 500;
+}
+
+.tree-head .close {
+    width: 28px;
+    height: 28px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.tree-head .close:hover {
+    background: var(--surface-2);
+}
+
+#tree-viewport {
+    margin: 8px;
+    border-radius: var(--radius-well);
+    background-color: var(--fu-glass);
+    background-image: radial-gradient(oklch(1 0 0 / 0.045) 1px, transparent 1px);
+    background-size: 32px 32px;
+}
+
+.tn-edge {
+    fill: none;
+    stroke: var(--fu-edge);
+    stroke-width: 1.2;
+}
+
+.tn-edge.is-live {
+    stroke: var(--accent);
+    stroke-width: 1.6;
+}
+
+/* Node: paper, 10px radius, 230 wide; ticks, title, subline, the recap,
+   then a label · value grid of the turn's cards; a 2px bar at the foot. */
+.tree-node,
+.tree-node.is-victory,
+body.palette-competition .tree-node.tn-p1,
+body.palette-competition .tree-node.tn-p2,
+body.palette-competition .tree-node.is-victory.tn-p1,
+body.palette-competition .tree-node.is-victory.tn-p2 {
+    width: 230px;
+    background: var(--fu-paper);
+    border: 1px solid var(--fu-line-soft);
+    border-radius: var(--radius-inset);
+    box-shadow: 0 10px 24px -14px oklch(0 0 0 / 0.8);
+}
+
+.tree-node:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 16px 30px -14px oklch(0 0 0 / 0.9);
+}
+
+.tree-node::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 2px;
+    background: var(--fu-line-soft);
+    z-index: 3;
+    pointer-events: none;
+}
+
+.tree-node.is-active,
+body.palette-competition .tree-node.is-active.tn-p1,
+body.palette-competition .tree-node.is-active.tn-p2 {
+    border-color: var(--accent);
+    box-shadow: 0 10px 24px -14px oklch(0 0 0 / 0.8);
+}
+
+.tree-node.is-active::after {
+    background: var(--accent);
+}
+
+.tree-node.is-nav {
+    outline: 2px solid var(--fu-paper);
+    outline-offset: 3px;
+}
+
+/* Identity: the owner's ink ticks beside the title (P2 striped). */
+.tree-node::before,
+.tree-node.is-victory::before,
+body.palette-competition .tree-node.tn-p1::before,
+body.palette-competition .tree-node.tn-p2::before {
+    content: '';
+    position: absolute;
+    left: 9px;
+    top: 11px;
+    bottom: auto;
+    width: 8px;
+    height: 14px;
+    z-index: 2;
+    background: var(--node-c, var(--fu-line));
+    -webkit-mask-image: var(--tick-mask);
+    mask-image: var(--tick-mask);
+}
+
+.tree-node.tn-p1::before,
+body.palette-competition .tree-node.tn-p1::before {
+    background: var(--tick-p1);
+    -webkit-mask-image: none;
+    mask-image: none;
+}
+
+.tree-node.tn-p2::before,
+body.palette-competition .tree-node.tn-p2::before {
+    background: var(--tick-p2);
+    -webkit-mask-image: var(--tick-mask);
+    mask-image: var(--tick-mask);
+}
+
+/* A won branch keeps the winner's deck inks — as ticks. */
+.tree-node.is-victory::before,
+body.palette-competition .tree-node.is-victory.tn-p1::before,
+body.palette-competition .tree-node.is-victory.tn-p2::before {
+    background: var(--node-g, var(--node-c, var(--accent)));
+    -webkit-mask-image: var(--tick-mask);
+    mask-image: var(--tick-mask);
+}
+
+.tn-body {
+    padding: 8px 9px 6px 24px;
+}
+
+.tn-title {
+    font-size: 12px;
+    font-weight: 620;
+    letter-spacing: -0.01em;
+    color: var(--fu-ink);
+    gap: 5px;
+    padding-right: 50px;
+}
+
+.tn-title i,
+.tree-node.is-victory .tn-title i {
+    color: var(--fu-mute);
+    font-size: 10px;
+}
+
+.tree-node.is-victory .tn-title i {
+    color: var(--accent);
+}
+
+.tn-stats {
+    margin-top: 2px;
+    font-size: 10px;
+    letter-spacing: 0;
+    color: var(--fu-mute);
+    font-variant-numeric: tabular-nums;
+}
+
+.tn-comment {
+    margin-top: 5px;
+    font-size: 10.5px;
+    line-height: 1.4;
+    color: var(--fu-body);
+}
+
+.tn-comment strong {
+    color: var(--fu-ink);
+    font-weight: 620;
+}
+
+.tn-icon-btn {
+    top: 7px;
+    width: 22px;
+    height: 22px;
+    background: var(--fu-paper);
+    border: 1px solid var(--fu-line);
+    border-radius: 6px;
+    color: var(--fu-body);
+    font-size: 9px;
+}
+
+.tn-icon-btn.tn-edit {
+    right: 32px;
+}
+
+.tn-icon-btn.tn-delete {
+    right: 7px;
+}
+
+.tn-icon-btn:hover,
+.tn-icon-btn:focus-visible {
+    background: var(--fu-paper-sunk);
+    color: var(--fu-ink);
+}
+
+.tn-icon-btn.tn-delete:hover,
+.tn-icon-btn.tn-delete:focus-visible {
+    background: var(--danger-soft);
+    border-color: var(--danger);
+    color: var(--danger);
+}
+
+.tree-node .tn-edit-form {
+    background: var(--fu-paper);
+    padding: 9px;
+}
+
+.tn-cards {
+    margin: 0 9px 6px;
+    border-top: 1px solid var(--fu-row-rule);
+    background: none;
+}
+
+.tn-cards.is-full .tn-sec {
+    display: grid;
+    grid-template-columns: 62px minmax(0, 1fr);
+    align-items: center;
+    column-gap: 6px;
+    min-height: 22px;
+    border-top: 1px solid var(--fu-row-rule);
+}
+
+.tn-cards.is-full .tn-sec:first-child {
+    border-top: 0;
+}
+
+.tn-sec-label {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1px;
+    padding: 4px 0;
+    font-size: 8.5px;
+    letter-spacing: 0.1em;
+    line-height: 1.2;
+    color: var(--fu-mute);
+}
+
+.tn-sec-label::before {
+    display: none;
+}
+
+.tn-sec-n {
+    margin-left: 0;
+    font-size: 10px;
+    letter-spacing: 0;
+    color: var(--fu-ink);
+    font-variant-numeric: tabular-nums;
+}
+
+.tn-sec.is-empty .tn-sec-label,
+.tn-sec.is-empty .tn-sec-n {
+    color: var(--fu-zero);
+}
+
+.tn-cards.is-full .tn-sec-row {
+    padding: 4px 0;
+}
+
+.tn-sec-row .tn-card-thumb {
+    border-radius: 3px;
+    box-shadow: 0 0 0 1px var(--fu-line-soft);
+}
+
+.tn-cards.is-compact {
+    margin: 0 9px 6px;
+}
+
+.tn-cards.is-compact .tn-sec-label {
+    flex-direction: row;
+    justify-content: center;
+    font-size: 9px;
+}
+
+.tree-empty {
+    color: var(--fu-glass-mute);
+    font-style: normal;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.06em;
+}
+
+/* ----- Home: chassis page, paper modules, the intake is a glass well ----- */
+.home-page {
+    background: var(--bg);
+}
+
+.home-hd h1 {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: var(--label-track);
+    text-transform: uppercase;
+}
+
+.home-hd .home-ver {
+    font-size: 11px;
+    color: var(--text-dim);
+}
+
+.home-hd .btn {
+    min-height: 30px;
+}
+
+.home-lede h2 {
+    font-family: var(--font-display);
+    font-size: clamp(26px, 3.4vw, 32px);
+    font-weight: 520;
+    line-height: 1.05;
+    letter-spacing: -0.04em;
+    font-variation-settings: 'opsz' 32;
+    max-width: 22ch;
+}
+
+.home-lede h2 em {
+    color: var(--text);
+    font-style: normal;
+}
+
+.home-lede p {
+    color: var(--text-2);
+    font-size: 13px;
+}
+
+.well.is-idle {
+    background: var(--fu-glass);
+}
+
+.well.is-idle:focus-within {
+    background: var(--fu-glass-2);
+}
+
+.well {
+    border-radius: var(--radius-well);
+    padding: 1px;
+}
+
+.well-in {
+    border-radius: calc(var(--radius-well) - 1px);
+    background: var(--fu-glass);
+    --text: var(--fu-paper);
+    --text-2: var(--fu-glass-2);
+    --text-dim: var(--fu-glass-mute);
+    --text-faint: #6F6A62;
+    --border-soft: var(--fu-glass-rule);
+    color: var(--fu-paper);
+}
+
+.well textarea {
+    color: var(--fu-paper);
+    font-size: 12.5px;
+}
+
+.well textarea::placeholder {
+    color: #6F6A62;
+}
+
+.well-ft {
+    border-top-color: var(--fu-glass-rule);
+}
+
+.well-ft .hint {
+    color: var(--fu-glass-mute);
+}
+
+.well-ft .btn {
+    background: transparent;
+    color: var(--fu-glass-2);
+    border-color: var(--fu-glass-line);
+    min-height: 28px;
+    padding: 0 10px;
+}
+
+.well-ft .btn:hover {
+    background: #232323;
+    color: var(--fu-paper);
+    border-color: var(--fu-glass-2);
+}
+
+.readout {
+    background: var(--surface);
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius);
+}
+
+.readout .ro-kind {
+    color: var(--text-dim);
+}
+
+.readout .ro-what {
+    font-size: 16px;
+    font-weight: 560;
+    letter-spacing: -0.02em;
+}
+
+.home-box {
+    background: var(--surface);
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius);
+    padding: 14px;
+}
+
+.home-box h3 {
+    color: var(--text-dim);
+}
+
+.seat {
+    background: var(--surface-2);
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius-sm);
+}
+
+.seat .seat-who {
+    color: var(--text-dim);
+}
+
+.deck-box {
+    width: 8px;
+    height: 16px;
+    border-radius: 0;
+    box-shadow: none;
+}
+
+.deck-box.is-p1 {
+    background: linear-gradient(90deg, var(--i1) 0 3px, transparent 3px 5px, var(--i2) 5px 8px);
+}
+
+.deck-box.is-p2 {
+    background: repeating-linear-gradient(135deg, var(--i1) 0 2px, var(--i2) 2px 4px);
+    -webkit-mask-image: var(--tick-mask);
+    mask-image: var(--tick-mask);
+}
+
+.deck-box.is-empty {
+    width: 8px;
+    border: 1px dashed var(--border-strong);
+}
+
+.chip {
+    border-color: var(--border);
+    background: var(--surface);
+    color: var(--text);
+    font-size: 12px;
+}
+
+.chip:hover {
+    background: var(--surface-2);
+    border-color: var(--border-strong);
+}
+
+.cc-pip,
+.lib-meta .cc-pip,
+.ro-pips .ro-pip {
+    box-shadow: none;
+}
+
+.start-btn {
+    min-height: 40px;
+    padding: 0 22px;
+}
+
+.start-hint,
+.chips-label {
+    color: var(--text-dim);
+}
+
+.rec:hover {
+    background: var(--surface-2);
+    border-color: var(--border-soft);
+}
+
+.rec.is-continue {
+    background: var(--surface-2);
+    border-color: var(--border);
+}
+
+.rec .rec-go {
+    color: var(--text);
+    font-weight: 560;
+}
+
+.link-btn {
+    color: var(--text-2);
+}
+
+/* ----- Library drawer ----- */
+.lib-scrim {
+    background: oklch(0.2 0.01 80 / 0.42);
+}
+
+.lib-drawer {
+    background: var(--bg);
+    border-left: 1px solid var(--border);
+    box-shadow: var(--shadow-3);
+}
+
+.lib-hd h2 {
+    font-size: 16px;
+    font-weight: 560;
+    letter-spacing: -0.02em;
+}
+
+.home-tabs {
+    border-bottom-color: var(--border);
+}
+
+.home-tab {
+    color: var(--text-dim);
+    font-size: 12.5px;
+}
+
+.home-tab.is-active {
+    color: var(--text);
+    border-bottom-color: var(--text);
+}
+
+.home-tab i,
+.home-tab.is-active i {
+    color: var(--text-dim);
+}
+
+.lib-row {
+    background: var(--surface);
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius-sm);
+}
+
+.lib-row.is-live {
+    border-color: var(--text);
+}
+
+.lib-title .lib-badge {
+    color: var(--text-dim);
+    letter-spacing: var(--label-track);
+}
+
+.lib-badge.is-account {
+    color: var(--text-2);
+}
+
+.lib-empty {
+    border-color: var(--border);
+    color: var(--text-dim);
+}
+
+.deck-editor {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+}
+
+.acct-avatar {
+    background-color: var(--surface-2);
+    color: var(--text-2);
+    box-shadow: inset 0 0 0 1px var(--border);
+}
+
+.acct-btn.is-signed-in .acct-avatar {
+    background-color: var(--fu-glass);
+    color: var(--fu-paper);
+}
+
+/* ----- Loading screen: chassis, the mark in ink ----- */
+#loading-screen.loader {
+    background: var(--fu-chassis);
+    font-family: var(--font-mono);
+}
+
+.pd-logo path {
+    fill: var(--fu-ink) !important;
+}
+
+@keyframes pdGlow {
+
+    0%,
+    100% {
+        filter: none;
+    }
+
+    50% {
+        filter: none;
+    }
+}
+
+.loader-title {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: var(--label-track);
+    text-transform: uppercase;
+    color: var(--fu-ink);
+}
+
+.loader-msg {
+    font-size: 11px;
+    color: var(--fu-mute);
+}
+
+/* ----- Floating panel layout (Tweaks → Panel layout): the rail floats as
+       a chassis card on the left; the well and the odds keep their
+       columns beside it (this layout used to squash the board). ----- */
+@media (min-width: 761px) {
+    .app.layout-floating {
+        grid-template-columns: minmax(0, 1fr) auto;
+    }
+
+    .app.layout-floating .sidebar {
+        top: 8px;
+        left: 8px;
+        bottom: 8px;
+        width: 300px;
+        background: var(--bg);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow-3);
+    }
+
+    .app.layout-floating .play {
+        padding-left: 0;
+        margin-left: 316px;
+    }
+
+    /* Explicit cells, so Hide (sidebar display:none) and Floating (sidebar
+       out of flow) can't drop the well into the rail's 0px column — both
+       used to lose the board. */
+    .app {
+        position: relative;
+    }
+
+    .app>.play {
+        grid-column: 2;
+        grid-row: 1;
+    }
+
+    .app>.prob-pane {
+        grid-column: 3;
+        grid-row: 1;
+    }
+
+    .app.layout-floating>.play {
+        grid-column: 1;
+    }
+
+    .app.layout-floating>.prob-pane {
+        grid-column: 2;
+    }
+}
+
+/* ----- Phones (≤760px): the well goes edge to edge; the bars inside it
+       keep their Feature 43 layout, re-read in Field Unit tokens. ----- */
+@media (max-width: 760px) {
+    .play {
+        margin: 0;
+        border-radius: 0;
+        box-shadow: none;
+    }
+
+    .sidebar {
+        border-right: 1px solid var(--border);
+    }
+
+    .topbar {
+        padding: 0 6px;
+        gap: 4px;
+    }
+
+    .topbar .icon-btn {
+        padding: 0 7px;
+    }
+
+    .board-bg-letter {
+        display: none;
+    }
+
+    .pile-row,
+    .board-half.top .pile-row,
+    .board-half.is-p1 .pile-row,
+    .board-half.is-p2 .pile-row {
+        background: var(--fu-glass-raised);
+        border: 1px solid var(--fu-glass-line) !important;
+        border-radius: var(--radius-inset);
+    }
+
+    .lore-chip-label,
+    .pile-row .ink-cluster.is-counter::before {
+        font-family: var(--font-mono);
+        font-weight: 500;
+        letter-spacing: var(--label-track);
+        color: var(--fu-glass-mute);
+    }
+
+    .lore-chip-value,
+    .board-half.is-p1 .lore-chip-value,
+    .board-half.is-p2 .lore-chip-value {
+        font-family: var(--font-display);
+        font-weight: 520;
+        letter-spacing: -0.04em;
+        color: var(--accent);
+    }
+
+    .pile-row .ink-cluster.is-counter .ink-readout {
+        font-family: var(--font-display);
+        font-weight: 520;
+        letter-spacing: -0.03em;
+        color: var(--fu-paper);
+    }
+
+    .lore-chip-btns button {
+        background: transparent;
+        border-color: var(--fu-glass-line);
+        color: var(--fu-glass-2);
+    }
+
+    .pile-row .pile {
+        border-style: solid;
+    }
+
+    .pile-row .pile.deck .pile-count {
+        color: var(--fu-ink);
+    }
+
+    .pile-row .pile-num {
+        background: var(--fu-glass);
+        border-color: var(--fu-glass-line);
+        color: var(--fu-paper);
+    }
+
+    .mobile-quick-actions .mqa-quest {
+        background: var(--fu-glass-raised);
+        border-color: var(--fu-glass-line);
+        color: var(--fu-paper);
+    }
+
+    .mobile-quick-actions .mqa-quest i {
+        color: var(--fu-glass-2) !important;
+    }
+
+    .mobile-quick-actions .mqa-end {
+        min-height: 36px;
+    }
+
+    #bottom-board .hand-wrap::before,
+    body #bottom-board .hand-wrap::before {
+        font-family: var(--font-mono);
+        letter-spacing: 0.1em;
+        color: var(--fu-glass-2);
+        background: oklch(0.12 0 0 / 0.88);
+        border: 1px solid var(--fu-glass-line);
+    }
+
+    .hand-scrim {
+        background: oklch(0.1 0 0 / 0.66);
+    }
+}
+
+/* Odds names carry their ink as a tick, not as coloured text. */
+.prob-name.has-ink::before {
+    content: '';
+    display: inline-block;
+    width: 8px;
+    height: 10px;
+    margin-right: 6px;
+    vertical-align: -1px;
+    background: var(--name-ink);
+}
+
+/* Meter marker sits on the boundary between the two shares; when the
+   active player is P2 updateMetrics() reverses the track. Ticks stay on
+   the outer ends. */
+.bar[style*="row-reverse"] .bar-p1::after {
+    right: auto;
+    left: -3.5px;
+}
+
+.metric-values[style*="row-reverse"] .val-p1,
+.metric-values[style*="row-reverse"] .val-p2 {
+    flex-direction: row-reverse;
+}
+
+/* Discard header: label · count · inspect, then the rows. */
+@media (min-width: 761px) {
+    .board-half .pile:not(.deck) .pile-label {
+        grid-row: 1;
+        grid-column: 1;
+    }
+
+    .board-half .pile:not(.deck) .pile-num {
+        grid-row: 1;
+        grid-column: 2;
+    }
+
+    .board-half .pile:not(.deck) .pile-inspect {
+        grid-row: 1;
+        grid-column: 3;
+        z-index: auto;
+    }
+
+    .board-half .discard-list {
+        grid-row: 2;
+    }
+}
+
+.brand-mark {
+    filter: brightness(0);
+    opacity: 0.88;
+}
+
+.drawer-overlay {
+    background: color-mix(in oklch, var(--fu-chassis) 94%, transparent);
+}
+
+.home-lede h2 {
+    max-width: 26ch;
+}
+
+/* Narrow desktops: give the board back what the side columns can spare
+   (design.md: keep the board near 720px). The odds column narrows, and
+   the discard / deck columns tighten. */
+@media (min-width: 761px) and (max-width: 1321px) {
+    :root {
+        --odds-w: 244px;
+    }
+
+    .board-half {
+        grid-template-columns: 148px minmax(0, 1fr) 84px;
+        padding-left: 10px;
+        padding-right: 10px;
+    }
+
+    .board-half .lore-badge {
+        width: 84px;
+    }
+
+    .board-half .pile.deck,
+    .board-half.top .pile-row .pile.deck {
+        width: 68px;
+        height: 90px;
+    }
+}
+
+/* A half never shrinks below its content (cards would overlap the other
+   half); on a short window the well scrolls instead. */
+@media (min-width: 761px) {
+    .board-half.top {
+        flex: 0 0 auto;
+    }
+
+    .board-half.bottom {
+        flex: 1 0 auto;
+    }
+}
+
+/* Phones: every top-bar tool is a 26px square so the bar fits 360px+. */
+@media (max-width: 760px) {
+    .topbar-left,
+    .topbar-right,
+    .session-ctl {
+        gap: 2px;
+    }
+
+    .topbar .icon-btn,
+    .topbar-right .icon-btn,
+    .session-ctl .icon-btn {
+        width: 26px;
+        height: 28px;
+        padding: 0;
+        justify-content: center;
+    }
+
+    .topbar .divider-v {
+        display: none;
+    }
+
+    .turn-pill {
+        padding: 0 8px;
+        gap: 5px;
+    }
+}
+
+/* Menu icons are engraved too: no blue / purple accents on paper. */
+#context-menu .ctx-item i {
+    color: var(--text-dim) !important;
+    margin-right: 6px;
+}
+
+/* Card grids in modals sit on glass: hover is a paper hairline, and the
+   Craft Hand "×N in hand" bar is paper, not green. */
+.modal-body [class*="hover:border-blue-400"]:hover {
+    border-color: var(--fu-glass-2) !important;
+}
+
+#craft-hand-grid .bg-green-600\/90 {
+    background: var(--fu-paper) !important;
+    color: var(--fu-ink) !important;
+    font-family: var(--font-mono);
+    font-size: 11px !important;
+}
+
+/* The focused card in the phone hand: a paper outline, not signal. */
+body.hand-open #bottom-board .hand .card-wrap.is-focused .card {
+    outline-color: var(--fu-paper);
+}
+
+/* Node subline: lore pair and the time it was saved. */
+.tn-stats {
+    font-size: 9.5px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.tn-sec-label {
+    font-size: 9px;
+}
+
+/* The multiverse canvas hint (pan, zoom, arrows) — Tailwind's sm:block
+   never beat the .hidden bridge, so it was never shown. */
+@media (min-width: 761px) {
+    .tree-head h2 .hint.hidden {
+        display: inline !important;
+        margin-left: 12px;
+    }
+}
+
+/* One signal key per view: on home that is Start match, so the readout's
+   next step is an emphasised paper tool. */
+.readout .btn-primary {
+    min-height: 32px;
+    padding: 0 12px;
+    border-radius: var(--radius-sm);
+    background: var(--surface);
+    color: var(--text);
+    border: 1px solid var(--text);
+    font-size: 12.5px;
+}
+
+.readout .btn-primary:hover {
+    background: var(--surface-2);
+    color: var(--text);
+    border-color: var(--text);
+}

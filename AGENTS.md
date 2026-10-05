@@ -8,7 +8,7 @@ This file provides system instructions and context for AI agents working in this
 3. **`docs/ARCH-accounts-and-library.md`**: The agreed architecture for the deck and session library, share links, and optional accounts. Follow its phases and decision log.
 4. **`docs/TODO-accounts-and-library.md`**: The checklist of what's done and what's left in that plan. Tick items (with how they were verified) when they reach `main`, and add new work to it.
 5. **`app/index.html`**: Where the tool lives and where the user is going to be asking for changes. Treat it with respect. Don't change anything that isn't specifically asked for.
-6. **`docs/DESIGN-field-unit.md`**: The "Field Unit" design system the app's look follows (colours, type, components, do's and don'ts). Read it before any visual change, and style new UI with its tokens (the "FIELD UNIT" layers at the top and bottom of the `<style>` block in `app/index.html`).
+6. **`docs/DESIGN-field-unit.md`**: The "Field Unit" design system the app's look follows (colours, type, components, do's and don'ts). Read it before any visual change, and style new UI with its tokens. The Field Unit tokens, themes and component styles live in `app/css/field-unit.css` (loaded after the inline `<style>` in `app/index.html`); put visual changes there.
 
 ## Repository layout
 
@@ -19,6 +19,7 @@ This file provides system instructions and context for AI agents working in this
 | `js/` | Landing page scripts. `landing-multiverse.js` + `-data.js` = the multiverse sections, built from the Set 13 demo |
 | `app/js/` | Small modules split out of the app (see "Splitting rule"). `library.js` = device library |
 | `app/defaults/` | Default decks and demos shipped with the app (manifests + files) |
+| `app/css/` | `field-unit.css` = the Field Unit design system (tokens, day/night themes, palettes, component styles) |
 | `app/fonts/` | Self-hosted Liberation Mono (Field Unit's mono face, OFL — see `OFL.txt`) |
 | `img/` | Images used by the landing page and the app |
 | `docs/` | Feature list, dev guide, architecture, implementation and research notes, test protocols |
