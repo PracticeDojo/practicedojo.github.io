@@ -1,10 +1,13 @@
 // Landing page multiverse: the Set 13 demo session, drawn with the app's own tree.
-// Renderer first (MV), then the three sections that use it: the hero map + lore race,
-// the imported-turns list, and the explorable tree.
+// Renderer first (MV), then the sections that use it: the hero map + lore race,
+// the mock log and imported-turns list, the explorable tree, and the step-3 slice.
 //
-// Multiverse tree renderer. Same layout as App.renderTree()
-// in app/index.html (leaves stack, parents centre between children, 300px columns),
-// same node card, same Feature 31 sections. Data: window.MV_DATA (the Set 13 demo).
+// Multiverse tree renderer. Same layout as App.renderTree() in app/index.html
+// (leaves stack, parents centre between children, 230px nodes in 310px columns),
+// same Field Unit node card (ink ticks, subline, recap, label · value sections),
+// same edges (#6A655E hairlines, the path to the node you're on in signal).
+// Data: window.MV_DATA (the Set 13 demo). Colours come from css/landing.css
+// classes, so switching day / night restyles everything without a re-render.
 window.MV = (function () {
   const D = window.MV_DATA;
   const byId = {};
@@ -19,19 +22,22 @@ window.MV = (function () {
   const active = D.nodes.find(n => n.active);
   const mainLine = [];
   for (let n = active; n; n = byId[n.parent]) mainLine.unshift(n);
+  const onMain = new Set(mainLine.map(n => n.id));
   const leaves = D.nodes.filter(n => !kids[n.id]);
 
+  // App.TREE_SECTIONS: the label is the verb only ("Played", not "Cards Played").
   const SECTIONS = [
-    { key: 'played', label: 'Cards Played', color: 'var(--accent)' },
-    { key: 'inked', label: 'Cards Inked', color: 'var(--p2-hi)' },
-    { key: 'drawn', label: 'Cards Drawn', color: 'var(--bcr)' },
-    { key: 'discarded', label: 'Cards Discarded', color: 'var(--lvi)' },
-    { key: 'banished', label: 'Cards Banished', color: 'var(--danger)' },
-    { key: 'quested', label: 'Cards Quested', color: 'var(--lvi)' },
-    { key: 'startingHand', label: 'Turn Starting Hand', color: 'var(--text-dim)', marksLeft: true, wrap: true }
+    { key: 'played', label: 'Played' },
+    { key: 'inked', label: 'Inked' },
+    { key: 'drawn', label: 'Drawn' },
+    { key: 'discarded', label: 'Discarded' },
+    { key: 'banished', label: 'Banished' },
+    { key: 'quested', label: 'Quested' },
+    { key: 'startingHand', label: 'Starting hand', marksLeft: true, wrap: true }
   ];
   const NODE_H = { compact: 250, full: 510 };
-  const INK = { Amber: 'var(--mv-amber)', Amethyst: 'var(--mv-amethyst)', Ruby: 'var(--mv-ruby)' };
+  const NODE_W = 230, COL = 310;
+  const INK = { Amber: 'var(--ink-amber)', Amethyst: 'var(--ink-amethyst)', Ruby: 'var(--ink-ruby)', Emerald: 'var(--ink-emerald)', Sapphire: 'var(--ink-sapphire)', Steel: 'var(--ink-steel)' };
 
   const esc = (s) => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   const inline = (s) => s.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
@@ -49,27 +55,33 @@ window.MV = (function () {
     if (list) html += '</ul>';
     return html;
   }
+  // The node subline: "Turn 16 · P1: 10 - P2: 11 · 14:29", as the app writes it.
+  const time = (n) => new Date(n.ts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' });
+  const subline = (n) => `${n.stats.replace(/ \| /g, ' · ')} · ${time(n)}`;
+  const entriesOf = (n, key) => (n.sections[key] || []).map(e => (e && typeof e === 'object') ? e : { id: e });
 
   function card(id) { return D.cards[id] || { name: 'Unknown card' }; }
-  // Same as App.cardThumbHtml(): an ink-tinted name face underneath, the card's
-  // database thumbnail on top, hidden if it fails to load.
+  // Same as App.cardThumbHtml(): a text face (name + ink strip) underneath, the
+  // card's database thumbnail on top, hidden if it fails to load.
   function thumb(id, extra) {
     const c = card(id), name = esc(c.name);
     return `<div class="mv-thumb${extra ? ' ' + extra : ''}" title="${name}">` +
-      `<div class="mv-cf" style="--cf-ink:${INK[c.ink] || 'var(--surface-3)'}"><span>${name}</span></div>` +
+      `<div class="mv-cf" style="--cf-ink:${INK[c.ink] || 'transparent'}"><span>${name}</span></div>` +
       (c.thumb ? `<img src="${esc(c.thumb)}" alt="${name}" loading="lazy" decoding="async" draggable="false" onerror="this.style.visibility='hidden'">` : '') +
       `</div>`;
   }
 
+  // App.buildNodeSectionsHtml(): full = every section as a label · value row,
+  // compact = the Played strip only (and nothing when nothing was played).
   function sectionsHtml(n, view) {
     const full = view === 'full';
     let inner = '';
     for (const sec of (full ? SECTIONS : SECTIONS.slice(0, 1))) {
-      const entries = (n.sections[sec.key] || []).map(e => (e && typeof e === 'object') ? e : { id: e });
+      const entries = entriesOf(n, sec.key);
       if (!full && !entries.length) continue;
       const left = entries.filter(e => e.left).length;
       const count = sec.marksLeft && left ? `${entries.length} · −${left}` : (entries.length || '—');
-      inner += `<div class="mv-sec${entries.length ? '' : ' is-empty'}${sec.wrap ? ' is-wrap' : ''}" style="--sec-c:${sec.color}">` +
+      inner += `<div class="mv-sec${entries.length ? '' : ' is-empty'}${sec.wrap ? ' is-wrap' : ''}">` +
         `<div class="mv-sec-label"><span>${sec.label}</span><span class="mv-sec-n">${count}</span></div>` +
         (entries.length ? `<div class="mv-sec-row">${entries.map(e => thumb(e.id, e.left ? 'is-left' : '')).join('')}</div>` : '') +
         `</div>`;
@@ -81,10 +93,10 @@ window.MV = (function () {
     opts = opts || {};
     const view = opts.view || 'compact';
     const style = opts.pos ? ` style="left:${opts.pos.x}px;top:${opts.pos.y}px"` : '';
-    return `<div class="mv-node tn-p${n.player}${n.active ? ' is-active' : ''}" data-id="${esc(n.id)}"${style}>` +
-      `<div class="mv-body">` +
-      `<div class="mv-title"><i class="fa-solid fa-bookmark"></i> <span>${esc(n.name)}</span></div>` +
-      `<div class="mv-stats">${esc(n.stats)}</div>` +
+    return `<div class="mv-node paper tn-p${n.player}${n.active ? ' is-active' : ''}" data-id="${esc(n.id)}"${style}>` +
+      `<div class="mv-nb">` +
+      `<div class="mv-title"><i class="fa-solid fa-bookmark" aria-hidden="true"></i> <span>${esc(n.name)}</span></div>` +
+      `<div class="mv-stats">${esc(subline(n))}</div>` +
       `<div class="mv-comment">${md(n.comment)}</div>` +
       `<span class="mv-ibtn e" aria-hidden="true"><i class="fa-solid fa-pen"></i></span>` +
       `<span class="mv-ibtn d" aria-hidden="true"><i class="fa-solid fa-trash"></i></span>` +
@@ -92,7 +104,7 @@ window.MV = (function () {
   }
 
   // App.renderTree() layout: leaves stack, parents centre between their children.
-  // `list` limits it to a subset (e.g. the main line only).
+  // `list` limits it to a subset (e.g. one branch point and its neighbours).
   function layout(view, list) {
     list = list || D.nodes;
     const inSet = new Set(list.map(n => n.id));
@@ -100,12 +112,12 @@ window.MV = (function () {
     list.forEach(n => { if (n.parent && inSet.has(n.parent)) (k[n.parent] = k[n.parent] || []).push(n); else r.push(n); });
     Object.values(k).forEach(a => a.sort((x, y) => x.ts - y.ts));
     r.sort((x, y) => x.ts - y.ts);
-    const H = NODE_H[view || 'compact'], W = 220, XS = 300, YS = H + 40;
+    const H = NODE_H[view || 'compact'], W = NODE_W, YS = H + 40;
     let y = 0, maxX = 0;
     const pos = {};
     const go = (n, d) => {
       const c = k[n.id] || [];
-      const x = d * XS;
+      const x = d * COL;
       maxX = Math.max(maxX, x);
       if (!c.length) { pos[n.id] = { x, y, d }; y += YS; }
       else { const s0 = y; c.forEach(ch => go(ch, d + 1)); pos[n.id] = { x, y: (s0 + y - YS) / 2, d }; }
@@ -114,18 +126,21 @@ window.MV = (function () {
     return { pos, W, H, list, width: maxX + W, height: y - YS + H };
   }
 
+  // Quiet hairlines, then the path to the node you're on in signal, on top.
   function edgesSvg(L) {
-    let p = '';
+    let p = '', live = '';
     L.list.forEach(n => {
       if (!n.parent || !L.pos[n.parent]) return;
       const a = L.pos[n.parent], b = L.pos[n.id];
       const sx = a.x + L.W, sy = a.y + L.H / 2, ex = b.x, ey = b.y + L.H / 2;
-      p += `<path d="M ${sx} ${sy} C ${sx + 40} ${sy}, ${ex - 40} ${ey}, ${ex} ${ey}" fill="none" stroke="var(--mv-p${n.player})" stroke-width="3" opacity="0.6" data-to="${esc(n.id)}"/>`;
+      const isLive = onMain.has(n.id);
+      const path = `<path class="mv-edge${isLive ? ' is-live' : ''}" d="M ${sx} ${sy} C ${sx + 40} ${sy}, ${ex - 40} ${ey}, ${ex} ${ey}" data-to="${esc(n.id)}"/>`;
+      if (isLive) live += path; else p += path;
     });
-    return `<svg width="${L.width}" height="${L.height}" aria-hidden="true">${p}</svg>`;
+    return `<svg width="${L.width}" height="${L.height}" aria-hidden="true">${p}${live}</svg>`;
   }
 
-  // Mounts the full tree into a viewport element. Returns a small camera API.
+  // Mounts a tree into a viewport element. Returns a small camera API.
   function mount(viewport, opts) {
     opts = opts || {};
     let view = opts.view || 'compact';
@@ -151,21 +166,29 @@ window.MV = (function () {
     function center(id, z, dx, dy) {
       pin(id, z, viewport.clientWidth / 2 + (dx || 0), viewport.clientHeight / 2 + (dy || 0));
     }
+    // Scale the whole canvas into the viewport, centred.
+    function fit(pad) {
+      pad = pad == null ? 16 : pad;
+      const w = viewport.clientWidth, h = viewport.clientHeight;
+      cam.z = Math.min((w - pad * 2) / L.width, (h - pad * 2) / L.height);
+      cam.x = (w - L.width * cam.z) / 2;
+      cam.y = (h - L.height * cam.z) / 2;
+      apply();
+    }
     build();
     return {
-      get layout() { return L; }, get canvas() { return canvas; }, cam, apply, center, pin,
+      get layout() { return L; }, get canvas() { return canvas; }, cam, apply, center, pin, fit,
       setView(v) { view = v; build(); },
       get view() { return view; },
-      nodeEl(id) { return canvas.querySelector(`.mv-node[data-id="${id}"]`); },
-      edgeEl(id) { return canvas.querySelector(`path[data-to="${id}"]`); }
+      nodeEl(id) { return canvas.querySelector(`.mv-node[data-id="${id}"]`); }
     };
   }
 
-  return { D, byId, kids, roots, active, mainLine, leaves, esc, md, thumb, card, nodeHtml, sectionsHtml, layout, edgesSvg, mount, NODE_H, SECTIONS };
+  return { D, byId, kids, roots, active, mainLine, onMain, leaves, esc, md, thumb, card, subline, entriesOf, nodeHtml, sectionsHtml, layout, edgesSvg, mount, NODE_H, SECTIONS };
 })();
 
 (function () {
-  const { D, byId, kids, roots, active, mainLine, leaves, esc, md, thumb, SECTIONS } = MV;
+  const { D, byId, kids, roots, active, mainLine, onMain, leaves, esc, md, thumb, card, subline, entriesOf, SECTIONS } = MV;
   const $ = (id) => document.getElementById(id);
   const fill = (k, v) => document.querySelectorAll(`[data-mv="${k}"]`).forEach(el => { el.textContent = v; });
   const TURN_RE = /^Turn (\d+) - Player (\d) Active$/;
@@ -173,11 +196,17 @@ window.MV = (function () {
   const isAuto = (n) => !n.comment || /^Auto-saved/.test(n.comment);
   // What the player wrote on a node: a custom name, or the first line of a hand-written comment.
   const note = (n) => !TURN_RE.test(n.name) ? n.name : (!isAuto(n) ? n.comment.split('\n')[0].trim() : '');
-  const onMain = new Set(mainLine.map(n => n.id));
+  const two = (i) => String(i).padStart(2, '0');
+
   fill('title', D.title);
   fill('nodes', D.nodes.length + ' nodes');
   fill('lines', leaves.length + ' lines');
-  fill('imported', 'imported · ' + mainLine.length + ' turn nodes');
+  fill('imported', mainLine.length + ' turn nodes');
+  fill('game', `A ${mainLine.length}-turn game`);
+  fill('turn', active.turn);
+  fill('player', 'Player ' + active.player);
+  fill('lore1', active.lore[0]);
+  fill('lore2', active.lore[1]);
 
 
   // ---------- Map geometry: depth across, lanes down ----------
@@ -208,12 +237,11 @@ window.MV = (function () {
   roots.forEach(r => place(r, 0));
   const lanes = Object.values(lane), minL = Math.min(...lanes), maxL = Math.max(...lanes);
   const maxD = Math.max(...Object.values(depth));
-  const G = { cx: 17, ry: 24, padL: 18, padR: 70, padT: 46 };
+  const G = { cx: 17, ry: 24, padL: 18, padR: 70, padT: 40 };
   const W = G.padL + maxD * G.cx + G.padR;
   const X = (id) => G.padL + depth[id] * G.cx;
   const Y = (id) => G.padT + (lane[id] - minL) * G.ry;
-  const MAP_H = G.padT + (maxL - minL) * G.ry + 22;
-  const pc = (n) => `var(--mv-p${n.player})`;
+  const MAP_H = G.padT + (maxL - minL) * G.ry + 18;
 
   // Branch points, numbered in the order they were tried.
   const branchPts = D.nodes.filter(n => (kids[n.id] || []).length > 1).sort((a, b) => a.ts - b.ts);
@@ -224,50 +252,53 @@ window.MV = (function () {
     return words.length ? words.join(' / ') : 'turn replayed';
   };
 
+  // Every saved node. Off the line you're on: #6A655E hairlines and hollow dots.
+  // The line you're on: signal. The node you're on: a filled signal dot.
   function mapSvg() {
-    let edges = '', dots = '', marks = '';
+    let edges = '', live = '', dots = '', marks = '';
     D.nodes.forEach(n => {
       if (!n.parent) return;
       const px = X(n.parent), py = Y(n.parent), x = X(n.id), y = Y(n.id);
       const d = py === y ? `M ${px} ${py} L ${x} ${y}` : `M ${px} ${py} C ${px + G.cx * 0.7} ${py}, ${x - G.cx * 0.7} ${y}, ${x} ${y}`;
-      const main = onMain.has(n.id) && onMain.has(n.parent);
-      if (main) edges += `<path d="${d}" fill="none" stroke="var(--text)" stroke-width="4" opacity=".9" stroke-linecap="round"/>`;
-      else edges += `<path d="${d}" fill="none" stroke="${pc(n)}" stroke-width="2" opacity=".75" stroke-linecap="round"/>`;
+      if (onMain.has(n.id)) live += `<path class="m-edge is-live" d="${d}"/>`;
+      else edges += `<path class="m-edge" d="${d}"/>`;
     });
     D.nodes.forEach(n => {
-      const x = X(n.id), y = Y(n.id), r = n.active ? 6.5 : 4.6;
+      const x = X(n.id), y = Y(n.id);
       const label = `${n.name}, ${n.stats.replace(/\|/g, '·')}${note(n) && TURN_RE.test(n.name) ? ', note: ' + note(n) : ''}`;
+      const cls = n.active ? 'm-dot is-here' : onMain.has(n.id) ? 'm-dot is-live' : 'm-dot';
       dots += `<g><title>${esc(label)}</title>` +
-        `<circle class="ring" cx="${x}" cy="${y}" r="${r + 3.5}" fill="transparent" stroke="${n.active ? 'var(--accent)' : 'transparent'}" stroke-width="2"/>` +
-        `<circle class="core" cx="${x}" cy="${y}" r="${r}" fill="${pc(n)}" stroke="var(--bg)" stroke-width="1.5"/></g>`;
+        (n.active ? `<circle class="m-ring" cx="${x}" cy="${y}" r="9"/>` : '') +
+        `<circle class="${cls}" cx="${x}" cy="${y}" r="${n.active ? 5 : onMain.has(n.id) ? 2.4 : 3}"/></g>`;
       if (branchNo[n.id]) {
-        marks += `<g aria-hidden="true"><circle cx="${x}" cy="${y - 15}" r="7.5" fill="var(--accent)"/>` +
-          `<text x="${x}" y="${y - 11.6}" text-anchor="middle" font-size="9.5" font-weight="600" fill="oklch(0.20 0.03 70)">${branchNo[n.id]}</text></g>`;
+        marks += `<text class="m-bn" x="${x}" y="${y - 10}" text-anchor="middle" aria-hidden="true">${two(branchNo[n.id])}</text>`;
       }
     });
     const ax = X(active.id), ay = Y(active.id);
-    marks += `<text x="${ax}" y="${ay - (branchNo[active.id] ? 30 : 14)}" text-anchor="middle" font-size="10" font-weight="600" fill="var(--accent-hi)" letter-spacing=".06em">YOU ARE HERE</text>`;
-    return `<svg viewBox="0 0 ${W} ${MAP_H}" role="img" aria-label="Map of all ${D.nodes.length} saved nodes in ${leaves.length} lines">${edges}${dots}${marks}</svg>`;
+    marks += `<text class="m-here" x="${ax + 14}" y="${ay + 3.5}">YOU ARE HERE</text>`;
+    return `<svg viewBox="0 0 ${W} ${MAP_H}" role="img" aria-label="Map of all ${D.nodes.length} saved nodes in ${leaves.length} lines">${edges}${live}${dots}${marks}</svg>`;
   }
 
   // Lore race along the line you're on, on the same x scale as the map.
+  // P1 solid, P2 dashed (the shape carries identity, as P2's ticks are striped);
+  // the lore numerals at the end are signal.
   function loreSvg() {
-    const H = 120, top = 12, bot = 26, yv = (v) => top + (1 - v / 20) * (H - top - bot);
+    const H = 112, top = 12, bot = 24, yv = (v) => top + (1 - v / 20) * (H - top - bot);
     const step = (i) => mainLine.map((n, k) => `${k ? 'L' : 'M'} ${X(n.id)} ${yv(n.lore[i])}`).join(' ');
     let ticks = '', seen = new Set();
     mainLine.forEach(n => {
       if (seen.has(n.turn)) return; seen.add(n.turn);
-      if (n.turn === 1 || n.turn % 3 === 1) ticks += `<text x="${X(n.id)}" y="${H - 8}" text-anchor="middle" font-size="10" fill="var(--text-faint)">T${n.turn}</text>`;
+      if (n.turn === 1 || n.turn % 3 === 1) ticks += `<text class="m-tick" x="${X(n.id)}" y="${H - 6}" text-anchor="middle">T${n.turn}</text>`;
     });
     const end = mainLine[mainLine.length - 1], ex = X(end.id) + 10;
-    const grid = [0, 10, 20].map(v => `<line x1="${G.padL}" x2="${W - G.padR + 40}" y1="${yv(v)}" y2="${yv(v)}" stroke="var(--border-soft)" ${v === 20 ? 'stroke-dasharray="4 4"' : ''}/>`).join('');
+    const grid = [0, 10, 20].map(v => `<line class="m-grid${v === 20 ? ' is-win' : ''}" x1="${G.padL}" x2="${W - G.padR + 40}" y1="${yv(v)}" y2="${yv(v)}"/>`).join('');
+    const hi = end.lore[1] >= end.lore[0];
     return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Lore by turn on the line played: Player 1 reaches ${end.lore[0]}, Player 2 reaches ${end.lore[1]}, 20 wins">
-      ${grid}<text x="${W - G.padR + 40}" y="${yv(20) - 4}" text-anchor="end" font-size="10" fill="var(--text-faint)">20 wins</text>
-      <path d="${step(0)}" fill="none" stroke="var(--mv-p1)" stroke-width="2.5" stroke-linejoin="round"/>
-      <path d="${step(1)}" fill="none" stroke="var(--mv-p2)" stroke-width="2.5" stroke-linejoin="round"/>
-      <circle cx="${X(end.id)}" cy="${yv(end.lore[0])}" r="3.5" fill="var(--mv-p1)"/><circle cx="${X(end.id)}" cy="${yv(end.lore[1])}" r="3.5" fill="var(--mv-p2)"/>
-      <text x="${ex}" y="${yv(end.lore[1]) - 2}" font-size="11" fill="var(--mv-p2)">P2 ${end.lore[1]}</text>
-      <text x="${ex}" y="${yv(end.lore[0]) + 12}" font-size="11" fill="var(--mv-p1)">P1 ${end.lore[0]}</text>
+      ${grid}<text class="m-tick" x="${W - G.padR + 40}" y="${yv(20) - 4}" text-anchor="end">20 WINS</text>
+      <path class="m-p1" d="${step(0)}"/><path class="m-p2" d="${step(1)}"/>
+      <circle class="m-end" cx="${X(end.id)}" cy="${yv(end.lore[0])}" r="3"/><circle class="m-end" cx="${X(end.id)}" cy="${yv(end.lore[1])}" r="3"/>
+      <text class="m-who" x="${ex}" y="${yv(end.lore[1]) + (hi ? -2 : 12)}">P2 <tspan class="m-num">${end.lore[1]}</tspan></text>
+      <text class="m-who" x="${ex}" y="${yv(end.lore[0]) + (hi ? 12 : -2)}">P1 <tspan class="m-num">${end.lore[0]}</tspan></text>
       ${ticks}</svg>`;
   }
 
@@ -275,18 +306,34 @@ window.MV = (function () {
   $('hero-map').innerHTML = mapSvg();
   $('hero-lore').innerHTML = loreSvg();
   $('hero-notes').innerHTML = branchPts.map(n =>
-    `<li><span class="n">${branchNo[n.id]}</span><span class="t">T${n.turn}</span>${esc(branchText(n))}</li>`).join('');
+    `<li><span class="bn">${two(branchNo[n.id])}</span><span class="bt">T${n.turn}</span><span class="bx" title="${esc(branchText(n))}">${esc(branchText(n))}</span></li>`).join('');
+
+  // ---------- Import: the start of the log, as Duels.ink writes it ----------
+  (function () {
+    const lines = [`<span class="t">Game started!</span>`];
+    mainLine.slice(0, 6).forEach((n, i) => {
+      const who = 'Player ' + n.player;
+      lines.push('', `<span class="t">--- Turn ${i + 1} ---</span>`, `${who}'s turn begins`, `<span class="t">Ready step: cards readied</span>`);
+      entriesOf(n, 'inked').forEach(e => lines.push(`${who} added ${esc(card(e.id).name)} to ink`));
+      entriesOf(n, 'played').forEach(e => {
+        const c = card(e.id);
+        lines.push(`${who} played ${esc(c.name)}${c.cost != null ? ` (cost ${c.cost})` : ''}`);
+      });
+      lines.push(`${who} ended ${who}'s turn`);
+    });
+    $('mock-log').innerHTML = lines.join('\n');
+  })();
 
   // ---------- Import: one row per imported turn ----------
   const recapLine = (n) => md(n.comment.replace(/^Auto-saved at start of turn\.\s*(\*\*Turn recap\*\*)?\s*/, ''))
     .replace(/<\/?(ul|p)>/g, '').replace(/<li>/g, '').replace(/<\/li>/g, ' · ').replace(/ · $/, '');
   $('ledger').innerHTML = mainLine.map(n => {
     const m = TURN_RE.exec(n.name);
-    const hand = !isAuto(n) ? `<span class="note">${esc(note(n))}</span><br>` : '';
-    const played = (n.sections.played || []).slice(0, 3).map(id => thumb(id)).join('');
-    return `<div class="lg-row p${n.player}"><span class="sp"></span>
-      <div class="lg-turn"><b>Turn ${n.turn}</b>Player ${m ? m[2] : n.player}</div>
-      <div class="lg-what">${hand}<span class="rc">${isAuto(n) ? recapLine(n) : ''}</span></div>
+    const own = !isAuto(n) ? `<span class="note">${esc(note(n))}</span><br>` : '';
+    const played = entriesOf(n, 'played').slice(0, 3).map(e => thumb(e.id)).join('');
+    return `<div class="lg-row"><span class="ticks p${n.player}"></span>
+      <div class="lg-turn">Turn ${n.turn}<span class="label">Player ${m ? m[2] : n.player}</span></div>
+      <div class="lg-what">${own}<span class="rc">${isAuto(n) ? recapLine(n) : ''}</span></div>
       <div class="lg-right">${played}<span class="lg-lore">${n.lore[0]}–${n.lore[1]}</span></div></div>`;
   }).join('');
 
@@ -297,7 +344,7 @@ window.MV = (function () {
     const t = MV.mount(el, { view });
     let sel = active.id;
     // About 3 columns on a desktop, 1.6 on a phone so the cards stay readable.
-    const zDefault = () => Math.min(0.62, el.clientWidth / ((el.clientWidth < 640 ? 1.6 : 3.3) * 300));
+    const zDefault = () => Math.min(0.62, el.clientWidth / ((el.clientWidth < 640 ? 1.6 : 3.3) * 310));
     const clampZ = (z) => Math.max(0.18, Math.min(1.4, z));
 
     function glideTo(id) { el.classList.add('is-glide'); t.center(id, t.cam.z); }
@@ -316,41 +363,39 @@ window.MV = (function () {
       t.cam.z = z; t.apply();
     }
 
-    // Side panel
-    const lore = (p, v, c) => `<div class="lore-row"><span class="font-mono" style="color:${c}">${p}</span>
-      <div class="meter-track"><div style="width:${v / 20 * 100}%;background:${c};border-radius:999px"></div></div>
-      <span class="font-mono text-white text-right">${v}</span></div>`;
+    // Side panel: the selected node on the paper frame.
+    const meter = (p, v) => `<div class="meter-row"><span class="who"><span class="ticks p${p} sm"></span>P${p}</span>
+      <div class="track"><span class="mk" style="left:${v / 20 * 100}%"></span></div><span class="v">${v}</span></div>`;
     function renderSide() {
       const n = byId[sel];
       const path = []; for (let p = n; p; p = byId[p.parent]) path.unshift(p);
       const crumbs = path.slice(-5);
       const ch = kids[n.id] || [];
       const secs = SECTIONS.map(s => {
-        const ids = (n.sections[s.key] || []).map(e => (e && typeof e === 'object') ? e : { id: e });
+        const ids = entriesOf(n, s.key);
         if (!ids.length) return '';
-        return `<div class="side-sec" style="--sec-c:${s.color}"><div class="side-sec-h">${s.label}<b>${ids.length}</b></div>
+        return `<div class="side-sec"><div class="mv-sec-label">${s.label}<span class="mv-sec-n">${ids.length}</span></div>
           <div class="side-thumbs">${ids.map(e => thumb(e.id, e.left ? 'is-left' : '')).join('')}</div></div>`;
       }).join('');
       side.innerHTML = `
         <div>
-          <div class="flex items-center gap-2 mb-1"><span class="tag">Selected node</span>
-            ${n.active ? '<span class="chip" style="padding:2px 8px;font-size:10px">You are here</span>' : ''}</div>
-          <div class="font-display text-xl text-white">${esc(n.name)}</div>
-          <div class="text-xs text-[var(--ink-faint)] mt-1 font-mono">${esc(n.stats)}</div>
+          <div class="label">Selected node${n.active ? '<span class="side-here">· you are here</span>' : ''}</div>
+          <div class="side-name">${esc(n.name)}</div>
+          <div class="side-stats">${esc(subline(n))}</div>
         </div>
-        <div><div class="tag mb-2">Lore race to 20</div>
-          <div class="flex flex-col gap-2">${lore('P1', n.lore[0], 'var(--mv-p1)')}${lore('P2', n.lore[1], 'var(--mv-p2)')}</div></div>
-        <div><div class="tag mb-2">Line so far · ${path.length} nodes</div>
-          <div class="crumbs">${path.length > crumbs.length ? '<span class="text-[var(--ink-faint)] text-xs self-center">…</span>' : ''}
+        <div class="side-block"><div class="label">Lore race to 20</div>${meter(1, n.lore[0])}${meter(2, n.lore[1])}</div>
+        <div class="side-block"><div class="label">Line so far · ${path.length} nodes</div>
+          <div class="crumbs">${path.length > crumbs.length ? '<span class="more">…</span>' : ''}
           ${crumbs.map(p => `<button type="button" data-go="${esc(p.id)}" class="${p.id === n.id ? 'is-cur' : ''}">${esc(short(p))}</button>`).join('')}</div></div>
-        ${ch.length > 1 ? `<div><div class="tag mb-2">Branches from here · ${ch.length}</div>
+        ${ch.length > 1 ? `<div class="side-block"><div class="label">Branches from here · ${ch.length}</div>
           <div class="crumbs">${ch.map(c => `<button type="button" data-go="${esc(c.id)}">${esc(short(c))}</button>`).join('')}</div></div>` : ''}
-        ${n.active && D.turnNote ? `<div class="panel-2 p-3 text-sm text-[var(--ink-dim)]"><div class="tag mb-1">Turn ${n.turn} notes</div>${esc(D.turnNote)}</div>` : ''}
+        ${n.active && D.turnNote ? `<div class="side-note"><div class="label">Turn ${n.turn} note</div>${esc(D.turnNote)}</div>` : ''}
         ${n.comment ? `<div class="side-recap">${md(n.comment)}</div>` : ''}
-        ${secs}
-        <a href="app/" class="btn-primary mt-auto px-4 py-2.5 rounded-lg text-sm font-semibold inline-flex items-center justify-center gap-2">
-          <i class="fa-solid fa-play text-[11px]"></i> Open this match in the Dojo</a>
-        <p class="text-[11px] text-[var(--ink-faint)] -mt-2 text-center">It's the Set 13 demo under “Pick up again”.</p>`;
+        ${secs ? `<div class="side-secs">${secs}</div>` : ''}
+        <div class="side-open">
+          <a href="app/" class="tool strong">Open this match in the Dojo <span aria-hidden="true">→</span></a>
+          <p>It's the Set 13 demo under “Pick up again”.</p>
+        </div>`;
     }
     side.addEventListener('click', (e) => { const b = e.target.closest('[data-go]'); if (b) select(b.dataset.go, true); });
 
@@ -400,7 +445,7 @@ window.MV = (function () {
       if (next) select(next, true);
     });
 
-    // Header buttons
+    // Header tools
     const mid = () => [el.clientWidth / 2, el.clientHeight / 2];
     $('ex-in').addEventListener('click', () => { el.classList.add('is-glide'); zoomAt(...mid(), 1.25); });
     $('ex-out').addEventListener('click', () => { el.classList.add('is-glide'); zoomAt(...mid(), 0.8); });
@@ -417,5 +462,19 @@ window.MV = (function () {
 
     t.center(active.id, zDefault(), -el.clientWidth * 0.08);
     select(active.id, false);
+  })();
+
+  // ---------- Step 03: one branch point on the line you're on ----------
+  (function () {
+    const el = $('mini-mv');
+    if (!el) return;
+    // The last branch point before the node you're on, its parent and its children.
+    const bp = [...mainLine].reverse().find(n => (kids[n.id] || []).length > 1);
+    if (!bp) return;
+    const nodes = [byId[bp.parent], bp, ...kids[bp.id]].filter(Boolean);
+    const t = MV.mount(el, { view: 'compact', nodes });
+    const refit = () => t.fit(14);
+    refit();
+    if (window.ResizeObserver) new ResizeObserver(refit).observe(el);
   })();
 })();

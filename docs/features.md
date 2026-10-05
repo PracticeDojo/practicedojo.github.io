@@ -698,6 +698,19 @@ Implements version 2 of `docs/DESIGN-field-unit.md` (Kiln dark mode, signal fami
 - **Signal family.** By day the signal is Ember `#E4572E`; on Kiln it is Radio `#E86B2A` with dark text on the key. Tweaks → Accent offers only the approved swaps: **Signal** (the theme's own), **Coral**, **Olive** (its lore numeral lifts to `#C6C45A` on the well) and **Trace**. Each carries the text colour that sits on it. The old Amber / Rose / Emerald / Violet / Azure accents were ink colours, so a saved pick of one falls back to Signal.
 - **CSS file.** The Field Unit tokens, themes, palettes and component styles moved from the inline `<style>` to `app/css/field-unit.css`, loaded right after it (pixel-identical move). The older inline rules stay put.
 
+## Landing page: Field Unit (v3.0.0)
+
+### Details
+The public page (`index.html`) follows Field Unit too, as `docs/DESIGN-field-unit.md` · *Marketing chassis* describes. The app is unchanged, so there is no version bump: the page is part of the v3.0.0 release.
+- **Chassis and well.** Mineral chassis, paper modules at 22px, and the demo match in black glass insets. The old glows, gradients, gradient text and icon tiles are gone. Inter (display cut) for headlines and prose, Liberation Mono for labels and figures. Each headline's second half is muted `#8A847A`.
+- **One signal.** Launch is the only filled key in a view (the nav's Launch is an emphasised paper tool). The signal also marks the line you're on, live lore numerals, the turn number, NEW pips and spec-row indexes.
+- **Spec rows, not feature cards.** Hairline rows indexed `01`–`08` in signal mono replace the icon grids.
+- **Day and night.** Kiln at night. The page reads the app's Tweaks → Theme before first paint, and its Auto / Day / Night switch writes back only that choice, so the site and the Dojo match.
+- **Real v3 screenshots.** The Set 13 demo at turn 16, by day and by night (`img/dojo_board_day.webp`, `img/dojo_board_night.webp`), with five pins matching the notes under it. The page shows the one that matches the theme.
+- **Multiverse sections in the v3 look.** The hero map, imported-turns list, explorer and side panel draw the app's v3 tree: paper nodes with ink ticks, label · value sections, quiet edges and the live path in signal. The mock log and the "How it works" tree slice come from the same demo data, replacing the old static mock and `img/multivers_gui_01.png`.
+- **Copy brought up to date.** The feature list adds the library and share links, and day and night. The hotkeys add C (challenge mode). The stale "single-file" and "v1.0" lines and the dead "Metrics" link are gone.
+- **No Tailwind on the landing page.** Styles moved to `css/landing.css`.
+
 ## Refactor 3: CSS out of `app/index.html` (v2.28.1)
 
 ### Details
@@ -766,3 +779,4 @@ Implements version 2 of `docs/DESIGN-field-unit.md` (Kiln dark mode, signal fami
 - [x] Feature 46: Field Unit visual redesign
 - [x] Feature 47: Kiln night theme and the signal family
 - [x] Refactor 3: CSS out of app/index.html
+- [x] Landing page: Field Unit

@@ -12,6 +12,7 @@ Everything runs in the browser and is served by GitHub Pages. There's no build s
 | Path | What it is |
 |---|---|
 | `index.html` | Landing page |
+| `css/`, `js/` | Landing page styles and scripts |
 | `app/index.html` | The Dojo |
 | `app/js/` | Small modules (`library.js`: decks and sessions on this device) |
 | `app/defaults/` | Default decks and demos |

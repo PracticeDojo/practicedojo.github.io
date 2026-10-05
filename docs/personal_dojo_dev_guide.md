@@ -1331,7 +1331,7 @@ in-memory stand-in with the same revision and quota behaviour; the SQL with Post
 
 ---
 
-## **24\. Landing page: real multiverse data**
+## **24\. Landing page: real multiverse data, Field Unit**
 
 The landing page (`index.html`) shows the Set 13 demo session (`app/defaults/demos/set13_example.dojo.json.gz`)
 in place of the hand-drawn trees it used to have.
@@ -1341,17 +1341,27 @@ in place of the hand-drawn trees it used to have.
   Ravensburger thumbnail URLs the app reads from its card database. The landing page never loads the
   9 MB card database. If the demo changes, regenerate this file from the new session.
 * **`js/landing-multiverse.js`** has two parts:
-  * `MV`: a port of `App.renderTree()` and the node card (`buildNodeSectionsHtml`, `cardThumbHtml`, the
-    competition palette with P1's split spine and P2's barber pole). Same layout: 300px columns, leaves stack,
-    parents centre between their children.
-  * The three sections that use it:
-    * **Hero:** a map of all lines (depth across, lanes down, the line you're on in white), with branch
-      points numbered in the order they were tried and labelled with the player's own notes. Under it is a
-      lore race on the same x scale.
-    * **Import panel:** one row per imported turn, with the recap, cards played and lore. The mock log on the
-      left shows the same first turns.
+  * `MV`: a port of `App.renderTree()` and the v3 (Field Unit) node card (`buildNodeSectionsHtml`,
+    `cardThumbHtml`): 230px paper nodes in 310px columns, the owner's ink ticks (P2's striped), a
+    label · value grid of card sections, `#6A655E` edges with the path to the current node in signal.
+    Leaves stack, parents centre between their children.
+  * The sections that use it:
+    * **Hero:** a map of all lines in a black inset (depth across, lanes down, the line you're on in
+      signal), with branch points numbered in the order they were tried and labelled with the player's own
+      notes. Under it is a lore race on the same x scale (P1 solid, P2 dashed).
+    * **Import panel:** a mock of the home screen's intake with the start of a Duels.ink log, generated from
+      the same turns, and its readout; then one row per imported turn, with the recap, cards played and lore.
     * **Multiverse panel:** the whole tree, explorable. Drag pans (on touch, sideways only, so the page still
       scrolls), Ctrl/⌘ + scroll zooms, the arrow keys walk the tree, a click selects a node, and you can
       toggle compact/full nodes. The side panel shows the recap, every card section and the branches from
       that node.
-* Styles live in `index.html`, scoped under `.mv` so they can't clash with the rest of the page.
+    * **How it works, step 3:** the last branch point on the line you're on, its parent and its children,
+      fitted into a small canvas.
+* **Styles** live in `css/landing.css`: the Field Unit marketing chassis (`docs/DESIGN-field-unit.md`), with
+  the palette copied from `app/css/field-unit.css` (the app's sheet isn't loaded: it would restyle the page).
+  Every colour in the trees and the map comes from a class, so switching theme needs no re-render.
+* **Theme:** the page uses the app's own Tweaks → Theme (`lorcana_dojo_tweaks.theme`, read before first paint).
+  Its Auto / Day / Night switch writes back only that key, so the site and the Dojo always match.
+* **Screenshots:** `img/dojo_board_day.webp` and `img/dojo_board_night.webp` are the Set 13 demo at turn 16 with
+  Dumbo hovered, 1440×900 at 2×, scaled to 2400px wide. The page shows the one that matches the theme, with
+  five pins over it. Retake both after a visible change to the board.

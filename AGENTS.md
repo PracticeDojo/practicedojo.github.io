@@ -16,6 +16,7 @@ This file provides system instructions and context for AI agents working in this
 |---|---|
 | `index.html` | Landing page (`https://practicedojo.github.io/`) |
 | `app/index.html` | The Practice Dojo (`https://practicedojo.github.io/app/`) |
+| `css/` | Landing page styles. `landing.css` = Field Unit's marketing chassis (its palette mirrors `app/css/field-unit.css`) |
 | `js/` | Landing page scripts. `landing-multiverse.js` + `-data.js` = the multiverse sections, built from the Set 13 demo |
 | `app/js/` | Small modules split out of the app (see "Splitting rule"). `library.js` = device library |
 | `app/defaults/` | Default decks and demos shipped with the app (manifests + files) |
@@ -29,7 +30,7 @@ This file provides system instructions and context for AI agents working in this
 The app started as a single HTML file. A new concern with its own reason to change (for example device storage or Supabase) gets its own classic `<script src>` file in `app/js/`, exposing one global. Existing code is only extracted when a feature has to change it substantially anyway. No build step, no bundler, no framework.
 
 ## Styles
-CSS lives in `app/css/`, never in a `<style>` block in `app/index.html`. New and changed styles go in `field-unit.css`. `base.css` is the older layer: leave it alone unless a change needs a rule there removed or fixed, and prune its overridden rules only in the area you are working on. Inline `style="…"` is for values set at runtime (positions, sizes, card images, palette variables), not for static styling.
+CSS lives in `app/css/`, never in a `<style>` block in `app/index.html`. The landing page's CSS is `css/landing.css`, on the same terms. New and changed styles go in `field-unit.css`. `base.css` is the older layer: leave it alone unless a change needs a rule there removed or fixed, and prune its overridden rules only in the area you are working on. Inline `style="…"` is for values set at runtime (positions, sizes, card images, palette variables), not for static styling.
 
 ## Versioning Convention
 
