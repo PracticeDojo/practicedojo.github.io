@@ -15,6 +15,7 @@ This file provides system instructions and context for AI agents working in this
 |---|---|
 | `index.html` | Landing page (`https://practicedojo.github.io/`) |
 | `app/index.html` | The Practice Dojo (`https://practicedojo.github.io/app/`) |
+| `js/` | Landing page scripts. `landing-multiverse.js` + `-data.js` = the multiverse sections, built from the Set 13 demo |
 | `app/js/` | Small modules split out of the app (see "Splitting rule"). `library.js` = device library |
 | `app/defaults/` | Default decks and demos shipped with the app (manifests + files) |
 | `img/` | Images used by the landing page and the app |

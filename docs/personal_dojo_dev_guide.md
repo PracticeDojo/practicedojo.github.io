@@ -1328,3 +1328,30 @@ Real OAuth can't run headless. The UI was tested with `DojoCloud`'s account func
 in-memory stand-in with the same revision and quota behaviour; the SQL with Postgres 16 and stand-in
 `auth` / `storage` schemas (owner, anonymous identity, stranger, quotas, storage ceiling, overwrite).
 
+
+---
+
+## **24\. Landing page: real multiverse data**
+
+The landing page (`index.html`) shows the Set 13 demo session (`app/defaults/demos/set13_example.dojo.json.gz`)
+in place of the hand-drawn trees it used to have.
+
+* **`js/landing-multiverse-data.js`** is a snapshot of that demo: every bookmark (name, stats, recap,
+  card sections, parent, timestamp, which line is active) plus the 30 cards it uses, with the same
+  Ravensburger thumbnail URLs the app reads from its card database. The landing page never loads the
+  9 MB card database. If the demo changes, regenerate this file from the new session.
+* **`js/landing-multiverse.js`** has two parts:
+  * `MV`: a port of `App.renderTree()` and the node card (`buildNodeSectionsHtml`, `cardThumbHtml`, the
+    competition palette with P1's split spine and P2's barber pole). Same layout: 300px columns, leaves stack,
+    parents centre between their children.
+  * The three sections that use it:
+    * **Hero:** a map of all lines (depth across, lanes down, the line you're on in white), with branch
+      points numbered in the order they were tried and labelled with the player's own notes. Under it is a
+      lore race on the same x scale.
+    * **Import panel:** one row per imported turn, with the recap, cards played and lore. The mock log on the
+      left shows the same first turns.
+    * **Multiverse panel:** the whole tree, explorable. Drag pans (on touch, sideways only, so the page still
+      scrolls), Ctrl/⌘ + scroll zooms, the arrow keys walk the tree, a click selects a node, and you can
+      toggle compact/full nodes. The side panel shows the recap, every card section and the branches from
+      that node.
+* Styles live in `index.html`, scoped under `.mv` so they can't clash with the rest of the page.

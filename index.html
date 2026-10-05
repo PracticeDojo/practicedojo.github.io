@@ -164,108 +164,7 @@
       border-color: var(--border-strong);
     }
 
-    /* ---- Hero multiverse tree ---- */
-    .tree-stage {
-      position: relative;
-      width: 100%;
-      aspect-ratio: 1 / 1;
-      max-width: 560px;
-      margin: 0 auto;
-    }
-
-    .tree-svg {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      overflow: visible;
-    }
-
-    .tree-svg path {
-      fill: none;
-      stroke-width: 1.5;
-      stroke-linecap: round;
-    }
-
-    .tree-node {
-      position: absolute;
-      width: 56px;
-      height: 78px;
-      transform: translate(-50%, -50%);
-      border-radius: 6px;
-      background: linear-gradient(180deg, var(--surface-2) 0%, var(--surface) 100%);
-      border: 1px solid var(--line-2);
-      box-shadow: 0 8px 18px -6px rgba(0, 0, 0, 0.8);
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-      cursor: pointer;
-      transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
-    }
-
-    .tree-node:hover {
-      transform: translate(-50%, -50%) scale(1.06);
-      border-color: var(--accent);
-    }
-
-    .tree-node .strip {
-      height: 6px;
-      background: var(--accent-dim);
-    }
-
-    .tree-node .body {
-      flex: 1;
-      padding: 4px 5px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-    }
-
-    .tree-node .turn {
-      font-family: 'Geist Mono', monospace;
-      font-size: 8px;
-      color: var(--ink-dim);
-      letter-spacing: 0.1em;
-    }
-
-    .tree-node .lore {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      font-family: 'Geist Mono', monospace;
-      font-size: 9px;
-    }
-
-    .tree-node .dot-o {
-      width: 6px;
-      height: 6px;
-      border-radius: 999px;
-      background: var(--p1);
-      box-shadow: 0 0 6px oklch(0.74 0.14 60 / 0.7);
-    }
-
-    .tree-node .dot-p {
-      width: 6px;
-      height: 6px;
-      border-radius: 999px;
-      background: var(--p2-hi);
-      box-shadow: 0 0 6px oklch(0.72 0.13 200 / 0.7);
-    }
-
-    .tree-node.active {
-      border-color: var(--accent);
-      background: linear-gradient(180deg, oklch(0.32 0.06 70) 0%, oklch(0.22 0.04 70) 100%);
-      box-shadow: 0 0 0 2px oklch(0.78 0.14 70 / 0.35), 0 12px 28px -8px oklch(0.78 0.14 70 / 0.55);
-    }
-
-    .tree-node.active .strip {
-      background: linear-gradient(90deg, var(--accent-hi), var(--p2-hi));
-    }
-
-    .tree-node.dim {
-      opacity: 0.55;
-    }
-
+    /* Used by the hero chip's .ring-pulse dot */
     @keyframes pulseRing {
       0% {
         box-shadow: 0 0 0 0 oklch(0.78 0.14 70 / 0.6), 0 12px 28px -8px oklch(0.78 0.14 70 / 0.55);
@@ -278,47 +177,6 @@
       100% {
         box-shadow: 0 0 0 0 oklch(0.78 0.14 70 / 0), 0 12px 28px -8px oklch(0.78 0.14 70 / 0.55);
       }
-    }
-
-    .tree-node.pulse {
-      animation: pulseRing 2.4s infinite;
-    }
-
-    @keyframes dashFlow {
-      to {
-        stroke-dashoffset: -40;
-      }
-    }
-
-    .branch-active {
-      stroke: url(#branchGrad);
-      stroke-dasharray: 6 4;
-      animation: dashFlow 1.8s linear infinite;
-    }
-
-    .branch-dim {
-      stroke: var(--border);
-    }
-
-    .label-flag {
-      position: absolute;
-      transform: translate(-50%, -50%);
-      font-family: 'Geist Mono', monospace;
-      font-size: 9px;
-      letter-spacing: 0.14em;
-      text-transform: uppercase;
-      color: var(--ink-dim);
-      background: oklch(0.135 0.007 60 / 0.85);
-      border: 1px solid var(--line);
-      padding: 3px 7px;
-      border-radius: 4px;
-      white-space: nowrap;
-      backdrop-filter: blur(4px);
-    }
-
-    .label-flag.active {
-      color: var(--accent-hi);
-      border-color: oklch(0.78 0.14 70 / 0.5);
     }
 
     /* card placeholder used in mockups */
@@ -493,18 +351,162 @@
       animation: pulseRing 2s infinite;
     }
 
-    /* responsive tree label scaling */
-    @media (max-width: 768px) {
-      .tree-node {
-        width: 42px;
-        height: 58px;
-      }
-
-      .label-flag {
-        font-size: 8px;
-        padding: 2px 5px;
-      }
+    /* ---- Multiverse demo (js/landing-multiverse.js) ---- */
+    /* Multiverse tree, ported from app/index.html (tree modal + Feature 31 node sections
+       + Feature 36 competition palette), scoped under .mv. Inks are the session's real decks:
+       P1 Amber/Amethyst (split spine), P2 Amethyst/Ruby (barber pole). */
+    .mv {
+      --mv-amber: oklch(0.79 0.145 78);
+      --mv-amethyst: oklch(0.70 0.155 305);
+      --mv-ruby: oklch(0.68 0.175 22);
+      --mv-p1: var(--mv-amber);
+      --mv-p1-2: var(--mv-amethyst);
+      --mv-p2: var(--mv-amethyst);
+      --mv-p2-2: var(--mv-ruby);
+      --mv-weave-p1: linear-gradient(180deg, var(--mv-p1) 0 50%, var(--mv-p1-2) 50% 100%);
+      --mv-weave-p2: repeating-linear-gradient(45deg, var(--mv-p2) 0 12px, var(--mv-p2-2) 12px 24px);
+      --mv-accent-soft: oklch(0.78 0.14 70 / 0.18);
+      --mv-shadow-1: 0 1px 0 oklch(1 0 0 / 0.03) inset, 0 1px 2px oklch(0 0 0 / 0.25);
+      --mv-shadow-2: 0 1px 0 oklch(1 0 0 / 0.04) inset, 0 12px 32px -8px oklch(0 0 0 / 0.55);
+      --mv-mono: 'Geist Mono', ui-monospace, monospace;
     }
+
+    /* Window chrome: the app's .tree-head */
+    .mv-win { border: 1px solid var(--border); border-radius: 14px; overflow: hidden; background: var(--bg); box-shadow: var(--mv-shadow-2); }
+    .mv-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 11px 16px;
+      background: color-mix(in oklch, var(--surface) 88%, transparent); border-bottom: 1px solid var(--border); }
+    .mv-head h3 { margin: 0; display: flex; align-items: center; gap: 10px; font-size: 15px; font-weight: 600; color: var(--text); white-space: nowrap; min-width: 0; overflow: hidden; }
+    .mv-head-mid { flex: 1 1 auto; min-width: 0; }
+    .mv-head h3 i { color: var(--accent); }
+    .mv-head .mv-hint { font-size: 11px; color: var(--text-dim); font-family: var(--mv-mono); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+    .mv-head-btns { display: flex; align-items: center; gap: 6px; color: var(--text-dim); flex-shrink: 0; }
+    .mv-hbtn { appearance: none; background: none; border: 1px solid transparent; color: var(--text-dim); width: 28px; height: 28px; border-radius: 7px;
+      display: inline-flex; align-items: center; justify-content: center; font-size: 13px; cursor: default; }
+    button.mv-hbtn { cursor: pointer; }
+    button.mv-hbtn:hover { background: var(--surface-3); color: var(--text); border-color: var(--border-soft); }
+    button.mv-hbtn:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+    .mv-viewport { position: relative; overflow: hidden; background-color: var(--bg);
+      background-image: radial-gradient(oklch(1 0 0 / 0.05) 1px, transparent 1px); background-size: 40px 40px; }
+    .mv-canvas { position: absolute; left: 0; top: 0; transform-origin: 0 0; will-change: transform; }
+    .mv-canvas svg { position: absolute; left: 0; top: 0; overflow: visible; pointer-events: none; }
+    .mv-viewport.is-glide .mv-canvas { transition: transform 1.1s cubic-bezier(.45, .05, .25, 1); }
+    .mv-viewport.is-draggable { cursor: grab; touch-action: none; }
+    .mv-viewport.is-dragging { cursor: grabbing; }
+    .mv-viewport.is-dragging .mv-canvas { transition: none; }
+
+    /* The node card */
+    .mv-node { position: absolute; width: 220px; height: var(--tn-h, 250px); display: flex; flex-direction: column; overflow: hidden;
+      border: 1px solid var(--border); border-left-width: 1px; border-radius: 9px; box-shadow: var(--mv-shadow-1);
+      font-family: 'Geist', system-ui, sans-serif; text-align: left;
+      transition: transform .12s ease, box-shadow .12s ease, opacity .3s ease; }
+    .mv-node.tn-p1 { background: linear-gradient(0deg, color-mix(in oklch, var(--surface-2) 70%, transparent), color-mix(in oklch, var(--surface-2) 70%, transparent)), linear-gradient(135deg, var(--mv-p1), var(--mv-p1-2)); --node-c: var(--mv-p1); }
+    .mv-node.tn-p2 { background: linear-gradient(0deg, color-mix(in oklch, var(--surface-2) 70%, transparent), color-mix(in oklch, var(--surface-2) 70%, transparent)), linear-gradient(45deg, var(--mv-p2), var(--mv-p2-2)); --node-c: var(--mv-p2); }
+    .mv-node::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 6px; z-index: 2; }
+    .mv-node.tn-p1::before { background-image: var(--mv-weave-p1); }
+    .mv-node.tn-p2::before { background-image: var(--mv-weave-p2); }
+    .mv-node.is-active { border-color: var(--accent); box-shadow: 0 0 0 2px var(--mv-accent-soft), var(--mv-shadow-2); }
+    .mv-node.is-sel { outline: 3px solid var(--text); outline-offset: 2px; z-index: 30; }
+    .is-interactive .mv-node { cursor: pointer; }
+    .is-interactive .mv-node:hover { transform: translateY(-2px) scale(1.02); box-shadow: var(--mv-shadow-2); z-index: 20; }
+    .mv-node.is-faded { opacity: .38; }
+
+    .mv-body { padding: 10px 10px 10px 14px; display: flex; flex-direction: column; flex: 1 1 0; min-height: 0; position: relative; }
+    .mv-title { padding-right: 56px; font-size: 12px; font-weight: 600; color: var(--text); display: flex; align-items: center; gap: 6px; white-space: nowrap; overflow: hidden; flex-shrink: 0; }
+    .mv-title i { color: var(--node-c); font-size: 11px; }
+    .mv-title span { overflow: hidden; text-overflow: ellipsis; }
+    .mv-stats { font-family: var(--mv-mono); font-size: 9.5px; letter-spacing: .04em; color: var(--text-dim); margin-top: 4px; flex-shrink: 0; }
+    .mv-comment { font-size: 11px; color: var(--text-2); margin-top: 6px; overflow: hidden; overflow-wrap: break-word; padding-right: 4px; flex: 1 1 0; min-height: 0; line-height: 1.35; }
+    .mv-comment p { margin: 0 0 4px; }
+    .mv-comment strong { color: var(--text); font-weight: 600; }
+    .mv-comment ul { margin: 0 0 4px; padding-left: 14px; list-style: disc; }
+    .mv-comment li { margin: 0 0 1px; }
+    .mv-ibtn { position: absolute; top: 6px; width: 26px; height: 26px; display: flex; align-items: center; justify-content: center;
+      background: var(--surface-3); border: 1px solid var(--border-soft); border-radius: 7px; color: var(--text-dim); font-size: 10px; z-index: 3; }
+    .mv-ibtn.e { right: 36px; } .mv-ibtn.d { right: 6px; }
+
+    .mv-cards { border-top: 1px solid var(--border-soft); background: color-mix(in oklch, var(--bg) 55%, transparent); flex-shrink: 0; }
+    .mv-sec { --sec-c: var(--text-dim); border-top: 1px solid var(--border-soft); }
+    .mv-sec:first-child { border-top: none; }
+    .mv-sec-label { display: flex; align-items: center; gap: 5px; font-size: 8.5px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--text-dim); padding: 3px 6px 1px; }
+    .mv-sec-label::before { content: ''; width: 5px; height: 5px; border-radius: 50%; background: var(--sec-c); flex-shrink: 0; }
+    .mv-sec-n { margin-left: auto; font-family: var(--mv-mono); font-size: 8.5px; color: var(--sec-c); }
+    .mv-sec.is-empty .mv-sec-label, .mv-sec.is-empty .mv-sec-n { color: var(--text-faint); }
+    .mv-sec.is-empty .mv-sec-label::before { background: var(--text-faint); opacity: .5; }
+    .mv-sec-row { display: flex; flex-wrap: nowrap; gap: 3px; padding: 2px 6px 5px; overflow: hidden; }
+    .mv-thumb { position: relative; width: 28px; height: 39px; flex-shrink: 0; border-radius: 4px; overflow: hidden; box-shadow: var(--mv-shadow-1);
+      background: var(--cf-ink, var(--surface-3)); }
+    .mv-thumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
+    /* Name face under the art, as in the app's .card-fallback: shows if the image can't load. */
+    .mv-cf { position: absolute; inset: 0; display: flex; align-items: flex-end; padding: 2px;
+      background: linear-gradient(160deg, color-mix(in oklch, var(--cf-ink) 55%, var(--surface-2)), var(--surface-2)); }
+    .mv-cf span { font-size: 6px; line-height: 1.1; color: var(--text); overflow: hidden; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; }
+    .mv-sec.is-wrap .mv-sec-row { flex-wrap: wrap; }
+    .mv-sec.is-wrap .mv-thumb { width: 24px; height: 34px; }
+    .mv-thumb.is-left img { filter: grayscale(1); opacity: .5; }
+    .mv-thumb.is-left::after { content: ''; position: absolute; inset: 0; background: linear-gradient(to top right, transparent calc(50% - .8px), var(--danger) calc(50% - .8px), var(--danger) calc(50% + .8px), transparent calc(50% + .8px)); }
+    .mv-cards.is-compact .mv-sec-label { justify-content: center; font-size: 9px; padding: 3px 0 1px; }
+    .mv-cards.is-compact .mv-sec-label::before, .mv-cards.is-compact .mv-sec-n { display: none; }
+    .mv-cards.is-compact .mv-sec-row { flex-wrap: wrap; justify-content: center; gap: 4px; padding: 4px; max-height: 90px; }
+    .mv-cards.is-compact .mv-thumb { width: 35px; height: 50px; }
+
+
+    .mv-legend { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; font-size: 11px; color: var(--text-2); }
+    .mv-legend .sw { display: inline-block; width: 10px; height: 14px; border-radius: 2px; margin-right: 6px; vertical-align: -2px; }
+    .mv-legend .sw.p1 { background-image: var(--mv-weave-p1); }
+    .mv-legend .sw.p2 { background-image: linear-gradient(45deg, var(--mv-p2) 0 50%, var(--mv-p2-2) 50% 100%); }
+
+    @media (prefers-reduced-motion: reduce) {
+      .mv-viewport.is-glide .mv-canvas, .mv-node { transition: none; }
+    }
+
+    /* Hero map, lore race and imported-turns list */
+    .map-card { border: 1px solid var(--border); border-radius: 14px; background: color-mix(in oklch, var(--surface) 70%, var(--bg)); padding: 18px; box-shadow: var(--mv-shadow-2); }
+    .map-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
+    .map-title { color: var(--text); font-weight: 600; font-size: 15px; margin-top: 4px; }
+    .map-stats { display: flex; gap: 12px; font-size: 11px; color: var(--text-faint); white-space: nowrap; }
+    .map-sub { margin: 8px 0 2px; }
+    .map-wrap { width: 100%; overflow-x: auto; }
+    .map-wrap svg { display: block; width: 100%; height: auto; min-width: 520px; }
+    .map-wrap text { font-family: 'Geist Mono', ui-monospace, monospace; }
+    .map-notes { list-style: none; margin: 12px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
+    .map-notes li { display: inline-flex; align-items: center; gap: 6px; font-size: 11.5px; color: var(--text-2); background: var(--surface-2); border: 1px solid var(--border-soft); border-radius: 999px; padding: 3px 9px 3px 3px; }
+    .map-notes .n { width: 18px; height: 18px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font: 600 10px 'Geist Mono', monospace; color: oklch(0.20 0.03 70); background: var(--accent); }
+    .map-notes .t { font-family: 'Geist Mono', monospace; color: var(--text-dim); font-size: 10.5px; }
+    .ledger { height: 460px; overflow-y: auto; }
+    .lg-row { display: grid; grid-template-columns: 6px 76px 1fr auto; align-items: center; gap: 12px; padding: 9px 16px 9px 0; border-bottom: 1px solid var(--border-soft); min-height: 64px; }
+    .lg-row .sp { align-self: stretch; }
+    .lg-row.p1 .sp { background-image: var(--mv-weave-p1); }
+    .lg-row.p2 .sp { background-image: var(--mv-weave-p2); }
+    .lg-turn { font-family: 'Geist Mono', monospace; font-size: 11px; color: var(--text-dim); line-height: 1.35; }
+    .lg-turn b { display: block; color: var(--text); font-size: 13px; font-weight: 600; font-family: 'Geist', system-ui, sans-serif; }
+    .lg-what { min-width: 0; font-size: 11.5px; color: var(--text-2); line-height: 1.4; }
+    .lg-what .note { display: inline-block; margin-bottom: 3px; font-size: 10.5px; color: var(--accent-hi); border: 1px solid oklch(0.78 0.14 70 / .35); background: oklch(0.78 0.14 70 / .08); border-radius: 999px; padding: 1px 8px; }
+    .lg-what .rc { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .lg-what strong { color: var(--text); font-weight: 600; }
+    .lg-right { display: flex; align-items: center; gap: 10px; }
+    .lg-right .mv-thumb { width: 26px; height: 36px; }
+    .lg-lore { font-family: 'Geist Mono', monospace; font-size: 12px; color: var(--text); min-width: 40px; text-align: right; }
+
+    /* Explorer side panel */
+    #multi-mv:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+    .side-thumbs { display: flex; flex-wrap: wrap; gap: 5px; }
+    .side-thumbs .mv-thumb { width: 40px; height: 56px; border-radius: 5px; }
+    .side-sec { display: grid; gap: 6px; }
+    .side-sec-h { display: flex; align-items: center; gap: 6px; font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--text-dim); font-family: 'Geist Mono', monospace; }
+    .side-sec-h::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--sec-c); }
+    .side-sec-h b { margin-left: auto; color: var(--sec-c); font-weight: 500; }
+    .lore-row { display: grid; grid-template-columns: 26px 1fr 26px; align-items: center; gap: 10px; font-size: 11px; }
+    .side-recap { font-size: 12.5px; color: var(--text-2); line-height: 1.5; }
+    .side-recap p { margin: 0 0 4px; } .side-recap strong { color: var(--text); font-weight: 600; }
+    .side-recap ul { margin: 0; padding-left: 16px; list-style: disc; }
+    .crumbs { display: flex; flex-wrap: wrap; gap: 4px; }
+    .crumbs button { appearance: none; border: 1px solid var(--border-soft); background: var(--surface-2); color: var(--text-2); font: 500 10.5px 'Geist Mono', monospace;
+      padding: 3px 7px; border-radius: 6px; cursor: pointer; }
+    .crumbs button:hover { color: var(--text); border-color: var(--border-strong); }
+    .crumbs button.is-cur { color: oklch(0.20 0.03 70); background: var(--accent); border-color: var(--accent); }
+    #multi-mv { height: 600px; touch-action: pan-y; }
+    @media (max-width: 640px) { #multi-mv { height: 460px; } }
   </style>
 </head>
 
@@ -585,130 +587,21 @@
         </div>
       </div>
 
-      <!-- HERO TREE -->
-      <div class="lg:col-span-6 relative">
+      <!-- HERO TREE: the whole real match as one map -->
+      <div class="lg:col-span-6 relative min-w-0 mv">
         <div class="absolute inset-0 -m-10 glow-purple opacity-60 pointer-events-none"></div>
-        <div class="tree-stage" id="hero-tree">
-          <svg class="tree-svg" viewBox="0 0 560 560" preserveAspectRatio="none">
-            <defs>
-              <linearGradient id="branchGrad" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0%" stop-color="#e0a34d" stop-opacity="0.9" />
-                <stop offset="100%" stop-color="#5fcdd9" stop-opacity="0.9" />
-              </linearGradient>
-              <radialGradient id="nodeGlow" cx="50%" cy="50%">
-                <stop offset="0%" stop-color="#e0a34d" stop-opacity="0.35" />
-                <stop offset="100%" stop-color="#e0a34d" stop-opacity="0" />
-              </radialGradient>
-            </defs>
-
-            <!-- background grid dots -->
-            <g opacity="0.5">
-              <circle cx="280" cy="280" r="220" fill="url(#nodeGlow)" />
-            </g>
-
-            <!-- Main spine T1 -> T2 -> T3 -->
-            <path class="branch-active" d="M 80,80 C 160,140 200,200 280,260" />
-            <!-- T3 active branch up-right (current) -->
-            <path class="branch-active" d="M 280,260 C 360,300 400,340 470,400" />
-            <!-- T3 alt branch down-right (dim) -->
-            <path class="branch-dim" d="M 280,260 C 340,330 360,400 410,490" stroke-dasharray="3 4" />
-            <!-- T2 alt branch top-right (dim) -->
-            <path class="branch-dim" d="M 200,180 C 280,160 360,140 450,110" stroke-dasharray="3 4" />
-            <!-- T1 alt branch down-left (dim) -->
-            <path class="branch-dim" d="M 80,80 C 60,180 80,280 120,400" stroke-dasharray="3 4" />
-
-            <!-- Tiny terminal lines off dim branches -->
-            <path class="branch-dim" d="M 410,490 C 440,500 470,495 500,485" />
-            <path class="branch-dim" d="M 450,110 C 480,100 510,120 530,150" />
-            <path class="branch-dim" d="M 120,400 C 100,440 120,480 150,510" />
-          </svg>
-
-          <!-- Nodes -->
-          <!-- T1 root -->
-          <div class="tree-node" style="left:14%; top:14%;">
-            <div class="strip"></div>
-            <div class="body">
-              <div class="turn">T1 · P1</div>
-              <div class="lore"><span class="dot-o"></span><span style="color:var(--orange-soft)">0</span></div>
+        <div class="map-card relative">
+          <div class="map-head">
+            <div class="min-w-0">
+              <div class="tag">One real match · every line tried</div>
+              <div class="map-title" data-mv="title"></div>
             </div>
+            <div class="map-stats font-mono"><span data-mv="nodes"></span><span data-mv="lines"></span></div>
           </div>
-          <div class="label-flag" style="left:14%; top:6%;">Opening</div>
-
-          <!-- T2 -->
-          <div class="tree-node" style="left:36%; top:32%;">
-            <div class="strip"></div>
-            <div class="body">
-              <div class="turn">T2 · P2</div>
-              <div class="lore"><span class="dot-p"></span><span style="color:#c2e7ed">1</span></div>
-            </div>
-          </div>
-
-          <!-- T2 alt (dim) -->
-          <div class="tree-node dim" style="left:80%; top:20%;">
-            <div class="strip" style="background:#1f3b43"></div>
-            <div class="body">
-              <div class="turn">T2'</div>
-              <div class="lore"><span class="dot-p"></span><span>1</span></div>
-            </div>
-          </div>
-          <div class="label-flag" style="left:80%; top:9%;">Alt opener</div>
-
-          <!-- T3 active (current) -->
-          <div class="tree-node active pulse" style="left:50%; top:46%;">
-            <div class="strip"></div>
-            <div class="body">
-              <div class="turn">T3 · P1</div>
-              <div class="lore"><span class="dot-o"></span><span style="color:var(--orange-soft)">3</span></div>
-            </div>
-          </div>
-          <div class="label-flag active" style="left:50%; top:36%;"><i class="fa-solid fa-location-crosshairs mr-1"></i>
-            You are here</div>
-
-          <!-- T4 leaf (active branch) -->
-          <div class="tree-node" style="left:84%; top:72%;">
-            <div class="strip"></div>
-            <div class="body">
-              <div class="turn">T4</div>
-              <div class="lore"><span class="dot-o"></span><span style="color:var(--orange-soft)">5</span></div>
-            </div>
-          </div>
-          <div class="label-flag" style="left:84%; top:62%;">Aggro line</div>
-
-          <!-- T4 alt leaf (dim) -->
-          <div class="tree-node dim" style="left:73%; top:88%;">
-            <div class="strip" style="background:#1f3b43"></div>
-            <div class="body">
-              <div class="turn">T4'</div>
-              <div class="lore"><span class="dot-p"></span><span>4</span></div>
-            </div>
-          </div>
-          <div class="label-flag" style="left:73%; top:98%;">Defensive</div>
-
-          <!-- T1 alt -->
-          <div class="tree-node dim" style="left:22%; top:72%;">
-            <div class="strip" style="background:#1f3b43"></div>
-            <div class="body">
-              <div class="turn">T1'</div>
-              <div class="lore"><span class="dot-o"></span><span>0</span></div>
-            </div>
-          </div>
-          <div class="label-flag" style="left:22%; top:82%;">Mulligan</div>
-        </div>
-
-        <!-- caption strip -->
-        <div class="mt-6 panel-2 px-4 py-3 flex items-center justify-between text-xs">
-          <div class="flex items-center gap-2 text-[var(--ink-dim)]">
-            <i class="fa-solid fa-network-wired text-[var(--purple-soft)]"></i>
-            <span class="font-mono">multiverse.tree</span>
-          </div>
-          <div class="flex items-center gap-4 text-[var(--ink-faint)]">
-            <span class="flex items-center gap-1.5"><span
-                class="w-1.5 h-1.5 rounded-full bg-[var(--purple-soft)]"></span> 6 bookmarks</span>
-            <span class="flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-[var(--ink-faint)]"></span>
-              3 branches</span>
-            <span class="flex items-center gap-1.5 text-[var(--purple-soft)]"><i
-                class="fa-solid fa-bolt text-[10px]"></i> live</span>
-          </div>
+          <div class="map-wrap" id="hero-map"></div>
+          <div class="map-sub tag">Lore along the line played</div>
+          <div class="map-wrap" id="hero-lore"></div>
+          <ol class="map-notes" id="hero-notes"></ol>
         </div>
       </div>
     </div>
@@ -890,19 +783,19 @@
               <div
                 class="bg-black border hairline rounded-md p-3 font-mono text-[11px] leading-relaxed text-[var(--ink-dim)] h-[260px] overflow-hidden"
                 style="border-color: rgba(74,222,128,0.35);">
-                <div class="text-[var(--ink-faint)]"># Match · 2026-05-18</div>
+                <div class="text-[var(--ink-faint)]"># Match · 2026-10-05</div>
                 <div class="text-[var(--ink-faint)]">## Setup</div>
-                <div>Player 1 deck: Amber/Steel Songs</div>
-                <div>Player 2 deck: Ruby/Amethyst Aggro</div>
+                <div>Player 1 deck: Amber/Amethyst</div>
+                <div>Player 2 deck: Amethyst/Ruby</div>
                 <div class="text-[var(--ink-faint)] mt-1">## Turn 1</div>
-                <div>Player 1 drew <span class="text-orange-300">Hamm - Piggy Bank</span></div>
-                <div>Player 1 inked <span class="text-orange-300">Hamm - Piggy Bank</span></div>
+                <div>Player 2 inked <span class="text-[var(--p2-hi)]">Hades - Looking for a Deal</span></div>
+                <div>Player 2 played <span class="text-[var(--p2-hi)]">Besties, Assemble!</span></div>
                 <div class="text-[var(--ink-faint)] mt-1">## Turn 2</div>
-                <div>Player 2 drew <span class="text-[var(--p2-hi)]">Lumiere - Fiery Friend</span></div>
-                <div>Player 2 played <span class="text-[var(--p2-hi)]">Lumiere - Fiery Friend</span></div>
+                <div>Player 1 inked <span class="text-orange-300">Hades - Looking for a Deal</span></div>
+                <div>Player 2 played <span class="text-[var(--p2-hi)]">Grandmother Willow - Ancient Advisor</span></div>
                 <div class="text-[var(--ink-faint)] mt-1">## Turn 3</div>
-                <div>Player 1 played <span class="text-orange-300">Grandmother Willow</span></div>
-                <div>Player 1 quested with <span class="text-orange-300">Jessie</span> for 3 lore</div>
+                <div>Player 1 played <span class="text-orange-300">Scrooge McDuck - Ghostly Ebenezer</span></div>
+                <div>Player 2 played <span class="text-[var(--p2-hi)]">Dumbo - Ninth Wonder of the Universe</span></div>
                 <div class="text-[var(--ink-faint)] mt-1">## Turn 4</div>
                 <div class="text-[var(--ink-faint)] italic">…</div>
               </div>
@@ -912,7 +805,7 @@
               style="background: rgba(74,222,128,0.08); border: 1px solid rgba(74,222,128,0.3);">
               <i class="fa-solid fa-circle-check mt-0.5 text-[var(--green)] text-[12px]"></i>
               <div>
-                <div class="text-[var(--green)] font-semibold text-[13px]">Valid log · 8 turns detected</div>
+                <div class="text-[var(--green)] font-semibold text-[13px]">Valid log · 16 turns detected</div>
                 <div class="text-[var(--ink-dim)] text-[12px] mt-0.5">Opening hands and turn boundaries parsed cleanly.
                   Ready to import.</div>
               </div>
@@ -942,101 +835,13 @@
           </div>
         </div>
 
-        <!-- RIGHT: resulting tree -->
-        <div class="lg:col-span-6 panel relative overflow-hidden">
-          <div class="px-5 py-3 border-b hairline bg-[var(--panel-2)] flex items-center justify-between">
-            <div class="flex items-center gap-2.5">
-              <i class="fa-solid fa-network-wired text-[var(--purple-soft)]"></i>
-              <span class="font-display font-semibold text-white text-sm">Multiverse Timelines</span>
-              <span class="tag ml-2 hidden md:inline">imported · 8 turn nodes</span>
-            </div>
-            <span class="font-mono text-[11px] text-[var(--green)] flex items-center gap-1.5"><i
-                class="fa-solid fa-circle text-[6px]"></i> live</span>
+        <!-- RIGHT: what the import gives you, one row per turn -->
+        <div class="lg:col-span-6 mv mv-win relative min-w-0 flex flex-col">
+          <div class="mv-head">
+            <h3><i class="fa-solid fa-list-ol"></i> Imported turns</h3>
+            <span class="font-mono text-[11px] text-[var(--green)] truncate" data-mv="imported"></span>
           </div>
-          <div class="relative"
-            style="background-image: radial-gradient(rgba(255,255,255,0.04) 1px, transparent 1px); background-size: 28px 28px; background-color:oklch(0.165 0.008 60); height: 460px;">
-            <svg viewBox="0 0 700 460" class="absolute inset-0 w-full h-full">
-              <defs>
-                <linearGradient id="importSpine" x1="0" y1="0" x2="1" y2="0">
-                  <stop offset="0%" stop-color="#86efac" />
-                  <stop offset="50%" stop-color="#e0a34d" />
-                  <stop offset="100%" stop-color="#5fcdd9" />
-                </linearGradient>
-              </defs>
-              <!-- Spine through all 8 turns -->
-              <path
-                d="M 50,230 C 110,230 110,150 170,150 C 230,150 230,290 290,290 C 350,290 350,170 410,170 C 470,170 470,260 530,260 C 590,260 590,210 650,210"
-                stroke="url(#importSpine)" stroke-width="2.5" fill="none" stroke-dasharray="6 5"
-                style="animation: dashFlow 2s linear infinite;" />
-            </svg>
-
-            <!-- 8 turn nodes -->
-            <div class="absolute" style="left: 50px; top: 230px; transform: translate(-50%,-50%);">
-              <div class="tree-node" style="position:relative; left:0; top:0; transform:none;">
-                <div class="strip" style="background: #16a34a;"></div>
-                <div class="body">
-                  <div class="turn">T1 · P1</div>
-                  <div class="lore"><span class="dot-o"></span><span style="color:var(--orange-soft)">0</span></div>
-                </div>
-              </div>
-            </div>
-            <div class="absolute" style="left: 170px; top: 150px; transform: translate(-50%,-50%);">
-              <div class="tree-node" style="position:relative; left:0; top:0; transform:none;">
-                <div class="strip" style="background: #16a34a;"></div>
-                <div class="body">
-                  <div class="turn">T2 · P2</div>
-                  <div class="lore"><span class="dot-p"></span><span style="color:#c2e7ed">0</span></div>
-                </div>
-              </div>
-            </div>
-            <div class="absolute" style="left: 290px; top: 290px; transform: translate(-50%,-50%);">
-              <div class="tree-node" style="position:relative; left:0; top:0; transform:none;">
-                <div class="strip" style="background: #16a34a;"></div>
-                <div class="body">
-                  <div class="turn">T3 · P1</div>
-                  <div class="lore"><span class="dot-o"></span><span style="color:var(--orange-soft)">3</span></div>
-                </div>
-              </div>
-            </div>
-            <div class="absolute" style="left: 410px; top: 170px; transform: translate(-50%,-50%);">
-              <div class="tree-node" style="position:relative; left:0; top:0; transform:none;">
-                <div class="strip" style="background: #16a34a;"></div>
-                <div class="body">
-                  <div class="turn">T4 · P2</div>
-                  <div class="lore"><span class="dot-p"></span><span style="color:#c2e7ed">1</span></div>
-                </div>
-              </div>
-            </div>
-            <div class="absolute" style="left: 530px; top: 260px; transform: translate(-50%,-50%);">
-              <div class="tree-node" style="position:relative; left:0; top:0; transform:none;">
-                <div class="strip" style="background: #16a34a;"></div>
-                <div class="body">
-                  <div class="turn">T5 · P1</div>
-                  <div class="lore"><span class="dot-o"></span><span style="color:var(--orange-soft)">7</span></div>
-                </div>
-              </div>
-            </div>
-            <div class="absolute" style="left: 650px; top: 210px; transform: translate(-50%,-50%);">
-              <div class="tree-node active pulse" style="position:relative; left:0; top:0; transform:none;">
-                <div class="strip"></div>
-                <div class="body">
-                  <div class="turn">T8 · P2</div>
-                  <div class="lore"><span class="dot-p"></span><span style="color:#c2e7ed">14</span></div>
-                </div>
-              </div>
-            </div>
-
-            <!-- caption -->
-            <div
-              class="absolute bottom-3 left-3 panel-2 px-3 py-2 flex items-center gap-3 text-[11px] text-[var(--ink-dim)]">
-              <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded" style="background:#16a34a;"></span>
-                imported turn</span>
-              <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded bg-[var(--purple-soft)]"></span>
-                branch from here</span>
-            </div>
-            <div class="absolute bottom-3 right-3 font-mono text-[11px] text-[var(--ink-faint)]">click any node → branch
-              a what-if</div>
-          </div>
+          <div class="ledger" id="ledger" tabindex="0" aria-label="Imported turns, one row per turn"></div>
         </div>
       </div>
 
@@ -1090,212 +895,28 @@
         </p>
       </div>
 
-      <!-- Big demo panel -->
-      <div class="mt-14 panel relative overflow-hidden">
-        <!-- chrome bar -->
-        <div class="flex items-center justify-between px-5 py-3 border-b hairline bg-[var(--panel-2)]">
-          <div class="flex items-center gap-3">
-            <i class="fa-solid fa-network-wired text-[var(--purple-soft)]"></i>
-            <span class="font-display font-semibold text-white text-sm">Multiverse Timelines</span>
-            <span class="tag ml-3 hidden sm:inline">drag · zoom · click to restore</span>
-          </div>
-          <div class="flex items-center gap-3 text-[var(--ink-faint)]">
-            <i class="fa-solid fa-compress"></i>
-            <i class="fa-solid fa-xmark"></i>
+      <!-- Big demo panel: the whole Set 13 demo session, explorable -->
+      <div class="mt-14 mv mv-win relative">
+        <div class="mv-head">
+          <h3><i class="fa-solid fa-network-wired"></i> Multiverse Timelines</h3>
+          <span class="mv-hint mv-head-mid hidden md:block">Drag to pan · Ctrl + scroll to zoom · click a node · arrow keys to walk the tree</span>
+          <div class="mv-head-btns">
+            <button class="mv-hbtn" type="button" id="ex-view" aria-label="Switch to full nodes" title="Switch to full nodes"><i class="fa-solid fa-list-ul"></i></button>
+            <button class="mv-hbtn" type="button" id="ex-out" aria-label="Zoom out" title="Zoom out"><i class="fa-solid fa-minus"></i></button>
+            <button class="mv-hbtn" type="button" id="ex-in" aria-label="Zoom in" title="Zoom in"><i class="fa-solid fa-plus"></i></button>
+            <button class="mv-hbtn" type="button" id="ex-home" aria-label="Back to the node you're on" title="Back to the node you're on"><i class="fa-solid fa-location-crosshairs"></i></button>
           </div>
         </div>
-
-        <!-- viewport -->
-        <div class="relative"
-          style="background-image: radial-gradient(rgba(255,255,255,0.04) 1px, transparent 1px); background-size: 32px 32px; background-color:oklch(0.165 0.008 60);">
-          <div class="grid lg:grid-cols-12">
-            <!-- TREE -->
-            <div class="lg:col-span-8 relative" style="height: 520px;">
-              <svg viewBox="0 0 800 520" class="absolute inset-0 w-full h-full overflow-visible">
-                <defs>
-                  <linearGradient id="b2" x1="0" y1="0" x2="1" y2="0">
-                    <stop offset="0%" stop-color="#e0a34d" />
-                    <stop offset="100%" stop-color="#5fcdd9" />
-                  </linearGradient>
-                </defs>
-                <!-- Main spine -->
-                <path d="M 80,260 C 160,260 180,200 260,200" stroke="url(#b2)" stroke-width="2" fill="none"
-                  stroke-linecap="round" stroke-dasharray="6 4" style="animation: dashFlow 1.6s linear infinite;" />
-                <path d="M 260,200 C 340,200 360,140 440,140" stroke="url(#b2)" stroke-width="2" fill="none"
-                  stroke-linecap="round" stroke-dasharray="6 4" style="animation: dashFlow 1.6s linear infinite;" />
-                <path d="M 440,140 C 520,140 540,200 620,200" stroke="url(#b2)" stroke-width="2" fill="none"
-                  stroke-linecap="round" stroke-dasharray="6 4" style="animation: dashFlow 1.6s linear infinite;" />
-                <path d="M 620,200 C 700,200 720,180 760,160" stroke="url(#b2)" stroke-width="2" fill="none"
-                  stroke-linecap="round" />
-
-                <!-- Branches off T3 -->
-                <path d="M 260,200 C 340,240 360,300 440,320" stroke="#2e2a25" stroke-width="1.5" fill="none"
-                  stroke-linecap="round" stroke-dasharray="3 4" />
-                <path d="M 440,320 C 520,330 540,360 620,380" stroke="#2e2a25" stroke-width="1.5" fill="none"
-                  stroke-linecap="round" stroke-dasharray="3 4" />
-                <path d="M 260,200 C 320,260 320,360 360,440" stroke="#2e2a25" stroke-width="1.5" fill="none"
-                  stroke-linecap="round" stroke-dasharray="3 4" />
-                <!-- Sub branch off T5 active -->
-                <path d="M 620,200 C 660,220 680,260 700,300" stroke="#2e2a25" stroke-width="1.5" fill="none"
-                  stroke-linecap="round" stroke-dasharray="3 4" />
-                <!-- branch labels -->
-                <text x="320" y="280" fill="#6a6459" font-family="Geist Mono" font-size="10" letter-spacing="1">branch ·
-                  inkwell skip</text>
-                <text x="285" y="380" fill="#6a6459" font-family="Geist Mono" font-size="10" letter-spacing="1">branch ·
-                  mulligan retry</text>
-                <text x="640" y="265" fill="#6a6459" font-family="Geist Mono" font-size="10" letter-spacing="1">branch ·
-                  alt finisher</text>
-              </svg>
-
-              <!-- Nodes -->
-              <div class="absolute" style="left:80px; top:260px;">
-                <div class="tree-node" style="position:relative; left:0; top:0; transform:translate(-50%,-50%);">
-                  <div class="strip"></div>
-                  <div class="body">
-                    <div class="turn">T1 · P1</div>
-                    <div class="lore"><span class="dot-o"></span><span style="color:var(--orange-soft)">0</span></div>
-                  </div>
-                </div>
-                <div class="label-flag" style="position:absolute; left:0; top:-50px;">Match start</div>
-              </div>
-              <div class="absolute" style="left:260px; top:200px;">
-                <div class="tree-node" style="position:relative; left:0; top:0; transform:translate(-50%,-50%);">
-                  <div class="strip"></div>
-                  <div class="body">
-                    <div class="turn">T3</div>
-                    <div class="lore"><span class="dot-o"></span><span style="color:var(--orange-soft)">2</span></div>
-                  </div>
-                </div>
-                <div class="label-flag" style="position:absolute; left:0; top:-50px;">Branch point</div>
-              </div>
-              <div class="absolute" style="left:440px; top:140px;">
-                <div class="tree-node" style="position:relative; left:0; top:0; transform:translate(-50%,-50%);">
-                  <div class="strip"></div>
-                  <div class="body">
-                    <div class="turn">T4</div>
-                    <div class="lore"><span class="dot-p"></span><span style="color:#c2e7ed">3</span></div>
-                  </div>
-                </div>
-              </div>
-              <div class="absolute" style="left:620px; top:200px;">
-                <div class="tree-node active pulse"
-                  style="position:relative; left:0; top:0; transform:translate(-50%,-50%);">
-                  <div class="strip"></div>
-                  <div class="body">
-                    <div class="turn">T5 · P1</div>
-                    <div class="lore"><span class="dot-o"></span><span style="color:var(--orange-soft)">6</span></div>
-                  </div>
-                </div>
-                <div class="label-flag active" style="position:absolute; left:0; top:-50px;"><i
-                    class="fa-solid fa-location-crosshairs mr-1"></i>Active</div>
-              </div>
-
-              <!-- Branch nodes (dim) -->
-              <div class="absolute" style="left:440px; top:320px;">
-                <div class="tree-node dim" style="position:relative; left:0; top:0; transform:translate(-50%,-50%);">
-                  <div class="strip" style="background:#1f3b43"></div>
-                  <div class="body">
-                    <div class="turn">T4'</div>
-                    <div class="lore"><span class="dot-p"></span><span>2</span></div>
-                  </div>
-                </div>
-              </div>
-              <div class="absolute" style="left:620px; top:380px;">
-                <div class="tree-node dim" style="position:relative; left:0; top:0; transform:translate(-50%,-50%);">
-                  <div class="strip" style="background:#1f3b43"></div>
-                  <div class="body">
-                    <div class="turn">T5'</div>
-                    <div class="lore"><span class="dot-o"></span><span>5</span></div>
-                  </div>
-                </div>
-              </div>
-              <div class="absolute" style="left:360px; top:440px;">
-                <div class="tree-node dim" style="position:relative; left:0; top:0; transform:translate(-50%,-50%);">
-                  <div class="strip" style="background:#1f3b43"></div>
-                  <div class="body">
-                    <div class="turn">T2'</div>
-                    <div class="lore"><span class="dot-o"></span><span>1</span></div>
-                  </div>
-                </div>
-              </div>
-              <div class="absolute" style="left:700px; top:300px;">
-                <div class="tree-node dim" style="position:relative; left:0; top:0; transform:translate(-50%,-50%);">
-                  <div class="strip" style="background:#1f3b43"></div>
-                  <div class="body">
-                    <div class="turn">T5″</div>
-                    <div class="lore"><span class="dot-p"></span><span>4</span></div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- legend -->
-              <div
-                class="absolute bottom-4 left-4 panel-2 px-3 py-2 flex items-center gap-4 text-[11px] text-[var(--ink-dim)]">
-                <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded bg-[var(--purple-soft)]"></span>
-                  Active line</span>
-                <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded bg-[#1f3b43]"></span> Saved
-                  branch</span>
-                <span class="flex items-center gap-1.5"><i
-                    class="fa-solid fa-arrows-up-down-left-right text-[10px]"></i> drag · scroll · zoom</span>
-              </div>
-            </div>
-
-            <!-- SIDE PANEL: Bookmark detail -->
-            <div class="lg:col-span-4 border-l hairline bg-[var(--panel)] p-5 flex flex-col gap-4">
-              <div>
-                <div class="tag mb-1">Selected bookmark</div>
-                <div class="font-display text-xl text-white">Turn 5 · Ramp into Maui line</div>
-                <div class="text-xs text-[var(--ink-faint)] mt-1 font-mono">id #b-7a2c · parent T3</div>
-              </div>
-
-              <div class="grid grid-cols-4 gap-2">
-                <div class="panel-2 px-2 py-2 text-center">
-                  <div class="text-[9px] tracking-widest uppercase text-[var(--ink-faint)]">CTL</div>
-                  <div class="text-sm font-mono text-white mt-0.5">8.2</div>
-                </div>
-                <div class="panel-2 px-2 py-2 text-center">
-                  <div class="text-[9px] tracking-widest uppercase text-[var(--ink-faint)]">BCR</div>
-                  <div class="text-sm font-mono text-blue-400 mt-0.5">14.6</div>
-                </div>
-                <div class="panel-2 px-2 py-2 text-center">
-                  <div class="text-[9px] tracking-widest uppercase text-[var(--ink-faint)]">RDS</div>
-                  <div class="text-sm font-mono text-green-400 mt-0.5">3.1</div>
-                </div>
-                <div class="panel-2 px-2 py-2 text-center">
-                  <div class="text-[9px] tracking-widest uppercase text-[var(--ink-faint)]">LVI</div>
-                  <div class="text-sm font-mono text-yellow-400 mt-0.5">11.4</div>
-                </div>
-              </div>
-
-              <div>
-                <div class="tag mb-2">Tug-of-war · Board control</div>
-                <div class="meter-track">
-                  <div style="background: var(--orange); width: 64%;"></div>
-                  <div style="background: var(--p2); width: 36%;"></div>
-                </div>
-                <div class="flex justify-between text-[11px] font-mono mt-1.5">
-                  <span class="text-orange-400">P1 · 64%</span>
-                  <span class="text-[var(--p2-hi)]">36% · P2</span>
-                </div>
-              </div>
-
-              <div class="panel-2 p-3 text-xs text-[var(--ink-dim)] leading-relaxed">
-                <i class="fa-solid fa-quote-left text-[10px] text-[var(--ink-faint)] mr-1"></i>
-                Ramp on T2, hold ink on T3, drop Maui T4. If they don't have removal in topdeck, this line closes by T7.
-              </div>
-
-              <div class="flex gap-2">
-                <button
-                  class="btn-secondary px-3 py-2 rounded-md text-xs font-medium flex-1 flex items-center justify-center gap-2 text-white">
-                  <i class="fa-solid fa-code-branch text-[var(--purple-soft)]"></i> Branch here
-                </button>
-                <button
-                  class="btn-secondary px-3 py-2 rounded-md text-xs font-medium flex-1 flex items-center justify-center gap-2 text-white">
-                  <i class="fa-solid fa-clock-rotate-left text-[var(--ink-dim)]"></i> Restore
-                </button>
-              </div>
+        <div class="grid lg:grid-cols-12">
+          <div class="lg:col-span-8 relative min-w-0">
+            <div class="mv-viewport is-draggable is-interactive" id="multi-mv" tabindex="0"
+              aria-label="Multiverse tree of a real Set 13 match. Use the arrow keys to move between nodes."></div>
+            <div class="absolute bottom-4 left-4 panel-2 px-3 py-2 mv-legend pointer-events-none">
+              <span><span class="sw p1"></span>Player 1 · Amber/Amethyst</span>
+              <span><span class="sw p2"></span>Player 2 · Amethyst/Ruby</span>
             </div>
           </div>
+          <aside class="lg:col-span-4 border-t lg:border-t-0 lg:border-l hairline bg-[var(--panel)] p-5 flex flex-col gap-4 min-w-0" id="mv-side" aria-live="polite"></aside>
         </div>
       </div>
 
@@ -1663,24 +1284,8 @@
     </div>
   </footer>
 
-  <script>
-    // Optional: subtle parallax on hero tree nodes
-    const stage = document.getElementById('hero-tree');
-    if (stage) {
-      stage.addEventListener('mousemove', (e) => {
-        const r = stage.getBoundingClientRect();
-        const x = (e.clientX - r.left) / r.width - 0.5;
-        const y = (e.clientY - r.top) / r.height - 0.5;
-        stage.querySelectorAll('.tree-node').forEach((n, i) => {
-          const d = (i % 3 + 1) * 4;
-          n.style.translate = `${x * d}px ${y * d}px`;
-        });
-      });
-      stage.addEventListener('mouseleave', () => {
-        stage.querySelectorAll('.tree-node').forEach(n => n.style.translate = '');
-      });
-    }
-  </script>
+  <script src="js/landing-multiverse-data.js"></script>
+  <script src="js/landing-multiverse.js"></script>
 
 </body>
 
