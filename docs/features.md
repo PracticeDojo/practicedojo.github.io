@@ -633,6 +633,7 @@ Chosen from three phone mock-ups: the bars of "C · Open bar" with the buttons o
 - **Quest / End turn** sit in the hand tray, either side of the *Hand · N* label, and hide while the hand is fanned open.
 - **Ink this turn (all sizes):** the ink tag now shows the real count (`+2`), and the pips for cards inked this turn get a bright core. On phones the tag reads *+N inked* beside INK, and the current player's bar shows a dashed *No ink yet* until they ink. The opponent's bar keeps showing what they inked on their last turn.
 - Desktop layout unchanged.
+- **Bigger drop targets (v2.26.0):** on phones the ink counter fills its bar from lore to the piles, so the whole stretch takes a card to ink. On all sizes the field fills its strip, so a card dropped anywhere in the play area (not only on the row of cards) is played.
 
 ## Feature 44: Phone hand — one tap to a card, swipe through the hand (v2.25.0)
 
@@ -648,6 +649,19 @@ Chosen from three phone mock-ups: the bars of "C · Open bar" with the buttons o
 - **Text card:** the big card is the artwork over the recreated text card (cost, name, type line, abilities, stats). Text mode shows only the text card; while the art loads or when it can't load (offline), the text card shows through. A long card's text scrolls vertically without breaking the swipe.
 - **Short phones:** the big card shrinks with the viewport height (252px down to 168px) so the actions stay clear of the fanned hand.
 - Desktop unchanged.
+
+## Feature 45: Inkwell as cards — in the ink bar on desktop, a compact sheet on phones (v2.26.0)
+
+### User Story
+- As a player I want to manage my inkwell without a big panel of near-identical "Face-down card" rows.
+- As a player on desktop I want to do it right in the ink bar, without a popup.
+
+### Details
+Chosen from three mock-ups ("A · Stepper + ink pips", "B · Compact list", "C · Card tiles"): C.
+- **Inkwell cards:** each ink is a small card: the card back when face down, its art with a blue ring when inked this turn. Spent ink is dimmed and tilted. Click/tap one to get *Exert/Ready · To hand · Discard* for it.
+- **Desktop (≥761px):** the ink bar itself holds everything; clicking the bar no longer opens a panel. Left: ready count (*4/7 READY*, *+N* inked this turn), −/+ (spend / ready one) and *Ready all*. Right: the ink cards, overlapping like a hand once they don't fit. A clicked card opens up in place with its actions; click it again or press Escape to close. Both players' bars work the same way. Dropping a card anywhere on the bar still inks it.
+- **Phones:** the bar keeps its count and pips; tapping it opens a bottom sheet (about 210px for 7 ink, was 565px): count, −/+, *Ready all*, the cards in a grid, and one action bar for the tapped card.
+- **Putting a card down (desktop):** a click anywhere outside the ink cards, Escape, or ending the turn deselects the picked card; clicking another ink card picks that one instead.
 
 ## Refactor 2: Own repository (v2.18.1)
 
@@ -707,3 +721,4 @@ Chosen from three phone mock-ups: the bars of "C · Open bar" with the buttons o
 - [x] Feature 42: Optional accounts — Discord & Google sign-in (ARCH Phase 3)
 - [x] Feature 43: Phone player bars, Quest / End turn in the hand tray, ink this turn
 - [x] Feature 44: Phone hand — one tap to a card, swipe through the hand
+- [x] Feature 45: Inkwell as cards — in the ink bar on desktop, a compact sheet on phones

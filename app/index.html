@@ -2526,10 +2526,12 @@
             opacity: 0.5;
         }
 
+        /* The field stretches to fill its strip, so the whole play area takes a drop
+           (cards stay centred inside it). */
         .field-strip {
             flex: 1 1 auto;
             display: flex;
-            align-items: center;
+            align-items: stretch;
             justify-content: center;
             min-height: calc(var(--card-h) + 8px);
             position: relative;
@@ -5288,8 +5290,15 @@
                 padding: 4px 6px 4px 12px;
             }
 
+            /* The ink counter fills the bar between lore and the piles, so the whole
+               stretch is one big target for dropping a card to ink it. */
             .pile-row .ink-cluster.is-counter {
-                flex: none;
+                flex: 1 1 auto;
+                align-self: stretch;
+                align-content: center;
+                justify-content: start;
+                margin: -4px 8px -4px 0;
+                border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
             }
 
             .pile-row .pile-cluster {
@@ -6839,96 +6848,355 @@
             display: flex;
         }
 
+        /* Phones open this sheet from the ink counter: the count with −/+ and Ready all,
+           the inkwell as small cards (backs for face-down ink, art for this turn's), and
+           one action bar for the card you tap. */
         .ip-head {
             display: flex;
             align-items: center;
             gap: 8px;
         }
 
-        .ip-head b {
-            flex: 1;
-            font-size: 15px;
-            font-weight: 650;
-            color: var(--text);
-        }
-
-        .ip-head span {
-            font: 500 11px var(--font-mono);
+        .ip-count,
+        .ii-count {
+            display: inline-flex;
+            align-items: baseline;
+            gap: 2px;
+            font: 600 15px var(--font-mono);
             color: var(--text-dim);
         }
 
-        .ip-acts {
+        .ip-count b,
+        .ii-count b {
+            font-size: 22px;
+            line-height: 1;
+            color: var(--bcr);
+        }
+
+        .ip-count small,
+        .ii-count small {
+            margin-left: 5px;
+            font-size: 9.5px;
+            color: var(--text-faint);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        .ip-fresh {
+            padding: 2px 7px;
+            border-radius: 999px;
+            background: var(--bcr);
+            color: oklch(0.16 0.02 240);
+            font: 700 10px var(--font-mono);
+            white-space: nowrap;
+        }
+
+        .ip-step,
+        .ii-step {
+            display: inline-flex;
+            border: 1px solid var(--border);
+            border-radius: 9px;
+            overflow: hidden;
+        }
+
+        .ip-step {
+            margin-left: auto;
+        }
+
+        .ip-step button,
+        .ii-step button {
+            width: 34px;
+            min-height: 32px;
+            border: 0;
+            background: var(--surface-3);
+            color: var(--text);
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        .ip-step button + button,
+        .ii-step button + button {
+            border-left: 1px solid var(--border);
+        }
+
+        .ip-btn,
+        .ii-all {
+            min-height: 32px;
+            padding: 0 10px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: var(--surface-3);
+            color: var(--text);
+            font: 600 12px var(--font-sans);
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .ip-step button:disabled,
+        .ii-step button:disabled,
+        .ip-btn:disabled,
+        .ii-all:disabled {
+            opacity: 0.35;
+            cursor: default;
+        }
+
+        .ip-x {
+            width: 30px;
+            height: 30px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: 0;
+            border-radius: 8px;
+            background: none;
+            color: var(--text-dim);
+            font-size: 15px;
+            cursor: pointer;
+        }
+
+        .ip-x:hover {
+            background: var(--surface-3);
+            color: var(--text);
+        }
+
+        .ip-tiles {
             display: grid;
-            grid-template-columns: repeat(3, minmax(0, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(40px, 1fr));
             gap: 6px;
         }
 
-        .ip-list {
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
+        /* One inkwell card, in the sheet and in the desktop ink bar. */
+        .ink-tile {
+            position: relative;
+            aspect-ratio: 5 / 7;
+            padding: 0;
+            border: 1px solid var(--border);
+            border-radius: 5px;
+            background: #1a202c center / cover no-repeat;
+            cursor: pointer;
+            transition: transform .12s ease, opacity .12s ease, filter .12s ease;
         }
 
-        .ip-row {
-            display: grid;
-            grid-template-columns: minmax(0, 1fr) auto auto auto;
-            gap: 5px;
+        .ink-tile.is-back {
+            background-image: url('https://upload.wikimedia.org/wikipedia/en/2/25/Lorcana_Card_Back.png');
+        }
+
+        .ink-tile.is-fresh {
+            box-shadow: 0 0 0 2px var(--bcr);
+        }
+
+        .ink-tile.is-spent {
+            opacity: 0.4;
+            filter: grayscale(0.7);
+            transform: scale(0.9) rotate(-8deg);
+        }
+
+        .ink-tile.is-sel {
+            outline: 2px solid var(--accent);
+            outline-offset: 2px;
+            opacity: 1;
+            filter: none;
+        }
+
+        .ip-bar {
+            display: flex;
             align-items: center;
-            padding: 5px 5px 5px 10px;
-            border-radius: 9px;
+            gap: 6px;
+            min-height: 44px;
+            padding: 6px 6px 6px 10px;
+            border-radius: 10px;
             background: var(--surface-2);
             border: 1px solid var(--border-soft);
         }
 
-        .ip-row.is-exerted {
-            opacity: 0.7;
+        .ip-bar.is-hint {
+            justify-content: center;
+            background: none;
+            border-style: dashed;
+            color: var(--text-faint);
+            font: 500 11px var(--font-mono);
         }
 
-        .ip-name {
+        .ip-bar-name {
+            flex: 1;
+            min-width: 0;
             display: flex;
             flex-direction: column;
-            min-width: 0;
         }
 
-        .ip-name b {
-            font-size: 12.5px;
-            font-weight: 600;
+        .ip-bar-name b {
+            font-size: 13px;
+            font-weight: 650;
             color: var(--text);
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
         }
 
-        .ip-name span {
+        .ip-bar-name em {
             font: 500 10px var(--font-mono);
+            font-style: normal;
             color: var(--text-dim);
-        }
-
-        .ip-btn {
-            min-height: 32px;
-            padding: 0 9px;
-            border-radius: 7px;
-            border: 1px solid var(--border);
-            background: var(--surface-3);
-            color: var(--text);
-            font: 600 11.5px var(--font-sans);
-            cursor: pointer;
             white-space: nowrap;
         }
 
-        .ip-btn.is-ready {
-            border-color: color-mix(in oklch, var(--bcr) 70%, transparent);
-            color: var(--bcr);
-        }
-
-        .ip-btn:disabled {
-            opacity: 0.35;
-            cursor: default;
-        }
-
         .ip-empty {
+            grid-column: 1 / -1;
             font-size: 12.5px;
             color: var(--text-dim);
+        }
+
+        /* Desktop: the same inkwell lives in the ink bar itself, no panel. The count and
+           −/+ / Ready all on the left, the cards across the rest (overlapping once they
+           don't fit), and a clicked card opens up in place with its actions. */
+        @media (min-width: 761px) {
+            .ink-cluster.is-inline {
+                gap: 0;
+                cursor: default;
+            }
+
+            .ink-cluster.is-inline > .ink-readout,
+            .ink-cluster.is-inline .ink-new {
+                display: none;
+            }
+
+            .ink-cluster.is-inline .inkwell.is-counter {
+                flex-wrap: nowrap;
+                gap: 14px;
+                cursor: default;
+            }
+
+            .ii-ctl {
+                flex: none;
+                display: flex;
+                flex-direction: column;
+                gap: 8px;
+                padding-right: 14px;
+                border-right: 1px solid var(--border-soft);
+            }
+
+            .ii-count .ink-icon {
+                align-self: center;
+                width: 8px;
+                height: 8px;
+                margin-right: 6px;
+                background: var(--bcr);
+                border-radius: 2px;
+                transform: rotate(45deg);
+            }
+
+            .ii-count b {
+                font-size: 24px;
+            }
+
+            .ii-count small {
+                margin-right: 6px;
+            }
+
+            .ii-btns {
+                display: flex;
+                gap: 6px;
+            }
+
+            .ii-step button {
+                width: 30px;
+                min-height: 28px;
+                font-size: 11px;
+            }
+
+            .ii-all {
+                min-height: 30px;
+                font-size: 11.5px;
+            }
+
+            .ii-tiles {
+                --ii-gap: 6px;
+                flex: 1;
+                min-width: 0;
+                height: 100%;
+                display: flex;
+                align-items: center;
+            }
+
+            .ii-slot {
+                position: relative;
+                flex: none;
+                display: flex;
+                align-items: center;
+                gap: 6px;
+            }
+
+            .ii-slot + .ii-slot {
+                margin-left: var(--ii-gap);
+            }
+
+            .ii-slot:hover {
+                z-index: 2;
+            }
+
+            .ii-slot.is-sel {
+                z-index: 3;
+                padding-right: 6px;
+                border-radius: 8px;
+                background: var(--surface);
+                box-shadow: 0 6px 18px oklch(0 0 0 / 0.45);
+            }
+
+            .ii-slot .ink-tile {
+                height: calc(var(--pile-h) - 10px);
+                border-radius: 6px;
+            }
+
+            .ii-slot .ink-tile:hover {
+                transform: translateY(-4px);
+                opacity: 1;
+                filter: none;
+            }
+
+            .ii-slot .ink-tile.is-sel {
+                outline-offset: 1px;
+            }
+
+            .ii-acts {
+                width: 92px;
+                display: flex;
+                flex-direction: column;
+                gap: 3px;
+            }
+
+            .ii-name {
+                font-size: 11px;
+                font-weight: 650;
+                color: var(--text);
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+            .ii-acts button {
+                height: calc((var(--pile-h) - 34px) / 3);
+                min-height: 18px;
+                padding: 0 8px;
+                border: 1px solid var(--border);
+                border-radius: 6px;
+                background: var(--surface-3);
+                color: var(--text);
+                font: 600 10.5px var(--font-sans);
+                text-align: left;
+                cursor: pointer;
+            }
+
+            .ii-acts button:hover {
+                border-color: var(--accent-dim);
+            }
+
+            .ii-empty {
+                padding: 10px 14px;
+                border: 1px dashed var(--border);
+                border-radius: 8px;
+                color: var(--text-faint);
+                font: 500 11px var(--font-mono);
+            }
         }
 
         /* ----- Phone hand focus (one card large, every hand action) ----- */
@@ -7162,8 +7430,16 @@
             }
 
             .ink-panel .ip-btn,
-            .ink-panel .cs-btn {
-                min-height: 44px;
+            .ink-panel .ip-step button {
+                min-height: 40px;
+            }
+
+            .ink-panel .ip-step button {
+                width: 44px;
+            }
+
+            .ip-tiles {
+                grid-template-columns: repeat(auto-fill, minmax(44px, 1fr));
             }
 
             .chal-banner {
@@ -8251,7 +8527,7 @@
     <script>
         let cardFuse = null;
 
-        const APP_VERSION = "v2.25.0"; // Centralized version string (redesign)
+        const APP_VERSION = "v2.26.0"; // Centralized version string (redesign)
 
         // Tweaks panel accent presets (hue values for the OKLCH accent ramp)
         const ACCENT_PRESETS = {
@@ -8293,6 +8569,10 @@
                     const ap = App.state.players[App.state.activePlayer];
                     if (tf && ip) App.buildField(ip, tf, true);
                     if (bf && ap) App.buildField(ap, bf);
+                    // The ink bars switch between phone and desktop and re-fit their cards.
+                    if (!App.isPhoneUI()) App.closeInkPanel();
+                    if (ip) App.renderInkCounter(ip, document.getElementById('top-inkwell-cards'), document.getElementById('top-ink-new'));
+                    if (ap) App.renderInkCounter(ap, document.getElementById('bottom-inkwell-cards'), document.getElementById('bottom-ink-new'));
                 }
             });
         });
@@ -11069,6 +11349,7 @@
                 this.state.activePlayer = this.state.inactivePlayer;
                 this.state.inactivePlayer = 1 - this.state.activePlayer;
                 this.state.opponentHandRevealed = false; // Hide hand again when perspectives flip
+                this._inkSel = null; // a card picked in an ink bar doesn't follow it to the other side
 
                 if (this.state.activePlayer === 0) {
                     this.state.turn++;
@@ -14897,8 +15178,21 @@
                 };
             },
 
-            // --- Inkwell: counter + panel -------------------------------------------
+            // --- Inkwell: counter, desktop ink bar, phone sheet ---------------------
+            // Phones: the bar shows the count and pips; tapping it opens the sheet.
+            // Desktop: the bar itself holds the count, −/+ / Ready all and the ink cards.
             renderInkCounter(player, pipsEl, newEl) {
+                const cluster = pipsEl.closest('.ink-cluster');
+                const inline = !this.isPhoneUI();
+                if (cluster) {
+                    cluster.classList.toggle('is-inline', inline);
+                    // On desktop the bar's own buttons do the work; it is no longer one big button.
+                    if (inline) { cluster.removeAttribute('role'); cluster.removeAttribute('tabindex'); }
+                    else { cluster.setAttribute('role', 'button'); cluster.setAttribute('tabindex', '0'); }
+                    cluster.title = inline ? 'Inkwell — drop a card to ink it' : 'Inkwell — click to manage, drop a card to ink it';
+                }
+                if (inline) { this.renderInkInline(player, pipsEl); return; }
+                pipsEl.onclick = null;
                 pipsEl.innerHTML = '';
                 const total = player.inkTotal || 0, ready = Math.min(total, player.inkReady || 0);
                 const fresh = Math.min(total, player.inkwell.filter(c => c.faceUp).length);
@@ -14922,37 +15216,99 @@
                     newEl.hidden = false;
                 }
             },
+            // One inkwell card as a small card button: its back when face down, its art
+            // when inked this turn. `_inkSel` is the card whose actions are showing.
+            inkTileHtml(c) {
+                const esc = (s) => this._esc(s);
+                const db = this.cardDB[c.cardId];
+                const name = c.faceUp && db ? db.name : 'Face-down ink';
+                const face = c.faceUp && db ? ` style="background-image:url('${esc(this.getCardImage(db))}')"` : '';
+                return `<button class="ink-tile${c.faceUp ? ' is-fresh' : ' is-back'}${c.exerted ? ' is-spent' : ''}${this._inkSel === c.instanceId ? ' is-sel' : ''}"
+                    data-act="sel" data-id="${esc(c.instanceId)}" title="${esc(name)} · ${c.exerted ? 'spent' : 'ready'}"
+                    aria-label="${esc(name)}, ${c.exerted ? 'spent' : 'ready'}"${face}></button>`;
+            },
+            // Shared by the ink bar and the sheet.
+            inkAction(pi, b) {
+                const act = b.dataset.act, cid = b.dataset.id;
+                const pos = pi === this.state.activePlayer ? 'bottom' : 'top';
+                if (act === 'close') this.closeInkPanel();
+                else if (act === 'spend') this.inkSpend(pi);
+                else if (act === 'ready1') this.inkReadyOne(pi);
+                else if (act === 'readyall') this.inkReadyAll(pi);
+                else if (act === 'sel') { this._inkSel = this._inkSel === cid ? null : cid; this.render(); }
+                else if (act === 'toggle') this.toggleExert(cid);
+                else if (act === 'hand') { this._inkSel = null; this.moveCard(cid, 'hand', pos); }
+                else if (act === 'discard') { this._inkSel = null; this.moveCard(cid, 'discard', pos); }
+            },
+            // Drop the picked ink card and redraw just the ink bars (and the sheet, if open).
+            clearInkSel() {
+                if (!this._inkSel) return;
+                this._inkSel = null;
+                if (this._inkPanelPlayer != null) this.renderInkPanel();
+                const ip = this.state.players[this.state.inactivePlayer], ap = this.state.players[this.state.activePlayer];
+                if (ip) this.renderInkCounter(ip, document.getElementById('top-inkwell-cards'), document.getElementById('top-ink-new'));
+                if (ap) this.renderInkCounter(ap, document.getElementById('bottom-inkwell-cards'), document.getElementById('bottom-ink-new'));
+            },
+            renderInkInline(player, el) {
+                const esc = (s) => this._esc(s);
+                const pi = this.state.players.indexOf(player);
+                const total = player.inkTotal || 0, ready = Math.min(total, player.inkReady || 0);
+                const fresh = player.inkwell.filter(c => c.faceUp).length;
+                const tiles = player.inkwell.map(c => {
+                    const sel = this._inkSel === c.instanceId, id = esc(c.instanceId);
+                    const db = this.cardDB[c.cardId];
+                    const name = c.faceUp && db ? db.name : 'Face-down ink';
+                    const acts = sel ? `<div class="ii-acts"><span class="ii-name" title="${esc(name)}">${esc(name)}</span>
+                            <button data-act="toggle" data-id="${id}">${c.exerted ? 'Ready' : 'Exert'}</button>
+                            <button data-act="hand" data-id="${id}">To hand</button>
+                            <button data-act="discard" data-id="${id}">Discard</button></div>` : '';
+                    return `<div class="ii-slot${sel ? ' is-sel' : ''}">${this.inkTileHtml(c)}${acts}</div>`;
+                }).join('');
+                el.innerHTML = `<div class="ii-ctl">
+                        <div class="ii-count"><span class="ink-icon"></span><b>${ready}</b>/${total}<small>ready</small>${fresh ? `<span class="ip-fresh" title="${fresh} inked this turn">+${fresh}</span>` : ''}</div>
+                        <div class="ii-btns"><span class="ii-step">
+                            <button data-act="spend" title="Spend 1" aria-label="Spend 1" ${ready > 0 ? '' : 'disabled'}><i class="fa-solid fa-minus"></i></button>
+                            <button data-act="ready1" title="Ready 1" aria-label="Ready 1" ${ready < total ? '' : 'disabled'}><i class="fa-solid fa-plus"></i></button></span>
+                            <button class="ii-all" data-act="readyall" ${ready < total ? '' : 'disabled'}>Ready all</button></div>
+                    </div>
+                    <div class="ii-tiles">${tiles || '<span class="ii-empty">Drop a card here to ink it</span>'}</div>`;
+                // Overlap the cards like a hand once they no longer fit side by side.
+                const row = el.querySelector('.ii-tiles'), slots = row.querySelectorAll('.ii-slot');
+                if (slots.length > 1 && row.clientWidth > 0) {
+                    // Exact widths: cards are fractional (5:7 of the bar height), so rounding adds up.
+                    const w = (x) => x.getBoundingClientRect().width;
+                    const need = [...slots].reduce((s, x) => s + w(x), 0) + (slots.length - 1) * 6;
+                    const over = need - w(row);
+                    const tw = w(slots[0].querySelector('.ink-tile'));
+                    if (over > 0) row.style.setProperty('--ii-gap', Math.max(-(tw - 16), 6 - over / (slots.length - 1)) + 'px');
+                }
+                el.onclick = (e) => {
+                    e.stopPropagation();
+                    const b = e.target.closest('button');
+                    if (b && !b.disabled) this.inkAction(pi, b);
+                };
+            },
             openInkPanel(playerIndex, ev) {
                 if (ev && ev.stopPropagation) ev.stopPropagation();
+                // Desktop manages the inkwell in the ink bar itself.
+                if (!this.isPhoneUI()) return;
                 if (this._inkPanelPlayer === playerIndex) { this.closeInkPanel(); return; }
                 document.getElementById('context-menu').style.display = 'none';
                 this.closeCardSheet();
                 this._inkPanelPlayer = playerIndex;
+                this._inkSel = null;
                 const panel = document.getElementById('ink-panel');
                 this.renderInkPanel();
                 panel.classList.add('is-open');
                 panel.setAttribute('aria-hidden', 'false');
-                // Desktop: anchored to the counter (above it for the bottom board);
-                // phones get a bottom sheet from the stylesheet instead.
-                const anchor = ev && ev.currentTarget && ev.currentTarget.getBoundingClientRect ? ev.currentTarget : null;
-                if (anchor) {
-                    const r = anchor.getBoundingClientRect();
-                    panel.style.left = Math.max(8, Math.min(window.innerWidth - 372, r.left)) + 'px';
-                    if (playerIndex === this.state.activePlayer) {
-                        panel.style.top = 'auto';
-                        panel.style.bottom = Math.max(8, window.innerHeight - r.top + 8) + 'px';
-                    } else {
-                        panel.style.bottom = 'auto';
-                        panel.style.top = (r.bottom + 8) + 'px';
-                    }
-                }
-                if (this.isPhoneUI()) document.getElementById('sheet-scrim').classList.add('is-open');
+                document.getElementById('sheet-scrim').classList.add('is-open');
                 const first = panel.querySelector('button:not([disabled])');
                 if (first && ev && ev.detail === 0) first.focus();
             },
             closeInkPanel() {
                 if (this._inkPanelPlayer == null) return;
                 this._inkPanelPlayer = null;
+                this._inkSel = null;
                 const panel = document.getElementById('ink-panel');
                 panel.classList.remove('is-open');
                 panel.setAttribute('aria-hidden', 'true');
@@ -14965,37 +15321,34 @@
                 const panel = document.getElementById('ink-panel');
                 const esc = (s) => this._esc(s);
                 const ready = Math.min(p.inkTotal, p.inkReady);
-                const inkedNow = p.inkwell.some(c => c.faceUp);
-                let rows = '';
-                p.inkwell.forEach(c => {
-                    const db = this.cardDB[c.cardId];
-                    const name = c.faceUp && db ? db.name : 'Face-down card';
-                    rows += `<div class="ip-row${c.exerted ? ' is-exerted' : ''}">
-                        <span class="ip-name"><b>${esc(name)}</b><span>${c.faceUp ? 'inked this turn · face up' : 'face down'}</span></span>
-                        <button class="ip-btn${c.exerted ? '' : ' is-ready'}" data-act="toggle" data-id="${esc(c.instanceId)}">${c.exerted ? 'Exerted' : 'Ready'}</button>
-                        <button class="ip-btn" data-act="hand" data-id="${esc(c.instanceId)}">To hand</button>
-                        <button class="ip-btn" data-act="discard" data-id="${esc(c.instanceId)}">Discard</button></div>`;
-                });
-                panel.innerHTML = `<div class="ip-head"><b>${esc(p.name)} · inkwell</b><span>${ready} of ${p.inkTotal} ready${inkedNow ? ' · inked this turn' : ''}</span>
-                        <button class="cs-icon" data-act="close" aria-label="Close inkwell"><i class="fa-solid fa-xmark"></i></button></div>
-                    <div class="ip-acts">
-                        <button class="ip-btn" data-act="spend" ${ready > 0 ? '' : 'disabled'}>Spend 1</button>
-                        <button class="ip-btn" data-act="ready1" ${ready < p.inkTotal ? '' : 'disabled'}>Ready 1</button>
-                        <button class="ip-btn" data-act="readyall" ${ready < p.inkTotal ? '' : 'disabled'}>Ready all</button></div>
-                    <div class="ip-list">${rows || '<span class="ip-empty">No ink yet — drag a card onto the counter to ink it.</span>'}</div>`;
-                const pos = pi === this.state.activePlayer ? 'bottom' : 'top';
+                const fresh = p.inkwell.filter(c => c.faceUp).length;
+                const sel = this._inkSel && p.inkwell.find(c => c.instanceId === this._inkSel);
+                if (!sel) this._inkSel = null;
+                let bar = '';
+                if (sel) {
+                    const db = this.cardDB[sel.cardId], id = esc(sel.instanceId);
+                    const name = sel.faceUp && db ? db.name : 'Face-down ink';
+                    bar = `<div class="ip-bar"><span class="ip-bar-name"><b>${esc(name)}</b><em>${sel.faceUp ? 'this turn' : 'face down'} · ${sel.exerted ? 'spent' : 'ready'}</em></span>
+                        <button class="ip-btn" data-act="toggle" data-id="${id}">${sel.exerted ? 'Ready' : 'Exert'}</button>
+                        <button class="ip-btn" data-act="hand" data-id="${id}">To hand</button>
+                        <button class="ip-btn" data-act="discard" data-id="${id}">Discard</button></div>`;
+                } else if (p.inkwell.length) {
+                    bar = '<div class="ip-bar is-hint">Tap an ink to exert it, or move it to hand or discard</div>';
+                }
+                panel.innerHTML = `<div class="ip-head">
+                        <span class="ip-count"><b>${ready}</b>/${p.inkTotal}<small>ready</small></span>
+                        ${fresh ? `<span class="ip-fresh" title="${fresh} inked this turn">+${fresh}</span>` : ''}
+                        <span class="ip-step">
+                            <button data-act="spend" title="Spend 1" aria-label="Spend 1" ${ready > 0 ? '' : 'disabled'}><i class="fa-solid fa-minus"></i></button>
+                            <button data-act="ready1" title="Ready 1" aria-label="Ready 1" ${ready < p.inkTotal ? '' : 'disabled'}><i class="fa-solid fa-plus"></i></button></span>
+                        <button class="ip-btn" data-act="readyall" ${ready < p.inkTotal ? '' : 'disabled'}>Ready all</button>
+                        <button class="ip-x" data-act="close" aria-label="Close inkwell"><i class="fa-solid fa-xmark"></i></button></div>
+                    <div class="ip-tiles">${p.inkwell.map(c => this.inkTileHtml(c)).join('') || '<span class="ip-empty">No ink yet — drag a card onto the counter to ink it.</span>'}</div>
+                    ${bar}`;
                 panel.onclick = (e) => {
                     e.stopPropagation();
                     const b = e.target.closest('button');
-                    if (!b || b.disabled) return;
-                    const act = b.dataset.act, cid = b.dataset.id;
-                    if (act === 'close') this.closeInkPanel();
-                    else if (act === 'spend') this.inkSpend(pi);
-                    else if (act === 'ready1') this.inkReadyOne(pi);
-                    else if (act === 'readyall') this.inkReadyAll(pi);
-                    else if (act === 'toggle') this.toggleExert(cid);
-                    else if (act === 'hand') this.moveCard(cid, 'hand', pos);
-                    else if (act === 'discard') this.moveCard(cid, 'discard', pos);
+                    if (b && !b.disabled) this.inkAction(pi, b);
                 };
             },
             inkSpend(pi) {
@@ -17192,6 +17545,14 @@
             App.onCardHover(id);
         });
         document.addEventListener('dragend', () => App.endCardDrag());
+        // Desktop: a click anywhere outside the ink cards puts down a picked ink card.
+        // Capture phase, so buttons that stop propagation still count; clicks on the
+        // ink cards themselves are left to the bar (pick another / act on this one).
+        document.addEventListener('click', (e) => {
+            if (!App._inkSel || App.isPhoneUI()) return;
+            if (e.target.closest && e.target.closest('.ink-cluster.is-inline .ii-slot')) return;
+            App.clearInkSel();
+        }, true);
 
         // Context-menu keyboard support: arrows walk the items, Escape closes.
         document.getElementById('context-menu').addEventListener('keydown', (e) => {
@@ -17400,6 +17761,7 @@
                 if (App._handFocusIid) { App.closeHandFocus(); return; }
                 if (App._sheetIid) { App.closeCardSheet(); return; }
                 if (App._inkPanelPlayer != null) { App.closeInkPanel(); return; }
+                if (App._inkSel) { App.clearInkSel(); return; }
                 if (App.challengeMode) {
                     if (App.challengePick) { App.challengePick = null; App.hideForecast(); App.clearAimArrow(); App.render(); }
                     else App.exitChallengeMode();
