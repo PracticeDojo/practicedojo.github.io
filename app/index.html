@@ -8589,8 +8589,9 @@
             padding: 2px 0 1px;
         }
 
-        /* Zone stats: figure/sm glass-mute, one per line so they fit the column. */
-        .lore-badge .hand-meta {
+        /* Zone stats: figure/sm glass-mute, one per line so they fit the column.
+           (.board-half prefix: outranks the old top-half hand-meta squeeze.) */
+        .board-half .lore-badge .hand-meta {
             display: grid;
             grid-template-columns: auto auto;
             justify-content: space-between;
@@ -9198,6 +9199,11 @@
                 align-self: center;
             }
 
+            .board-half.top .board-bg-letter {
+                align-self: start;
+                padding-top: 4px;
+            }
+
             .board-half .hand-wrap {
                 grid-area: hand;
                 min-width: 0;
@@ -9436,7 +9442,7 @@
 
         .prob-count {
             order: 1;
-            width: 30px;
+            width: 28px;
             margin-right: 2px;
             text-align: right;
             font-family: var(--font-mono);
@@ -9452,7 +9458,7 @@
         .prob-val,
         .prob-win {
             order: 2;
-            width: 40px;
+            width: 37px;
             font-family: var(--font-mono);
             font-size: 10.5px;
             color: var(--text-dim);
@@ -10750,11 +10756,54 @@
             color: var(--fu-mute);
         }
 
-        /* ----- Floating panel layout (Tweaks → Panel layout) ----- */
-        .app.layout-floating .sidebar {
-            background: var(--bg);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
+        /* ----- Floating panel layout (Tweaks → Panel layout): the rail floats as
+               a chassis card on the left; the well and the odds keep their
+               columns beside it (this layout used to squash the board). ----- */
+        @media (min-width: 761px) {
+            .app.layout-floating {
+                grid-template-columns: minmax(0, 1fr) auto;
+            }
+
+            .app.layout-floating .sidebar {
+                top: 8px;
+                left: 8px;
+                bottom: 8px;
+                width: 300px;
+                background: var(--bg);
+                border: 1px solid var(--border);
+                border-radius: var(--radius);
+                box-shadow: var(--shadow-3);
+            }
+
+            .app.layout-floating .play {
+                padding-left: 0;
+                margin-left: 316px;
+            }
+
+            /* Explicit cells, so Hide (sidebar display:none) and Floating (sidebar
+               out of flow) can't drop the well into the rail's 0px column — both
+               used to lose the board. */
+            .app {
+                position: relative;
+            }
+
+            .app>.play {
+                grid-column: 2;
+                grid-row: 1;
+            }
+
+            .app>.prob-pane {
+                grid-column: 3;
+                grid-row: 1;
+            }
+
+            .app.layout-floating>.play {
+                grid-column: 1;
+            }
+
+            .app.layout-floating>.prob-pane {
+                grid-column: 2;
+            }
         }
 
         /* ----- Phones (≤760px): the well goes edge to edge; the bars inside it
@@ -10922,6 +10971,133 @@
 
         .home-lede h2 {
             max-width: 26ch;
+        }
+
+        /* Narrow desktops: give the board back what the side columns can spare
+           (design.md: keep the board near 720px). The odds column narrows, and
+           the discard / deck columns tighten. */
+        @media (min-width: 761px) and (max-width: 1321px) {
+            :root {
+                --odds-w: 244px;
+            }
+
+            .board-half {
+                grid-template-columns: 148px minmax(0, 1fr) 84px;
+                padding-left: 10px;
+                padding-right: 10px;
+            }
+
+            .board-half .lore-badge {
+                width: 84px;
+            }
+
+            .board-half .pile.deck,
+            .board-half.top .pile-row .pile.deck {
+                width: 68px;
+                height: 90px;
+            }
+        }
+
+        /* A half never shrinks below its content (cards would overlap the other
+           half); on a short window the well scrolls instead. */
+        @media (min-width: 761px) {
+            .board-half.top {
+                flex: 0 0 auto;
+            }
+
+            .board-half.bottom {
+                flex: 1 0 auto;
+            }
+        }
+
+        /* Phones: every top-bar tool is a 26px square so the bar fits 360px+. */
+        @media (max-width: 760px) {
+            .topbar-left,
+            .topbar-right,
+            .session-ctl {
+                gap: 2px;
+            }
+
+            .topbar .icon-btn,
+            .topbar-right .icon-btn,
+            .session-ctl .icon-btn {
+                width: 26px;
+                height: 28px;
+                padding: 0;
+                justify-content: center;
+            }
+
+            .topbar .divider-v {
+                display: none;
+            }
+
+            .turn-pill {
+                padding: 0 8px;
+                gap: 5px;
+            }
+        }
+
+        /* Menu icons are engraved too: no blue / purple accents on paper. */
+        #context-menu .ctx-item i {
+            color: var(--text-dim) !important;
+            margin-right: 6px;
+        }
+
+        /* Card grids in modals sit on glass: hover is a paper hairline, and the
+           Craft Hand "×N in hand" bar is paper, not green. */
+        .modal-body [class*="hover:border-blue-400"]:hover {
+            border-color: var(--fu-glass-2) !important;
+        }
+
+        #craft-hand-grid .bg-green-600\/90 {
+            background: var(--fu-paper) !important;
+            color: var(--fu-ink) !important;
+            font-family: var(--font-mono);
+            font-size: 11px !important;
+        }
+
+        /* The focused card in the phone hand: a paper outline, not signal. */
+        body.hand-open #bottom-board .hand .card-wrap.is-focused .card {
+            outline-color: var(--fu-paper);
+        }
+
+        /* Node subline: lore pair and the time it was saved. */
+        .tn-stats {
+            font-size: 9.5px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .tn-sec-label {
+            font-size: 9px;
+        }
+
+        /* The multiverse canvas hint (pan, zoom, arrows) — Tailwind's sm:block
+           never beat the .hidden bridge, so it was never shown. */
+        @media (min-width: 761px) {
+            .tree-head h2 .hint.hidden {
+                display: inline !important;
+                margin-left: 12px;
+            }
+        }
+
+        /* One signal key per view: on home that is Start match, so the readout's
+           next step is an emphasised paper tool. */
+        .readout .btn-primary {
+            min-height: 32px;
+            padding: 0 12px;
+            border-radius: var(--radius-sm);
+            background: var(--surface);
+            color: var(--text);
+            border: 1px solid var(--text);
+            font-size: 12.5px;
+        }
+
+        .readout .btn-primary:hover {
+            background: var(--surface-2);
+            color: var(--text);
+            border-color: var(--text);
         }
     </style>
 </head>
@@ -11879,7 +12055,7 @@
     <script>
         let cardFuse = null;
 
-        const APP_VERSION = "v2.26.1"; // Centralized version string (redesign)
+        const APP_VERSION = "v2.27.0"; // Centralized version string (Field Unit redesign)
 
         // Tweaks panel accent presets (hue values for the OKLCH accent ramp)
         // Tweaks → Accent. Field Unit's signal is the default; the others keep a
@@ -16472,7 +16648,7 @@
                     const isActive = this.state.activeBookmarkId === b.id;
                     const isNavActive = this.treeNavActiveId === b.id;
                     const d = new Date(b.timestamp);
-                    const timeStr = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                    const timeStr = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' });
 
                     // Victory nodes: explicit flag on new saves; gradient presence covers old sessions.
                     const isVictory = !!(b.isVictory || b.gradient);
@@ -16518,7 +16694,7 @@
                                      title="Restore this timeline" aria-label="Restore timeline: ${esc(b.name)}">
                                      ${icon} <span>${esc(b.name)}</span>
                                  </button>
-                                 <div class="tn-stats">${esc(b.stats)}</div>
+                                 <div class="tn-stats">${esc(b.stats).replace(/ \| /g, ' · ')}<span class="tn-time"> · ${esc(timeStr)}</span></div>
                                  <div class="tn-comment custom-scrollbar markdown-comment">${b.comment ? this.renderMarkdown(b.comment) : ''}</div>
 
                                  <button onclick="App.toggleEditNode('${bid}')" class="tn-icon-btn tn-edit"
