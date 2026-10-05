@@ -1,6 +1,6 @@
 /* Practice Dojo · Field Unit (Feature 46)
    The app's design system: tokens, the day/night themes, the palettes and the
-   component layer. Loaded after the inline <style> in app/index.html, so it
+   component layer. Loaded after css/base.css (the original stylesheet), so it
    wins over the older layers there where they collide. Spec:
    docs/DESIGN-field-unit.md. */
 

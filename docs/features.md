@@ -694,6 +694,12 @@ Implements version 2 of `docs/DESIGN-field-unit.md` (Kiln dark mode, signal fami
 - **Signal family.** By day the signal is Ember `#E4572E`; on Kiln it is Radio `#E86B2A` with dark text on the key. Tweaks → Accent offers only the approved swaps: **Signal** (the theme's own), **Coral**, **Olive** (its lore numeral lifts to `#C6C45A` on the well) and **Trace**. Each carries the text colour that sits on it. The old Amber / Rose / Emerald / Violet / Azure accents were ink colours, so a saved pick of one falls back to Signal.
 - **CSS file.** The Field Unit tokens, themes, palettes and component styles moved from the inline `<style>` to `app/css/field-unit.css`, loaded right after it (pixel-identical move). The older inline rules stay put.
 
+## Refactor 3: CSS out of `app/index.html` (v2.28.1)
+
+### Details
+- The inline `<style>` block (about 7,300 lines) moved unchanged to `app/css/base.css`, linked where it was, before `app/css/field-unit.css`. `app/index.html` is now markup and JavaScript (about 10,500 lines). Day and night screenshots before and after are pixel-identical.
+- Rule (AGENTS.md · Styles): CSS lives in `app/css/`; new styles go in `field-unit.css`; `base.css` is only pruned area by area; inline `style="…"` is for runtime values.
+
 ## Refactor 2: Own repository (v2.18.1)
 
 ### Details
@@ -755,3 +761,4 @@ Implements version 2 of `docs/DESIGN-field-unit.md` (Kiln dark mode, signal fami
 - [x] Feature 45: Inkwell as cards — in the ink bar on desktop, a compact sheet on phones
 - [x] Feature 46: Field Unit visual redesign
 - [x] Feature 47: Kiln night theme and the signal family
+- [x] Refactor 3: CSS out of app/index.html

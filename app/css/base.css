@@ -1,0 +1,7309 @@
+/* Practice Dojo · base styles
+   The app's original stylesheet (legacy layers, the v2 redesign, Feature 37
+   card interaction, phone layout …), moved out of app/index.html unchanged.
+   Loaded first; css/field-unit.css comes after it and wins where they
+   collide. New visual work goes in field-unit.css, not here. */
+
+body {
+    margin: 0;
+    overflow: hidden;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Custom Scrollbar for Game Log */
+::-webkit-scrollbar {
+    width: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #4B5563;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #6B7280;
+}
+
+.card {
+    width: 100px;
+    height: 140px;
+    border-radius: 0.375rem;
+    background-size: cover;
+    background-position: center;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
+    transition: transform 0.2s, box-shadow 0.2s;
+    cursor: pointer;
+    position: relative;
+    flex-shrink: 0;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+    z-index: 20;
+}
+
+.card.exerted {
+    transform: rotate(90deg) scale(0.9);
+    opacity: 0.8;
+}
+
+.card.exerted:hover {
+    transform: rotate(90deg) scale(0.95);
+}
+
+
+
+/* Hand fanning effect */
+.hand-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: -50px;
+    /* Overlap adjusted for larger cards */
+}
+
+.hand-container .card {
+    margin-left: -40px;
+    /* Adjusted for larger cards */
+}
+
+.hand-container .card:first-child {
+    margin-left: 0;
+}
+
+/* Context Menu */
+#context-menu {
+    position: fixed;
+    background: #1F2937;
+    border: 1px solid #374151;
+    border-radius: 8px;
+    padding: 4px;
+    z-index: 100;
+    display: none;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+    min-width: 140px;
+}
+
+.context-item {
+    padding: 8px 12px;
+    cursor: pointer;
+    border-radius: 4px;
+    color: #E5E7EB;
+    font-size: 14px;
+    transition: background 0.1s;
+}
+
+.context-item:hover {
+    background: #374151;
+}
+
+.context-divider {
+    height: 1px;
+    background: #374151;
+    margin: 4px 0;
+}
+
+/* Damage Counter */
+.damage-counter {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background: #EF4444;
+    color: white;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 12px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+    z-index: 5;
+}
+
+.bg-player-top {
+    background-color: #3f2e70;
+}
+
+.bg-player-bottom {
+    background-color: #a86b32;
+}
+
+/* Drag & Drop Visuals */
+.drop-zone {
+    transition: all 0.2s;
+    border-radius: 0.375rem;
+}
+
+.drop-zone.drop-target-active {
+    box-shadow: 0 0 0 4px #8B5CF6;
+    background-color: rgba(139, 92, 246, 0.3) !important;
+}
+
+/* Drying State Visuals */
+.card.drying {
+    filter: grayscale(80%) contrast(0.85);
+}
+
+.drying-badge {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 0, 0, 0.85);
+    color: #d1d5db;
+    font-size: 9px;
+    font-weight: bold;
+    padding: 4px 8px;
+    border-radius: 12px;
+    pointer-events: none;
+    z-index: 10;
+    border: 1px solid #4b5563;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* Markdown Styles for Node Comments */
+.markdown-comment p {
+    margin-bottom: 0.5em;
+}
+
+.markdown-comment p:last-child {
+    margin-bottom: 0;
+}
+
+.markdown-comment ul {
+    list-style-type: disc;
+    padding-left: 1.25em;
+    margin-bottom: 0.5em;
+}
+
+.markdown-comment ol {
+    list-style-type: decimal;
+    padding-left: 1.25em;
+    margin-bottom: 0.5em;
+}
+
+.markdown-comment strong {
+    color: #f3f4f6;
+    /* text-gray-100 */
+}
+
+.markdown-comment em {
+    color: #d1d5db;
+    /* text-gray-300 */
+}
+
+.markdown-comment a {
+    color: #60a5fa;
+    /* text-blue-400 */
+    text-decoration: underline;
+}
+
+.markdown-comment code {
+    background-color: #374151;
+    /* bg-gray-700 */
+    padding: 0.1em 0.3em;
+    border-radius: 0.2em;
+    font-family: monospace;
+    font-size: 0.9em;
+}
+
+.markdown-comment blockquote {
+    border-left: 2px solid #6b7280;
+    /* border-gray-500 */
+    padding-left: 0.5em;
+    margin-left: 0;
+    color: #9ca3af;
+    /* text-gray-400 */
+    font-style: italic;
+}
+
+/* Feature 19: Challenge drop target */
+.drop-target-challenge {
+    box-shadow: 0 0 0 4px #ef4444 !important;
+    background-color: rgba(239, 68, 68, 0.2) !important;
+}
+
+/* Feature 19: Challenge arrow SVG overlay */
+#challenge-arrow-svg {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    pointer-events: none;
+    z-index: 9999;
+}
+
+@keyframes challengeArrowFade {
+    0% {
+        opacity: 0;
+    }
+
+    25% {
+        opacity: 1;
+    }
+
+    75% {
+        opacity: 1;
+    }
+
+    100% {
+        opacity: 0;
+    }
+}
+
+.challenge-line {
+    animation: challengeArrowFade 1s ease-in-out forwards;
+}
+
+/* ===================================================================
+   LOADING SCREEN  ·  animated Practice Dojo emblem
+=================================================================== */
+#loading-screen.loader {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 24px;
+    font-family: var(--font-mono, monospace);
+    background:
+        radial-gradient(ellipse 55% 45% at 50% 40%, var(--accent-faint, rgba(255, 168, 0, .08)) 0%, transparent 72%),
+        radial-gradient(circle at 50% 50%, var(--bg-grid, #1f1c16) 0%, var(--bg, #161310) 72%);
+}
+
+.pd-logo-wrap {
+    width: 168px;
+    height: 168px;
+    display: grid;
+    place-items: center;
+    animation: pdBreath 4.2s ease-in-out infinite;
+}
+
+.pd-logo {
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+    animation: pdGlow 2.6s ease-in-out infinite;
+}
+
+/* the radial burst spins in from a rotated offset and settles into alignment */
+.pd-rose {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: pdRoseSettle 1.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* each petal eases in from the centre, staggered */
+.pd-petal {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: pdPetalIn 0.7s cubic-bezier(0.34, 1.4, 0.5, 1) backwards;
+}
+
+.pd-petal:nth-child(1) {
+    animation-delay: 0.00s;
+}
+
+.pd-petal:nth-child(2) {
+    animation-delay: 0.07s;
+}
+
+.pd-petal:nth-child(3) {
+    animation-delay: 0.14s;
+}
+
+.pd-petal:nth-child(4) {
+    animation-delay: 0.21s;
+}
+
+.pd-petal:nth-child(5) {
+    animation-delay: 0.28s;
+}
+
+.pd-petal:nth-child(6) {
+    animation-delay: 0.35s;
+}
+
+.pd-petal:nth-child(7) {
+    animation-delay: 0.42s;
+}
+
+.pd-petal:nth-child(8) {
+    animation-delay: 0.49s;
+}
+
+.pd-temple {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: pdTempleIn 0.8s ease-out 0.5s backwards;
+}
+
+.loader-title {
+    font-family: var(--font-sans, system-ui);
+    font-size: 22px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    color: var(--text, #fff);
+}
+
+.loader-msg {
+    margin: 0;
+    font-size: 13px;
+    letter-spacing: 0.02em;
+    color: var(--text-faint, #8a7f6e);
+    animation: pdTextPulse 1.8s ease-in-out infinite;
+}
+
+@keyframes pdRoseSettle {
+    from {
+        transform: rotate(-160deg);
+    }
+
+    to {
+        transform: rotate(0deg);
+    }
+}
+
+@keyframes pdPetalIn {
+    from {
+        opacity: 0;
+        transform: scale(0.25);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes pdTempleIn {
+    from {
+        opacity: 0;
+        transform: scale(0.85);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes pdBreath {
+
+    0%,
+    100% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.05);
+    }
+}
+
+@keyframes pdGlow {
+
+    0%,
+    100% {
+        filter: drop-shadow(0 0 6px rgba(255, 168, 0, 0.25));
+    }
+
+    50% {
+        filter: drop-shadow(0 0 22px rgba(255, 168, 0, 0.65));
+    }
+}
+
+@keyframes pdTextPulse {
+
+    0%,
+    100% {
+        opacity: 0.55;
+    }
+
+    50% {
+        opacity: 1;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+    .pd-logo-wrap,
+    .pd-logo,
+    .pd-rose,
+    .pd-petal,
+    .pd-temple,
+    .loader-msg {
+        animation: none !important;
+    }
+}
+
+* {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    margin: 0;
+    height: 100%;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-sans);
+    font-size: 14px;
+    line-height: 1.45;
+    overflow: hidden;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    letter-spacing: -0.005em;
+    user-select: none;
+}
+
+.mono {
+    font-family: var(--font-mono);
+    font-size: 0.78em;
+    letter-spacing: 0;
+}
+
+.dim {
+    color: var(--text-faint);
+}
+
+.muted {
+    color: var(--text-dim);
+    margin: 0;
+    font-size: 13px;
+}
+
+/* TOP BAR */
+.topbar {
+    height: var(--topbar-h);
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    padding: 0 12px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border-soft);
+    position: relative;
+    z-index: 50;
+}
+
+.topbar-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.topbar-center {
+    display: flex;
+    justify-content: center;
+}
+
+.topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    justify-content: flex-end;
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding-left: 4px;
+}
+
+.brand-mark {
+    width: 16px;
+    height: 16px;
+    background-image: url('../../img/practice_dojo.svg');
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.brand-name {
+    font-weight: 600;
+    letter-spacing: -0.01em;
+}
+
+.brand-tag {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    padding: 2px 6px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    color: var(--text-faint);
+    text-transform: uppercase;
+}
+
+.turn-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 5px 14px;
+    background: var(--surface-2);
+    border: 1px solid var(--border-soft);
+    border-radius: 999px;
+    font-size: 12px;
+    color: var(--text-2);
+}
+
+.turn-pill .turn-num {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--accent-hi);
+    font-weight: 600;
+}
+
+.turn-pill .turn-arrow {
+    color: var(--text-faint);
+    font-size: 10px;
+}
+
+.turn-pill .turn-actor {
+    font-weight: 500;
+    color: var(--text);
+}
+
+.turn-pill.is-p1 .turn-num {
+    color: var(--p1-hi);
+}
+
+.turn-pill.is-p2 .turn-num {
+    color: var(--p2-hi);
+}
+
+/* BUTTONS */
+.icon-btn,
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--surface-2);
+    color: var(--text-2);
+    border: 1px solid var(--border-soft);
+    border-radius: 7px;
+    padding: 6px 10px;
+    font-family: inherit;
+    font-size: 12.5px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background .12s ease, color .12s ease, border-color .12s ease, transform .08s ease;
+    line-height: 1;
+}
+
+.icon-btn:hover,
+.btn:hover {
+    background: var(--surface-3);
+    color: var(--text);
+    border-color: var(--border);
+}
+
+.icon-btn:active,
+.btn:active {
+    transform: translateY(0.5px);
+}
+
+.icon-btn:disabled,
+.btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+.icon-btn.ghost {
+    background: transparent;
+    border-color: transparent;
+}
+
+.icon-btn.ghost:hover {
+    background: var(--surface-3);
+}
+
+.icon-btn.primary,
+.btn-primary {
+    background: var(--accent);
+    color: oklch(0.18 0.02 60);
+    border-color: oklch(0.78 0.14 70 / 0.45);
+    font-weight: 600;
+}
+
+.icon-btn.primary:hover,
+.btn-primary:hover {
+    background: var(--accent-hi);
+    color: oklch(0.15 0.02 60);
+}
+
+.btn {
+    padding: 8px 12px;
+}
+
+.btn-ghost {
+    background: transparent;
+}
+
+.btn-ghost:hover {
+    background: var(--surface-3);
+}
+
+.btn-danger-ghost {
+    background: transparent;
+    color: oklch(0.80 0.18 25);
+    border: 1px solid oklch(0.5 0.18 25 / 0.4);
+}
+
+.btn-danger-ghost:hover {
+    background: var(--danger-soft);
+    color: oklch(0.85 0.18 25);
+}
+
+.btn-p1 {
+    background: var(--p1);
+    color: oklch(0.16 0.02 60);
+    border-color: oklch(0.74 0.14 60 / 0.5);
+    font-weight: 600;
+}
+
+.btn-p1:hover {
+    background: var(--p1-hi);
+}
+
+.btn-block {
+    width: 100%;
+    justify-content: center;
+}
+
+.divider-v {
+    width: 1px;
+    height: 18px;
+    background: var(--border-soft);
+    margin: 0 4px;
+}
+
+.input,
+.select,
+.dojo-textarea {
+    background: var(--surface);
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    padding: 8px 10px;
+    font-family: inherit;
+    font-size: 13px;
+    width: 100%;
+    outline: none;
+    transition: border-color .12s ease, background .12s ease;
+}
+
+.input:focus,
+.select:focus,
+.dojo-textarea:focus {
+    border-color: var(--accent-dim);
+    background: var(--surface-2);
+}
+
+.dojo-textarea {
+    resize: vertical;
+    min-height: 110px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+/* Decklist parse feedback — replaces the silent 60-random-cards substitution */
+.deck-note {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    line-height: 1.45;
+    color: var(--text-dim);
+    min-height: 1.45em;
+}
+
+.deck-note.is-warn {
+    color: oklch(0.82 0.13 85);
+}
+
+.deck-note .dn-unmatched {
+    color: var(--text-2);
+}
+
+/* LIBRARY · tabs, rows and the deck editor (ARCH §7) */
+.home-tabs {
+    display: flex;
+    gap: 4px;
+    border-bottom: 1px solid var(--border-soft);
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+
+.home-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    background: none;
+    border: 0;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    padding: 9px 12px;
+    color: var(--text-dim);
+    font: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.home-tab:hover {
+    color: var(--text);
+}
+
+.home-tab.is-active {
+    color: var(--text);
+    border-bottom-color: var(--accent);
+}
+
+.home-tab i {
+    font-size: 12px;
+    color: var(--text-faint);
+}
+
+.home-tab.is-active i {
+    color: var(--accent-hi);
+}
+
+.home-tab .ht-count {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    color: var(--text-dim);
+    padding: 1px 6px;
+    border: 1px solid var(--border-soft);
+    border-radius: 999px;
+}
+
+.home-tab .ht-count:empty {
+    display: none;
+}
+
+.lib-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.lib-toolbar .lib-hint {
+    font-size: 12px;
+    color: var(--text-dim);
+    margin-right: auto;
+}
+
+.lib-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.lib-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    background: var(--surface-2);
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius-sm);
+}
+
+.lib-row.is-live {
+    border-color: color-mix(in oklch, var(--accent) 35%, transparent);
+}
+
+.lib-main {
+    flex: 1 1 auto;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.lib-title {
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--text);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.lib-title .lib-badge {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 500;
+    color: var(--accent-hi);
+    margin-left: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+.lib-meta {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 4px 6px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-dim);
+}
+
+.lib-meta .cc-pips {
+    display: inline-flex;
+    gap: 3px;
+}
+
+.lib-meta .cc-pip {
+    width: 7px;
+    height: 7px;
+    border-radius: 999px;
+    background: var(--pip, var(--text-faint));
+    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.35);
+}
+
+.lib-meta .cc-sep {
+    color: var(--text-faint);
+}
+
+.lib-meta .is-warn {
+    color: oklch(0.82 0.13 85);
+}
+
+.lib-actions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex: 0 0 auto;
+}
+
+.lib-actions .icon-btn {
+    padding: 6px 8px;
+}
+
+.lib-empty {
+    padding: 18px 12px;
+    text-align: center;
+    font-size: 12.5px;
+    color: var(--text-dim);
+    border: 1px dashed var(--border-soft);
+    border-radius: var(--radius-sm);
+}
+
+.lib-group-title {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-top: 4px;
+}
+
+#home-defaultdecks {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.deck-editor {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 14px;
+    background: var(--surface-2);
+    border: 1px solid color-mix(in oklch, var(--accent) 26%, transparent);
+    border-radius: var(--radius);
+}
+
+.deck-editor[hidden] {
+    display: none;
+}
+
+.deck-editor .de-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+/* HOME · "The inkwell" (Feature 39) ===================================
+   One field takes whatever the player brought; a readout says what it
+   understood. Everything else on the page is deliberately quieter. */
+.home-page {
+    position: fixed;
+    inset: 0;
+    z-index: 80;
+    overflow-y: auto;
+    background: var(--bg);
+}
+
+.home-page.hidden {
+    display: none;
+}
+
+.home-wrap {
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 20px 24px 48px;
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+}
+
+.home-hd {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.home-hd h1 {
+    margin: 0;
+    font-size: 17px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    display: flex;
+    align-items: center;
+    gap: 9px;
+}
+
+.home-hd .brand-mark {
+    width: 18px;
+    height: 18px;
+}
+
+.home-hd .home-ver {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-faint);
+}
+
+.home-spacer {
+    flex: 1;
+}
+
+.ht-count {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    color: var(--text-dim);
+    padding: 1px 6px;
+    border: 1px solid var(--border-soft);
+    border-radius: 999px;
+}
+
+.ht-count:empty {
+    display: none;
+}
+
+.home-lede h2 {
+    margin: 18px 0 6px;
+    font-size: clamp(28px, 4.4vw, 44px);
+    line-height: 1.04;
+    letter-spacing: -0.035em;
+    font-weight: 600;
+    max-width: 16ch;
+}
+
+.home-lede h2 em {
+    font-style: normal;
+    color: var(--accent-hi);
+}
+
+.home-lede p {
+    margin: 0;
+    color: var(--text-2);
+    font-size: 14px;
+}
+
+/* The well: a hairline at rest, accent when focused, all six inks
+   turning while a file is dragged over the page. */
+@property --well-spin {
+    syntax: '<angle>';
+    inherits: false;
+    initial-value: 0deg;
+}
+
+.well {
+    border-radius: 16px;
+    padding: 2px;
+    background: conic-gradient(from var(--well-spin), oklch(0.79 0.145 78), oklch(0.70 0.155 305), oklch(0.74 0.135 158), oklch(0.68 0.175 22), oklch(0.72 0.125 245), oklch(0.78 0.028 250), oklch(0.79 0.145 78));
+}
+
+.well.is-idle {
+    background: var(--border);
+}
+
+.well.is-idle:focus-within {
+    background: var(--accent);
+}
+
+.well.is-drag {
+    animation: well-spin 2.4s linear infinite;
+}
+
+@keyframes well-spin {
+    to {
+        --well-spin: 360deg;
+    }
+}
+
+.well-in {
+    border-radius: 14px;
+    background: var(--surface);
+    display: flex;
+    flex-direction: column;
+}
+
+.well textarea {
+    width: 100%;
+    min-height: 170px;
+    resize: vertical;
+    border: 0;
+    outline: none;
+    background: transparent;
+    padding: 18px 20px 8px;
+    font: 13px/1.6 var(--font-mono);
+    color: var(--text);
+}
+
+.well textarea::placeholder {
+    color: var(--text-faint);
+}
+
+.well-ft {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    padding: 8px 10px 10px 14px;
+    border-top: 1px solid var(--border-soft);
+    flex-wrap: wrap;
+}
+
+.well-ft .hint {
+    font-size: 12px;
+    color: var(--text-dim);
+    margin-right: auto;
+}
+
+.well-ft .btn {
+    font-size: 12.5px;
+    padding: 7px 11px;
+}
+
+/* The readout: what the Dojo understood, and the next step */
+.readout {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    align-items: center;
+    padding: 16px 18px;
+    border-radius: 12px;
+    background: var(--surface-2);
+    border: 1px solid var(--border-soft);
+    animation: readout-in .22s ease;
+}
+
+.readout[hidden] {
+    display: none;
+}
+
+@keyframes readout-in {
+    from {
+        opacity: 0;
+        transform: translateY(-4px);
+    }
+}
+
+.readout .ro-main {
+    flex: 1 1 300px;
+    min-width: 0;
+}
+
+.readout .ro-kind {
+    font-size: 10.5px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent-hi);
+}
+
+.readout.is-unknown .ro-kind {
+    color: var(--text-dim);
+}
+
+.readout .ro-what {
+    font-size: 18px;
+    font-weight: 600;
+    letter-spacing: -0.015em;
+    margin-top: 4px;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+    overflow-wrap: anywhere;
+}
+
+.readout .ro-detail {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--text-dim);
+    margin-top: 4px;
+}
+
+.readout .ro-detail .is-warn {
+    color: oklch(0.82 0.13 85);
+}
+
+.readout .acts {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.ro-pips {
+    display: inline-flex;
+    gap: 5px;
+}
+
+.ro-pips .ro-pip {
+    width: 14px;
+    height: 14px;
+    border-radius: 999px;
+    background: var(--pip);
+    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.35);
+    animation: pip-pop .3s ease both;
+}
+
+.ro-pips .ro-pip:nth-child(2) {
+    animation-delay: .12s;
+}
+
+@keyframes pip-pop {
+    from {
+        transform: scale(0);
+    }
+
+    70% {
+        transform: scale(1.2);
+    }
+}
+
+.cc-pips {
+    display: inline-flex;
+    gap: 3px;
+    vertical-align: middle;
+}
+
+.cc-pip {
+    width: 7px;
+    height: 7px;
+    border-radius: 999px;
+    background: var(--pip, var(--text-faint));
+    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.35);
+}
+
+.cc-sep {
+    color: var(--text-faint);
+}
+
+/* Lower half: the table and your recent work */
+.home-lower {
+    display: grid;
+    grid-template-columns: 1.15fr 1fr;
+    gap: 16px;
+    align-items: start;
+}
+
+.home-box {
+    border-radius: 14px;
+    background: var(--surface);
+    border: 1px solid var(--border-soft);
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-width: 0;
+}
+
+.home-box h3 {
+    margin: 0;
+    font-size: 10.5px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.link-btn {
+    background: none;
+    border: 0;
+    padding: 2px 0;
+    font: 500 12px var(--font-sans);
+    letter-spacing: 0;
+    text-transform: none;
+    color: var(--text-2);
+    cursor: pointer;
+}
+
+.link-btn:hover {
+    color: var(--text);
+    text-decoration: underline;
+}
+
+.seats {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.seat {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    background: var(--surface-2);
+    border: 1px solid var(--border-soft);
+}
+
+.seat .seat-who {
+    width: 72px;
+    flex: 0 0 auto;
+    font-size: 10.5px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+}
+
+/* The deck box wears the player's weave: P1 split, P2 barber pole */
+.deck-box {
+    width: 20px;
+    height: 28px;
+    flex: 0 0 auto;
+    border-radius: 3px;
+    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.4);
+}
+
+.deck-box.is-p1 {
+    background: linear-gradient(90deg, var(--i1) 50%, var(--i2) 50%);
+}
+
+.deck-box.is-p2 {
+    background: repeating-linear-gradient(45deg, var(--i1) 0 5px, var(--i2) 5px 10px);
+}
+
+.deck-box.is-empty {
+    background: none;
+    border: 1.5px dashed var(--border);
+    box-shadow: none;
+}
+
+.seat .seat-name {
+    flex: 1;
+    min-width: 0;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.seat.is-empty .seat-name {
+    color: var(--text-dim);
+    font-weight: 500;
+}
+
+.seat .seat-count {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-dim);
+}
+
+.seat .seat-count.is-warn {
+    color: oklch(0.82 0.13 85);
+}
+
+.chips-label {
+    font-size: 12px;
+    color: var(--text-dim);
+}
+
+.chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 6px 10px 6px 8px;
+    border-radius: 999px;
+    border: 1px solid var(--border-soft);
+    background: transparent;
+    font: inherit;
+    font-size: 12.5px;
+    color: var(--text-2);
+    cursor: pointer;
+}
+
+.chip:hover {
+    border-color: var(--border);
+    color: var(--text);
+    background: var(--surface-2);
+}
+
+.start-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.start-btn {
+    padding: 11px 22px;
+    border-radius: 999px;
+    justify-content: center;
+}
+
+.start-hint {
+    font-size: 12px;
+    color: var(--text-faint);
+}
+
+.rec {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    border: 1px solid transparent;
+    background: none;
+    width: 100%;
+    text-align: left;
+    font: inherit;
+    color: inherit;
+    cursor: pointer;
+}
+
+.rec:hover {
+    background: var(--surface-2);
+    border-color: var(--border-soft);
+}
+
+.rec.is-continue {
+    background: color-mix(in oklch, var(--accent) 8%, var(--surface-2));
+    border-color: color-mix(in oklch, var(--accent) 24%, transparent);
+}
+
+.rec .rec-main {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.rec .rec-title {
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.rec .rec-meta {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-dim);
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.rec .rec-go {
+    font-size: 12px;
+    color: var(--accent-hi);
+    white-space: nowrap;
+}
+
+.home-empty {
+    font-size: 13px;
+    color: var(--text-dim);
+    padding: 4px 2px 8px;
+}
+
+/* Library drawer */
+.lib-scrim {
+    position: fixed;
+    inset: 0;
+    z-index: 84;
+    background: oklch(0.05 0.01 60 / 0.6);
+}
+
+.lib-drawer {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 85;
+    width: min(560px, 100vw);
+    background: var(--surface);
+    border-left: 1px solid var(--border);
+    box-shadow: -24px 0 60px -20px rgba(0, 0, 0, 0.8);
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    animation: lib-in .22s ease;
+}
+
+.lib-drawer[hidden] {
+    display: none;
+}
+
+@keyframes lib-in {
+    from {
+        transform: translateX(24px);
+        opacity: 0;
+    }
+}
+
+.lib-hd {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 18px 6px;
+}
+
+.lib-hd h2 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.lib-drawer .home-tabs {
+    padding: 0 14px;
+}
+
+.lib-panel {
+    padding: 14px 18px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.lib-panel[hidden] {
+    display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+    .well.is-drag,
+    .readout,
+    .ro-pips .ro-pip,
+    .lib-drawer {
+        animation: none;
+    }
+}
+
+/* Account (Feature 42) */
+.acct-btn {
+    max-width: 220px;
+}
+
+.acct-btn #acct-label {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.acct-avatar {
+    width: 20px;
+    height: 20px;
+    flex: 0 0 auto;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: 600;
+    background: var(--surface-3) center / cover no-repeat;
+    color: var(--text-2);
+}
+
+.acct-btn.is-signed-in .acct-avatar {
+    background-color: color-mix(in oklch, var(--accent) 30%, var(--surface-3));
+    color: var(--text);
+}
+
+.acct-avatar img {
+    width: 100%;
+    height: 100%;
+    border-radius: 999px;
+    object-fit: cover;
+}
+
+.lib-meta .lib-badge {
+    margin-left: 0;
+    margin-right: 2px;
+}
+
+.lib-badge.is-account {
+    color: var(--p2-hi);
+}
+
+.lib-badge.is-dirty {
+    color: oklch(0.82 0.13 85);
+}
+
+@media (max-width: 760px) {
+    .acct-btn #acct-label {
+        display: none;
+    }
+}
+
+/* Shared session banner (Feature 40) */
+.shared-banner {
+    position: fixed;
+    top: calc(var(--topbar-h) + 8px);
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 60;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    max-width: min(480px, calc(100vw - 24px));
+    padding: 5px 5px 5px 12px;
+    border-radius: 999px;
+    background: color-mix(in oklch, var(--accent) 14%, var(--surface));
+    border: 1px solid color-mix(in oklch, var(--accent) 40%, transparent);
+    box-shadow: var(--shadow-2);
+    font-size: 12.5px;
+    color: var(--text-2);
+}
+
+.shared-banner.hidden {
+    display: none;
+}
+
+.shared-banner > i {
+    color: var(--accent-hi);
+}
+
+.shared-banner b {
+    color: var(--text);
+    font-weight: 600;
+}
+
+.shared-banner .sb-text {
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.shared-banner .sb-note {
+    flex: 0 0 auto;
+    font-size: 11.5px;
+    color: var(--text-dim);
+    white-space: nowrap;
+}
+
+.shared-banner .btn {
+    padding: 6px 12px;
+    border-radius: 999px;
+    white-space: nowrap;
+}
+
+@media (max-width: 760px) {
+    .shared-banner {
+        border-radius: 12px;
+        font-size: 12px;
+    }
+}
+
+/* Topbar session title (rename in place) */
+.session-ctl {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    min-width: 0;
+    margin-left: 6px;
+}
+
+.session-title {
+    width: 220px;
+    min-width: 60px;
+    flex: 0 1 auto;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: var(--radius-sm);
+    color: var(--text-2);
+    font: inherit;
+    font-size: 12.5px;
+    padding: 5px 8px;
+    text-overflow: ellipsis;
+    outline: none;
+}
+
+.session-title:hover {
+    border-color: var(--border-soft);
+}
+
+.session-title:focus {
+    border-color: var(--accent-dim);
+    background: var(--surface-2);
+    color: var(--text);
+}
+
+/* APP SHELL */
+.app {
+    height: calc(100vh - var(--topbar-h));
+    /* fallback */
+    height: calc(100dvh - var(--topbar-h));
+    /* visible viewport on mobile Chromium (Brave/Chrome) */
+    display: grid;
+    grid-template-columns: var(--sidebar-w) 1fr auto;
+    overflow: hidden;
+}
+
+.app.hidden {
+    display: none;
+}
+
+.sidebar {
+    background: var(--surface);
+    border-right: 1px solid var(--border-soft);
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    position: relative;
+    z-index: 10;
+}
+
+.sidebar-section {
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border-soft);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.sidebar-section .section-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.sidebar-section .section-head h3 {
+    margin: 0;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+}
+
+.sidebar-section .section-head .hint {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    color: var(--text-faint);
+}
+
+.player-rows {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.player-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 10px;
+    background: var(--surface-2);
+    border: 1px solid var(--border-soft);
+    border-left: 3px solid currentColor;
+    border-radius: var(--radius-sm);
+    font-size: 12.5px;
+    color: var(--text);
+}
+
+.player-row.is-p1 {
+    color: var(--p1-hi);
+}
+
+.player-row.is-p2 {
+    color: var(--p2-hi);
+}
+
+.player-row .player-name {
+    color: var(--text);
+}
+
+.player-row .player-count {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-dim);
+}
+
+.player-row.is-active {
+    background: color-mix(in oklch, currentColor 10%, var(--surface-2));
+}
+
+.metric {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.metric-label {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 10.5px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+}
+
+.metric-label .metric-icon {
+    color: var(--bcr);
+}
+
+.metric.is-lvi .metric-label .metric-icon {
+    color: var(--lvi);
+}
+
+.bar {
+    height: 5px;
+    background: var(--surface);
+    border-radius: 999px;
+    overflow: hidden;
+    display: flex;
+}
+
+.bar-p1 {
+    background: var(--p1);
+}
+
+.bar-p2 {
+    background: var(--p2);
+}
+
+.metric-values {
+    display: flex;
+    justify-content: space-between;
+    font-family: var(--font-mono);
+    font-size: 11px;
+}
+
+.metric-values .val-p1 {
+    color: var(--p1-hi);
+}
+
+.metric-values .val-p2 {
+    color: var(--p2-hi);
+}
+
+.preview-pane {
+    flex: 0 0 auto;
+    height: 192px;
+    background: oklch(0.13 0.008 60);
+    border-bottom: 1px solid var(--border-soft);
+    border-top: 1px solid var(--border-soft);
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.preview-placeholder {
+    color: var(--text-faint);
+    font-size: 10.5px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+.preview-image {
+    position: absolute;
+    inset: 0;
+    background-position: bottom center;
+    background-repeat: no-repeat;
+    background-size: 100% auto;
+    transition: opacity .15s ease;
+}
+
+/* OFFLINE TEXT CARD
+   Shown when the preview artwork can't be fetched, and whenever the user
+   picks Text mode in Tweaks. The card is recreated from cardDB — cost,
+   name, version, type line, every ability, stat line — so it needs no
+   network at all. Unlike the artwork this sits *in flow*, so the pane can
+   grow to fit a wordy card. */
+.preview-pane.is-text {
+    height: auto;
+    min-height: 192px;
+    max-height: 34vh;
+    overflow-y: auto;
+    align-items: stretch;
+    justify-content: flex-start;
+}
+
+.preview-fallback {
+    position: relative;
+    width: 100%;
+    align-self: stretch;
+    padding: 10px 12px 12px;
+    text-align: left;
+    color: var(--text);
+    font-size: 11px;
+    line-height: 1.35;
+}
+
+.ctv {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+
+.ctv-head {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding-left: 7px;
+    /* Ink identity as an edge strip; dual-ink cards get a gradient. */
+    border-left: 3px solid transparent;
+    border-image: var(--ctv-ink, linear-gradient(var(--border), var(--border))) 1;
+}
+
+.ctv-cost {
+    flex: 0 0 auto;
+    width: 22px;
+    height: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.ctv-cost.is-inkable {
+    border-radius: 50%;
+    background: #D4AF37;
+    color: #111;
+    box-shadow: inset 0 0 0 1.5px #fff;
+}
+
+.ctv-cost.is-uninkable {
+    background: #33343a;
+    color: #fff;
+    /* clip-path can't take a border, so the hexagon carries its own contrast */
+    clip-path: polygon(50% 2%, 98% 26%, 98% 74%, 50% 98%, 2% 74%, 2% 26%);
+}
+
+.ctv-names {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.ctv-name {
+    display: block;
+    font-size: 13px;
+    font-weight: 800;
+    line-height: 1.15;
+}
+
+.ctv-version {
+    display: block;
+    font-size: 10.5px;
+    font-weight: 500;
+    font-style: normal;
+    opacity: 0.72;
+}
+
+.ctv-type {
+    font-size: 9.5px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-dim, #9a9a9a);
+    opacity: 0.85;
+}
+
+.ctv-body {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.ctv-ab {
+    font-size: 11px;
+    line-height: 1.4;
+}
+
+.ctv-kw,
+.ctv-ab-name {
+    font-weight: 800;
+    letter-spacing: 0.02em;
+    color: var(--accent);
+}
+
+.ctv-ab-name {
+    margin-right: 3px;
+}
+
+.ctv-ab-cost {
+    font-weight: 700;
+    margin-right: 2px;
+}
+
+.ctv-reminder {
+    opacity: 0.62;
+    font-style: italic;
+}
+
+.ctv-empty {
+    opacity: 0.5;
+    font-style: italic;
+}
+
+.ctv-foot {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding-top: 5px;
+    border-top: 1px solid var(--border-soft);
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.ctv-stat {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+}
+
+.ctv-move {
+    margin-left: auto;
+    font-size: 9.5px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    opacity: 0.7;
+}
+
+/* Lorcana glyphs (ink, exert, strength, willpower, lore) drawn as inline
+   SVG instead of printed as characters: U+2B21, U+27F3 and U+26C9 are
+   missing from plenty of system fonts and would render as tofu. */
+.lsym {
+    display: inline-flex;
+    width: 1em;
+    height: 1em;
+    vertical-align: -0.12em;
+}
+
+.lsym svg {
+    width: 100%;
+    height: 100%;
+}
+
+.ctv-stat .lsym {
+    opacity: 0.72;
+}
+
+.preview-metrics {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 14px;
+    background: oklch(0.105 0.008 60);
+    border-bottom: 1px solid var(--border-soft);
+    transition: opacity .15s ease;
+}
+
+.preview-metrics .pm-cell {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-family: var(--font-mono);
+    font-size: 11px;
+}
+
+.preview-metrics .pm-label {
+    font-size: 9px;
+    color: var(--text-faint);
+    letter-spacing: 0.08em;
+}
+
+.preview-metrics .pm-val {
+    font-weight: 600;
+    color: var(--text);
+}
+
+.preview-metrics .pm-cell.is-bcr .pm-val {
+    color: var(--bcr);
+}
+
+.preview-metrics .pm-cell.is-lvi .pm-val {
+    color: var(--lvi);
+}
+
+.preview-metrics .pm-cell.is-rds .pm-val {
+    color: var(--rds);
+}
+
+.log-pane {
+    flex: 1 1 auto;
+    overflow-y: auto;
+    padding: 10px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    min-height: 80px;
+}
+
+.log-entry {
+    font-size: 12px;
+    color: var(--text-2);
+    line-height: 1.5;
+    padding: 4px 8px;
+    border-radius: 6px;
+    background: var(--surface-2);
+    border: 1px solid var(--border-soft);
+    border-left: 2px solid var(--text-faint);
+}
+
+.log-entry.is-system {
+    background: transparent;
+    border: none;
+    color: var(--text-faint);
+    font-style: italic;
+    font-size: 11px;
+    padding-left: 0;
+}
+
+.log-entry.is-p1 {
+    border-left-color: var(--p1);
+}
+
+.log-entry.is-p2 {
+    border-left-color: var(--p2);
+}
+
+.sidebar-foot {
+    padding: 12px 14px;
+    background: var(--surface);
+    border-top: 1px solid var(--border-soft);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.toggle-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border-soft);
+    margin-bottom: 4px;
+}
+
+.toggle-row .toggle-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+}
+
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 32px;
+    height: 18px;
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.switch .slider {
+    position: absolute;
+    cursor: pointer;
+    inset: 0;
+    background: var(--surface-3);
+    border-radius: 999px;
+    transition: background .14s ease;
+}
+
+.switch .slider::before {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 14px;
+    height: 14px;
+    background: var(--text-2);
+    border-radius: 50%;
+    transition: transform .14s ease, background .14s ease;
+}
+
+.switch input:checked+.slider {
+    background: var(--accent);
+}
+
+.switch input:checked+.slider::before {
+    transform: translateX(14px);
+    background: oklch(0.18 0.02 60);
+}
+
+.action-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+}
+
+.action-row.three {
+    grid-template-columns: auto auto 1fr;
+}
+
+.action-row.tri {
+    grid-template-columns: 1fr 1fr 1fr;
+}
+
+.action-row .btn {
+    padding: 8px 10px;
+    justify-content: center;
+    font-size: 12.5px;
+}
+
+/* PLAY AREA */
+.play {
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    background: var(--bg);
+    overflow-y: auto;
+    min-width: 0;
+    min-height: 0;
+}
+
+.board-half {
+    flex: 1 1 auto;
+    position: relative;
+    padding: 4px 14px;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    gap: 4px;
+}
+
+.board-bg-letter {
+    position: absolute;
+    font-family: var(--font-sans);
+    font-weight: 700;
+    font-size: 110px;
+    letter-spacing: -0.04em;
+    color: currentColor;
+    opacity: 0.06;
+    pointer-events: none;
+    line-height: 0.85;
+    z-index: 0;
+}
+
+.board-half.top .board-bg-letter {
+    top: 14px;
+    left: 24px;
+}
+
+.board-half.bottom .board-bg-letter {
+    bottom: 14px;
+    left: 24px;
+}
+
+.board-divider {
+    height: 2px;
+    background: linear-gradient(90deg, transparent 0%, var(--p2) 20%, var(--accent-hi) 50%, var(--p1) 80%, transparent 100%);
+    position: relative;
+    z-index: 1;
+    flex: 0 0 auto;
+    opacity: 0.5;
+}
+
+/* The field stretches to fill its strip, so the whole play area takes a drop
+   (cards stay centred inside it). */
+.field-strip {
+    flex: 1 1 auto;
+    display: flex;
+    align-items: stretch;
+    justify-content: center;
+    min-height: calc(var(--card-h) + 8px);
+    position: relative;
+    z-index: 2;
+    overflow: visible;
+    width: 100%;
+}
+
+.field-strip .field {
+    --field-scale: 1;
+    --card-w: calc(80px * var(--card-scale) * var(--field-scale));
+    --card-h: calc(112px * var(--card-scale) * var(--field-scale));
+    --field-gap: 10px;
+    min-height: calc(var(--card-h) + 12px);
+    display: flex;
+    flex-wrap: nowrap;
+    align-content: center;
+    justify-content: center;
+    align-items: center;
+    gap: var(--field-gap);
+    padding: calc(4px * var(--field-scale)) calc(8px * var(--field-scale));
+    border-radius: 14px;
+    width: 100%;
+    max-width: 100%;
+    border: 1px dashed transparent;
+    transition: border-color .12s ease, background .12s ease;
+}
+
+.field-strip .field.is-empty::before {
+    content: 'Drag here to play to the field';
+    color: var(--text-faint);
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.board-half.top .hand-wrap {
+    order: 1;
+}
+
+.board-half.top .pile-row {
+    order: 2;
+}
+
+.board-half.top .field-strip {
+    order: 3;
+}
+
+.board-half.bottom .notes-anchor {
+    order: 0;
+    height: 0;
+}
+
+.board-half.bottom .field-strip {
+    order: 1;
+}
+
+.board-half.bottom .pile-row {
+    order: 2;
+}
+
+.board-half.bottom .hand-wrap {
+    order: 3;
+}
+
+.board-half.is-p1 .pile-row {
+    background: color-mix(in oklch, var(--p1) 16%, var(--bg));
+    border-color: color-mix(in oklch, var(--p1) 38%, var(--border-soft)) !important;
+}
+
+.board-half.is-p2 .pile-row {
+    background: color-mix(in oklch, var(--p2) 16%, var(--bg));
+    border-color: color-mix(in oklch, var(--p2) 38%, var(--border-soft)) !important;
+}
+
+.pile-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    padding: 4px 12px;
+    margin: 2px auto;
+    background: color-mix(in oklch, var(--bg) 70%, transparent);
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius);
+    width: 100%;
+    max-width: 1100px;
+    z-index: 2;
+    position: relative;
+    flex-shrink: 0;
+}
+
+.pile-row .ink-cluster {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+    min-width: 0;
+}
+
+.ink-readout {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    padding: 4px 10px;
+    background: var(--surface);
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius-sm);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--text);
+    white-space: nowrap;
+}
+
+.ink-readout .ink-icon {
+    width: 8px;
+    height: 8px;
+    background: var(--bcr);
+    border-radius: 2px;
+    transform: rotate(45deg);
+    margin-right: 2px;
+}
+
+.inkwell {
+    position: relative;
+    flex: 1;
+    min-width: 0;
+    height: var(--pile-h);
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    overflow: hidden;
+}
+
+.pile-cluster {
+    display: flex;
+    gap: 10px;
+}
+
+.pile {
+    width: var(--pile-w);
+    height: var(--pile-h);
+    border: 1px dashed var(--border);
+    border-radius: 8px;
+    background: oklch(0.13 0.008 60 / 0.6);
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: border-color .12s ease, background .12s ease;
+    flex-shrink: 0;
+}
+
+.pile:hover {
+    border-color: var(--border-strong);
+}
+
+.pile .pile-label {
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--text-faint);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    pointer-events: none;
+}
+
+.pile .pile-count {
+    position: absolute;
+    bottom: 8px;
+    right: 8px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text);
+    padding: 2px 6px;
+    pointer-events: none;
+    z-index: 4;
+}
+
+.pile.deck {
+    background: var(--bg);
+    border-style: solid;
+    border-color: var(--border);
+    overflow: hidden;
+}
+
+.pile.deck .pile-label {
+    color: var(--accent-hi);
+}
+
+/* Discard stack is full-size cards (bigger than the pile slot); clip it to the box
+   so a tall stack never spills over and occludes the adjacent deck. */
+.pile:not(.deck) {
+    overflow: hidden;
+}
+
+.hand-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 0;
+    position: relative;
+    z-index: 3;
+    flex-shrink: 0;
+}
+
+.hand-meta {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    padding: 4px 12px;
+    background: var(--surface-2);
+    border: 1px solid var(--border-soft);
+    border-radius: 999px;
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    color: var(--text-2);
+}
+
+.hand-meta .meta-key {
+    color: var(--text-faint);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-size: 10px;
+    margin-right: 4px;
+}
+
+.hand-meta .meta-key.is-bcr {
+    color: var(--bcr);
+}
+
+.hand-meta .meta-key.is-lvi {
+    color: var(--lvi);
+}
+
+.hand-meta .meta-key.is-rds {
+    color: var(--rds);
+}
+
+.hand {
+    --hand-overlap: -32px;
+    min-height: calc(var(--card-h) + 8px);
+    display: flex;
+    justify-content: center;
+    padding: 2px 0;
+    flex-shrink: 0;
+}
+
+.hand .card-wrap {
+    margin-left: var(--hand-overlap, -32px);
+    transition: transform .15s ease, margin .15s ease;
+}
+
+.hand .card-wrap:first-child {
+    margin-left: 0;
+}
+
+.hand .card-wrap:hover {
+    transform: translateY(-12px);
+    z-index: 30;
+    margin-right: 30px;
+}
+
+.board-half.top .hand {
+    transform: scale(0.82);
+    transform-origin: top center;
+}
+
+.peek-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px;
+    background: var(--surface-2);
+    border: 1px solid var(--border-soft);
+    border-radius: 999px;
+    font-size: 11px;
+    color: var(--text-2);
+    cursor: pointer;
+    transition: background .12s ease, color .12s ease;
+}
+
+.peek-toggle:hover {
+    background: var(--surface-3);
+    color: var(--text);
+}
+
+.lore-badge {
+    position: absolute;
+    z-index: 4;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 8px 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 78px;
+    box-shadow: var(--shadow-2);
+}
+
+.lore-badge .lore-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 2px;
+}
+
+.lore-badge .lore-row .lore-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-faint);
+}
+
+.lore-badge .lore-row button {
+    background: transparent;
+    border: none;
+    color: var(--text-dim);
+    cursor: pointer;
+    padding: 2px 4px;
+    font-size: 12px;
+    border-radius: 4px;
+    transition: color .12s ease, background .12s ease;
+}
+
+.lore-badge .lore-row button:hover {
+    color: var(--text);
+    background: var(--surface-2);
+}
+
+.lore-badge .lore-row button.plus:hover {
+    color: var(--ok);
+}
+
+.lore-badge .lore-row button.minus:hover {
+    color: var(--danger);
+}
+
+.lore-badge .lore-value {
+    font-size: 30px;
+    line-height: 1;
+    font-weight: 700;
+    color: var(--text);
+    font-variant-numeric: tabular-nums;
+}
+
+.lore-badge.is-p1 .lore-value {
+    color: var(--p1-hi);
+}
+
+.lore-badge.is-p2 .lore-value {
+    color: var(--p2-hi);
+}
+
+.lore-badge.is-p1 {
+    border-color: color-mix(in oklch, var(--p1) 50%, var(--border));
+}
+
+.lore-badge.is-p2 {
+    border-color: color-mix(in oklch, var(--p2) 50%, var(--border));
+}
+
+.board-half.top .lore-badge {
+    top: 10px;
+    right: 16px;
+}
+
+.board-half.bottom .lore-badge {
+    bottom: 10px;
+    right: 16px;
+}
+
+/* Mobile-only quick actions and in-bar lore — hidden on desktop (drawer has the full
+   set; the lore badge floats over the board). */
+.mobile-quick-actions,
+.lore-chip,
+.pile-num {
+    display: none;
+}
+
+.notes-panel {
+    position: absolute;
+    z-index: 4;
+    width: 210px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.notes-panel .notes-head {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--text-faint);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+.notes-panel textarea {
+    background: var(--bg);
+    border: 1px solid var(--border-soft);
+    border-radius: 6px;
+    padding: 6px 8px;
+    font-family: var(--font-sans);
+    font-size: 12px;
+    min-height: 54px;
+    color: var(--text);
+    resize: none;
+    transition: min-height .18s ease, border-color .12s ease;
+}
+
+.notes-panel textarea:focus {
+    min-height: 110px;
+    border-color: var(--accent-dim);
+}
+
+.board-half.bottom .notes-panel {
+    top: 10px;
+    left: 16px;
+}
+
+/* CARDS */
+.card {
+    /* Feature 28 auto-scaling shrinks a card via --field-scale, but anything
+       drawn *on* the card (shadow, counters, badges) is in fixed px and would
+       keep its full size — a 0.44-scaled card ended up wearing a full 10px
+       shadow. --cs is the card's total scale; --badge-scale is the same with
+       a floor, so counters stay legible instead of shrinking to nothing.
+       --field-scale only exists inside .field, hence the fallback. */
+    --cs: calc(var(--card-scale, 1) * var(--field-scale, 1));
+    --badge-scale: clamp(0.6, var(--cs), 1);
+    width: var(--card-w);
+    height: var(--card-h);
+    border-radius: 7px;
+    background: var(--surface-2);
+    background-size: cover;
+    background-position: center;
+    box-shadow: 0 calc(4px * var(--cs)) calc(10px * var(--cs)) calc(-2px * var(--cs)) oklch(0 0 0 / 0.55),
+        0 1px 0 oklch(1 0 0 / 0.04) inset;
+    cursor: grab;
+    position: relative;
+    flex-shrink: 0;
+    border: 1px solid oklch(1 0 0 / 0.06);
+    transition: transform .15s ease, box-shadow .15s ease, filter .15s ease;
+}
+
+/* Card face image. Using a real <img> (instead of CSS background-image)
+   lets the browser share one decoded bitmap across every element with the
+   same src, and lets loading=lazy / decoding=async manage decode off the
+   main thread. This fixes mobile "blank twin" cards in dense grids. */
+.card-img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: inherit;
+    pointer-events: none;
+    -webkit-user-drag: none;
+    user-select: none;
+}
+
+/* OFFLINE NAME FALLBACK
+   Painted underneath the artwork on every card face. While the image is
+   still loading (or when it can't be fetched at all — no connection on
+   mobile) the card name/version/cost stays readable, so a card is never
+   an anonymous blank rectangle. The <img> sits later in the DOM, so a
+   successfully loaded artwork covers this layer completely. */
+.card-face {
+    position: relative;
+}
+
+.card-fallback {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.15em;
+    padding: 14% 6% 8% 9%;
+    overflow: hidden;
+    border-radius: inherit;
+    background: var(--surface-2);
+    color: var(--text);
+    text-align: center;
+    font-size: 9px;
+    line-height: 1.15;
+    font-weight: 600;
+    word-break: break-word;
+    hyphens: auto;
+    pointer-events: none;
+    user-select: none;
+}
+
+.card-fallback .cf-version {
+    font-size: 0.85em;
+    font-weight: 400;
+    color: var(--text-dim, inherit);
+    opacity: 0.75;
+}
+
+/* Ink identity strip down the left edge. Sized in % so it reads the same on a
+   140px mulligan card and an 18px timeline thumb. Painted whenever a card face
+   falls back to text — offline (Feature 27/29) and in text-only mode (32). */
+.card-fallback::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 5%;
+    background: var(--cf-ink, transparent);
+    border-top-left-radius: inherit;
+    border-bottom-left-radius: inherit;
+}
+
+/* Cost badge. Same visual language as the text card's (§15): a gold disc means
+   the card can be inked, a dark hexagon means it can't — that distinction is
+   unreadable if both are just a number, and it drives most turn decisions.
+   Sized in `em` so it tracks the container-query font down to the smallest tile. */
+.card-fallback .cf-cost {
+    position: absolute;
+    top: 4%;
+    left: 8%;
+    width: 1.7em;
+    height: 1.7em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.05em;
+    font-weight: 800;
+    line-height: 1;
+}
+
+.card-fallback .cf-cost.is-inkable {
+    border-radius: 50%;
+    background: #D4AF37;
+    color: #111;
+    box-shadow: inset 0 0 0 0.1em #fff;
+}
+
+.card-fallback .cf-cost.is-uninkable {
+    background: #2a2b31;
+    color: #fff;
+    /* clip-path can't take a border, so the hexagon carries its own contrast */
+    clip-path: polygon(50% 2%, 98% 26%, 98% 74%, 50% 98%, 2% 74%, 2% 26%);
+    box-shadow: none;
+}
+
+/* Second cue for the tiles too small to read the badge shape on: uninkable
+   cards get a desaturated face, inkable ones keep the ink tint. */
+body.cards-text .card-fallback.is-uninkable {
+    background:
+        linear-gradient(155deg,
+            color-mix(in oklab, var(--cf-ink-1, var(--surface-3)) 8%, var(--surface-2)),
+            var(--surface-2) 55%);
+}
+
+body.cards-text .card-fallback.is-uninkable::before {
+    opacity: 0.45;
+    width: 3.5%;
+}
+
+/* Feature 32 — text-only mode. Same face, dressed up a little: the artwork is
+   never coming, so the tile is the card now. */
+body.cards-text .card-fallback {
+    background:
+        linear-gradient(155deg,
+            color-mix(in oklab, var(--cf-ink-1, var(--surface-3)) 18%, var(--surface-2)),
+            var(--surface-2) 65%);
+    box-shadow: inset 0 0 0 1px oklch(1 0 0 / 0.06);
+}
+
+/* No remote card-back image either — a plain inked panel instead, so a
+   text-mode session makes zero image requests. */
+body.cards-text .card.card-back {
+    background-image:
+        repeating-linear-gradient(135deg,
+            oklch(0.30 0.05 70 / 0.35) 0 6px,
+            oklch(0.24 0.04 70 / 0.35) 6px 12px);
+    background-color: var(--surface-3);
+}
+
+/* Strength / willpower along the bottom edge, mirroring where the eye
+   expects them on the real card. Strength sits left, willpower right;
+   a card with only one of the two (e.g. a Location) keeps its side. */
+.card-fallback .cf-stats {
+    position: absolute;
+    left: 9%;
+    right: 6%;
+    bottom: 3%;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    font-size: 1.15em;
+    font-weight: 700;
+    opacity: 0.85;
+}
+
+.card-fallback .cf-wp {
+    margin-left: auto;
+}
+
+/* Letter tags rather than sword/shield glyphs: they render in every font,
+   at every tile size, on every platform. */
+.card-fallback .cf-str::after,
+.card-fallback .cf-wp::after {
+    font-size: 0.6em;
+    font-weight: 600;
+    opacity: 0.6;
+    margin-left: 0.1em;
+}
+
+.card-fallback .cf-str::after {
+    content: 'S';
+}
+
+.card-fallback .cf-wp::after {
+    content: 'W';
+}
+
+/* Scale the fallback text to the card it sits in (board card, 60-card
+   inspect tile, 35px timeline thumb ...) instead of a single fixed size. */
+@supports (container-type: inline-size) {
+    .card-face {
+        container-type: inline-size;
+    }
+
+    .card-fallback {
+        font-size: clamp(5px, 11cqw, 13px);
+    }
+}
+
+.card.exerted {
+    transform: rotate(90deg);
+    filter: brightness(0.85);
+}
+
+/* EXERTED CARD GEOMETRY
+   .card-wrap.exerted is card-h × card-w (landscape), but the .card inside is
+   still card-w × card-h and rotates about its own centre — which sits at
+   (card-w/2, card-h/2), not the wrap's centre. The card therefore hung out
+   of its own slot (~9% of card-h below it), and with Feature 28's nowrap
+   tight-gap rows that overlapped its neighbours. Pinning it to the wrap's
+   centre and translating back by half its own box lands it exactly.
+
+   Rotation only — no scale(). A fractional scale forces the browser to
+   resample the card (and its filter layer), which is what made exerted
+   cards look soft next to upright ones. A plain 90° turn is pixel-exact,
+   and at full size the card fills its card-h × card-w wrap precisely,
+   which is the slot calcFieldScale reserves for it anyway. */
+.card-wrap.exerted .card {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(90deg);
+    /* rotate(90deg) maps local +x to screen +y, so the offset has to move to
+       the x slot or the shadow falls sideways instead of down. */
+    box-shadow: calc(4px * var(--cs)) 0 calc(10px * var(--cs)) calc(-2px * var(--cs)) oklch(0 0 0 / 0.55),
+        0 1px 0 oklch(1 0 0 / 0.04) inset;
+}
+
+/* A legacy `.card.exerted:hover` rule outranked the redesign one and grew the
+   card on hover — a visible jump, and at small field scales enough to shove
+   neighbouring cards. Exerted cards now hold still. */
+.card-wrap.exerted .card:hover {
+    transform: translate(-50%, -50%) rotate(90deg);
+}
+
+/* LOCATIONS ARE LANDSCAPE CARDS
+   Lorcana prints Locations in landscape, so on the field they always render
+   rotated — regardless of exert state. (The engine marks a Location exerted
+   when it's played, but that was only ever a way to get this rotation; a
+   Location never actually exerts.) Scale is 1 here, not the 0.85 used for
+   exerted characters: rotated at full size a card fills a card-h × card-w
+   wrap exactly, which is the slot calcFieldScale already reserves for it. */
+.card-wrap.is-location {
+    width: var(--card-h);
+    height: var(--card-w);
+}
+
+.card-wrap.is-location .card,
+.card-wrap.is-location .card:hover {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(90deg);
+    box-shadow: calc(4px * var(--cs)) 0 calc(10px * var(--cs)) calc(-2px * var(--cs)) oklch(0 0 0 / 0.55),
+        0 1px 0 oklch(1 0 0 / 0.04) inset;
+}
+
+/* Characters standing at a Location render a little smaller to read as being
+   "inside" it. Done with real dimensions rather than a transform scale so
+   --cs shrinks in step and the shadow, counters and badges follow. The old
+   approach put a Tailwind `scale-90` plus a fixed `shadow-[...]` on the
+   *wrap* — so the shadow was drawn for the wrap's box, which on a rotated
+   card sits on a different side than the card itself. */
+.card-wrap.at-location {
+    --loc-shrink: 0.88;
+    width: calc(var(--card-w) * var(--loc-shrink));
+    height: calc(var(--card-h) * var(--loc-shrink));
+}
+
+.card-wrap.at-location.exerted {
+    width: calc(var(--card-h) * var(--loc-shrink));
+    height: calc(var(--card-w) * var(--loc-shrink));
+}
+
+.card-wrap.at-location .card {
+    --cs: calc(var(--card-scale, 1) * var(--field-scale, 1) * var(--loc-shrink));
+    width: calc(var(--card-w) * var(--loc-shrink));
+    height: calc(var(--card-h) * var(--loc-shrink));
+}
+
+.card.drying {
+    filter: grayscale(70%) brightness(0.78);
+}
+
+.card.drying::after {
+    content: 'NEW';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: oklch(0 0 0 / 0.7);
+    color: var(--text);
+    font-size: calc(9px * var(--badge-scale));
+    font-weight: 600;
+    padding: calc(3px * var(--badge-scale)) calc(7px * var(--badge-scale));
+    border-radius: 999px;
+    letter-spacing: 0.1em;
+    border: 1px solid var(--border);
+    pointer-events: none;
+}
+
+.card.card-back {
+    /* background-image: radial-gradient(ellipse at center, oklch(0.32 0.10 270 / 0.6), transparent 70%), repeating-linear-gradient(135deg, oklch(0.22 0.04 270) 0 6px, oklch(0.18 0.04 270) 6px 12px);
+    background-color: oklch(0.18 0.04 270); */
+    box-shadow: inset 0 0 0 calc(4px * var(--cs)) oklch(0.30 0.06 70 / 0.4),
+        0 calc(4px * var(--cs)) calc(10px * var(--cs)) calc(-2px * var(--cs)) oklch(0 0 0 / 0.55);
+
+    background-image: url('https://upload.wikimedia.org/wikipedia/en/2/25/Lorcana_Card_Back.png');
+    background-color: #1a202c;
+
+}
+
+.card-wrap {
+    position: relative;
+    width: var(--card-w);
+    height: var(--card-h);
+}
+
+.card-wrap.exerted {
+    width: var(--card-h);
+    height: var(--card-w);
+}
+
+.card .damage-counter {
+    position: absolute;
+    top: calc(-8px * var(--badge-scale));
+    right: calc(-8px * var(--badge-scale));
+    background: var(--danger);
+    color: var(--text);
+    border-radius: 999px;
+    width: calc(22px * var(--badge-scale));
+    height: calc(22px * var(--badge-scale));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: calc(11px * var(--badge-scale));
+    border: calc(1.5px * var(--badge-scale)) solid var(--bg);
+    z-index: 3;
+}
+
+.card-actions {
+    position: absolute;
+    inset: auto 0 0 0;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 4px;
+    padding: 6px;
+    background: linear-gradient(to top, oklch(0 0 0 / 0.85), oklch(0 0 0 / 0));
+    border-radius: 0 0 7px 7px;
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity .14s ease, transform .14s ease;
+    pointer-events: none;
+    z-index: 6;
+}
+
+.card-wrap:hover .card-actions {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+}
+
+.card-wrap.exerted .card-actions {
+    display: none;
+}
+
+.card-actions .chip {
+    background: var(--surface-2);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 3px 8px;
+    font-size: 10px;
+    font-weight: 600;
+    font-family: var(--font-mono);
+    cursor: pointer;
+    transition: background .1s ease, color .1s ease, border-color .1s ease;
+    line-height: 1;
+    letter-spacing: 0.04em;
+}
+
+.card-actions .chip:hover {
+    background: var(--accent);
+    color: oklch(0.16 0.02 60);
+    border-color: var(--accent-hi);
+}
+
+.card-actions .chip.is-danger:hover {
+    background: var(--danger);
+    color: var(--text);
+    border-color: var(--danger);
+}
+
+.drop-zone {
+    transition: background .14s ease, border-color .14s ease, box-shadow .14s ease;
+}
+
+.drop-target,
+.drop-zone.drop-target-active {
+    border-color: var(--accent) !important;
+    background: var(--accent-faint) !important;
+    box-shadow: 0 0 0 2px var(--accent-soft) inset;
+}
+
+.drop-target-challenge {
+    border-color: var(--danger) !important;
+    background: oklch(0.66 0.21 25 / 0.12) !important;
+    box-shadow: 0 0 0 2px oklch(0.66 0.21 25 / 0.3) inset;
+}
+
+/* CONTEXT MENU (redesign) */
+#context-menu {
+    position: fixed;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 5px;
+    z-index: 1000;
+    box-shadow: var(--shadow-2);
+    min-width: 180px;
+}
+
+.ctx-item {
+    padding: 6px 10px;
+    border-radius: 6px;
+    color: var(--text-2);
+    font-size: 12.5px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.ctx-item:hover {
+    background: var(--surface-3);
+    color: var(--text);
+}
+
+.ctx-item .ctx-key {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--text-faint);
+    padding: 1px 5px;
+    border-radius: 4px;
+    background: var(--bg);
+    border: 1px solid var(--border-soft);
+}
+
+.ctx-item.is-danger {
+    color: oklch(0.78 0.18 25);
+}
+
+.ctx-item.is-danger:hover {
+    background: var(--danger-soft);
+}
+
+.ctx-divider {
+    height: 1px;
+    background: var(--border-soft);
+    margin: 4px 6px;
+}
+
+.ctx-section {
+    font-size: 10px;
+    color: var(--text-faint);
+    padding: 6px 10px 2px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+/* MODALS (cards styled; visibility kept via Tailwind .hidden on the container) */
+.modal-backdrop {
+    background: oklch(0 0 0 / 0.6);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
+
+.modal-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    box-shadow: var(--shadow-3);
+    width: min(960px, 95vw);
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.modal-card.wide {
+    width: min(1200px, 96vw);
+    height: min(820px, 90vh);
+}
+
+.modal-head {
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--border-soft);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+}
+
+.modal-head h2 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.modal-head .close {
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: 1px solid var(--border-soft);
+    border-radius: 7px;
+    color: var(--text-dim);
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.modal-head .close:hover {
+    background: var(--surface-2);
+    color: var(--text);
+}
+
+.modal-body {
+    padding: 18px;
+    overflow-y: auto;
+    flex: 1 1 auto;
+    min-height: 0;
+}
+
+.modal-foot {
+    padding: 12px 18px;
+    border-top: 1px solid var(--border-soft);
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    flex-shrink: 0;
+}
+
+/* DIALOGS (styled replacement for native confirm/prompt/alert) */
+.dlg-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 1100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background: oklch(0 0 0 / 0.6);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
+
+.dlg {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    box-shadow: var(--shadow-3);
+    width: min(420px, 100%);
+    overflow: hidden;
+}
+
+.dlg.is-celebrate {
+    border-color: var(--accent-dim);
+    background:
+        linear-gradient(180deg, var(--accent-faint), transparent 55%),
+        var(--surface);
+}
+
+.dlg-head {
+    padding: 16px 18px 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.dlg-head .dlg-icon {
+    width: 30px;
+    height: 30px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    background: var(--accent-soft);
+    color: var(--accent-hi);
+    font-size: 13px;
+}
+
+.dlg.is-danger .dlg-icon {
+    background: var(--danger-soft);
+    color: var(--danger);
+}
+
+.dlg-head h2 {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 600;
+}
+
+.dlg-body {
+    padding: 10px 18px 16px;
+    color: var(--text-2);
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.dlg-body .dlg-stat {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-top: 6px;
+}
+
+.dlg-body .input {
+    margin-top: 10px;
+    width: 100%;
+}
+
+.dlg-foot {
+    padding: 12px 18px;
+    border-top: 1px solid var(--border-soft);
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.dlg-foot.is-stacked {
+    flex-wrap: wrap;
+}
+
+.dlg-foot.is-stacked .btn {
+    flex: 1 1 auto;
+    justify-content: center;
+}
+
+/* TOASTS (token port of the legacy purple pill) */
+#toast-container {
+    position: fixed;
+    top: 32px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1050;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    pointer-events: none;
+}
+
+.toast {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 16px;
+    background: var(--surface-2);
+    border: 1px solid var(--border-strong);
+    border-radius: 999px;
+    color: var(--text);
+    font-size: 12.5px;
+    font-weight: 600;
+    box-shadow: var(--shadow-2);
+    opacity: 0;
+    transform: translateY(-14px);
+    transition: opacity .25s ease, transform .25s ease;
+}
+
+.toast.is-in {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.toast i {
+    color: var(--accent);
+    font-size: 12px;
+}
+
+.toast .toast-action {
+    pointer-events: auto;
+    margin-left: 4px;
+    padding: 3px 10px;
+    background: var(--accent-soft);
+    border: 1px solid var(--accent-dim);
+    border-radius: 999px;
+    color: var(--accent-hi);
+    font: inherit;
+    font-size: 11px;
+    cursor: pointer;
+}
+
+.toast .toast-action:hover {
+    background: var(--accent-dim);
+    color: var(--bg);
+}
+
+#time-flash {
+    position: absolute;
+    inset: 0;
+    z-index: 40;
+    pointer-events: none;
+    background: var(--accent-soft);
+    opacity: 0;
+    transition: opacity .3s ease;
+}
+
+#time-flash.is-on {
+    opacity: 1;
+}
+
+/* MULTIVERSE TREE MODAL (token port) */
+#tree-modal {
+    background: oklch(0 0 0 / 0.5);
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+}
+
+.tree-head {
+    padding: 12px 18px;
+    background: color-mix(in oklch, var(--surface) 88%, transparent);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    z-index: 10;
+    flex-shrink: 0;
+}
+
+.tree-head h2 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.tree-head h2 i {
+    color: var(--accent);
+}
+
+.tree-head .hint {
+    font-size: 11px;
+    color: var(--text-dim);
+}
+
+#tree-viewport {
+    background-color: var(--bg);
+    background-image: radial-gradient(oklch(1 0 0 / 0.05) 1px, transparent 1px);
+    background-size: 40px 40px;
+}
+
+.tree-node {
+    position: absolute;
+    width: 220px;
+    /* --tn-h is set on #tree-nodes by renderTree(): 250px compact, taller in the
+       full view so the Played / Inked / Banished sections fit. Nodes stay a fixed
+       height either way — the comment box (flex:1) absorbs the difference. */
+    height: var(--tn-h, 250px);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background:
+        linear-gradient(0deg, color-mix(in oklch, var(--surface-2) 82%, transparent), color-mix(in oklch, var(--surface-2) 82%, transparent)),
+        linear-gradient(0deg, var(--node-c, var(--border-strong)), var(--node-c, var(--border-strong)));
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--node-c, var(--accent));
+    border-radius: 9px;
+    box-shadow: var(--shadow-1);
+    transition: transform .12s ease, box-shadow .12s ease;
+}
+
+.tree-node:hover {
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: var(--shadow-2);
+    z-index: 20;
+}
+
+.tree-node.is-active {
+    border-color: var(--accent);
+    border-left-color: var(--node-c, var(--accent));
+    box-shadow: 0 0 0 2px var(--accent-soft), var(--shadow-2);
+}
+
+.tree-node.is-nav {
+    outline: 3px solid var(--text);
+    outline-offset: 2px;
+    z-index: 30;
+}
+
+/* Victory nodes (branch won): the winner's deck-ink colors become the node's
+   identity — a gradient edge strip + tint, in place of the player-color border. */
+.tree-node.is-victory {
+    --node-g: linear-gradient(0deg, var(--node-c, var(--accent)), var(--node-c, var(--accent)));
+    border-left-width: 1px;
+    border-left-color: var(--border);
+    background:
+        linear-gradient(0deg, color-mix(in oklch, var(--surface-2) 82%, transparent), color-mix(in oklch, var(--surface-2) 82%, transparent)),
+        var(--node-g);
+}
+
+.tree-node.is-victory::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    background-image: var(--node-g);
+    z-index: 1;
+}
+
+.tree-node.is-victory .tn-title i {
+    color: var(--accent-hi);
+}
+
+/* Competition palette · Feature 36 — the node spine carries BOTH of that
+   player's inks, and each player weaves them differently: P1 a hard split
+   down the middle, P2 a barber pole. In a mirror match the two decks are
+   the same two colours, so the weave is the only thing left that says
+   whose turn a node is. Widened to 6px so a stripe survives zooming out. */
+body.palette-competition .tree-node.tn-p1,
+body.palette-competition .tree-node.tn-p2 {
+    border-left-width: 1px;
+    border-left-color: var(--border);
+}
+
+/* The node BODY carries the ink pair too, not just the spine. The base rule
+   veils a single flat --node-c behind 82% surface, which at that strength
+   reads as "slightly warm grey" vs "slightly cool grey" — not enough to sort
+   two players apart while scanning a tree. Here the veil thins to 70% and the
+   tint becomes a diagonal wash across BOTH of that deck's inks, so a node is
+   legible as its player from across the canvas.
+
+   The wash runs the opposite way for each player (P1 down-right, P2 up-right,
+   matching the barber pole's 45°), which keeps some separation in a mirror
+   match even before you read the spine. */
+body.palette-competition .tree-node.tn-p1 {
+    background:
+        linear-gradient(0deg, color-mix(in oklch, var(--surface-2) 70%, transparent), color-mix(in oklch, var(--surface-2) 70%, transparent)),
+        linear-gradient(135deg, var(--p1), var(--p1-2));
+}
+
+body.palette-competition .tree-node.tn-p2 {
+    background:
+        linear-gradient(0deg, color-mix(in oklch, var(--surface-2) 70%, transparent), color-mix(in oklch, var(--surface-2) 70%, transparent)),
+        linear-gradient(45deg, var(--p2), var(--p2-2));
+}
+
+/* A victory node keeps the winner's full-strength deck gradient. */
+body.palette-competition .tree-node.is-victory.tn-p1,
+body.palette-competition .tree-node.is-victory.tn-p2 {
+    background:
+        linear-gradient(0deg, color-mix(in oklch, var(--surface-2) 76%, transparent), color-mix(in oklch, var(--surface-2) 76%, transparent)),
+        var(--node-g);
+}
+
+body.palette-competition .tree-node.tn-p1::before,
+body.palette-competition .tree-node.tn-p2::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 6px;
+    z-index: 2;
+}
+
+body.palette-competition .tree-node.tn-p1::before {
+    background-image: var(--weave-p1);
+}
+
+body.palette-competition .tree-node.tn-p2::before {
+    background-image: var(--weave-p2);
+}
+
+/* An active node keeps its ring; the spine is the identity, not the state. */
+body.palette-competition .tree-node.is-active.tn-p1,
+body.palette-competition .tree-node.is-active.tn-p2 {
+    border-left-color: var(--accent);
+}
+
+.tn-body {
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 0;
+    min-height: 0;
+    position: relative;
+}
+
+.tn-title {
+    appearance: none;
+    background: none;
+    border: none;
+    padding: 0;
+    padding-right: 56px;
+    text-align: left;
+    font: inherit;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex-shrink: 0;
+}
+
+.tn-title i {
+    color: var(--node-c, var(--accent));
+    font-size: 11px;
+}
+
+.tn-title:hover span,
+.tn-title:focus-visible span {
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+
+.tn-title span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.tn-stats {
+    font-family: var(--font-mono);
+    font-size: 9.5px;
+    letter-spacing: 0.04em;
+    color: var(--text-dim);
+    margin-top: 4px;
+    flex-shrink: 0;
+}
+
+.tn-comment {
+    font-size: 11px;
+    color: var(--text-2);
+    margin-top: 6px;
+    overflow-y: auto;
+    overflow-wrap: break-word;
+    padding-right: 4px;
+    flex: 1 1 0;
+    min-height: 0;
+}
+
+/* --- Multiverse node card sections (Feature 31) ---
+   One .tn-sec per entry in App.TREE_SECTIONS. The full view stacks all of them;
+   the compact view renders only "Cards Played" and restores the pre-31 look. */
+.tn-cards {
+    border-top: 1px solid var(--border-soft);
+    background: color-mix(in oklch, var(--bg) 55%, transparent);
+    flex-shrink: 0;
+}
+
+.tn-sec {
+    --sec-c: var(--text-dim);
+    border-top: 1px solid var(--border-soft);
+}
+
+.tn-sec:first-child {
+    border-top: none;
+}
+
+.tn-sec-label {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 8.5px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    padding: 3px 6px 1px;
+}
+
+.tn-sec-label::before {
+    content: '';
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--sec-c);
+    flex-shrink: 0;
+}
+
+.tn-sec-n {
+    margin-left: auto;
+    font-family: var(--font-mono);
+    font-size: 8.5px;
+    color: var(--sec-c);
+}
+
+.tn-sec.is-empty .tn-sec-label,
+.tn-sec.is-empty .tn-sec-n {
+    color: var(--text-faint);
+}
+
+.tn-sec.is-empty .tn-sec-label::before {
+    background: var(--text-faint);
+    opacity: 0.5;
+}
+
+/* Wrapping section (Turn Starting Hand): a whole hand should be readable at once,
+   so the row flows onto a second line rather than scrolling sideways. Thumbs are
+   a size smaller here so a normal 7-card opener still fits on ONE line
+   (7 × 24px + 6 × 3px gap = 186px inside the 208px content box).
+   The node keeps its fixed height because the section is `flex-shrink: 0` while
+   `.tn-comment` is `flex: 1` — a second row eats into the comment, not the box.
+   Past two rows it scrolls vertically so a freak 20-card hand can't blow it out. */
+.tn-sec.is-wrap .tn-sec-row {
+    flex-wrap: wrap;
+    overflow-x: hidden;
+    overflow-y: auto;
+    max-height: 78px;
+}
+
+.tn-sec.is-wrap .tn-sec-row .tn-card-thumb {
+    width: 24px;
+    height: 34px;
+}
+
+/* Full view: one non-wrapping row per section, so node height stays predictable. */
+.tn-sec-row {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 3px;
+    padding: 2px 6px 5px;
+    overflow-x: auto;
+    overflow-y: hidden;
+}
+
+/* "Left the hand this turn" (Turn Starting Hand section). The card itself is
+   greyed and dimmed so the cards still held read as the live ones, and a single
+   crisp corner-to-corner rule crosses it out. The filter is on the artwork/text
+   layers rather than the tile, so the slash keeps its colour. */
+.tn-card-thumb.is-left .card-img,
+.tn-card-thumb.is-left .card-fallback {
+    filter: grayscale(1);
+    opacity: 0.5;
+}
+
+.tn-card-thumb.is-left::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: linear-gradient(to top right,
+            transparent calc(50% - 0.8px),
+            var(--danger) calc(50% - 0.8px),
+            var(--danger) calc(50% + 0.8px),
+            transparent calc(50% + 0.8px));
+    pointer-events: none;
+}
+
+.tn-sec-row .tn-card-thumb {
+    width: 28px;
+    height: 39px;
+    flex-shrink: 0;
+    background-size: cover;
+    background-position: center;
+    border-radius: 4px;
+    overflow: hidden;
+    box-shadow: var(--shadow-1);
+}
+
+/* Compact view: identical to the pre-Feature-31 "Cards Played" strip. */
+.tn-cards.is-compact .tn-sec-label {
+    justify-content: center;
+    font-size: 9px;
+    padding: 3px 0 1px;
+}
+
+.tn-cards.is-compact .tn-sec-label::before,
+.tn-cards.is-compact .tn-sec-n {
+    display: none;
+}
+
+.tn-cards.is-compact .tn-sec-row {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 4px;
+    padding: 4px;
+    max-height: 90px;
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+
+.tn-cards.is-compact .tn-sec-row .tn-card-thumb {
+    width: 35px;
+    height: 50px;
+}
+
+.tn-icon-btn {
+    position: absolute;
+    top: 6px;
+    width: 26px;
+    height: 26px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--surface-3);
+    border: 1px solid var(--border-soft);
+    border-radius: 7px;
+    color: var(--text-dim);
+    font-size: 10px;
+    cursor: pointer;
+    z-index: 20;
+}
+
+.tn-icon-btn.tn-edit {
+    right: 36px;
+}
+
+.tn-icon-btn.tn-delete {
+    right: 6px;
+}
+
+.tn-icon-btn:hover,
+.tn-icon-btn:focus-visible {
+    background: var(--surface-hi);
+    color: var(--text);
+}
+
+.tn-icon-btn.tn-delete:hover,
+.tn-icon-btn.tn-delete:focus-visible {
+    background: var(--danger-soft);
+    border-color: var(--danger);
+    color: var(--danger);
+}
+
+.tree-node .tn-edit-form {
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    flex: 1 1 0;
+    min-height: 0;
+    background: var(--surface-2);
+}
+
+.tree-node .tn-edit-form .input {
+    font-size: 11px;
+    padding: 4px 8px;
+}
+
+.tree-node .tn-edit-form textarea.input {
+    flex: 1 1 0;
+    min-height: 0;
+    resize: none;
+}
+
+.tn-edit-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 6px;
+    flex-shrink: 0;
+}
+
+.tn-edit-actions .btn {
+    padding: 3px 10px;
+    font-size: 11px;
+}
+
+.tree-empty {
+    position: absolute;
+    left: 100px;
+    top: 100px;
+    color: var(--text-dim);
+    font-style: italic;
+}
+
+/* AUTO-SAVE LIST (token port) */
+.autosave-item {
+    position: relative;
+    background: var(--surface-2);
+    border: 1px solid var(--border-soft);
+    border-radius: 7px;
+    padding: 8px 10px;
+    margin-bottom: 4px;
+    cursor: pointer;
+    overflow: hidden;
+    transition: border-color .12s ease, background .12s ease;
+}
+
+.autosave-item:hover {
+    border-color: var(--border-strong);
+    background: var(--surface-3);
+}
+
+.autosave-item .as-name {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-2);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.autosave-item .as-stats {
+    font-family: var(--font-mono);
+    font-size: 9.5px;
+    color: var(--text-dim);
+    margin-top: 2px;
+}
+
+.autosave-item .as-cards {
+    display: flex;
+    gap: 3px;
+    margin-top: 5px;
+    opacity: 0.6;
+    transition: opacity .15s ease;
+}
+
+.autosave-item:hover .as-cards {
+    opacity: 1;
+}
+
+.autosave-item .as-cards .tn-card-thumb {
+    width: 18px;
+    height: 25px;
+    background-size: cover;
+    background-position: center;
+    border-radius: 3px;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.autosave-item .as-restore {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: oklch(0 0 0 / 0.75);
+    backdrop-filter: blur(3px);
+    color: var(--text);
+    font-size: 11px;
+    font-weight: 600;
+    opacity: 0;
+    transition: opacity .15s ease;
+    z-index: 10;
+}
+
+.autosave-item:hover .as-restore,
+.autosave-item:focus-visible .as-restore {
+    opacity: 1;
+}
+
+.autosave-empty {
+    font-size: 11px;
+    color: var(--text-faint);
+    font-style: italic;
+    text-align: center;
+    padding: 14px 0;
+}
+
+/* KEYBOARD FOCUS (a11y) */
+.card-wrap:focus-visible,
+.card:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+    border-radius: 6px;
+}
+
+.switch:has(input:focus-visible) .slider {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+}
+
+.input:focus-visible,
+.select:focus-visible,
+.dojo-textarea:focus-visible,
+.btn:focus-visible,
+.icon-btn:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
+}
+
+button.ctx-item {
+    appearance: none;
+    background: none;
+    border: none;
+    width: 100%;
+    font: inherit;
+    font-size: 12.5px;
+    text-align: left;
+}
+
+button.ctx-item:focus-visible {
+    background: var(--surface-3);
+    color: var(--text);
+    outline: none;
+}
+
+.card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+    gap: 10px;
+}
+
+.card-grid .card-slot {
+    aspect-ratio: 2.5 / 3.5;
+    background: var(--surface-2);
+    border: 1px solid var(--border-soft);
+    border-radius: 7px;
+    background-size: cover;
+    background-position: center;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+}
+
+.card-grid .card-slot:hover {
+    transform: translateY(-2px);
+    border-color: var(--accent-dim);
+}
+
+.card-grid .card-slot.is-unknown {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-faint);
+    font-size: 10px;
+    text-transform: uppercase;
+}
+
+.card-grid .card-slot.is-selected {
+    box-shadow: 0 0 0 3px var(--accent) inset;
+}
+
+/* TIMELINES DRAWER */
+.drawer-overlay {
+    position: absolute;
+    inset: 0;
+    background: color-mix(in oklch, var(--surface) 65%, transparent);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    z-index: 30;
+    transform: translateX(-105%);
+    transition: transform 0.25s cubic-bezier(0.5, 0, 0.2, 1);
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid var(--border);
+}
+
+.drawer-overlay.is-open {
+    transform: translateX(0);
+    box-shadow: var(--shadow-2);
+}
+
+.drawer-head {
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border-soft);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.drawer-head h2 {
+    margin: 0;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.drawer-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    border-bottom: 1px solid var(--border-soft);
+}
+
+.drawer-row .icon-btn {
+    border-radius: 0;
+    border: none;
+    border-right: 1px solid var(--border-soft);
+    background: transparent;
+    padding: 10px 6px;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-dim);
+}
+
+.drawer-row .icon-btn:hover {
+    background: var(--surface-2);
+    color: var(--text);
+}
+
+.drawer-row .icon-btn:last-child {
+    border-right: none;
+}
+
+.drawer-row .icon-btn.is-accent {
+    color: var(--accent-hi);
+}
+
+.drawer-row .icon-btn.is-ok {
+    color: var(--ok);
+}
+
+.drawer-section {
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border-soft);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.drawer-list {
+    flex: 1 1 auto;
+    overflow-y: auto;
+    padding: 10px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.drawer-list-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: var(--text-faint);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+    padding-top: 4px;
+}
+
+.bookmark {
+    background: var(--surface-2);
+    border: 1px solid var(--border-soft);
+    border-left: 3px solid var(--accent);
+    border-radius: 7px;
+    padding: 8px 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    cursor: pointer;
+    transition: background .12s ease, border-color .12s ease;
+}
+
+.bookmark:hover {
+    background: var(--surface-3);
+}
+
+.bookmark.is-p1 {
+    border-left-color: var(--p1);
+}
+
+.bookmark.is-p2 {
+    border-left-color: var(--p2);
+}
+
+.tree-toolbar {
+    position: absolute;
+    bottom: 16px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    background: color-mix(in oklch, var(--surface) 70%, transparent);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--border-soft);
+    border-radius: 999px;
+    z-index: 5;
+    box-shadow: var(--shadow-2);
+}
+
+/* TWEAKS PANEL */
+.tweaks-panel {
+    position: fixed;
+    right: 16px;
+    bottom: 16px;
+    width: 280px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    z-index: 200;
+    box-shadow: var(--shadow-3);
+    display: none;
+}
+
+.tweaks-panel.is-open {
+    display: block;
+}
+
+.tweaks-head {
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border-soft);
+}
+
+.tweaks-head h3 {
+    margin: 0;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text);
+}
+
+.tweaks-head .close {
+    background: transparent;
+    border: none;
+    color: var(--text-dim);
+    cursor: pointer;
+    font-size: 16px;
+    line-height: 1;
+    padding: 0 4px;
+}
+
+.tweaks-body {
+    padding: 12px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.tweak {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.tweak-label {
+    font-size: 10.5px;
+    font-weight: 600;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    display: flex;
+    justify-content: space-between;
+}
+
+.tweak-label .tweak-val {
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 10px;
+}
+
+.swatch-row {
+    display: flex;
+    gap: 6px;
+}
+
+.swatch {
+    width: 28px;
+    height: 28px;
+    border-radius: 7px;
+    border: 1.5px solid var(--border);
+    cursor: pointer;
+    transition: transform .1s ease, border-color .1s ease;
+}
+
+.swatch:hover {
+    transform: scale(1.06);
+}
+
+.swatch.is-active {
+    border-color: var(--text);
+    box-shadow: 0 0 0 2px var(--bg), 0 0 0 3px currentColor;
+}
+
+.tweak-hint {
+    font-size: 10px;
+    line-height: 1.3;
+    color: var(--text-faint);
+    margin-top: 5px;
+}
+
+.tweak-radio {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    background: var(--surface-2);
+    border: 1px solid var(--border-soft);
+    border-radius: 7px;
+    padding: 2px;
+    gap: 2px;
+}
+
+.tweak-radio button {
+    background: transparent;
+    border: none;
+    color: var(--text-dim);
+    padding: 6px 0;
+    font-family: inherit;
+    font-size: 11px;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: background .1s ease, color .1s ease;
+}
+
+.tweak-radio button.is-active {
+    background: var(--surface-hi);
+    color: var(--text);
+}
+
+/* Four palettes don't fit one 280px row; 2×2 keeps every label whole
+   down to a 360px phone. */
+#tweak-palette {
+    grid-template-columns: repeat(2, 1fr);
+}
+
+.tweak-inks {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 7px;
+    font-size: 11px;
+    color: var(--text-dim);
+}
+
+.tweak-inks:empty {
+    display: none;
+}
+
+.tweak-inks .ink-pair {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.tweak-inks .ink-chip {
+    width: 22px;
+    height: 8px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+}
+
+input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 16px;
+    background: transparent;
+    cursor: pointer;
+}
+
+input[type="range"]::-webkit-slider-runnable-track {
+    height: 4px;
+    background: var(--surface-2);
+    border-radius: 2px;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 14px;
+    height: 14px;
+    background: var(--accent);
+    border-radius: 50%;
+    margin-top: -5px;
+    border: 2px solid var(--bg);
+    cursor: grab;
+}
+
+input[type="range"]::-moz-range-track {
+    height: 4px;
+    background: var(--surface-2);
+    border-radius: 2px;
+}
+
+input[type="range"]::-moz-range-thumb {
+    width: 14px;
+    height: 14px;
+    background: var(--accent);
+    border-radius: 50%;
+    border: 2px solid var(--bg);
+    cursor: grab;
+}
+
+/* ALT PANEL LAYOUT (tweak option) */
+.app.layout-floating {
+    grid-template-columns: 1fr;
+}
+
+.app.layout-floating .sidebar {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    bottom: 12px;
+    width: 304px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-2);
+    overflow: hidden;
+    z-index: 20;
+}
+
+.app.layout-floating .play {
+    padding-left: 332px;
+}
+
+@media (max-width: 1100px) {
+    :root {
+        --sidebar-w: 264px;
+    }
+
+    .pile-row {
+        padding: 6px 10px;
+    }
+}
+
+/* ===== COMPAT BRIDGES ===== */
+/* Guarantee the .hidden toggle (used everywhere by the engine to show/hide
+   overlays, modals, the app shell and buttons) always wins, regardless of
+   when the Tailwind Play CDN injects its own stylesheet. */
+.hidden {
+    display: none !important;
+}
+
+/* identity-based board coloring · Feature 16 */
+.board-half.top {
+    color: var(--p2);
+    background: radial-gradient(ellipse at 50% 0%, var(--half-glow, transparent) 0%, transparent 65%), linear-gradient(180deg, var(--half-2, color-mix(in oklch, var(--p2) 28%, var(--bg))) 0%, var(--half-1, color-mix(in oklch, var(--p2) 8%, var(--bg))) 100%);
+}
+
+.board-half.bottom {
+    color: var(--p1);
+    background: radial-gradient(ellipse at 50% 100%, var(--half-glow, transparent) 0%, transparent 65%), linear-gradient(0deg, var(--half-2, color-mix(in oklch, var(--p1) 28%, var(--bg))) 0%, var(--half-1, color-mix(in oklch, var(--p1) 8%, var(--bg))) 100%);
+}
+
+.board-half.is-p1 {
+    color: var(--p1);
+    --half-1: color-mix(in oklch, var(--p1) 8%, var(--bg));
+    --half-2: color-mix(in oklch, var(--p1) 28%, var(--bg));
+    --half-glow: color-mix(in oklch, var(--p1) 45%, transparent);
+}
+
+.board-half.is-p2 {
+    color: var(--p2);
+    --half-1: color-mix(in oklch, var(--p2) 8%, var(--bg));
+    --half-2: color-mix(in oklch, var(--p2) 28%, var(--bg));
+    --half-glow: color-mix(in oklch, var(--p2) 45%, transparent);
+}
+
+/* ----- Desktop: tighten the opponent (top) half -----
+   The top half reserved as much room as the bottom for the opponent's hand,
+   inkwell and piles, leaving big dead gaps and a cramped battlefield. On
+   desktop we shrink those secondary zones and hand the reclaimed vertical
+   budget to the top field-strip so the cards in play breathe. Scoped to
+   min-width:761px so the mobile (max-width:760px) rules are untouched. */
+@media (min-width: 761px) {
+
+    /* Top half only as tall as it needs; bottom (current player) keeps the spare room. */
+    .board-half.top {
+        flex: 0 1 auto;
+        gap: 2px;
+        padding: 2px 14px;
+    }
+
+    .board-half.bottom {
+        flex: 1 1 auto;
+    }
+
+    /* Opponent hand: short cards, no reserved full-card height. Shrink the
+       actual card vars (not a scale transform) so the row down to the CTL
+       line is genuinely shorter. */
+    .board-half.top .hand {
+        --card-w: calc(52px * var(--card-scale));
+        --card-h: calc(73px * var(--card-scale));
+        min-height: 0;
+        padding: 0;
+    }
+
+    .board-half.top .hand .card-wrap {
+        margin-left: -20px;
+    }
+
+    /* Pull the CTL/meta line up close to the cards (~10px gap). */
+    .board-half.top .hand-wrap {
+        gap: 2px;
+    }
+
+    .board-half.top .hand-meta {
+        transform: scale(0.85);
+        padding: 2px 10px;
+        margin-top: -4px;
+    }
+
+    /* Opponent inkwell / deck / discard row: more compact. */
+    .board-half.top .pile-row {
+        --pile-w: calc(56px * var(--card-scale));
+        --pile-h: calc(78px * var(--card-scale));
+        padding: 2px 10px;
+        gap: 10px;
+    }
+
+    /* Inkwell cards render at full card size and get clipped by the slot;
+       shrink the card vars so they actually fit the smaller ink area. */
+    .board-half.top .inkwell {
+        --card-w: calc(52px * var(--card-scale));
+        --card-h: calc(73px * var(--card-scale));
+    }
+
+    /* Battlefield gets the reclaimed room: grow it and let cards fill it. */
+    .board-half.top .field-strip {
+        flex: 1 1 auto;
+        min-height: calc(var(--card-h) + 24px);
+    }
+
+    .board-half.top .field {
+        height: 100%;
+        align-content: center;
+    }
+}
+
+/* ----- hover-chip stability -----
+   The chips were hard to click because hovering caused layout reflow + the card
+   jumped out from under the cursor (flicker loop). Fix: no margin reflow on hover,
+   no card-level transform jump (keep exerted rotation), bigger chip targets, and a
+   short hide-delay so the pointer can travel from card to chip without losing hover. */
+.hand .card-wrap:hover {
+    transform: translateY(-14px);
+    z-index: 30;
+    margin-right: 0;
+}
+
+/* Kills the hover lift so the card can't slide out from under the cursor.
+   It must not reach rotated cards: `transform: none` would undo their
+   rotation on hover. Testing the *wrap* rather than the card lets it skip
+   locations too — they carry `is-location` but no `exerted` class, so the
+   old `.card:not(.exerted)` form matched them and spun them upright. */
+.card-wrap:not(.exerted):not(.is-location) .card:hover {
+    transform: none;
+    box-shadow: 0 calc(8px * var(--cs)) calc(18px * var(--cs)) calc(-4px * var(--cs)) oklch(0 0 0 / 0.6);
+}
+
+.card-actions {
+    padding: 10px 6px 7px;
+    gap: 5px;
+    transition: opacity .12s ease, transform .12s ease;
+    transition-delay: .04s;
+    /* appear slightly damped */
+}
+
+.card-wrap:hover .card-actions {
+    transition-delay: 0s;
+}
+
+.card-actions .chip {
+    padding: 5px 10px;
+    font-size: 11px;
+}
+
+/* taller invisible hit-bridge under each card so travelling to the chips keeps :hover */
+.card-wrap::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -14px;
+    height: 14px;
+}
+
+/* ===== Touch / mobile support ===== */
+/* Draggable elements must opt out of native touch scrolling so the pointer-event
+   drag shim can form a drag gesture (mandatory on iOS Safari). */
+[draggable="true"] {
+    touch-action: none;
+}
+
+/* Floating clone that follows the finger during a touch drag. */
+.touch-drag-ghost {
+    position: fixed;
+    left: 0;
+    top: 0;
+    pointer-events: none;
+    z-index: 99999;
+    opacity: .85;
+    transform: translate(-50%, -50%) scale(1.05);
+    border-radius: var(--radius-sm);
+    box-shadow: var(--shadow-3);
+    will-change: left, top;
+}
+
+/* Hamburger + sidebar scrim are desktop-hidden; the phone media query reveals them. */
+#mobile-menu-btn {
+    display: none;
+}
+
+.sidebar-scrim {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 39;
+    background: oklch(0.03 0.01 60 / 0.55);
+    opacity: 0;
+    transition: opacity .22s ease;
+    pointer-events: none;
+}
+
+.sidebar-scrim.is-open {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* Per-pile inspect affordance — desktop uses right-click (oncontextmenu); this
+   corner button is the touch path to Inspect Deck / Inspect Discard. Hidden on
+   desktop, revealed in the phone media query. */
+.pile-inspect {
+    display: none;
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    /* above the stacked discard cards, whose z-index is their stack index */
+    z-index: 200;
+    width: 22px;
+    height: 22px;
+    align-items: center;
+    justify-content: center;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--accent-hi);
+    font-size: 11px;
+    cursor: pointer;
+    padding: 0;
+    line-height: 1;
+}
+
+.pile-inspect:active {
+    background: var(--surface-3);
+}
+
+/* ===== Draw-odds pane (Feature 24): right-side hypergeometric probabilities ===== */
+.prob-pane {
+    width: 232px;
+    background: var(--surface);
+    border-left: 1px solid var(--border-soft);
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
+}
+
+.prob-pane.is-collapsed {
+    width: 30px;
+}
+
+.prob-head {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 8px 8px 10px;
+    border-bottom: 1px solid var(--border-soft);
+    flex: none;
+}
+
+.prob-head h3 {
+    margin: 0;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+.prob-toggle {
+    background: none;
+    border: none;
+    color: var(--text-dim);
+    cursor: pointer;
+    font-size: 12px;
+    padding: 2px 4px;
+    line-height: 1;
+}
+
+.prob-toggle:hover {
+    color: var(--text);
+}
+
+.prob-pane.is-collapsed .prob-head {
+    padding: 8px 0;
+    justify-content: center;
+    border-bottom: none;
+}
+
+.prob-pane.is-collapsed .prob-head h3,
+.prob-pane.is-collapsed .prob-cols,
+.prob-pane.is-collapsed .prob-list {
+    display: none;
+}
+
+.prob-cols {
+    display: flex;
+    align-items: center;
+    padding: 4px 10px;
+    font-size: 10px;
+    color: var(--text-faint);
+    border-bottom: 1px solid var(--border-soft);
+    flex: none;
+}
+
+.prob-cols .prob-name {
+    flex: 1;
+}
+
+.prob-count {
+    width: 18px;
+    flex: none;
+    font-family: 'Geist Mono', monospace;
+    font-size: 10px;
+    color: var(--text-faint);
+}
+
+.prob-win {
+    width: 38px;
+    flex: none;
+    background: none;
+    border: none;
+    border-bottom: 1px dashed var(--border-strong);
+    color: var(--text-dim);
+    font-family: 'Geist Mono', monospace;
+    font-size: 10px;
+    text-align: right;
+    padding: 0 0 1px;
+    -moz-appearance: textfield;
+    appearance: textfield;
+}
+
+.prob-win::-webkit-outer-spin-button,
+.prob-win::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.prob-win:focus {
+    outline: none;
+    color: var(--text);
+    border-bottom-color: var(--accent);
+}
+
+.prob-list {
+    flex: 1;
+    overflow-y: auto;
+    min-height: 0;
+    padding: 4px 0;
+}
+
+.prob-row {
+    display: flex;
+    align-items: center;
+    padding: 3px 10px;
+    font-size: 11px;
+    cursor: default;
+}
+
+.prob-row:hover {
+    background: var(--surface-2);
+}
+
+.prob-row .prob-name {
+    flex: 1;
+    color: var(--text-2);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
+}
+
+.prob-row.is-unknown .prob-name {
+    color: var(--text-faint);
+    font-style: italic;
+}
+
+/* No copies left in deck — gray the whole row */
+.prob-row.is-out .prob-name,
+.prob-row.is-out .prob-count,
+.prob-row.is-out .prob-val {
+    color: var(--text-faint);
+    opacity: 0.65;
+}
+
+.prob-val {
+    width: 38px;
+    flex: none;
+    text-align: right;
+    font-family: 'Geist Mono', monospace;
+    font-size: 10.5px;
+    color: var(--text-dim);
+}
+
+.prob-row:not(.is-out) .prob-name+.prob-val {
+    color: var(--text);
+}
+
+.prob-empty {
+    padding: 12px 10px;
+    font-size: 11px;
+    color: var(--text-faint);
+}
+
+/* Mulligan modal odds column (Feature 25) */
+.mull-body-grid {
+    display: flex;
+    gap: 16px;
+    align-items: stretch;
+    min-height: 0;
+}
+
+.mull-hand-col {
+    flex: 1;
+    min-width: 0;
+}
+
+.mull-odds {
+    width: 300px;
+    flex: none;
+    border-left: 1px solid var(--border-soft);
+    padding-left: 12px;
+    display: flex;
+    flex-direction: column;
+    max-height: 62vh;
+}
+
+.mull-odds .prob-list {
+    overflow-y: auto;
+}
+
+/* ===== Phone layout (≤760px): single column, off-canvas sidebar, full-screen modals ===== */
+@media (max-width: 760px) {
+
+    /* One column — the board owns the screen; the sidebar floats over it. */
+    .app {
+        grid-template-columns: 1fr;
+    }
+
+    /* Draw-odds pane is desktop-only */
+    .prob-pane,
+    .mull-odds {
+        display: none;
+    }
+
+    .sidebar {
+        position: fixed;
+        top: var(--topbar-h);
+        left: 0;
+        bottom: 0;
+        width: min(86vw, 320px);
+        z-index: 40;
+        border-right: 1px solid var(--border);
+        box-shadow: var(--shadow-3);
+        transform: translateX(-105%);
+        transition: transform 0.25s cubic-bezier(0.5, 0, 0.2, 1);
+    }
+
+    .sidebar.is-open {
+        transform: translateX(0);
+    }
+
+    .sidebar-scrim {
+        display: block;
+    }
+
+    #mobile-menu-btn {
+        display: inline-flex;
+    }
+
+    /* --- Top bar: fit every control on a narrow header --- */
+    .topbar {
+        grid-template-columns: auto minmax(0, 1fr) auto;
+        padding: 0 6px;
+        gap: 4px;
+    }
+
+    .brand {
+        display: none;
+    }
+
+    /* free the left side; hamburger remains */
+    .topbar-right {
+        gap: 3px;
+    }
+
+    .topbar-right .icon-btn {
+        padding: 6px 7px;
+    }
+
+    .topbar-right .icon-btn span {
+        display: none;
+    }
+
+    /* icon-only buttons */
+    .divider-v {
+        margin: 0 1px;
+    }
+
+    /* Compact the turn indicator — drop the "TURN" word, shrink, truncate the actor name. */
+    .turn-pill {
+        gap: 5px;
+        padding: 4px 9px;
+        font-size: 11px;
+        max-width: 100%;
+        overflow: hidden;
+    }
+
+    .turn-pill .mono {
+        display: none;
+    }
+
+    .turn-pill .turn-actor {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    /* --- Vertical budget: prioritise the bottom (current-player) half --- */
+    .board-half {
+        padding: 2px 6px;
+        flex: 0 1 auto;
+        gap: 2px;
+    }
+
+    .board-half.bottom {
+        flex: 1 1 auto;
+    }
+
+    /* current player gets the spare room */
+    .board-half .board-bg-letter {
+        display: none;
+    }
+
+    /* declutter */
+    .field-strip {
+        min-height: calc(var(--card-h) * 0.55);
+    }
+
+    .field-strip .field {
+        gap: 6px;
+        max-width: 100%;
+        padding: 6px;
+        min-height: calc(var(--card-h) * 0.7);
+    }
+
+    .pile-row {
+        max-width: 100%;
+        gap: 8px;
+        padding: 4px 8px;
+    }
+
+    .hand .card-wrap {
+        margin-left: var(--hand-overlap, -40px);
+    }
+
+    /* Phones: lore lives in each player's bar; the floating badge is hidden. */
+    .lore-badge {
+        display: none;
+    }
+
+    .notes-panel {
+        display: none;
+    }
+
+    .pile-row .pile-num {
+        display: inline;
+    }
+
+    /* Quest / End turn live in the hand tray (it is fixed to the bottom edge). */
+    .mobile-quick-actions {
+        position: absolute;
+        display: flex;
+        pointer-events: none;
+    }
+
+    .mobile-quick-actions .mqa-btn {
+        pointer-events: auto;
+        white-space: nowrap;
+    }
+
+    body.hand-open .mobile-quick-actions {
+        display: none;
+    }
+
+    /* Each player's bar: big lore and ink numbers straight on the bar, ink pips, and
+       mini-card piles (discard shows its top card, deck its count). */
+    .pile-row,
+    .board-half.top .pile-row {
+        display: flex;
+        align-items: center;
+        gap: 0;
+        padding: 4px 6px 4px 12px;
+    }
+
+    /* The ink counter fills the bar between lore and the piles, so the whole
+       stretch is one big target for dropping a card to ink it. */
+    .pile-row .ink-cluster.is-counter {
+        flex: 1 1 auto;
+        align-self: stretch;
+        align-content: center;
+        justify-content: start;
+        margin: -4px 8px -4px 0;
+        border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    }
+
+    .pile-row .pile-cluster {
+        margin-left: auto;
+        gap: 6px;
+    }
+
+    .lore-chip,
+    .pile-row .ink-cluster.is-counter {
+        position: relative;
+        display: grid;
+        grid-template-columns: auto auto;
+        grid-template-areas:
+            "label btns"
+            "value btns";
+        column-gap: 8px;
+        row-gap: 3px;
+        align-items: center;
+        padding: 0 14px 0 0;
+        background: none;
+        border: none;
+    }
+
+    .pile-row .ink-cluster.is-counter {
+        grid-template-columns: auto auto;
+        grid-template-areas:
+            "label label"
+            "value pips";
+        padding: 0 0 0 14px;
+        border-left: 1px solid var(--border-soft);
+    }
+
+    .lore-chip-label,
+    .pile-row .ink-cluster.is-counter::before {
+        grid-area: label;
+        position: static;
+        font-size: 9px;
+        font-weight: 600;
+        line-height: 1;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--text-faint);
+    }
+
+    .pile-row .ink-cluster.is-counter::before { content: 'Ink'; }
+
+    .lore-chip-value,
+    .pile-row .ink-cluster.is-counter .ink-readout {
+        grid-area: value;
+        position: static;
+        transform: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 0;
+        background: none;
+        border: none;
+        font: 700 24px/1 var(--font-mono);
+        font-variant-numeric: tabular-nums;
+        color: var(--text);
+    }
+
+    .board-half.is-p1 .lore-chip-value { color: var(--p1-hi); }
+    .board-half.is-p2 .lore-chip-value { color: var(--p2-hi); }
+
+    .pile-row .inkwell.is-counter {
+        grid-area: pips;
+        height: auto;
+        /* rows of five: 5 × 8px + 4 × 3px */
+        max-width: 52px;
+        flex-wrap: wrap;
+        gap: 3px;
+    }
+
+    .pile-row .ink-pip {
+        width: 8px;
+        height: 9px;
+    }
+
+    /* Ink this turn: a labelled count beside "INK"; your own bar also says when
+       you haven't inked yet. The fresh pips are marked (renderInkCounter). */
+    .pile-row .ink-new {
+        top: -2px;
+        left: 50px;
+        right: auto;
+        padding: 2px 7px;
+        font: 700 10px/1.2 var(--font-mono);
+        letter-spacing: 0.02em;
+        white-space: nowrap;
+    }
+
+    .pile-row .ink-new::after {
+        content: ' inked';
+    }
+
+    .board-half.bottom .pile-row .ink-new.is-zero {
+        display: inline-block;
+        background: none;
+        border: 1px dashed var(--border-strong);
+        color: var(--text-dim);
+    }
+
+    .board-half.bottom .pile-row .ink-new.is-zero::after {
+        content: 'No ink yet';
+    }
+
+    .lore-chip-btns {
+        grid-area: btns;
+        position: static;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .lore-chip-btns button {
+        width: 26px;
+        height: 20px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+        background: var(--surface);
+        border: 1px solid var(--border-soft);
+        border-radius: 6px;
+        color: var(--text-dim);
+        font-size: 12px;
+        line-height: 1;
+        cursor: pointer;
+    }
+
+    /* Piles: small cards. Discard shows its top card, deck its count. */
+    .pile-row .pile {
+        --pile-w: 36px;
+        --pile-h: 50px;
+        width: 36px;
+        height: 50px;
+        border-radius: 5px;
+    }
+
+    .pile-row .pile > .card-wrap {
+        --card-w: 36px;
+        --card-h: 50px;
+        left: 0 !important;
+        top: 0 !important;
+    }
+
+    .pile-row .pile .pile-label { display: none; }
+
+    .pile-row .pile .pile-count {
+        top: 34%;
+        left: 50%;
+        bottom: auto;
+        right: auto;
+        transform: translate(-50%, -50%);
+        padding: 0;
+        background: none;
+        border: none;
+        font: 700 14px/1 var(--font-mono);
+    }
+
+    .pile-row .pile-num {
+        position: absolute;
+        right: -6px;
+        bottom: -5px;
+        z-index: 201;
+        min-width: 18px;
+        padding: 2px 4px;
+        border-radius: 999px;
+        background: var(--surface-3);
+        border: 1px solid var(--border);
+        font: 700 10px/1 var(--font-mono);
+        text-align: center;
+        color: var(--text);
+    }
+
+    .pile-row .pile-inspect {
+        top: 2px;
+        left: 2px;
+        width: 18px;
+        height: 18px;
+        font-size: 9px;
+    }
+
+    .pile-row .pile.deck .pile-inspect {
+        top: auto;
+        bottom: 2px;
+        left: 50%;
+        transform: translateX(-50%);
+    }
+
+    /* Small phones: smaller numbers and tighter spacing so 10/10 ink still fits. */
+    @media (max-width: 360px) {
+        .lore-chip-value,
+        .pile-row .ink-cluster.is-counter .ink-readout {
+            font-size: 20px;
+        }
+
+        .lore-chip,
+        .pile-row .ink-cluster.is-counter {
+            column-gap: 6px;
+        }
+
+        .lore-chip {
+            padding-right: 10px;
+        }
+
+        .pile-row .ink-cluster.is-counter {
+            padding-left: 10px;
+        }
+
+        .pile-row .ink-new {
+            left: 40px;
+        }
+
+        .pile-row .ink-readout .ink-icon {
+            display: none;
+        }
+    }
+
+    /* Quest / End turn flank the hand label, just above the fan. */
+    body #bottom-board .hand-wrap::before {
+        content: 'Hand · ' attr(data-count);
+        bottom: 74px;
+    }
+
+    .mobile-quick-actions {
+        left: 10px;
+        right: 10px;
+        bottom: 66px;
+        justify-content: space-between;
+    }
+
+    .mobile-quick-actions .mqa-btn {
+        height: 36px;
+        padding: 0 16px;
+        gap: 8px;
+        border-radius: 999px;
+        font-size: 14px;
+        box-shadow: var(--shadow-3);
+    }
+
+    .mobile-quick-actions .mqa-quest {
+        background: var(--bg);
+        border-color: var(--border);
+        color: var(--text);
+    }
+
+    .mobile-quick-actions .mqa-count {
+        color: var(--text-faint);
+    }
+
+    /* --- Opponent (top) hand: collapsed by default; only the count/peek button shows.
+   Tapping "Reveal" (App.togglePeek → body.opp-hand-revealed) expands it. --- */
+    .hand-meta {
+        display: none;
+    }
+
+    /* hide the CTL/BCR/RDS/LVI hand-potential strip on phones */
+    .board-half.top .hand {
+        max-height: 0;
+        min-height: 0;
+        padding: 0;
+        overflow: hidden;
+        transform: none;
+        transition: max-height .25s ease;
+    }
+
+    body.opp-hand-revealed .board-half.top .hand {
+        max-height: 210px;
+        overflow: visible;
+    }
+
+    /* Neutralise the desktop "fly-down" reveal transform so peeked cards stay in flow. */
+    .board-half.top #top-hand {
+        transform: none !important;
+    }
+
+    /* Touch path to inspect piles / open the deck menu. */
+    /* 24px, not larger: the discard pile is only 56px wide and the top discard
+       card fills it — an oversized button swallows taps meant for that card
+       (its menu is Play / Return to Hand / Move to Top or Bottom of Deck). */
+    .pile-inspect {
+        display: inline-flex;
+        width: 24px;
+        height: 24px;
+        font-size: 12px;
+    }
+
+    /* Context menu is touch-driven here (deck menu carries Shuffle Deck),
+       so the rows need real tap targets. */
+    .ctx-item {
+        padding: 11px 12px;
+        font-size: 14px;
+    }
+
+    /* Full-screen, scrollable modals. */
+    .modal-card {
+        width: 100vw;
+        max-width: 100vw;
+        max-height: 100dvh;
+        border-radius: 0;
+    }
+
+    .modal-card.wide {
+        width: 100vw;
+        height: 100dvh;
+    }
+
+    .modal-backdrop {
+        padding: 0;
+    }
+
+    .card-grid {
+        grid-template-columns: repeat(auto-fill, minmax(84px, 1fr));
+    }
+
+    /* Home on a phone: one column, thumb-sized targets */
+    .home-wrap {
+        padding: 14px 14px 32px;
+        gap: 16px;
+    }
+
+    .home-hd .home-ver {
+        display: none;
+    }
+
+    .home-lede h2 {
+        margin-top: 6px;
+    }
+
+    .well textarea {
+        min-height: 130px;
+        font-size: 16px;
+        /* below 16px iOS Safari zooms the whole page on focus */
+    }
+
+    .well-ft .hint {
+        flex-basis: 100%;
+    }
+
+    .well-ft .btn {
+        flex: 1 1 0;
+        padding: 7px 6px;
+        font-size: 12px;
+    }
+
+    .home-lower {
+        grid-template-columns: 1fr;
+    }
+
+    .readout .acts {
+        width: 100%;
+    }
+
+    .readout .acts .btn {
+        flex: 1 1 auto;
+    }
+
+    .start-row .start-btn {
+        flex: 1 1 100%;
+    }
+
+    .home-page .btn,
+    .home-page .chip,
+    .home-page .rec,
+    .lib-drawer .btn,
+    .lib-drawer .home-tab {
+        min-height: 44px;
+    }
+
+    .lib-drawer .input,
+    .lib-drawer .dojo-textarea {
+        font-size: 16px;
+    }
+
+    .lib-drawer .input {
+        min-height: 44px;
+    }
+
+    /* Library rows: actions drop under the title on a phone */
+    .lib-row {
+        flex-wrap: wrap;
+    }
+
+    .lib-main {
+        flex-basis: 100%;
+    }
+
+    .lib-actions {
+        flex-wrap: wrap;
+        width: 100%;
+        justify-content: flex-end;
+    }
+
+    .lib-actions .icon-btn {
+        min-height: 40px;
+        min-width: 40px;
+        justify-content: center;
+    }
+
+    /* Topbar on a phone: keep Save, drop the title field and Copy
+       (rename lives in the Library, Copy in the Timelines drawer) */
+    .session-ctl .session-title,
+    .session-ctl .session-copy {
+        display: none;
+    }
+
+    .session-ctl {
+        margin-left: 0;
+    }
+}
+
+/* =====================================================================
+   Feature 37 · Card interaction redesign
+   Option A field controls (damage stepper, willpower track, lethal),
+   challenge mode + forecast, touch card drawer, phone hand fan, ink
+   counter + inkwell panel, and the short card animations.
+   ===================================================================== */
+
+/* Things drawn on the wrap (outside .card) need the card's scale too. */
+.card-wrap {
+    --cs: calc(var(--card-scale, 1) * var(--field-scale, 1));
+    --badge-scale: clamp(0.6, var(--cs), 1);
+}
+
+/* ----- Option A: hover controls on field cards ----- */
+.card-ctrl {
+    position: absolute;
+    inset: 0;
+    /* above `.card:hover` (z-index 20) so the hovered card can't swallow the clicks */
+    z-index: 22;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity .12s ease .04s;
+}
+
+.card-wrap:hover .card-ctrl,
+.card-wrap.is-hovered .card-ctrl,
+.card-wrap:focus-within .card-ctrl {
+    opacity: 1;
+    transition-delay: 0s;
+}
+
+.card-wrap:hover .card-ctrl>*,
+.card-wrap.is-hovered .card-ctrl>*,
+.card-wrap:focus-within .card-ctrl>* {
+    pointer-events: auto;
+}
+
+.dmg-step {
+    position: absolute;
+    left: 50%;
+    top: calc(5px * var(--badge-scale));
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    height: calc(26px * var(--badge-scale));
+    padding: 0 2px;
+    border-radius: 999px;
+    background: oklch(0.13 0.008 60 / 0.94);
+    border: 1px solid var(--border-strong);
+    box-shadow: 0 6px 14px -6px oklch(0 0 0 / 0.9);
+    white-space: nowrap;
+}
+
+.dmg-step button {
+    width: calc(24px * var(--badge-scale));
+    height: calc(22px * var(--badge-scale));
+    padding: 0;
+    border: 0;
+    border-radius: 999px;
+    background: none;
+    color: var(--text);
+    font: 600 calc(15px * var(--badge-scale)) / 1 var(--font-mono);
+    cursor: pointer;
+}
+
+.dmg-step button:hover {
+    background: var(--danger);
+    color: #fff;
+}
+
+.dmg-step button.heal:hover {
+    background: var(--ok);
+    color: oklch(0.16 0.02 155);
+}
+
+.dmg-step .rd {
+    min-width: calc(30px * var(--badge-scale));
+    text-align: center;
+    font: 700 calc(11px * var(--badge-scale)) var(--font-mono);
+    color: var(--text);
+}
+
+.dmg-step .rd small {
+    font-size: 0.8em;
+    font-weight: 500;
+    color: var(--text-dim);
+}
+
+/* Verbs are small icon buttons in a column down the right edge (a row along
+   the bottom on landscape cards), so most of the face stays free to click
+   and drag — dojo cards are ~80px wide, too narrow for text chips. */
+.card-verbs {
+    position: absolute;
+    right: calc(3px * var(--badge-scale));
+    top: calc(34px * var(--badge-scale));
+    display: flex;
+    flex-direction: column;
+    gap: calc(3px * var(--badge-scale));
+}
+
+.card-wrap.exerted .card-verbs,
+.card-wrap.is-location .card-verbs {
+    top: auto;
+    right: 0;
+    left: 0;
+    bottom: calc(3px * var(--badge-scale));
+    flex-direction: row;
+    justify-content: center;
+}
+
+.card-verbs .chip {
+    width: calc(20px * var(--badge-scale));
+    height: calc(20px * var(--badge-scale));
+    padding: 0;
+    display: grid;
+    place-items: center;
+    background: oklch(0.13 0.008 60 / 0.92);
+    color: var(--text);
+    border: 1px solid var(--border-strong);
+    border-radius: calc(6px * var(--badge-scale));
+    box-shadow: 0 4px 10px -4px oklch(0 0 0 / 0.9);
+    cursor: pointer;
+    transition: background .1s ease, color .1s ease, border-color .1s ease;
+}
+
+.card-verbs .chip svg {
+    width: calc(12px * var(--badge-scale));
+    height: calc(12px * var(--badge-scale));
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2.4;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.card-verbs .chip:hover {
+    background: var(--accent);
+    color: oklch(0.16 0.02 60);
+    border-color: var(--accent-hi);
+}
+
+.card-verbs .chip.is-danger:hover {
+    background: var(--danger);
+    color: #fff;
+    border-color: var(--danger);
+}
+
+.card-verbs .chip.is-challenge {
+    background: color-mix(in oklch, var(--danger) 45%, var(--surface-2));
+    border-color: var(--danger);
+}
+
+.card-verbs .chip.is-challenge:hover {
+    background: var(--danger);
+    color: #fff;
+}
+
+/* willpower track: one segment per point, click a segment to set damage */
+.dmg-track {
+    position: absolute;
+    left: 2px;
+    right: 2px;
+    top: calc(100% + 2px);
+    height: calc(12px * var(--badge-scale));
+    display: flex;
+    gap: 2px;
+    z-index: 21;
+}
+
+.dmg-pip {
+    position: relative;
+    flex: 1;
+    min-width: 0;
+    padding: 0;
+    border: 0;
+    background: none;
+    cursor: pointer;
+}
+
+.dmg-pip::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 50%;
+    height: calc(4px * var(--badge-scale));
+    transform: translateY(-50%);
+    border-radius: 2px;
+    background: oklch(1 0 0 / 0.16);
+    transition: background .2s ease, height .15s ease;
+}
+
+.dmg-pip.on::before {
+    background: var(--danger);
+}
+
+.dmg-pip.last::before {
+    box-shadow: inset 0 0 0 1px color-mix(in oklch, var(--danger) 75%, transparent);
+}
+
+.dmg-pip.ghost::before {
+    height: calc(6px * var(--badge-scale));
+    background: repeating-linear-gradient(135deg, var(--danger) 0 3px, oklch(0.3 0.05 25) 3px 6px);
+}
+
+.dmg-pip:hover::before {
+    height: calc(7px * var(--badge-scale));
+    background: color-mix(in oklch, var(--danger) 70%, var(--surface-3));
+}
+
+.dmg-pip:focus-visible {
+    outline: 2px solid var(--accent-hi);
+    outline-offset: 1px;
+    border-radius: 2px;
+}
+
+/* lethal: damage ≥ willpower — pulse + a one-tap Banish on the bottom edge */
+.card-wrap.is-lethal .card {
+    animation: cardLethal 1.5s ease-in-out infinite;
+}
+
+@keyframes cardLethal {
+
+    0%,
+    100% {
+        box-shadow: 0 0 0 2px oklch(0.62 0.22 25 / 0.95), 0 calc(4px * var(--cs)) calc(10px * var(--cs)) calc(-2px * var(--cs)) oklch(0 0 0 / 0.55);
+    }
+
+    50% {
+        box-shadow: 0 0 0 4px oklch(0.62 0.22 25 / 0.3), 0 0 22px 2px oklch(0.62 0.22 25 / 0.45);
+    }
+}
+
+.lethal-pill {
+    position: absolute;
+    left: 50%;
+    bottom: 0;
+    transform: translate(-50%, 50%);
+    z-index: 23;
+    padding: calc(3px * var(--badge-scale)) calc(9px * var(--badge-scale));
+    border-radius: 999px;
+    border: 1px solid oklch(0.66 0.21 25);
+    background: oklch(0.2 0.05 25);
+    color: oklch(0.86 0.13 25);
+    font: 700 calc(9.5px * var(--badge-scale)) var(--font-mono);
+    letter-spacing: 0.08em;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.lethal-pill:hover {
+    background: var(--danger);
+    color: #fff;
+}
+
+.card-wrap:hover .lethal-pill,
+.card-wrap.is-hovered .lethal-pill {
+    display: none;
+}
+
+/* inline damage stepper inside the field-card context menu */
+.ctx-stepper {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 3px 4px 3px 10px;
+    font-size: 12.5px;
+    color: var(--text-2);
+}
+
+.ctx-step-box {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: var(--bg);
+    padding: 1px;
+}
+
+.ctx-stepper .ctx-step-btn {
+    width: 30px;
+    height: 26px;
+    padding: 0;
+    justify-content: center;
+    border-radius: 999px;
+    font: 600 15px var(--font-mono);
+    color: var(--text);
+}
+
+.ctx-step-val {
+    min-width: 38px;
+    text-align: center;
+    font: 700 12px var(--font-mono);
+    color: var(--text);
+}
+
+/* ----- short card animations (state changes re-render the board, so
+   each effect is a class the next build applies once) ----- */
+.fx-float {
+    position: absolute;
+    left: 50%;
+    top: 30%;
+    z-index: 12;
+    pointer-events: none;
+    font: 700 calc(18px * var(--badge-scale)) var(--font-mono);
+    text-shadow: 0 2px 8px oklch(0 0 0 / 0.9);
+    white-space: nowrap;
+    transform: translate(-50%, 0);
+    opacity: 0;
+    animation: fxFloat .95s ease-out;
+}
+
+.fx-float.is-hit {
+    color: oklch(0.74 0.2 25);
+}
+
+.fx-float.is-heal {
+    color: oklch(0.82 0.15 155);
+}
+
+.fx-float.is-quest {
+    color: var(--lvi);
+}
+
+.fx-float.is-info {
+    color: var(--text);
+    font-size: calc(13px * var(--badge-scale));
+}
+
+@keyframes fxFloat {
+    0% {
+        opacity: 0;
+        transform: translate(-50%, 10px) scale(0.7);
+    }
+
+    15% {
+        opacity: 1;
+        transform: translate(-50%, 0) scale(1.1);
+    }
+
+    100% {
+        opacity: 0;
+        transform: translate(-50%, -46px) scale(1);
+    }
+}
+
+.card-wrap.fx-hit .card {
+    animation: fxShake .42s cubic-bezier(.36, .07, .19, .97);
+}
+
+.card-wrap.exerted.fx-hit .card,
+.card-wrap.is-location.fx-hit .card {
+    animation: fxShakeRot .42s cubic-bezier(.36, .07, .19, .97);
+}
+
+/* a real element, not ::after — drying cards already use .card::after */
+.fx-flash {
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    z-index: 4;
+    opacity: 0;
+    animation: fxFlash .5s ease-out;
+}
+
+.fx-flash.is-hit {
+    background: oklch(0.62 0.22 25);
+}
+
+.fx-flash.is-heal {
+    background: oklch(0.75 0.15 155);
+}
+
+@keyframes fxFlash {
+    from {
+        opacity: 0.55;
+    }
+
+    to {
+        opacity: 0;
+    }
+}
+
+@keyframes fxShake {
+
+    0%,
+    100% {
+        translate: 0 0;
+    }
+
+    20% {
+        translate: -5px 0;
+    }
+
+    40% {
+        translate: 4px 0;
+    }
+
+    60% {
+        translate: -3px 0;
+    }
+
+    80% {
+        translate: 2px 0;
+    }
+}
+
+@keyframes fxShakeRot {
+
+    0%,
+    100% {
+        translate: 0 0;
+    }
+
+    20% {
+        translate: 0 -5px;
+    }
+
+    40% {
+        translate: 0 4px;
+    }
+
+    60% {
+        translate: 0 -3px;
+    }
+
+    80% {
+        translate: 0 2px;
+    }
+}
+
+.card-wrap.fx-hit .damage-counter,
+.card-wrap.fx-heal .damage-counter {
+    animation: fxPop .45s cubic-bezier(.3, 1.6, .5, 1);
+}
+
+@keyframes fxPop {
+    from {
+        scale: 1.7;
+    }
+
+    to {
+        scale: 1;
+    }
+}
+
+.card-wrap.fx-exert .card {
+    animation: fxExert .34s cubic-bezier(.3, 1.35, .5, 1);
+}
+
+@keyframes fxExert {
+    from {
+        transform: translate(-50%, -50%) rotate(0deg);
+    }
+
+    to {
+        transform: translate(-50%, -50%) rotate(90deg);
+    }
+}
+
+.card-wrap.fx-ready .card {
+    animation: fxReady .34s cubic-bezier(.3, 1.35, .5, 1);
+}
+
+@keyframes fxReady {
+    from {
+        transform: rotate(90deg);
+    }
+
+    to {
+        transform: none;
+    }
+}
+
+.card-wrap.fx-quest {
+    animation: fxQuest .55s cubic-bezier(.3, 1.4, .5, 1);
+}
+
+@keyframes fxQuest {
+
+    0%,
+    100% {
+        translate: 0 0;
+    }
+
+    35% {
+        translate: 0 -14px;
+    }
+}
+
+.card-wrap.fx-arrive,
+.card-wrap.fx-shift {
+    animation: fxArrive .45s cubic-bezier(.3, 1.4, .5, 1);
+}
+
+@keyframes fxArrive {
+    from {
+        opacity: 0;
+        translate: 0 40px;
+        scale: 0.85;
+    }
+
+    to {
+        opacity: 1;
+        translate: 0 0;
+        scale: 1;
+    }
+}
+
+.card-wrap.fx-leave {
+    animation: fxLeave .26s ease-in forwards;
+    pointer-events: none;
+}
+
+@keyframes fxLeave {
+    to {
+        opacity: 0;
+        translate: 0 18px;
+        scale: 0.85;
+        filter: grayscale(1);
+    }
+}
+
+/* ----- Challenge mode ----- */
+body.challenge-mode .card-ctrl,
+body.challenge-mode .lethal-pill {
+    display: none;
+}
+
+body.challenge-mode .dmg-track {
+    pointer-events: none;
+}
+
+body.challenge-mode .board-half {
+    box-shadow: inset 0 0 0 2px oklch(0.62 0.21 25 / 0.45);
+}
+
+body.challenge-mode .card-wrap.cm-mine .card {
+    cursor: grab;
+}
+
+body.challenge-mode .card-wrap.cm-mine:hover .card {
+    box-shadow: 0 0 0 2px oklch(0.95 0.01 60 / 0.75), 0 10px 20px -8px oklch(0 0 0 / 0.8);
+}
+
+.card-wrap.cm-attacker {
+    translate: 0 -8px;
+    z-index: 25;
+}
+
+.card-wrap.cm-attacker .card {
+    box-shadow: 0 0 0 2px oklch(0.97 0.01 60), 0 16px 30px -8px oklch(0 0 0 / 0.9) !important;
+}
+
+.card-wrap.cm-target .card {
+    cursor: crosshair;
+    box-shadow: 0 0 0 2px oklch(0.62 0.21 25 / 0.75), 0 0 16px 0 oklch(0.6 0.22 25 / 0.3);
+}
+
+.card-wrap.cm-target.is-hovered .card,
+.card-wrap.cm-target:hover .card {
+    box-shadow: 0 0 0 3px oklch(0.7 0.22 25), 0 0 28px 2px oklch(0.6 0.22 25 / 0.55);
+}
+
+.card-wrap.cm-wait .card {
+    filter: brightness(0.62);
+}
+
+.card-wrap.cm-doom .card::before {
+    content: 'BANISHED';
+    position: absolute;
+    inset: 0;
+    z-index: 5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: inherit;
+    background: repeating-linear-gradient(135deg, oklch(0.55 0.2 25 / 0.42) 0 8px, oklch(0.2 0.05 25 / 0.35) 8px 16px);
+    box-shadow: inset 0 0 0 2px oklch(0.65 0.21 25);
+    font: 700 calc(10px * var(--badge-scale)) var(--font-mono);
+    letter-spacing: 0.12em;
+    color: oklch(0.9 0.1 25);
+    text-shadow: 0 1px 4px oklch(0 0 0 / 0.9);
+}
+
+.cm-badge {
+    position: absolute;
+    left: 50%;
+    bottom: calc(100% + 8px);
+    transform: translateX(-50%);
+    z-index: 30;
+    min-width: calc(96px * var(--badge-scale));
+    padding: 4px 8px 5px;
+    border-radius: 8px;
+    background: oklch(0.13 0.008 60 / 0.97);
+    border: 1px solid var(--border-strong);
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    text-align: center;
+    pointer-events: none;
+    white-space: nowrap;
+    box-shadow: 0 10px 22px -10px oklch(0 0 0 / 0.9);
+}
+
+.cm-badge b {
+    font: 700 calc(10.5px * var(--badge-scale)) var(--font-mono);
+}
+
+.cm-badge span {
+    font: 500 calc(10px * var(--badge-scale)) var(--font-mono);
+    color: var(--text-2);
+}
+
+.cm-badge i {
+    font: 500 calc(9px * var(--badge-scale)) var(--font-mono);
+    font-style: normal;
+    color: var(--lvi);
+}
+
+.cm-badge.is-win,
+.chal-fc.is-win {
+    border-color: oklch(0.62 0.12 155);
+}
+
+.cm-badge.is-win b,
+.chal-fc.is-win .o {
+    color: oklch(0.82 0.14 155);
+}
+
+.cm-badge.is-trade,
+.chal-fc.is-trade {
+    border-color: oklch(0.7 0.14 70);
+}
+
+.cm-badge.is-trade b,
+.chal-fc.is-trade .o {
+    color: oklch(0.86 0.14 70);
+}
+
+.cm-badge.is-lose,
+.chal-fc.is-lose {
+    border-color: oklch(0.62 0.21 25);
+}
+
+.cm-badge.is-lose b,
+.chal-fc.is-lose .o {
+    color: oklch(0.8 0.17 25);
+}
+
+.chal-banner {
+    position: fixed;
+    left: 50%;
+    top: calc(var(--topbar-h, 52px) + 8px);
+    transform: translateX(-50%);
+    z-index: 60;
+    display: none;
+    align-items: center;
+    gap: 12px;
+    max-width: calc(100vw - 16px);
+    padding: 5px 5px 5px 14px;
+    border-radius: 999px;
+    background: var(--surface);
+    border: 1px solid oklch(0.62 0.21 25 / 0.65);
+    box-shadow: var(--shadow-3);
+    font-size: 13px;
+    color: var(--text-2);
+}
+
+body.challenge-mode .chal-banner {
+    display: flex;
+}
+
+.chal-banner .cb-key {
+    font: 700 10px var(--font-mono);
+    letter-spacing: 0.14em;
+    color: oklch(0.78 0.17 25);
+    white-space: nowrap;
+}
+
+.chal-banner .cb-text b {
+    color: var(--text);
+    font-weight: 600;
+}
+
+.chal-banner .cb-seg {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    padding: 2px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--bg);
+}
+
+.chal-banner .cb-seg span {
+    font: 600 9.5px var(--font-mono);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-faint);
+    padding: 0 5px;
+}
+
+.chal-banner .cb-seg button {
+    height: 26px;
+    padding: 0 9px;
+    border: 0;
+    border-radius: 6px;
+    background: none;
+    color: var(--text-2);
+    font: 500 12px var(--font-sans);
+    cursor: pointer;
+}
+
+.chal-banner .cb-seg button.is-active {
+    background: var(--surface-3);
+    color: var(--text);
+}
+
+.chal-banner .cb-done {
+    height: 32px;
+    padding: 0 12px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: var(--surface-2);
+    color: var(--text);
+    font: 500 12.5px var(--font-sans);
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.chal-banner .cb-done:hover {
+    background: var(--surface-3);
+}
+
+#btn-challenge-mode.is-active {
+    background: oklch(0.55 0.2 25);
+    border-color: oklch(0.66 0.21 25);
+    color: #fff;
+}
+
+/* the forecast: Light = one pill over the target, Full = a card beside it */
+.chal-fc {
+    position: fixed;
+    z-index: 9998;
+    display: none;
+    pointer-events: none;
+    background: oklch(0.13 0.008 60 / 0.97);
+    border: 1px solid var(--border-strong);
+    box-shadow: 0 14px 30px -12px oklch(0 0 0 / 0.9);
+    color: var(--text-2);
+}
+
+.chal-fc.is-light {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 11px;
+    border-radius: 999px;
+    transform: translate(-50%, -100%);
+    white-space: nowrap;
+    font: 600 11.5px var(--font-mono);
+}
+
+.chal-fc.is-full {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    width: 236px;
+    padding: 10px 12px 12px;
+    border-radius: 12px;
+    border-color: oklch(0.62 0.21 25 / 0.7);
+}
+
+.chal-fc .o {
+    font-weight: 700;
+    color: var(--text);
+}
+
+.chal-fc .w {
+    color: var(--lvi);
+    font-weight: 500;
+}
+
+.chal-fc .fk {
+    font: 600 9.5px var(--font-mono);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: oklch(0.78 0.17 25);
+}
+
+.chal-fc .frow {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 2px 8px;
+    align-items: baseline;
+}
+
+.chal-fc .fname {
+    font: 650 13px var(--font-sans);
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.chal-fc .fnum {
+    font: 600 12px var(--font-mono);
+    color: var(--text);
+}
+
+.chal-fc .ftag {
+    grid-column: 1 / -1;
+    font: 700 10px var(--font-mono);
+    letter-spacing: 0.1em;
+}
+
+.chal-fc .ftag.dies {
+    color: oklch(0.74 0.19 25);
+}
+
+.chal-fc .ftag.lives {
+    color: oklch(0.78 0.12 155);
+}
+
+.chal-fc .fwarn {
+    font-size: 11.5px;
+    line-height: 1.4;
+    color: var(--lvi);
+}
+
+/* ----- Bottom sheets: card drawer (touch) + inkwell panel on phones ----- */
+.sheet-scrim {
+    position: fixed;
+    inset: 0;
+    z-index: 70;
+    background: oklch(0.05 0.005 60 / 0.5);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .2s ease;
+}
+
+.sheet-scrim.is-open {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.card-sheet {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 71;
+    max-width: 560px;
+    margin: 0 auto;
+    max-height: 86vh;
+    overflow: auto;
+    padding: 8px 16px calc(18px + env(safe-area-inset-bottom, 0px));
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    border-radius: 18px 18px 0 0;
+    background: var(--surface);
+    border-top: 1px solid var(--border-strong);
+    box-shadow: 0 -16px 40px -12px oklch(0 0 0 / 0.9);
+    transform: translateY(105%);
+    visibility: hidden;
+    transition: transform .3s cubic-bezier(.2, 1.05, .4, 1), visibility 0s linear .3s;
+}
+
+.card-sheet.is-open {
+    transform: none;
+    visibility: visible;
+    transition: transform .3s cubic-bezier(.2, 1.05, .4, 1), visibility 0s;
+}
+
+.cs-grab {
+    align-self: center;
+    width: 40px;
+    height: 4px;
+    border-radius: 2px;
+    background: var(--border-strong);
+    flex: none;
+}
+
+.cs-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.cs-titles {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+}
+
+.cs-title {
+    font-size: 17px;
+    font-weight: 650;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.cs-sub {
+    font: 500 11.5px var(--font-mono);
+    color: var(--text-dim);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.cs-icon {
+    width: 44px;
+    height: 44px;
+    flex: none;
+    border: 0;
+    border-radius: 10px;
+    background: none;
+    color: var(--text-2);
+    font-size: 17px;
+    cursor: pointer;
+}
+
+.cs-label {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    font: 600 9.5px var(--font-mono);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-faint);
+}
+
+.cs-label b {
+    font: 700 14px var(--font-mono);
+    letter-spacing: 0;
+    text-transform: none;
+    color: var(--text);
+}
+
+.cs-label b.is-lethal {
+    color: oklch(0.78 0.18 25);
+}
+
+.cs-segs {
+    display: flex;
+    gap: 4px;
+}
+
+.cs-seg {
+    flex: 1;
+    min-width: 0;
+    height: 44px;
+    padding: 0;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--surface-2);
+    color: var(--text-dim);
+    font: 600 13px var(--font-mono);
+    cursor: pointer;
+}
+
+.cs-seg.on {
+    background: var(--danger);
+    border-color: var(--danger);
+    color: #fff;
+}
+
+.cs-seg.last {
+    border-color: color-mix(in oklch, var(--danger) 80%, transparent);
+}
+
+.cs-row {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+}
+
+.cs-acts {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 6px;
+}
+
+.cs-btn {
+    min-height: 48px;
+    padding: 0 6px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: var(--surface-2);
+    color: var(--text);
+    font: 600 13px var(--font-sans);
+    cursor: pointer;
+}
+
+.cs-btn.big {
+    font: 600 16px var(--font-mono);
+}
+
+.cs-btn.is-challenge {
+    background: color-mix(in oklch, var(--danger) 40%, var(--surface-2));
+    border-color: var(--danger);
+}
+
+.cs-btn.is-danger {
+    color: oklch(0.8 0.16 25);
+}
+
+.cs-btn.is-primary {
+    background: var(--accent);
+    border-color: var(--accent-hi);
+    color: oklch(0.16 0.02 60);
+}
+
+.cs-btn.is-short {
+    background: oklch(0.45 0.13 50);
+    border-color: oklch(0.55 0.13 50);
+    color: #fff;
+}
+
+.cs-btn:disabled {
+    opacity: 0.35;
+    cursor: default;
+}
+
+.cs-more {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.cs-more .cs-btn {
+    flex: 1 1 auto;
+    min-height: 40px;
+    border-radius: 999px;
+    background: none;
+    font-weight: 500;
+    font-size: 12.5px;
+    color: var(--text-2);
+}
+
+/* ----- Ink counter + inkwell panel ----- */
+.ink-cluster.is-counter {
+    cursor: pointer;
+    gap: 10px;
+}
+
+.ink-cluster.is-counter .ink-readout {
+    font-size: 16px;
+    font-weight: 700;
+    padding: 6px 12px;
+    position: relative;
+}
+
+.ink-cluster.is-counter:hover .ink-readout {
+    border-color: var(--accent-dim);
+}
+
+.inkwell.is-counter {
+    display: flex;
+    flex-wrap: wrap;
+    align-content: center;
+    align-items: center;
+    gap: 4px;
+    overflow: visible;
+}
+
+.ink-pip {
+    width: 11px;
+    height: 12px;
+    flex: none;
+    background: var(--bcr);
+    clip-path: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%);
+}
+
+.ink-pip.used {
+    background: oklch(1 0 0 / 0.16);
+}
+
+/* Inked this turn: a bright core marks the new pips. */
+.ink-pip.fresh {
+    background: radial-gradient(circle, oklch(0.97 0.03 230) 0 34%, var(--bcr) 38%);
+}
+
+.ink-pip.fresh.used {
+    background: radial-gradient(circle, oklch(0.97 0.03 230) 0 34%, oklch(1 0 0 / 0.16) 38%);
+}
+
+.ink-new.is-zero {
+    display: none;
+}
+
+.ink-new {
+    position: absolute;
+    top: -8px;
+    right: -10px;
+    padding: 1px 6px;
+    border-radius: 999px;
+    background: var(--bcr);
+    color: oklch(0.16 0.02 240);
+    font: 700 9.5px var(--font-mono);
+}
+
+.ink-hint {
+    font: 500 10.5px var(--font-mono);
+    color: var(--text-faint);
+    white-space: nowrap;
+}
+
+.ink-panel {
+    position: fixed;
+    z-index: 72;
+    width: 360px;
+    max-height: 70vh;
+    overflow: auto;
+    padding: 12px;
+    display: none;
+    flex-direction: column;
+    gap: 10px;
+    border-radius: 14px;
+    background: var(--surface);
+    border: 1px solid var(--border-strong);
+    box-shadow: var(--shadow-3);
+}
+
+.ink-panel.is-open {
+    display: flex;
+}
+
+/* Phones open this sheet from the ink counter: the count with −/+ and Ready all,
+   the inkwell as small cards (backs for face-down ink, art for this turn's), and
+   one action bar for the card you tap. */
+.ip-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.ip-count,
+.ii-count {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 2px;
+    font: 600 15px var(--font-mono);
+    color: var(--text-dim);
+}
+
+.ip-count b,
+.ii-count b {
+    font-size: 22px;
+    line-height: 1;
+    color: var(--bcr);
+}
+
+.ip-count small,
+.ii-count small {
+    margin-left: 5px;
+    font-size: 9.5px;
+    color: var(--text-faint);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+}
+
+.ip-fresh {
+    padding: 2px 7px;
+    border-radius: 999px;
+    background: var(--bcr);
+    color: oklch(0.16 0.02 240);
+    font: 700 10px var(--font-mono);
+    white-space: nowrap;
+}
+
+.ip-step,
+.ii-step {
+    display: inline-flex;
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    overflow: hidden;
+}
+
+.ip-step {
+    margin-left: auto;
+}
+
+.ip-step button,
+.ii-step button {
+    width: 34px;
+    min-height: 32px;
+    border: 0;
+    background: var(--surface-3);
+    color: var(--text);
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.ip-step button + button,
+.ii-step button + button {
+    border-left: 1px solid var(--border);
+}
+
+.ip-btn,
+.ii-all {
+    min-height: 32px;
+    padding: 0 10px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--surface-3);
+    color: var(--text);
+    font: 600 12px var(--font-sans);
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.ip-step button:disabled,
+.ii-step button:disabled,
+.ip-btn:disabled,
+.ii-all:disabled {
+    opacity: 0.35;
+    cursor: default;
+}
+
+.ip-x {
+    width: 30px;
+    height: 30px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 0;
+    border-radius: 8px;
+    background: none;
+    color: var(--text-dim);
+    font-size: 15px;
+    cursor: pointer;
+}
+
+.ip-x:hover {
+    background: var(--surface-3);
+    color: var(--text);
+}
+
+.ip-tiles {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(40px, 1fr));
+    gap: 6px;
+}
+
+/* One inkwell card, in the sheet and in the desktop ink bar. */
+.ink-tile {
+    position: relative;
+    aspect-ratio: 5 / 7;
+    padding: 0;
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    background: #1a202c center / cover no-repeat;
+    cursor: pointer;
+    transition: transform .12s ease, opacity .12s ease, filter .12s ease;
+}
+
+.ink-tile.is-back {
+    background-image: url('https://upload.wikimedia.org/wikipedia/en/2/25/Lorcana_Card_Back.png');
+}
+
+.ink-tile.is-fresh {
+    box-shadow: 0 0 0 2px var(--bcr);
+}
+
+.ink-tile.is-spent {
+    opacity: 0.4;
+    filter: grayscale(0.7);
+    transform: scale(0.9) rotate(-8deg);
+}
+
+.ink-tile.is-sel {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+    opacity: 1;
+    filter: none;
+}
+
+.ip-bar {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 44px;
+    padding: 6px 6px 6px 10px;
+    border-radius: 10px;
+    background: var(--surface-2);
+    border: 1px solid var(--border-soft);
+}
+
+.ip-bar.is-hint {
+    justify-content: center;
+    background: none;
+    border-style: dashed;
+    color: var(--text-faint);
+    font: 500 11px var(--font-mono);
+}
+
+.ip-bar-name {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.ip-bar-name b {
+    font-size: 13px;
+    font-weight: 650;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.ip-bar-name em {
+    font: 500 10px var(--font-mono);
+    font-style: normal;
+    color: var(--text-dim);
+    white-space: nowrap;
+}
+
+.ip-empty {
+    grid-column: 1 / -1;
+    font-size: 12.5px;
+    color: var(--text-dim);
+}
+
+/* Desktop: the same inkwell lives in the ink bar itself, no panel. The count and
+   −/+ / Ready all on the left, the cards across the rest (overlapping once they
+   don't fit), and a clicked card opens up in place with its actions. */
+@media (min-width: 761px) {
+    .ink-cluster.is-inline {
+        gap: 0;
+        cursor: default;
+    }
+
+    .ink-cluster.is-inline > .ink-readout,
+    .ink-cluster.is-inline .ink-new {
+        display: none;
+    }
+
+    .ink-cluster.is-inline .inkwell.is-counter {
+        flex-wrap: nowrap;
+        gap: 14px;
+        cursor: default;
+    }
+
+    .ii-ctl {
+        flex: none;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        padding-right: 14px;
+        border-right: 1px solid var(--border-soft);
+    }
+
+    .ii-count .ink-icon {
+        align-self: center;
+        width: 8px;
+        height: 8px;
+        margin-right: 6px;
+        background: var(--bcr);
+        border-radius: 2px;
+        transform: rotate(45deg);
+    }
+
+    .ii-count b {
+        font-size: 24px;
+    }
+
+    .ii-count small {
+        margin-right: 6px;
+    }
+
+    .ii-btns {
+        display: flex;
+        gap: 6px;
+    }
+
+    .ii-step button {
+        width: 30px;
+        min-height: 28px;
+        font-size: 11px;
+    }
+
+    .ii-all {
+        min-height: 30px;
+        font-size: 11.5px;
+    }
+
+    .ii-tiles {
+        --ii-gap: 6px;
+        flex: 1;
+        min-width: 0;
+        height: 100%;
+        display: flex;
+        align-items: center;
+    }
+
+    .ii-slot {
+        position: relative;
+        flex: none;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .ii-slot + .ii-slot {
+        margin-left: var(--ii-gap);
+    }
+
+    .ii-slot:hover {
+        z-index: 2;
+    }
+
+    .ii-slot.is-sel {
+        z-index: 3;
+        padding-right: 6px;
+        border-radius: 8px;
+        background: var(--surface);
+        box-shadow: 0 6px 18px oklch(0 0 0 / 0.45);
+    }
+
+    .ii-slot .ink-tile {
+        height: calc(var(--pile-h) - 10px);
+        border-radius: 6px;
+    }
+
+    .ii-slot .ink-tile:hover {
+        transform: translateY(-4px);
+        opacity: 1;
+        filter: none;
+    }
+
+    .ii-slot .ink-tile.is-sel {
+        outline-offset: 1px;
+    }
+
+    .ii-acts {
+        width: 92px;
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+    }
+
+    .ii-name {
+        font-size: 11px;
+        font-weight: 650;
+        color: var(--text);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .ii-acts button {
+        height: calc((var(--pile-h) - 34px) / 3);
+        min-height: 18px;
+        padding: 0 8px;
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        background: var(--surface-3);
+        color: var(--text);
+        font: 600 10.5px var(--font-sans);
+        text-align: left;
+        cursor: pointer;
+    }
+
+    .ii-acts button:hover {
+        border-color: var(--accent-dim);
+    }
+
+    .ii-empty {
+        padding: 10px 14px;
+        border: 1px dashed var(--border);
+        border-radius: 8px;
+        color: var(--text-faint);
+        font: 500 11px var(--font-mono);
+    }
+}
+
+/* ----- Phone hand focus (one card large, every hand action) ----- */
+.hand-focus {
+    position: fixed;
+    inset: 0;
+    z-index: 74;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 12px;
+    padding: 70px 18px 18px;
+    background: oklch(0.06 0.005 60 / 0.72);
+}
+
+.hand-focus.is-open {
+    display: flex;
+    animation: handFocusIn .24s cubic-bezier(.2, 1.3, .4, 1);
+}
+
+@keyframes handFocusIn {
+    from {
+        opacity: 0;
+        transform: translateY(40px) scale(0.92);
+    }
+
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+/* Big card + prev/next chevrons. Horizontal swipes here cycle the hand
+   (handled in JS); vertical ones stay native so a long text card scrolls. */
+.hf-stage {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    flex: none;
+    touch-action: pan-y;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+.hf-cardbox {
+    position: relative;
+    flex: none;
+}
+
+/* The fan stays tappable above this overlay, so on short phones the card
+   gives up height (down to 168px) to keep the action buttons clear of it. */
+.hf-card {
+    position: relative;
+    aspect-ratio: 5 / 7;
+    height: clamp(168px, calc(100vh - 430px), 252px);
+    height: clamp(168px, calc(100dvh - 430px), 252px);
+    border-radius: 12px;
+    overflow: hidden;
+    flex: none;
+    box-shadow: 0 0 0 1px var(--border-strong), 0 24px 50px -14px oklch(0 0 0 / 0.95);
+    background: var(--surface-2);
+    transition: transform .2s cubic-bezier(.3, 1.2, .5, 1);
+}
+
+/* The recreated text card under the artwork: what shows in text mode,
+   while the image loads, and when it can't load at all. */
+.hf-text {
+    position: absolute;
+    inset: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    /* A scroll container starts a fresh touch-action, so restate pan-y
+       or the browser claims the horizontal swipe. */
+    touch-action: pan-y;
+    padding: 12px 12px 14px;
+    color: var(--text);
+    text-align: left;
+    font-size: 11px;
+    line-height: 1.35;
+}
+
+.hf-card.is-art .hf-text {
+    visibility: hidden;
+}
+
+.hf-card.hf-from-right {
+    animation: hfFromRight .22s cubic-bezier(.2, 1, .4, 1);
+}
+
+.hf-card.hf-from-left {
+    animation: hfFromLeft .22s cubic-bezier(.2, 1, .4, 1);
+}
+
+@keyframes hfFromRight {
+    from {
+        opacity: 0;
+        transform: translateX(70px) rotate(3deg);
+    }
+}
+
+@keyframes hfFromLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-70px) rotate(-3deg);
+    }
+}
+
+.hf-count {
+    position: absolute;
+    left: 50%;
+    bottom: -9px;
+    transform: translateX(-50%);
+    font: 600 10px var(--font-mono);
+    letter-spacing: 0.06em;
+    color: var(--text-2);
+    background: oklch(0.13 0.008 60 / 0.92);
+    border: 1px solid var(--border);
+    padding: 2px 8px;
+    border-radius: 999px;
+    white-space: nowrap;
+    pointer-events: none;
+}
+
+.hf-nav {
+    width: 34px;
+    height: 34px;
+    flex: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: oklch(0.13 0.008 60 / 0.8);
+    color: var(--text-2);
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.hf-nav:disabled {
+    visibility: hidden;
+}
+
+.hf-meta {
+    font: 500 12px var(--font-mono);
+    color: var(--text-2);
+    text-align: center;
+}
+
+.hf-meta .warn {
+    color: oklch(0.8 0.15 25);
+}
+
+.hf-acts {
+    width: 100%;
+    max-width: 380px;
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 8px;
+}
+
+.hf-more {
+    width: 100%;
+    max-width: 380px;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 6px;
+}
+
+.hf-more .cs-btn {
+    min-height: 42px;
+    border-radius: 999px;
+    background: var(--surface);
+    font-weight: 500;
+    font-size: 12px;
+}
+
+.hand-scrim {
+    display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+    .fx-float,
+    .card-wrap.fx-hit .card,
+    .fx-flash,
+    .card-wrap.fx-exert .card,
+    .card-wrap.fx-ready .card,
+    .card-wrap.fx-quest,
+    .card-wrap.fx-arrive,
+    .card-wrap.fx-shift,
+    .card-wrap.is-lethal .card,
+    .card-wrap .damage-counter {
+        animation: none !important;
+    }
+
+    .fx-float,
+    .fx-flash {
+        display: none;
+    }
+}
+
+/* Touch: no hover, so the card drawer replaces the hover controls. */
+@media (hover: none) {
+    .card-ctrl {
+        display: none;
+    }
+
+    .dmg-track {
+        pointer-events: none;
+    }
+
+    .chal-fc.is-light,
+    .chal-fc.is-full {
+        display: none;
+    }
+}
+
+/* ----- Phones: inkwell panel becomes a bottom sheet; the hand becomes a fan ----- */
+@media (max-width: 760px) {
+    .ink-panel {
+        left: 0 !important;
+        right: 0 !important;
+        top: auto !important;
+        bottom: 0 !important;
+        width: auto;
+        max-height: 80vh;
+        border-radius: 18px 18px 0 0;
+        padding: 12px 14px calc(18px + env(safe-area-inset-bottom, 0px));
+    }
+
+    .ink-panel .ip-btn,
+    .ink-panel .ip-step button {
+        min-height: 40px;
+    }
+
+    .ink-panel .ip-step button {
+        width: 44px;
+    }
+
+    .ip-tiles {
+        grid-template-columns: repeat(auto-fill, minmax(44px, 1fr));
+    }
+
+    .chal-banner {
+        top: auto;
+        bottom: 112px;
+        border-radius: 14px;
+        flex-wrap: wrap;
+        justify-content: center;
+        width: calc(100vw - 24px);
+        padding: 8px 10px;
+        gap: 8px;
+    }
+
+    .chal-banner .cb-seg {
+        display: none;
+    }
+
+    .chal-banner .cb-done {
+        height: 44px;
+    }
+
+    .play {
+        padding-bottom: 104px;
+    }
+
+    /* The hand leaves the board flow and peeks up from the bottom edge. */
+    #bottom-board .hand-wrap {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 36;
+        padding: 0;
+        pointer-events: none;
+    }
+
+    #bottom-board .hand-wrap::before {
+        content: 'Hand · ' attr(data-count) ' — tap or drag up';
+        position: absolute;
+        left: 50%;
+        bottom: 70px;
+        transform: translateX(-50%);
+        font: 600 10px var(--font-mono);
+        letter-spacing: 0.08em;
+        color: var(--text-dim);
+        background: oklch(0.13 0.008 60 / 0.85);
+        padding: 2px 8px;
+        border-radius: 999px;
+        white-space: nowrap;
+        pointer-events: none;
+    }
+
+    body.hand-open #bottom-board .hand-wrap::before {
+        display: none;
+    }
+
+    #bottom-board .hand {
+        pointer-events: auto;
+        min-height: 0;
+        height: 64px;
+        align-items: flex-start;
+        overflow: visible;
+        padding: 0;
+    }
+
+    #bottom-board #bottom-hand {
+        align-items: flex-start;
+    }
+
+    #bottom-board .hand .card-wrap {
+        --card-w: 64px;
+        --card-h: 90px;
+        margin-left: var(--fan-ml, -30px);
+        rotate: calc(var(--fan-off, 0) * 6deg);
+        translate: 0 calc(var(--fan-arc, 0) * 2px);
+        transform-origin: 50% 130%;
+        transition: translate .25s cubic-bezier(.3, 1.2, .5, 1), rotate .25s ease, margin .25s ease;
+    }
+
+    #bottom-board .hand .card-wrap:first-child {
+        margin-left: 0;
+    }
+
+    #bottom-board .hand .card-wrap:hover {
+        transform: none;
+    }
+
+    #bottom-board .hand .card-actions {
+        display: none;
+    }
+
+    body.hand-open #bottom-board .hand {
+        height: 160px;
+    }
+
+    body.hand-open #bottom-board .hand .card-wrap {
+        --card-w: 96px;
+        --card-h: 134px;
+        margin-left: var(--fan-ml-open, -46px);
+        rotate: calc(var(--fan-off, 0) * 3deg);
+        translate: 0 calc(var(--fan-arc, 0) * 2px - 4px);
+    }
+
+    body.hand-open #bottom-board .hand .card-wrap:first-child {
+        margin-left: 0;
+    }
+
+    /* While a card is focused the fan stays above the focus backdrop, so
+       a tap on another card switches to it. The focused one sits raised. */
+    body.hand-focus-open #bottom-board .hand-wrap {
+        z-index: 75;
+    }
+
+    body.hand-open #bottom-board .hand .card-wrap.is-focused {
+        translate: 0 calc(var(--fan-arc, 0) * 2px - 18px);
+    }
+
+    body.hand-open #bottom-board .hand .card-wrap.is-focused .card {
+        outline: 2px solid var(--accent);
+        outline-offset: 1px;
+    }
+
+    .hand-scrim {
+        display: block;
+        position: fixed;
+        inset: 0;
+        z-index: 35;
+        background: oklch(0.06 0.005 60 / 0.6);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity .2s ease;
+    }
+
+    body.hand-open .hand-scrim {
+        opacity: 1;
+        pointer-events: auto;
+    }
+}
