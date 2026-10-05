@@ -663,6 +663,10 @@ Chosen from three mock-ups ("A · Stepper + ink pips", "B · Compact list", "C �
 - **Phones:** the bar keeps its count and pips; tapping it opens a bottom sheet (about 210px for 7 ink, was 565px): count, −/+, *Ready all*, the cards in a grid, and one action bar for the tapped card.
 - **Putting a card down (desktop):** a click anywhere outside the ink cards, Escape, or ending the turn deselects the picked card; clicking another ink card picks that one instead.
 
+## Release v3.0.0: Field Unit
+
+The Field Unit visual overhaul ships as a major version. It bundles Feature 46 (the redesign), Feature 47 (Kiln night theme and the signal family) and Refactor 3 (CSS moved to `app/css/`), developed as v2.27.0 → v2.28.1 on the `claude/zen-knuth-82rdia` branch. Nothing about the data changed: sessions, decks, share links and session files from v2 open as before. Test protocols: `docs/TEST-PROTOCOL-v2.27.0.md` and `docs/TEST-PROTOCOL-v2.28.0.md`.
+
 ## Feature 46: Field Unit visual redesign (v2.27.0)
 
 ### User Story
