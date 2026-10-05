@@ -8527,7 +8527,7 @@
     <script>
         let cardFuse = null;
 
-        const APP_VERSION = "v2.26.0"; // Centralized version string (redesign)
+        const APP_VERSION = "v2.26.1"; // Centralized version string (redesign)
 
         // Tweaks panel accent presets (hue values for the OKLCH accent ramp)
         const ACCENT_PRESETS = {
@@ -11350,6 +11350,13 @@
                 this.state.inactivePlayer = 1 - this.state.activePlayer;
                 this.state.opponentHandRevealed = false; // Hide hand again when perspectives flip
                 this._inkSel = null; // a card picked in an ink bar doesn't follow it to the other side
+                // Challenge mode belongs to the turn: drop it (and any picked challenger).
+                if (this.challengeMode) {
+                    this.challengeMode = false;
+                    this.challengePick = null;
+                    this.hideForecast();
+                    this.clearAimArrow();
+                }
 
                 if (this.state.activePlayer === 0) {
                     this.state.turn++;
