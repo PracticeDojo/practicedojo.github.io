@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<!-- Flip the home-screen options on the real app. Serve the repo root
+     (python3 -m http.server) and open /docs/design/home-signal/preview.html.
+     Each option is a stylesheet plus a small script that rearranges the live
+     home DOM; nothing in app/ changes. -->
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home options</title>
+    <style>
+        html, body { margin: 0; height: 100%; background: #E7E2D8; font: 500 12px/1 system-ui, sans-serif; }
+        nav { position: fixed; left: 12px; bottom: 12px; z-index: 2; display: flex; gap: 4px; padding: 4px; border-radius: 999px; background: #161513; box-shadow: 0 6px 20px rgb(0 0 0 / .35); }
+        nav a { padding: 8px 12px; border-radius: 999px; color: #F4F0E8; text-decoration: none; }
+        nav a[aria-current] { background: #F4F0E8; color: #161513; }
+        iframe { width: 100%; height: 100%; border: 0; display: block; }
+    </style>
+</head>
+<body>
+    <nav aria-label="Options">
+        <a href="#">Today</a>
+        <a href="#A-keyed">A · Keyed</a>
+        <a href="#B-three-ways">B · Three ways in</a>
+        <a href="#C-front-panel">C · Front panel</a>
+    </nav>
+    <iframe id="app" title="Practice Dojo" src="../../../app/"></iframe>
+    <script>
+        const frame = document.getElementById('app');
+        const pick = () => location.hash.slice(1);
+        const mark = () => document.querySelectorAll('nav a').forEach(a =>
+            a.toggleAttribute('aria-current', a.getAttribute('href').slice(1) === pick()));
+        frame.addEventListener('load', async () => {
+            const v = pick();
+            mark();
+            if (!v) return;
+            const doc = frame.contentDocument;
+            // Wait for the home to render its seats and sessions.
+            for (let i = 0; i < 100 && !doc.querySelector('#home-seats .seat'); i++) await new Promise(r => setTimeout(r, 100));
+            const link = doc.createElement('link');
+            link.rel = 'stylesheet';
+            link.href = new URL(`${v}.css`, location.href).href;
+            doc.head.append(link);
+            const js = await fetch(`${v}.js`).then(r => r.text());
+            const s = doc.createElement('script');
+            s.textContent = js;
+            doc.body.append(s);
+        });
+        addEventListener('hashchange', () => frame.contentWindow.location.reload());
+        mark();
+    </script>
+</body>
+</html>

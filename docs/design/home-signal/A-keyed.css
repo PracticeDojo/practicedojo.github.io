@@ -1,0 +1,170 @@
+/* Option A · "Keyed" — the quiet one.
+   Layout as today. Each way in gets a fixed key colour, worn as a key-cap
+   label and a coloured edge on its module:
+     glass  = bring a game in (the well is already glass)
+     trace  = new match (Exert / Ready: getting a table ready)
+     olive  = pick up again (Quest / Ink: what you've banked)
+   Start match stays the one signal key. Desktop: the torii mark stands
+   beside the headline. */
+
+.hs-a {
+    --hs-trace-text: #1D6E68;
+    --hs-olive-text: #5C5A14;
+    --hs-key-foot: inset 0 -3px 0 oklch(0 0 0 / 0.22);
+}
+
+:root[data-theme="night"] .hs-a {
+    --hs-trace-text: #63C7BE;
+    --hs-olive-text: #C6C45A;
+}
+
+/* ----- Key-cap labels ----- */
+.hs-a .hs-key {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    height: 26px;
+    padding: 0 10px 2px;
+    border-radius: 8px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: var(--label-track);
+    text-transform: uppercase;
+    box-shadow: var(--hs-key-foot);
+    white-space: nowrap;
+}
+
+.hs-a .hs-key i {
+    font-size: 10px;
+}
+
+.hs-a .hs-key.is-trace {
+    background: var(--key-trace);
+    color: var(--key-trace-ink);
+}
+
+.hs-a .hs-key.is-olive {
+    background: var(--key-olive);
+    color: var(--key-olive-ink);
+}
+
+.hs-a .hs-key.is-glass {
+    background: var(--fu-glass);
+    color: var(--fu-light);
+    box-shadow: inset 0 -3px 0 oklch(1 0 0 / 0.08);
+    margin-bottom: 14px;
+}
+
+:root[data-theme="night"] .hs-a .hs-key.is-glass {
+    box-shadow: inset 0 -3px 0 oklch(1 0 0 / 0.06), 0 0 0 1px var(--fu-line);
+}
+
+.hs-a .home-box h3 {
+    color: var(--text-dim);
+}
+
+/* ----- Modules wear their colour on the top edge ----- */
+.hs-a .home-box.hs-table,
+.hs-a .home-box.hs-recent {
+    border-top-width: 4px;
+    padding-top: 14px;
+}
+
+.hs-a .home-box.hs-table {
+    border-top-color: var(--key-trace);
+}
+
+.hs-a .home-box.hs-recent {
+    border-top-color: var(--key-olive);
+}
+
+/* The well: the hairline on focus is the glass's own, unchanged. */
+
+/* ----- New match: Trace ----- */
+.hs-a .seat .seat-who {
+    color: var(--hs-trace-text);
+}
+
+.hs-a .seat:not(.is-empty) {
+    border-left: 3px solid var(--key-trace);
+}
+
+.hs-a .chip:hover {
+    border-color: var(--key-trace);
+}
+
+.hs-a .start-btn {
+    box-shadow: var(--hs-key-foot);
+    border-radius: 10px;
+}
+
+.hs-a .start-btn:active {
+    transform: translateY(1px);
+    box-shadow: inset 0 -1px 0 oklch(0 0 0 / 0.22);
+}
+
+/* ----- Pick up again: Olive ----- */
+.hs-a .rec.is-continue {
+    background: color-mix(in oklch, var(--key-olive) 12%, var(--surface));
+    border-color: color-mix(in oklch, var(--key-olive) 40%, transparent);
+}
+
+.hs-a .rec .rec-go {
+    color: var(--hs-olive-text);
+}
+
+.hs-a .rec.is-continue .rec-go {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 32px;
+    padding: 0 12px 2px;
+    border-radius: 8px;
+    background: var(--key-olive);
+    color: var(--key-olive-ink);
+    box-shadow: var(--hs-key-foot);
+}
+
+.hs-a .home-box.hs-recent .link-btn {
+    color: var(--hs-olive-text);
+    font-weight: 560;
+}
+
+/* ----- Desktop: the mark beside the headline ----- */
+.hs-a .home-hd .brand-mark {
+    display: none;
+}
+
+.hs-a .hs-lede-row {
+    display: flex;
+    align-items: center;
+    gap: 28px;
+}
+
+.hs-a .hs-torii {
+    flex: 0 0 auto;
+    width: 112px;
+    height: 112px;
+    background: var(--text);
+    -webkit-mask: url('../../../img/practice_dojo.svg') center / contain no-repeat;
+    mask: url('../../../img/practice_dojo.svg') center / contain no-repeat;
+}
+
+.hs-a .home-lede h2 {
+    margin-top: 0;
+}
+
+@media (max-width: 760px) {
+    .hs-a .hs-torii {
+        display: none;
+    }
+
+    .hs-a .home-hd .brand-mark {
+        display: inline-block;
+    }
+
+    .hs-a .hs-key.is-glass {
+        margin-bottom: 10px;
+    }
+}

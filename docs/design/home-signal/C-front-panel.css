@@ -1,0 +1,447 @@
+/* Option C · "Front panel" — the boldest.
+   The home is the device's front panel. On desktop the header becomes a
+   nameplate: the torii at full size, the name engraved under it, and the
+   question. Each way in is a full slab of its key colour, with the key's
+   darker foot along its bottom edge:
+     glass = paste a game · trace = set the table · olive = pick up again
+   Inside the slabs, state is shown in glass display windows (the seated
+   decks, the session you were on) and choices are keys (bone deck keys,
+   the Ember Start match key, the olive Resume key). */
+
+.hs-c {
+    --hs-trace-lit: #63C7BE;
+    --hs-olive-lit: #C6C45A;
+    --hs-slab-foot: inset 0 -4px 0 oklch(0 0 0 / 0.2);
+    --hs-key-foot: inset 0 -3px 0 oklch(0 0 0 / 0.2);
+    --hs-window: inset 0 2px 0 oklch(0 0 0 / 0.55);
+}
+
+/* ----- Desktop: nameplate | panel ----- */
+.hs-c .home-wrap {
+    max-width: 1320px;
+    display: grid;
+    grid-template-columns: 272px minmax(0, 1fr);
+    gap: 36px;
+    align-items: start;
+    padding: 28px 28px 48px;
+}
+
+.hs-c .home-hd {
+    position: sticky;
+    top: 28px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0;
+}
+
+.hs-c .home-hd h1 {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 26px;
+    font-size: 15px;
+    letter-spacing: 0.24em;
+}
+
+.hs-c .home-hd .brand-mark {
+    width: 236px;
+    height: 200px;
+    background-position: left center;
+}
+
+.hs-c .home-hd .home-ver {
+    margin-top: 8px;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+}
+
+.hs-c .hs-question {
+    margin: 30px 0 26px;
+    font-family: var(--font-display);
+    font-size: 34px;
+    font-weight: 520;
+    line-height: 1;
+    letter-spacing: -0.045em;
+    font-variation-settings: 'opsz' 32;
+    color: var(--text);
+}
+
+.hs-c .home-spacer {
+    display: none;
+}
+
+.hs-c .home-hd .btn {
+    width: 100%;
+    max-width: none;
+    justify-content: flex-start;
+    min-height: 38px;
+    margin-bottom: 8px;
+}
+
+.hs-c .home-hd .btn .ht-count {
+    margin-left: auto;
+}
+
+.hs-c .hs-main {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    min-width: 0;
+}
+
+.hs-c .home-lede {
+    display: none;
+}
+
+.hs-c .home-lower {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: stretch;
+    gap: 14px;
+}
+
+/* ----- The slab ----- */
+.hs-c .hs-slab {
+    border: 0;
+    border-radius: 18px;
+    padding: 22px 22px 24px;
+    gap: 16px;
+    box-shadow: var(--hs-slab-foot);
+}
+
+.hs-c .hs-slab.is-glass {
+    grid-column: 1 / -1;
+}
+
+.hs-c .hs-slab-top {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.hs-c .hs-slab .hs-slab-title {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: 40px;
+    font-weight: 540;
+    line-height: 0.95;
+    letter-spacing: -0.05em;
+    text-transform: none;
+    font-variation-settings: 'opsz' 32;
+    color: inherit;
+}
+
+.hs-c .hs-slab-hd p {
+    margin: 8px 0 0;
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+.hs-c .hs-slab .link-btn {
+    color: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+/* ----- Glass: paste a game ----- */
+.hs-c .hs-slab.is-glass {
+    background: var(--fu-glass);
+    color: var(--fu-light);
+    box-shadow: inset 0 -4px 0 oklch(1 0 0 / 0.07);
+}
+
+.hs-c .is-glass .hs-slab-hd p {
+    color: var(--fu-glass-2);
+}
+
+.hs-c .is-glass .well {
+    border-radius: 12px;
+    padding: 1px;
+}
+
+.hs-c .is-glass .well.is-idle {
+    background: var(--fu-glass-line);
+}
+
+.hs-c .is-glass .well.is-idle:focus-within {
+    background: var(--fu-glass-2);
+}
+
+.hs-c .is-glass .well-in {
+    border-radius: 11px;
+    background: var(--fu-glass-raised);
+    box-shadow: var(--hs-window);
+}
+
+.hs-c .is-glass .well textarea {
+    min-height: 118px;
+}
+
+.hs-c .is-glass .well-ft .btn {
+    background: #262422;
+    border: 0;
+    border-radius: 8px;
+    color: var(--fu-light);
+    min-height: 32px;
+    box-shadow: inset 0 -3px 0 oklch(0 0 0 / 0.5);
+}
+
+.hs-c .is-glass .well-ft .btn:hover {
+    background: #302D2A;
+}
+
+.hs-c .is-glass .readout {
+    background: var(--fu-glass-raised);
+    border-color: var(--fu-glass-line);
+    color: var(--fu-light);
+}
+
+/* ----- Trace: set the table ----- */
+.hs-c .hs-slab.is-trace {
+    background: var(--key-trace);
+    color: var(--key-trace-ink);
+}
+
+/* The seats are display windows: what is on the table right now. */
+.hs-c .is-trace .seat {
+    background: var(--fu-glass);
+    border: 0;
+    border-radius: 10px;
+    color: var(--fu-light);
+    box-shadow: var(--hs-window);
+    padding: 12px 12px 12px 14px;
+}
+
+.hs-c .is-trace .seat .seat-who {
+    color: var(--hs-trace-lit);
+    width: 70px;
+}
+
+.hs-c .is-trace .seat .seat-count {
+    color: var(--fu-glass-mute);
+}
+
+.hs-c .is-trace .seat .icon-btn {
+    color: var(--fu-glass-2);
+}
+
+.hs-c .is-trace .seat.is-empty .seat-name {
+    color: var(--fu-glass-mute);
+}
+
+.hs-c .is-trace .chips-label,
+.hs-c .is-trace .start-hint {
+    color: var(--key-trace-ink);
+}
+
+/* Decks are neutral keys. */
+.hs-c .is-trace .chip {
+    background: var(--fu-light);
+    color: var(--fu-dark);
+    border: 0;
+    border-radius: 9px;
+    padding: 8px 12px 10px 10px;
+    box-shadow: var(--hs-key-foot);
+}
+
+.hs-c .is-trace .chip:hover {
+    background: #FFFDF9;
+}
+
+.hs-c .is-trace .chip:active {
+    transform: translateY(1px);
+    box-shadow: inset 0 -1px 0 oklch(0 0 0 / 0.2);
+}
+
+.hs-c .is-trace .start-row {
+    margin-top: auto;
+}
+
+.hs-c .is-trace .start-btn {
+    flex: 1 1 100%;
+    min-height: 52px;
+    border-radius: 12px;
+    font-size: 16px;
+    box-shadow: inset 0 -4px 0 oklch(0 0 0 / 0.25), 0 0 0 1.5px var(--key-trace-ink);
+}
+
+.hs-c .is-trace .start-btn:active {
+    transform: translateY(1px);
+    box-shadow: inset 0 -1px 0 oklch(0 0 0 / 0.25), 0 0 0 1.5px var(--key-trace-ink);
+}
+
+/* ----- Olive: pick up again ----- */
+.hs-c .hs-slab.is-olive {
+    background: var(--key-olive);
+    color: var(--key-olive-ink);
+}
+
+.hs-c .is-olive #home-recent {
+    display: flex;
+    flex-direction: column;
+}
+
+.hs-c .is-olive .rec {
+    border: 0;
+    border-radius: 0;
+    padding: 12px 4px;
+    color: var(--key-olive-ink);
+    box-shadow: inset 0 1px 0 oklch(0.2 0.02 100 / 0.28);
+}
+
+.hs-c .is-olive .rec:hover {
+    background: oklch(0.2 0.02 100 / 0.08);
+}
+
+.hs-c .is-olive .rec .rec-meta,
+.hs-c .is-olive .rec .dim,
+.hs-c .is-olive .rec .cc-sep {
+    color: var(--key-olive-ink);
+}
+
+.hs-c .is-olive .rec .rec-go {
+    color: var(--key-olive-ink);
+    font-weight: 600;
+}
+
+/* Ink pips keep a dark ring on olive, so Amber and Emerald still read. */
+.hs-c .is-olive .rec:not(.is-continue) .cc-pip {
+    box-shadow: 0 0 0 1px oklch(0.2 0.02 100 / 0.6);
+}
+
+/* The session you were on is a display window with the Resume key. */
+.hs-c .is-olive .rec.is-continue {
+    background: var(--fu-glass);
+    color: var(--fu-light);
+    border-radius: 12px;
+    padding: 14px 14px 14px 16px;
+    margin-bottom: 8px;
+    box-shadow: var(--hs-window);
+}
+
+.hs-c .is-olive .rec.is-continue + .rec {
+    box-shadow: none;
+}
+
+.hs-c .is-olive .rec.is-continue .rec-meta,
+.hs-c .is-olive .rec.is-continue .dim,
+.hs-c .is-olive .rec.is-continue .cc-sep {
+    color: var(--fu-glass-2);
+}
+
+.hs-c .is-olive .rec.is-continue .rec-go {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 38px;
+    padding: 0 14px 3px;
+    border-radius: 9px;
+    background: var(--key-olive);
+    color: var(--key-olive-ink);
+    box-shadow: var(--hs-key-foot);
+}
+
+/* ----- Kiln: the glass slab needs an edge on the warm black ----- */
+:root[data-theme="night"] .hs-c .hs-slab.is-glass {
+    box-shadow: 0 0 0 1px var(--fu-line);
+}
+
+/* ----- Phones: header back on top, slabs stacked edge to edge ----- */
+@media (max-width: 760px) {
+    .hs-c .home-wrap {
+        display: flex;
+        align-items: stretch;
+        padding: 12px 8px 28px;
+        gap: 10px;
+    }
+
+    .hs-c .home-hd {
+        position: static;
+        flex-direction: row;
+        align-items: center;
+        gap: 8px;
+        padding: 2px 6px 4px;
+    }
+
+    .hs-c .home-hd h1 {
+        flex-direction: row;
+        align-items: center;
+        gap: 9px;
+        font-size: 11px;
+        letter-spacing: var(--label-track);
+    }
+
+    .hs-c .home-hd .brand-mark {
+        width: 20px;
+        height: 20px;
+    }
+
+    .hs-c .hs-question {
+        display: none;
+    }
+
+    .hs-c .home-spacer {
+        display: block;
+    }
+
+    .hs-c .home-hd .btn {
+        width: auto;
+        margin: 0;
+        min-height: 44px;
+    }
+
+    .hs-c .home-lower {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+
+    .hs-c .hs-slab {
+        padding: 20px 16px 20px;
+        border-radius: 16px;
+        gap: 14px;
+    }
+
+    .hs-c .hs-slab .hs-slab-title {
+        font-size: 34px;
+    }
+
+    .hs-c .hs-slab-hd p {
+        font-size: 13.5px;
+    }
+
+    /* One row of deck keys that scrolls sideways. */
+    .hs-c .is-trace .chips {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        margin: 0 -16px;
+        padding: 0 16px 6px;
+        scrollbar-width: none;
+    }
+
+    .hs-c .is-trace .chips::-webkit-scrollbar {
+        display: none;
+    }
+
+    .hs-c .is-trace .chip {
+        flex: 0 0 auto;
+    }
+
+    .hs-c .is-glass .well textarea {
+        min-height: 96px;
+        padding-top: 14px;
+    }
+
+    .hs-c .hs-slab.is-glass {
+        padding-bottom: 16px;
+    }
+
+    .hs-c .is-glass .well-ft {
+        padding: 8px 10px 10px;
+    }
+
+    .hs-c .is-glass .well-ft .btn {
+        font-size: 12px;
+        line-height: 1.15;
+    }
+}
