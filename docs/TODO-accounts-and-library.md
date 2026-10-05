@@ -45,7 +45,7 @@ Built:
 
 Open:
 - [x] **(you)** Real default decks: Set 13 Princess Aggro, Amethyst/Amber Control, Evasive Tempo (+ the Set 12 sample). *All 60/60 cards recognised, 2026-10-04* (§4.1–§4.3)
-- [ ] **(you)** First demos in `app/defaults/demos/`. *Manifest is empty, so they don't appear yet* (§4.4)
+- [x] **(you)** First demos in `app/defaults/demos/`: Set 13 example (Amber/Amethyst vs Amethyst/Ruby, turn 16). *Verified 2026-10-05 in Chromium: the "Explore" card shows under Pick up again on a fresh profile and opens a device copy at turn 16, lore 10–11, no errors* (§4.4)
 - [ ] Manual pass of `TEST-PROTOCOL-v2.19.0.md` and `v2.20.0.md` on a real phone and in Safari / Firefox. *So far only automated Chromium runs*
 
 ## Phase 2 · Share links (§9, §10.1, §12.2) — v2.21.0 Feature 40
