@@ -923,15 +923,13 @@
     </div>
     <div id="challenge-forecast" class="chal-fc" aria-hidden="true"></div>
 
-    <!-- Feature 37: card drawer (touch), inkwell panel, phone hand focus -->
+    <!-- Feature 37/48: card drawer (a board or phone-hand card on touch), inkwell panel -->
     <div id="sheet-scrim" class="sheet-scrim" onclick="App.closeCardSheet(); App.closeInkPanel()"></div>
     <div id="card-sheet" class="card-sheet" role="dialog" aria-label="Card actions" aria-hidden="true"
         onclick="event.stopPropagation()"></div>
     <div id="ink-panel" class="ink-panel" role="dialog" aria-label="Inkwell" aria-hidden="true"
         onclick="event.stopPropagation()"></div>
     <div id="hand-scrim" class="hand-scrim" onclick="App.setHandFan(false)"></div>
-    <div id="hand-focus" class="hand-focus" role="dialog" aria-label="Card in hand" aria-hidden="true"
-        onclick="App.handFocusBackdropTap(event)"></div>
 
     <!-- ============ TWEAKS PANEL ============ -->
     <div class="tweaks-panel" id="tweaks-panel">
@@ -1006,7 +1004,7 @@
     <script>
         let cardFuse = null;
 
-        const APP_VERSION = "v3.1.0"; // Centralized version string (v3: Field Unit)
+        const APP_VERSION = "v3.2.0"; // Centralized version string (v3: Field Unit)
 
         // Tweaks panel accent presets (hue values for the OKLCH accent ramp)
         // Tweaks → Accent: the approved Field Unit signals only (design.md ·
@@ -7320,7 +7318,7 @@
             handleCardTap(e, c, onField, opts) {
                 if (this.challengeMode && onField) { this.challengeClick(c.instanceId); return true; }
                 if (onField && this.isTouchUI()) { this.openCardSheet(c.instanceId); return true; }
-                if (opts.loc === 'hand' && opts.chips && this.isPhoneUI()) { this.handFanTap(c.instanceId); return true; }
+                if (opts.loc === 'hand' && opts.chips && this.isPhoneUI()) { this.openCardSheet(c.instanceId); return true; }
                 return false;
             },
 
@@ -7602,10 +7600,15 @@
             },
 
             // --- Card drawer (touch devices) --------------------------------------
-            openCardSheet(instanceId) {
+            // `dir` (+1 / −1) is the hand step, so the next card slides in from the
+            // matching side. The drawer closes if its card leaves where it was.
+            openCardSheet(instanceId, dir) {
                 document.getElementById('context-menu').style.display = 'none';
                 this.closeInkPanel();
+                const at = this.findCard(instanceId);
                 this._sheetIid = instanceId;
+                this._sheetLoc = at ? at.loc : null;
+                this._sheetDir = dir || 0;
                 this.renderCardSheet();
                 document.getElementById('card-sheet').classList.add('is-open');
                 document.getElementById('card-sheet').setAttribute('aria-hidden', 'false');
@@ -7614,6 +7617,7 @@
             closeCardSheet() {
                 if (!this._sheetIid) return;
                 this._sheetIid = null;
+                this._sheetLoc = null;
                 const sh = document.getElementById('card-sheet');
                 sh.classList.remove('is-open');
                 sh.setAttribute('aria-hidden', 'true');
@@ -7622,7 +7626,8 @@
             renderCardSheet() {
                 const id = this._sheetIid;
                 const f = id ? this.findCard(id) : null;
-                if (!f || f.loc !== 'field') { this.closeCardSheet(); return; }
+                if (!f || f.loc !== this._sheetLoc || (f.loc !== 'field' && f.loc !== 'hand')) { this.closeCardSheet(); return; }
+                if (f.loc === 'hand') { this.renderHandSheet(f); return; }
                 const db = this.cardDB[f.card.cardId] || {};
                 const sh = document.getElementById('card-sheet');
                 const mine = f.player.id === this.state.activePlayer;
@@ -7899,174 +7904,98 @@
                 this.render();
             },
 
-            // --- Phone hand: fan + focus ------------------------------------------
+            // --- Phone hand: fan + the card drawer -----------------------------------
             setHandFan(open) {
                 document.body.classList.toggle('hand-open', !!open);
-                if (!open) this.closeHandFocus();
             },
-            // One tap on the hand opens the fan *and* brings that card up front with
-            // its actions; a tap on another card in the open fan switches to it.
-            handFanTap(instanceId) {
-                if (!document.body.classList.contains('hand-open')) this.setHandFan(true);
-                this.openHandFocus(instanceId);
-            },
-            // `dir` (+1 / −1) is the swipe direction, so the next card slides in
-            // from the matching side. Consumed by the next render only.
-            openHandFocus(instanceId, dir) {
-                this._handFocusIid = instanceId;
-                this._handFocusDir = dir || 0;
-                this.renderHandFocus();
-            },
-            closeHandFocus() {
-                if (!this._handFocusIid) return;
-                this._handFocusIid = null;
-                const hf = document.getElementById('hand-focus');
-                hf.classList.remove('is-open');
-                hf.setAttribute('aria-hidden', 'true');
-                hf.innerHTML = '';
-                document.body.classList.remove('hand-focus-open');
-                this.markHandFocus(null);
-            },
-            // A tap on the dim backdrop closes the focus — except the click the
-            // browser fires at the end of a swipe that wandered off the card.
-            handFocusBackdropTap(e) {
-                if (e.target !== e.currentTarget) return;
-                if (Date.now() - (this._hfSwipeAt || 0) < 400) return;
-                this.closeHandFocus();
-            },
-            // Step through the hand from the focused card, wrapping at either end.
-            cycleHandFocus(step) {
-                const f = this._handFocusIid ? this.findCard(this._handFocusIid) : null;
-                if (!f || f.loc !== 'hand') return;
-                const hand = f.player.hand, n = hand.length;
-                if (n < 2) return;
-                const i = hand.findIndex(c => c.instanceId === this._handFocusIid);
-                this.openHandFocus(hand[(i + step + n) % n].instanceId, step);
-            },
-            // Lift the focused card in the fan so it's clear which one is up front.
-            markHandFocus(id) {
-                document.querySelectorAll('#bottom-hand .card-wrap[data-hand-iid]').forEach(w => {
-                    w.classList.toggle('is-focused', w.dataset.handIid === id);
-                });
-            },
-            // The big card: artwork over the recreated text card, so text mode, no
-            // connection and a failed image all show the full card text, not just
-            // the name. The text layer hides once the artwork has actually loaded.
-            buildHandFocusFace(db) {
-                const face = document.createElement('div');
-                face.className = 'hf-card';
-                const text = document.createElement('div');
-                text.className = 'hf-text';
-                text.appendChild(this.buildCardTextView(db));
-                face.appendChild(text);
-                if (!this.isTextCardMode()) {
-                    const img = this.makeCardImg(db, { lazy: false });
-                    img.addEventListener('load', () => face.classList.add('is-art'));
-                    img.addEventListener('error', () => face.classList.remove('is-art'));
-                    face.appendChild(img);
-                }
-                return face;
-            },
-            // Horizontal swipe on the big card cycles the hand; the card follows the
-            // finger and springs back on a short drag. Vertical moves are left to the
-            // browser (touch-action: pan-y) so a long text card still scrolls.
-            bindHandFocusSwipe(stage, face) {
+            // A sideways swipe steps through the hand: the card text follows the
+            // finger and springs back on a short drag. Vertical moves are left to
+            // the browser (touch-action: pan-y) so a long text card still scrolls.
+            bindSwipeStep(el, onStep) {
                 let s = null;
-                stage.addEventListener('pointerdown', (e) => {
+                el.addEventListener('pointerdown', (e) => {
                     if (e.button > 0 || e.target.closest('button')) return;
                     s = { id: e.pointerId, x: e.clientX, y: e.clientY, dx: 0, on: false };
                 });
-                stage.addEventListener('pointermove', (e) => {
+                el.addEventListener('pointermove', (e) => {
                     if (!s || e.pointerId !== s.id) return;
                     const dx = e.clientX - s.x, dy = e.clientY - s.y;
                     if (!s.on) {
                         if (Math.abs(dy) > 10 && Math.abs(dy) > Math.abs(dx)) { s = null; return; }
                         if (Math.abs(dx) < 10) return;
                         s.on = true;
-                        try { stage.setPointerCapture(e.pointerId); } catch (_) { /* pointer already gone */ }
-                        face.style.transition = 'none';
+                        try { el.setPointerCapture(e.pointerId); } catch (_) { /* pointer already gone */ }
+                        el.style.transition = 'none';
                     }
                     s.dx = dx;
-                    face.style.transform = `translateX(${dx}px) rotate(${(dx / 24).toFixed(2)}deg)`;
+                    el.style.transform = `translateX(${dx}px)`;
                 });
                 const end = (e) => {
                     if (!s || e.pointerId !== s.id) return;
                     const g = s; s = null;
                     if (!g.on) return;
-                    this._hfSwipeAt = Date.now();
-                    if (Math.abs(g.dx) > 48) { this.cycleHandFocus(g.dx < 0 ? 1 : -1); return; }
-                    face.style.transition = '';
-                    face.style.transform = '';
+                    if (Math.abs(g.dx) > 48) { onStep(g.dx < 0 ? 1 : -1); return; }
+                    el.style.transition = '';
+                    el.style.transform = '';
                 };
-                stage.addEventListener('pointerup', end);
-                stage.addEventListener('pointercancel', end);
+                el.addEventListener('pointerup', end);
+                el.addEventListener('pointercancel', end);
             },
-            renderHandFocus() {
-                const id = this._handFocusIid;
-                const f = id ? this.findCard(id) : null;
-                const hf = document.getElementById('hand-focus');
-                if (!f || f.loc !== 'hand') { this.closeHandFocus(); return; }
+            // Step through the hand from the card in the drawer, wrapping at either end.
+            cycleHandSheet(step) {
+                const f = this._sheetIid ? this.findCard(this._sheetIid) : null;
+                if (!f || f.loc !== 'hand') return;
+                const hand = f.player.hand, n = hand.length;
+                if (n < 2) return;
+                const i = hand.findIndex(c => c.instanceId === this._sheetIid);
+                this.openCardSheet(hand[(i + step + n) % n].instanceId, step);
+            },
+            // A card in the phone hand, in the same drawer as a card on the board:
+            // whose card and where it sits in the hand, its full text, then Play /
+            // Ink / Discard and the rest as keys. ‹ ›, ← / → and a sideways swipe on
+            // the text step through the hand.
+            renderHandSheet(f) {
+                const id = f.card.instanceId;
                 const db = this.cardDB[f.card.cardId] || {};
+                const sh = document.getElementById('card-sheet');
                 const ready = f.player.inkReady || 0, cost = db.cost || 0;
                 const short = cost > ready;
-                const esc = (s) => this._esc(s);
                 const hand = f.player.hand, n = hand.length;
                 const idx = hand.findIndex(c => c.instanceId === id);
-                const dir = this._handFocusDir || 0;
-                this._handFocusDir = 0;
-                hf.innerHTML = '';
-                const stage = document.createElement('div');
-                stage.className = 'hf-stage';
-                const face = this.buildHandFocusFace(db);
-                if (dir && !this.reducedMotion()) face.classList.add(dir > 0 ? 'hf-from-right' : 'hf-from-left');
-                const box = document.createElement('div');
-                box.className = 'hf-cardbox';
-                box.appendChild(face);
-                if (n > 1) {
-                    const count = document.createElement('span');
-                    count.className = 'hf-count';
-                    count.textContent = `${idx + 1} / ${n}`;
-                    box.appendChild(count);
-                }
-                const nav = (step, icon, label) => {
-                    const b = document.createElement('button');
-                    b.type = 'button';
-                    b.className = 'hf-nav';
-                    b.innerHTML = `<i class="fa-solid ${icon}"></i>`;
-                    b.setAttribute('aria-label', label);
-                    b.disabled = n < 2;
-                    b.addEventListener('click', (e) => { e.stopPropagation(); this.cycleHandFocus(step); });
-                    return b;
-                };
-                stage.appendChild(nav(-1, 'fa-chevron-left', 'Previous card in hand'));
-                stage.appendChild(box);
-                stage.appendChild(nav(1, 'fa-chevron-right', 'Next card in hand'));
-                hf.appendChild(stage);
-                this.bindHandFocusSwipe(stage, face);
-                const rest = document.createElement('div');
-                rest.style.cssText = 'display:contents';
-                rest.innerHTML = `<span class="hf-meta">${esc(db.name || '')}${db.version ? ' · ' + esc(db.version) : ''}<br>${esc(db.type || '')} · cost ${cost}${db.inkwell ? ' · inkable' : ' · not inkable'}${short ? ` <span class="warn">· ${ready} ink ready</span>` : ''}</span>
-                    <div class="hf-acts">
-                        <button class="cs-btn key ${short ? 'key-signal-hollow' : 'key-signal'}" data-act="play">${short ? `Play anyway · ${cost - ready} short` : `Play · −${cost} ink`}</button>
+                const pNo = this.state.players.indexOf(f.player) + 1;
+                const dir = this._sheetDir || 0;
+                this._sheetDir = 0;
+                sh.setAttribute('aria-label', `${db.name || 'Card'}: card in hand`);
+                sh.innerHTML = '';
+                const add = (html) => { const d = document.createElement('div'); d.innerHTML = html; while (d.firstChild) sh.appendChild(d.firstChild); };
+                const nav = (step, icon, label) => `<button class="cs-icon" data-step="${step}" aria-label="${label}" ${n < 2 ? 'disabled' : ''}><i class="fa-solid ${icon}"></i></button>`;
+                add(`<span class="cs-grab"></span>
+                    <div class="cs-head"><span class="cs-state"><span class="cs-ticks is-p${pNo}"></span>P${pNo} · in hand · ${idx + 1} / ${n}</span>
+                    ${nav(-1, 'fa-chevron-left', 'Previous card in hand')}${nav(1, 'fa-chevron-right', 'Next card in hand')}
+                    <button class="cs-icon" data-act="close" aria-label="Close"><i class="fa-solid fa-xmark"></i></button></div>`);
+                const text = document.createElement('div');
+                text.className = 'cs-text' + (dir && !this.reducedMotion() ? (dir > 0 ? ' cs-from-right' : ' cs-from-left') : '');
+                text.appendChild(this.buildCardTextView(db));
+                sh.appendChild(text);
+                if (n > 1) this.bindSwipeStep(text, (step) => this.cycleHandSheet(step));
+                add(`<div class="cs-label"><span>Cost ${cost} · ${db.inkwell ? 'inkable' : 'not inkable'}</span><b class="${short ? 'is-short' : ''}">${ready} ink ready</b></div>
+                    <div class="cs-acts">
+                        <button class="cs-btn key ${short ? 'key-signal-hollow' : 'key-signal'} is-wide" data-act="play">${short ? `Play anyway · ${cost - ready} short` : `Play · −${cost} ink`}</button>
                         <button class="cs-btn key key-olive" data-act="ink" ${db.inkwell ? '' : 'disabled'}>${db.inkwell ? 'Ink' : 'No ink'}</button>
                         <button class="cs-btn key key-graphite" data-act="discard">Discard</button></div>
-                    <div class="cs-label hf-label"><span>More</span></div>
-                    <div class="hf-more">
+                    <div class="cs-label"><span>More</span></div>
+                    <div class="cs-more is-3">
                         <button class="cs-btn key" data-act="swap">Swap</button>
                         <button class="cs-btn key" data-act="top">Deck top</button>
-                        <button class="cs-btn key" data-act="bottom">Deck bottom</button></div>`;
-                hf.appendChild(rest);
-                hf.classList.add('is-open');
-                hf.setAttribute('aria-hidden', 'false');
-                document.body.classList.add('hand-focus-open');
-                this.markHandFocus(id);
+                        <button class="cs-btn key" data-act="bottom">Deck bottom</button></div>`);
                 const pos = f.player.id === this.state.activePlayer ? 'bottom' : 'top';
-                rest.onclick = (e) => {
+                sh.onclick = (e) => {
                     e.stopPropagation();
                     const b = e.target.closest('button');
                     if (!b || b.disabled) return;
+                    if (b.dataset.step) { this.cycleHandSheet(Number(b.dataset.step)); return; }
                     const act = b.dataset.act;
-                    this.setHandFan(false);
+                    this.closeCardSheet();
                     if (act === 'play') this.playCard(id);
                     else if (act === 'ink') this.playToInkwell(id);
                     else if (act === 'swap') this.openHandCardSearch(id);
@@ -9963,7 +9892,6 @@
                 this.updateChallengeBanner();
                 if (this._sheetIid) this.renderCardSheet();
                 if (this._inkPanelPlayer != null) this.renderInkPanel();
-                if (this._handFocusIid) this.renderHandFocus();
             },
 
             // --- Helpers used by the tweaks panel ---
@@ -10378,7 +10306,6 @@
                     return;
                 }
                 // Feature 37 overlays, innermost first
-                if (App._handFocusIid) { App.closeHandFocus(); return; }
                 if (App._sheetIid) { App.closeCardSheet(); return; }
                 if (App._inkPanelPlayer != null) { App.closeInkPanel(); return; }
                 if (App._inkSel) { App.clearInkSel(); return; }
@@ -10421,9 +10348,9 @@
             // Game hotkeys never act on the board hidden behind the home screen.
             if (!document.getElementById('setup-modal').classList.contains('hidden')) return;
 
-            // Phone hand focus: ← / → step through the hand.
-            if (App._handFocusIid && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) {
-                App.cycleHandFocus(e.key === 'ArrowRight' ? 1 : -1);
+            // A hand card in the drawer: ← / → step through the hand.
+            if (App._sheetIid && App._sheetLoc === 'hand' && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) {
+                App.cycleHandSheet(e.key === 'ArrowRight' ? 1 : -1);
                 e.preventDefault();
                 return;
             }

@@ -49,7 +49,7 @@ keys:                   # function keys (phone card drawer and hand), fixed per 
   olive: "#8C8A2E"      # quest, ink · text #141311
   trace: "#2F9E96"      # exert / ready · text #041413
   graphite: "#2B2925"   # banish, discard · label in danger red; night #0C0C0C + #2C2924 hairline
-  bone: "#E7E2D8"       # neutral key on paper · night #312D28 · on glass #262624
+  bone: "#E7E2D8"       # neutral key on paper · night #312D28
 
 
 typography:
@@ -197,22 +197,22 @@ End turn, Launch, and the primary confirm are the only filled signal controls. H
 
 ### Function keys
 
-The phone card drawer and the phone hand are panels of keys, like a device's front panel. Every control there is a key: radius 10px (damage segments 8px), no border, a 3px darker edge at the foot that drops to 1px when pressed, and a 1px press travel.
+The card drawer is a panel of keys, like a device's front panel. It opens for a card on the board (touch) and for a card in the phone hand, so both read the same. Every control there is a key: radius 10px (damage segments 8px), no border, a 3px darker edge at the foot that drops to 1px when pressed, and a 1px press travel.
 
-- **Neutral keys** for adjustments and moves: damage segments, −1 / +1, To hand, Deck top, Deck bottom, Put under, Swap. Bone `#E7E2D8` with ink text on paper; `#312D28` on Kiln paper; `#262624` on glass.
+- **Neutral keys** for adjustments and moves: damage segments, −1 / +1, To hand, Deck top, Deck bottom, Put under, Swap. Bone `#E7E2D8` with ink text on paper; `#312D28` on Kiln paper.
 - **Coloured keys**, one fixed colour per verb, so a key means the same thing everywhere:
   - Coral `#ED3F1C` (text `#FFF8F4`): Challenge.
   - Olive `#8C8A2E` (text `#141311`): Quest and Ink, the keys that bank a resource.
   - Trace `#2F9E96` (text `#041413`): Exert / Ready.
-  - Graphite `#2B2925` with the label in danger red: Banish and Discard. On Kiln and glass it is `#0C0C0C` with a hairline.
-- **The view's primary confirm** (Play in the hand) is the signal key, squared off like its neighbours. Short on ink it turns hollow: a 1.5px signal outline and signal text, still tappable.
+  - Graphite `#2B2925` with the label in danger red: Banish and Discard. On Kiln it is `#0C0C0C` with a hairline.
+- **The view's primary confirm** (Play, for a hand card) is the signal key, squared off like its neighbours and two keys wide. Short on ink it turns hollow: a 1.5px signal outline and signal text, still tappable.
 - **A key you can't press is hollow**: transparent, a 1px line, zero-tone text. Never a faded colour, so it can't be read as a neutral key.
 - Lit damage segments are danger-red keys. The lethal segment keeps a red foot while unlit.
-- Group labels (`Damage · tap a segment to set`, `Move to`, `More`) are `label/sm` above their row.
+- Group labels (`Damage · tap a segment to set`, `Cost 5 · inkable … 8 ink ready`, `Move to`, `More`) are `label/sm` above their row; the figure on the right is mono ink, danger when it warns (lethal, short on ink).
 
 The key colours are the Rams keys the signal family comes from, used as fixed function colours. They are not the signal: the signal stays one per theme for state (End turn, live lore, the active branch, auto-save on, the new pip). Never put an ink colour (Amber, Amethyst, Emerald, Ruby, Sapphire, Steel) on a key; next to cards it reads as a card or a player. If Tweaks swaps the signal to Coral, Olive or Trace, the matching key shares that colour; that is accepted.
 
-The card drawer's head is the card's owner (ink ticks) and its state on the board (`P2 · exerted · 2 under`). The full text card sits under it on glass, as in the text-mode preview, so the name, type and stats are not repeated.
+The drawer's head is the card's owner (ink ticks) and where it is: on the board its state (`P2 · exerted · 2 under`), in the hand its place (`P2 · in hand · 3 / 7`) with ‹ › keys beside Close. The full text card sits under it on glass, as in the text-mode preview, so the name, type and stats are not repeated. In the hand, a sideways swipe on the text (or ← / →) steps through the hand; the next card's text slides in from that side.
 
 ### Paper module
 
@@ -297,5 +297,5 @@ Used only on the public site. Paper modules on chassis, 22px radius. Headline `d
 - Don't invent a signal outside Ember, Radio, Coral, Olive, and Trace.
 - Don't replace card faces with generated illustration. Name, subtitle, and the three figures are enough.
 - Don't hide zero-copy odds rows.
-- Don't make a second filled button on the board or the shell. Challenge, Undo, Timelines, and Save a copy stay paper tools. The phone card drawer and hand are the exception: they are panels of function keys (see Function keys).
+- Don't make a second filled button on the board or the shell. Challenge, Undo, Timelines, and Save a copy stay paper tools. The card drawer is the exception: it is a panel of function keys (see Function keys).
 - Don't put an ink colour on a function key, and don't invent a key colour outside Coral, Olive, Trace, Graphite and Bone.

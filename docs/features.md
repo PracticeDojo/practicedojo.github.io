@@ -637,6 +637,8 @@ Chosen from three phone mock-ups: the bars of "C · Open bar" with the buttons o
 
 ## Feature 44: Phone hand — one tap to a card, swipe through the hand (v2.25.0)
 
+*Superseded by Feature 49 (v3.2.0): a hand card now opens the card drawer. One tap, swipe and ← / → carry over.*
+
 ### User Story
 - As a player on a phone, when I tap my hand I want the card I tapped shown big with its actions straight away, not a second tap later.
 - As a player I want to tap another card in the fanned hand to switch to it, and swipe the big card left / right to step through my hand.
@@ -697,6 +699,18 @@ Implements version 2 of `docs/DESIGN-field-unit.md` (Kiln dark mode, signal fami
 - **Kiln** (night): warm black chassis `#141311`, warm dark paper `#221F1B`, a blacker well `#0C0C0C`, glass raised `#161412`, light ink `#F4F0E8`, hairlines `#2C2924`. Only the palette flips: every surface, card face, node, sheet and modal follows. Native controls switch with `color-scheme`.
 - **Signal family.** By day the signal is Ember `#E4572E`; on Kiln it is Radio `#E86B2A` with dark text on the key. Tweaks → Accent offers only the approved swaps: **Signal** (the theme's own), **Coral**, **Olive** (its lore numeral lifts to `#C6C45A` on the well) and **Trace**. Each carries the text colour that sits on it. The old Amber / Rose / Emerald / Violet / Azure accents were ink colours, so a saved pick of one falls back to Signal.
 - **CSS file.** The Field Unit tokens, themes, palettes and component styles moved from the inline `<style>` to `app/css/field-unit.css`, loaded right after it (pixel-identical move). The older inline rules stay put.
+
+## Feature 49: Phone hand in the card drawer (v3.2.0)
+
+### User Story
+- As a player on a phone I want a card from my hand to open the same drawer as a card on the board, so picking a card and acting on it feels the same everywhere.
+
+### Details
+Replaces the Feature 44 hand focus (big card over a glass scrim, with the fan above it).
+- **One tap on a hand card opens the card drawer** in its hand mode: the owner's ticks and `P2 · in hand · 3 / 7` with ‹ › and Close, the card's full text card on glass, a `Cost 5 · inkable … 8 ink ready` readout (danger when short), then keys: **Play** (the signal key, two wide; hollow *Play anyway · N short* when short on ink), **Ink** (Olive), **Discard** (Graphite), and Swap / Deck top / Deck bottom under `More`.
+- **Step through the hand** with ‹ ›, ← / →, or a sideways swipe on the card text (it follows the finger and springs back on a short drag); the next card slides in from that side. Vertical drags scroll a long card.
+- Escape or the backdrop closes it; an action closes it and runs. The drawer closes if its card leaves where it was (played, inked, moved).
+- The hand fan no longer opens on phones and the `#hand-focus` overlay is gone (its JS and CSS removed). Desktop is unchanged.
 
 ## Feature 48: Phone card drawer and hand as function keys (v3.1.0)
 
@@ -795,3 +809,4 @@ The public page (`index.html`) follows Field Unit too, as `docs/DESIGN-field-uni
 - [x] Refactor 3: CSS out of app/index.html
 - [x] Landing page: Field Unit
 - [x] Feature 48: Phone card drawer and hand as function keys
+- [x] Feature 49: Phone hand in the card drawer
