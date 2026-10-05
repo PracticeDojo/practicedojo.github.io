@@ -663,6 +663,47 @@ Chosen from three mock-ups ("A · Stepper + ink pips", "B · Compact list", "C �
 - **Phones:** the bar keeps its count and pips; tapping it opens a bottom sheet (about 210px for 7 ink, was 565px): count, −/+, *Ready all*, the cards in a grid, and one action bar for the tapped card.
 - **Putting a card down (desktop):** a click anywhere outside the ink cards, Escape, or ending the turn deselects the picked card; clicking another ink card picks that one instead.
 
+## Release v3.0.0: Field Unit
+
+The Field Unit visual overhaul ships as a major version. It bundles Feature 46 (the redesign), Feature 47 (Kiln night theme and the signal family) and Refactor 3 (CSS moved to `app/css/`), developed as v2.27.0 → v2.28.1 on the `claude/zen-knuth-82rdia` branch. Nothing about the data changed: sessions, decks, share links and session files from v2 open as before. Test protocols: `docs/TEST-PROTOCOL-v2.27.0.md` and `docs/TEST-PROTOCOL-v2.28.0.md`.
+
+## Feature 46: Field Unit visual redesign (v2.27.0)
+
+### User Story
+- As a player I want the Dojo to look like a calibrated instrument: calm controls on the outside, the match and the multiverse in a dark well, and colour only where it means something.
+- As a player I want every reading the board already gives me to stay — nothing removed to make it look tidy.
+
+### Details
+Implements the "Field Unit" design system (`docs/DESIGN-field-unit.md`) across the app. No feature was removed; data formats are unchanged.
+- **Shell and well.** A warm mineral chassis (`#E7E2D8`) with paper modules (`#F4F0E8`) for the top bar, the rail, draw odds, menus, modals, home and library; the board, the multiverse canvas, the card preview and the turn notes sit in black glass (`#121212`). The old role tokens (`--bg`, `--surface`, `--text`, …) are redefined for the shell and again on the glass scopes, so every existing rule picks up the right side.
+- **One signal.** Orange `#E4572E` is End turn / Start match / a dialog's confirm, the live lore numerals, the turn number, auto-save when on, the "NEW" pip on cards that entered this turn, and the branch you are on (the board's centre rule and the multiverse path to the current node). Tweaks → Accent now derives every accent tone from one hue (`--accent-l/c/h`); **Signal** is the new default (installs move across once).
+- **Inks are ticks.** Player identity is two 3×16 ink ticks (P2's striped, so a mirror match still reads) on the player rows, the board tag, every multiverse node and auto-save, the meters and the log. The board washes, purple node glow and coloured odds names are gone; Competition / Modern / Classic / Mono still choose the tick colours. Ink colours are the Field Unit six.
+- **Board (desktop).** Each half is *discard 168 · field · deck 92*: a discard column listing the real pile (newest first, cost/strength/lore; rows drag, right-click, preview like the card; *+N more* past eight), a paper deck slab, a glass lore box with the hand's CTL · BCR · RDS · LVI under it, the ready row (`2 / 9 READY`, −, +, Ready all as glass outlines), your hand in a raised-glass tray, the turn note as glass with paper text. Phones keep the Feature 43–45 layout in the new colours.
+- **Rail.** Paper player rows (`28 deck · 2 hand`), win-probability meters as a track with an ink marker and figures at both ends, a hover-details module, a log where steps are mute, banishes / challenges / quests are ink and turn boundaries read `— Turn 17 begins —`.
+- **Draw odds.** Paper module: card, copies left, then the three windows; zero-copy rows stay, greyed, with em dashes. On narrower desktops (≤1321px) the odds and board columns tighten.
+- **Multiverse.** Paper nodes (230px) on the glass canvas: ticks, title, a subline with the lore pair and the save time, the recap, then a label · value grid of Played / Inked / Drawn / Discarded / Banished / Quested / Starting hand. Edges are `#6A655E` hairlines; the path to the node you are on is signal. The canvas hint is shown in the header.
+- **Type.** Inter (with its display optical size) for names and prose, Liberation Mono for labels, indexes and figures (self-hosted, OFL, `app/fonts/`).
+- **Fixes on the way.** Tweaks → Panel layout *Floating* and *Hide* used to squash or lose the board; both lay out properly now.
+
+## Feature 47: Kiln night theme and the signal family (v2.28.0)
+
+### User Story
+- As a player I want a dark version of the Dojo for late sessions, that follows my device unless I pick one.
+- As a player I want to swap the accent without it ever clashing with the ink colours that name cards and players.
+
+### Details
+Implements version 2 of `docs/DESIGN-field-unit.md` (Kiln dark mode, signal family).
+- **Tweaks → Theme: Auto / Day / Night.** Auto follows the device's light/dark setting and keeps following it while the app is open. The choice is applied before first paint (a few lines in `<head>`), so a night user never sees the day shell flash.
+- **Kiln** (night): warm black chassis `#141311`, warm dark paper `#221F1B`, a blacker well `#0C0C0C`, glass raised `#161412`, light ink `#F4F0E8`, hairlines `#2C2924`. Only the palette flips: every surface, card face, node, sheet and modal follows. Native controls switch with `color-scheme`.
+- **Signal family.** By day the signal is Ember `#E4572E`; on Kiln it is Radio `#E86B2A` with dark text on the key. Tweaks → Accent offers only the approved swaps: **Signal** (the theme's own), **Coral**, **Olive** (its lore numeral lifts to `#C6C45A` on the well) and **Trace**. Each carries the text colour that sits on it. The old Amber / Rose / Emerald / Violet / Azure accents were ink colours, so a saved pick of one falls back to Signal.
+- **CSS file.** The Field Unit tokens, themes, palettes and component styles moved from the inline `<style>` to `app/css/field-unit.css`, loaded right after it (pixel-identical move). The older inline rules stay put.
+
+## Refactor 3: CSS out of `app/index.html` (v2.28.1)
+
+### Details
+- The inline `<style>` block (about 7,300 lines) moved unchanged to `app/css/base.css`, linked where it was, before `app/css/field-unit.css`. `app/index.html` is now markup and JavaScript (about 10,500 lines). Day and night screenshots before and after are pixel-identical.
+- Rule (AGENTS.md · Styles): CSS lives in `app/css/`; new styles go in `field-unit.css`; `base.css` is only pruned area by area; inline `style="…"` is for runtime values.
+
 ## Refactor 2: Own repository (v2.18.1)
 
 ### Details
@@ -722,3 +763,6 @@ Chosen from three mock-ups ("A · Stepper + ink pips", "B · Compact list", "C �
 - [x] Feature 43: Phone player bars, Quest / End turn in the hand tray, ink this turn
 - [x] Feature 44: Phone hand — one tap to a card, swipe through the hand
 - [x] Feature 45: Inkwell as cards — in the ink bar on desktop, a compact sheet on phones
+- [x] Feature 46: Field Unit visual redesign
+- [x] Feature 47: Kiln night theme and the signal family
+- [x] Refactor 3: CSS out of app/index.html

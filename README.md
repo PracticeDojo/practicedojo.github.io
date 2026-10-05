@@ -15,6 +15,8 @@ Everything runs in the browser and is served by GitHub Pages. There's no build s
 | `app/index.html` | The Dojo |
 | `app/js/` | Small modules (`library.js`: decks and sessions on this device) |
 | `app/defaults/` | Default decks and demos |
+| `app/css/` | The CSS: `base.css` (original styles) and `field-unit.css` (the Field Unit design system on top) |
+| `app/fonts/` | Self-hosted Liberation Mono (OFL) |
 | `img/` | Shared images |
 | `docs/` | Feature list, dev guide, architecture and test protocols |
 
