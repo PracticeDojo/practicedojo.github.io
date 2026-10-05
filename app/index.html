@@ -8413,7 +8413,7 @@
     <script>
         let cardFuse = null;
 
-        const APP_VERSION = "v2.25.1"; // Centralized version string (redesign)
+        const APP_VERSION = "v2.25.2"; // Centralized version string (redesign)
 
         // Tweaks panel accent presets (hue values for the OKLCH accent ramp)
         const ACCENT_PRESETS = {
@@ -15126,6 +15126,15 @@
                 else if (act === 'hand') { this._inkSel = null; this.moveCard(cid, 'hand', pos); }
                 else if (act === 'discard') { this._inkSel = null; this.moveCard(cid, 'discard', pos); }
             },
+            // Drop the picked ink card and redraw just the ink bars (and the sheet, if open).
+            clearInkSel() {
+                if (!this._inkSel) return;
+                this._inkSel = null;
+                if (this._inkPanelPlayer != null) this.renderInkPanel();
+                const ip = this.state.players[this.state.inactivePlayer], ap = this.state.players[this.state.activePlayer];
+                if (ip) this.renderInkCounter(ip, document.getElementById('top-inkwell-cards'), document.getElementById('top-ink-new'));
+                if (ap) this.renderInkCounter(ap, document.getElementById('bottom-inkwell-cards'), document.getElementById('bottom-ink-new'));
+            },
             renderInkInline(player, el) {
                 const esc = (s) => this._esc(s);
                 const pi = this.state.players.indexOf(player);
@@ -17310,6 +17319,14 @@
             App.onCardHover(id);
         });
         document.addEventListener('dragend', () => App.endCardDrag());
+        // Desktop: a click anywhere outside the ink cards puts down a picked ink card.
+        // Capture phase, so buttons that stop propagation still count; clicks on the
+        // ink cards themselves are left to the bar (pick another / act on this one).
+        document.addEventListener('click', (e) => {
+            if (!App._inkSel || App.isPhoneUI()) return;
+            if (e.target.closest && e.target.closest('.ink-cluster.is-inline .ii-slot')) return;
+            App.clearInkSel();
+        }, true);
 
         // Context-menu keyboard support: arrows walk the items, Escape closes.
         document.getElementById('context-menu').addEventListener('keydown', (e) => {
@@ -17518,7 +17535,7 @@
                 if (App._handFocusIid) { App.closeHandFocus(); return; }
                 if (App._sheetIid) { App.closeCardSheet(); return; }
                 if (App._inkPanelPlayer != null) { App.closeInkPanel(); return; }
-                if (App._inkSel) { App._inkSel = null; App.render(); return; }
+                if (App._inkSel) { App.clearInkSel(); return; }
                 if (App.challengeMode) {
                     if (App.challengePick) { App.challengePick = null; App.hideForecast(); App.clearAimArrow(); App.render(); }
                     else App.exitChallengeMode();

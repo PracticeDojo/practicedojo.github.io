@@ -647,6 +647,7 @@ Chosen from three mock-ups ("A · Stepper + ink pips", "B · Compact list", "C �
 - **Desktop (≥761px):** the ink bar itself holds everything; clicking the bar no longer opens a panel. Left: ready count (*4/7 READY*, *+N* inked this turn), −/+ (spend / ready one) and *Ready all*. Right: the ink cards, overlapping like a hand once they don't fit. A clicked card opens up in place with its actions; click it again or press Escape to close. Both players' bars work the same way. Dropping a card anywhere on the bar still inks it.
 - **Phones:** the bar keeps its count and pips; tapping it opens a bottom sheet (about 210px for 7 ink, was 565px): count, −/+, *Ready all*, the cards in a grid, and one action bar for the tapped card.
 - **v2.25.1:** ending the turn clears the selected ink card, so it doesn't stay open on the other player's bar.
+- **v2.25.2:** on desktop a click anywhere outside the ink cards puts a picked card down (as does Escape); clicking another ink card picks that one instead.
 
 ## Refactor 2: Own repository (v2.18.1)
 
