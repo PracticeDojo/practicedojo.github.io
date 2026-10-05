@@ -634,6 +634,21 @@ Chosen from three phone mock-ups: the bars of "C · Open bar" with the buttons o
 - **Ink this turn (all sizes):** the ink tag now shows the real count (`+2`), and the pips for cards inked this turn get a bright core. On phones the tag reads *+N inked* beside INK, and the current player's bar shows a dashed *No ink yet* until they ink. The opponent's bar keeps showing what they inked on their last turn.
 - Desktop layout unchanged.
 
+## Feature 44: Phone hand — one tap to a card, swipe through the hand (v2.25.0)
+
+### User Story
+- As a player on a phone, when I tap my hand I want the card I tapped shown big with its actions straight away, not a second tap later.
+- As a player I want to tap another card in the fanned hand to switch to it, and swipe the big card left / right to step through my hand.
+- As a player in text mode, or offline, I want the big card to show the recreated text card rather than just its name.
+
+### Details
+- **One tap:** tapping the closed hand opens the fan *and* focuses the tapped card (big card + Play / Ink / Swap / Discard / Deck top / Deck btm).
+- **Switch:** while a card is focused the fan stays above the dim backdrop, so tapping another hand card switches to it. The focused card sits raised with an accent outline.
+- **Swipe:** a horizontal swipe on the big card cycles the hand (left = next, right = previous, wrapping at the ends); the card follows the finger and springs back on a short drag. Chevrons either side and ← / → do the same. A *3 / 7* counter sits under the card.
+- **Text card:** the big card is the artwork over the recreated text card (cost, name, type line, abilities, stats). Text mode shows only the text card; while the art loads or when it can't load (offline), the text card shows through. A long card's text scrolls vertically without breaking the swipe.
+- **Short phones:** the big card shrinks with the viewport height (252px down to 168px) so the actions stay clear of the fanned hand.
+- Desktop unchanged.
+
 ## Refactor 2: Own repository (v2.18.1)
 
 ### Details
@@ -691,3 +706,4 @@ Chosen from three phone mock-ups: the bars of "C · Open bar" with the buttons o
 - [x] Feature 41: Import Duels.ink's current text logs ("You / Opponent")
 - [x] Feature 42: Optional accounts — Discord & Google sign-in (ARCH Phase 3)
 - [x] Feature 43: Phone player bars, Quest / End turn in the hand tray, ink this turn
+- [x] Feature 44: Phone hand — one tap to a card, swipe through the hand
