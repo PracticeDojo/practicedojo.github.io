@@ -1006,7 +1006,7 @@
     <script>
         let cardFuse = null;
 
-        const APP_VERSION = "v3.0.0"; // Centralized version string (v3: Field Unit)
+        const APP_VERSION = "v3.1.0"; // Centralized version string (v3: Field Unit)
 
         // Tweaks panel accent presets (hue values for the OKLCH accent ramp)
         // Tweaks → Accent: the approved Field Unit signals only (design.md ·
@@ -7629,43 +7629,49 @@
                 const isChar = db.type === 'Character';
                 const wp = db.willpower || 0, dmg = f.card.damage || 0;
                 const esc = (s) => this._esc(s);
-                const stats = [];
-                if (isChar) stats.push(`S${db.strength || 0} W${wp} L${db.lore || 0}`);
-                else if (wp) stats.push(`W${wp}`);
-                if (f.card.exerted) stats.push('exerted');
-                if (f.card.drying) stats.push('drying');
-                if (f.card.stackedCards && f.card.stackedCards.length) stats.push(`${f.card.stackedCards.length} under`);
+                // The text card below carries the name, type and stats, so the head
+                // is just whose card it is and its state on the board.
+                const state = [];
+                if (f.card.exerted) state.push('exerted');
+                if (f.card.drying) state.push('drying');
+                if (f.card.stackedCards && f.card.stackedCards.length) state.push(`${f.card.stackedCards.length} under`);
+                const pNo = this.state.players.indexOf(f.player) + 1;
+                sh.setAttribute('aria-label', `${db.name || 'Card'}: card actions`);
                 sh.innerHTML = '';
                 const add = (html) => { const d = document.createElement('div'); d.innerHTML = html; while (d.firstChild) sh.appendChild(d.firstChild); };
                 add(`<span class="cs-grab"></span>
-                    <div class="cs-head"><div class="cs-titles"><span class="cs-title">${esc(db.name || 'Card')}</span>
-                    <span class="cs-sub">${esc([db.version, db.type].filter(Boolean).join(' · '))}${stats.length ? ' · ' + esc(stats.join(' · ')) : ''}</span></div>
-                    <button class="cs-icon" data-act="preview" aria-label="Preview card"><i class="fa-solid fa-eye"></i></button>
+                    <div class="cs-head"><span class="cs-state"><span class="cs-ticks is-p${pNo}"></span>P${pNo} · ${esc(state.join(' · ') || 'in play')}</span>
                     <button class="cs-icon" data-act="close" aria-label="Close"><i class="fa-solid fa-xmark"></i></button></div>`);
+                // The full card text, as the preview shows it in text mode, so the
+                // rules are right there while picking an action.
+                const text = document.createElement('div');
+                text.className = 'cs-text';
+                text.appendChild(this.buildCardTextView(db));
+                sh.appendChild(text);
                 if (wp > 0) {
                     let segs = '';
                     for (let i = 1; i <= wp; i++) {
                         const target = dmg === i ? i - 1 : i;
-                        segs += `<button class="cs-seg${i <= dmg ? ' on' : ''}${i === wp ? ' last' : ''}" data-set="${target}" aria-label="Set damage to ${target}">${i}</button>`;
+                        segs += `<button class="cs-seg key${i <= dmg ? ' on' : ''}${i === wp ? ' last' : ''}" data-set="${target}" aria-label="Set damage to ${target}">${i}</button>`;
                     }
                     add(`<div class="cs-label"><span>Damage · tap a segment to set</span><b class="${dmg >= wp ? 'is-lethal' : ''}">${dmg} / ${wp}${dmg >= wp ? ' · lethal' : ''}</b></div>
                         <div class="cs-segs">${segs}</div>
-                        <div class="cs-row"><button class="cs-btn big" data-set="${dmg - 1}" aria-label="Remove 1 damage">− 1</button>
-                        <button class="cs-btn big" data-set="${dmg + 1}" aria-label="Add 1 damage">+ 1</button></div>`);
+                        <div class="cs-row"><button class="cs-btn key big" data-set="${dmg - 1}" aria-label="Remove 1 damage">− 1</button>
+                        <button class="cs-btn key big" data-set="${dmg + 1}" aria-label="Add 1 damage">+ 1</button></div>`);
                 }
                 const canQuest = mine && isChar && !f.card.exerted && !f.card.drying && (db.lore || 0) > 0;
                 add(`<div class="cs-acts">
-                    <button class="cs-btn is-challenge" data-act="challenge" ${mine && isChar ? '' : 'disabled'}>Challenge</button>
-                    <button class="cs-btn" data-act="quest" ${canQuest ? '' : 'disabled'}>Quest</button>
-                    <button class="cs-btn" data-act="exert">${f.card.exerted ? 'Ready' : 'Exert'}</button>
-                    <button class="cs-btn is-danger" data-act="banish">Banish</button></div>`);
-                let more = `<button class="cs-btn" data-act="hand">To hand</button>
-                    <button class="cs-btn" data-act="top">Deck top</button>
-                    <button class="cs-btn" data-act="bottom">Deck bottom</button>`;
-                if (mine) more += `<button class="cs-btn" data-act="under">Put under</button>`;
-                if (f.card.locationId) more += `<button class="cs-btn" data-act="leave">Leave location</button>`;
-                if (mine && f.card.stackedCards && f.card.stackedCards.length) more += `<button class="cs-btn" data-act="separate">Separate stack</button>`;
-                add(`<div class="cs-more">${more}</div>`);
+                    <button class="cs-btn key key-coral" data-act="challenge" ${mine && isChar ? '' : 'disabled'}>Challenge</button>
+                    <button class="cs-btn key key-olive" data-act="quest" ${canQuest ? '' : 'disabled'}>Quest</button>
+                    <button class="cs-btn key key-trace" data-act="exert">${f.card.exerted ? 'Ready' : 'Exert'}</button>
+                    <button class="cs-btn key key-graphite" data-act="banish">Banish</button></div>`);
+                let more = `<button class="cs-btn key" data-act="hand">To hand</button>
+                    <button class="cs-btn key" data-act="top">Deck top</button>
+                    <button class="cs-btn key" data-act="bottom">Deck bottom</button>`;
+                if (mine) more += `<button class="cs-btn key" data-act="under">Put under</button>`;
+                if (f.card.locationId) more += `<button class="cs-btn key" data-act="leave">Leave location</button>`;
+                if (mine && f.card.stackedCards && f.card.stackedCards.length) more += `<button class="cs-btn key" data-act="separate">Separate stack</button>`;
+                add(`<div class="cs-label"><span>Move to</span></div><div class="cs-more">${more}</div>`);
 
                 const pos = mine ? 'bottom' : 'top';
                 sh.onclick = (e) => {
@@ -7676,7 +7682,6 @@
                     const act = b.dataset.act;
                     const close = (fn) => { this.closeCardSheet(); fn(); };
                     if (act === 'close') this.closeCardSheet();
-                    else if (act === 'preview') { this.closeCardSheet(); this.showPreview(db); this.toggleSidebar(true); }
                     else if (act === 'challenge') close(() => this.enterChallengeMode(id));
                     else if (act === 'quest') this.quest(id);
                     else if (act === 'exert') this.toggleExert(id);
@@ -8042,13 +8047,14 @@
                 rest.style.cssText = 'display:contents';
                 rest.innerHTML = `<span class="hf-meta">${esc(db.name || '')}${db.version ? ' · ' + esc(db.version) : ''}<br>${esc(db.type || '')} · cost ${cost}${db.inkwell ? ' · inkable' : ' · not inkable'}${short ? ` <span class="warn">· ${ready} ink ready</span>` : ''}</span>
                     <div class="hf-acts">
-                        <button class="cs-btn ${short ? 'is-short' : 'is-primary'}" data-act="play">${short ? `Play anyway · ${cost - ready} short` : `Play · −${cost} ink`}</button>
-                        <button class="cs-btn" data-act="ink" ${db.inkwell ? '' : 'disabled'}>${db.inkwell ? 'Ink' : 'No ink'}</button></div>
+                        <button class="cs-btn key ${short ? 'key-signal-hollow' : 'key-signal'}" data-act="play">${short ? `Play anyway · ${cost - ready} short` : `Play · −${cost} ink`}</button>
+                        <button class="cs-btn key key-olive" data-act="ink" ${db.inkwell ? '' : 'disabled'}>${db.inkwell ? 'Ink' : 'No ink'}</button>
+                        <button class="cs-btn key key-graphite" data-act="discard">Discard</button></div>
+                    <div class="cs-label hf-label"><span>More</span></div>
                     <div class="hf-more">
-                        <button class="cs-btn" data-act="swap">Swap</button>
-                        <button class="cs-btn" data-act="discard">Discard</button>
-                        <button class="cs-btn" data-act="top">Deck top</button>
-                        <button class="cs-btn" data-act="bottom">Deck btm</button></div>`;
+                        <button class="cs-btn key" data-act="swap">Swap</button>
+                        <button class="cs-btn key" data-act="top">Deck top</button>
+                        <button class="cs-btn key" data-act="bottom">Deck bottom</button></div>`;
                 hf.appendChild(rest);
                 hf.classList.add('is-open');
                 hf.setAttribute('aria-hidden', 'false');

@@ -698,6 +698,20 @@ Implements version 2 of `docs/DESIGN-field-unit.md` (Kiln dark mode, signal fami
 - **Signal family.** By day the signal is Ember `#E4572E`; on Kiln it is Radio `#E86B2A` with dark text on the key. Tweaks → Accent offers only the approved swaps: **Signal** (the theme's own), **Coral**, **Olive** (its lore numeral lifts to `#C6C45A` on the well) and **Trace**. Each carries the text colour that sits on it. The old Amber / Rose / Emerald / Violet / Azure accents were ink colours, so a saved pick of one falls back to Signal.
 - **CSS file.** The Field Unit tokens, themes, palettes and component styles moved from the inline `<style>` to `app/css/field-unit.css`, loaded right after it (pixel-identical move). The older inline rules stay put.
 
+## Feature 48: Phone card drawer and hand as function keys (v3.1.0)
+
+### User Story
+- As a player on a phone I want a card's full text in its drawer while I pick an action, without a trip to the preview.
+- As a player I want the drawer and the hand to feel like one instrument: every control a key, each action always the same colour.
+
+### Details
+Adds *Function keys* to `docs/DESIGN-field-unit.md` (version 3).
+- **Card text in the drawer.** The touch card drawer shows the card's full text card (the text-mode preview's `buildCardTextView`) on glass. A long card scrolls inside it (capped at about a third of the screen), so the actions stay in reach. The eye button that opened the sidebar preview is gone.
+- **Head is state, not title.** The drawer's head is the owner's ink ticks and the card's state on the board (`P2 · exerted · 2 under`, or `in play`) with Close. The name, type and stats are in the text card.
+- **Function keys.** Every control is a key with a darker foot that drops when pressed. Challenge is Coral, Quest Olive, Exert / Ready Trace, Banish Graphite with a red label. Damage segments, −1 / +1 and the moves are neutral keys; the moves are an even row under a `Move to` label. Lit damage is a red key; the lethal segment keeps a red foot. A key you can't press is hollow.
+- **Phone hand.** Same keys on the glass overlay: Play is the view's signal key (hollow when short on ink: *Play anyway · N short*), Ink is Olive, Discard Graphite; Swap / Deck top / Deck bottom are neutral keys under `More`.
+- No ink colour is used on a key. Desktop is unchanged.
+
 ## Landing page: Field Unit (v3.0.0)
 
 ### Details
@@ -780,3 +794,4 @@ The public page (`index.html`) follows Field Unit too, as `docs/DESIGN-field-uni
 - [x] Feature 47: Kiln night theme and the signal family
 - [x] Refactor 3: CSS out of app/index.html
 - [x] Landing page: Field Unit
+- [x] Feature 48: Phone card drawer and hand as function keys

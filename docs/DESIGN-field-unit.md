@@ -1,7 +1,7 @@
 ---
 name: Practice Dojo
 system: Field Unit
-version: 2
+version: 3
 theme_day: mineral
 theme_night: kiln
 
@@ -43,6 +43,13 @@ signals:
   coral: "#ED3F1C"      # hotter numeral
   olive: "#8C8A2E"      # quiet, non-orange
   trace: "#2F9E96"      # non-orange instrument
+
+keys:                   # function keys (phone card drawer and hand), fixed per verb
+  coral: "#ED3F1C"      # challenge · text #FFF8F4
+  olive: "#8C8A2E"      # quest, ink · text #141311
+  trace: "#2F9E96"      # exert / ready · text #041413
+  graphite: "#2B2925"   # banish, discard · label in danger red; night #0C0C0C + #2C2924 hairline
+  bone: "#E7E2D8"       # neutral key on paper · night #312D28 · on glass #262624
 
 
 typography:
@@ -188,6 +195,25 @@ Chassis. Logo is `label/sm` weight 600. Version and matchup are 12px ink. Tools 
 
 End turn, Launch, and the primary confirm are the only filled signal controls. Height 36–40px, radius 999px, label 13px paper, no border. Hover: `#C94A24`. Active: `#B3411E`. Disabled: `#E0DBD1` fill, `#8A847A` text, no orange. One signal key per view.
 
+### Function keys
+
+The phone card drawer and the phone hand are panels of keys, like a device's front panel. Every control there is a key: radius 10px (damage segments 8px), no border, a 3px darker edge at the foot that drops to 1px when pressed, and a 1px press travel.
+
+- **Neutral keys** for adjustments and moves: damage segments, −1 / +1, To hand, Deck top, Deck bottom, Put under, Swap. Bone `#E7E2D8` with ink text on paper; `#312D28` on Kiln paper; `#262624` on glass.
+- **Coloured keys**, one fixed colour per verb, so a key means the same thing everywhere:
+  - Coral `#ED3F1C` (text `#FFF8F4`): Challenge.
+  - Olive `#8C8A2E` (text `#141311`): Quest and Ink, the keys that bank a resource.
+  - Trace `#2F9E96` (text `#041413`): Exert / Ready.
+  - Graphite `#2B2925` with the label in danger red: Banish and Discard. On Kiln and glass it is `#0C0C0C` with a hairline.
+- **The view's primary confirm** (Play in the hand) is the signal key, squared off like its neighbours. Short on ink it turns hollow: a 1.5px signal outline and signal text, still tappable.
+- **A key you can't press is hollow**: transparent, a 1px line, zero-tone text. Never a faded colour, so it can't be read as a neutral key.
+- Lit damage segments are danger-red keys. The lethal segment keeps a red foot while unlit.
+- Group labels (`Damage · tap a segment to set`, `Move to`, `More`) are `label/sm` above their row.
+
+The key colours are the Rams keys the signal family comes from, used as fixed function colours. They are not the signal: the signal stays one per theme for state (End turn, live lore, the active branch, auto-save on, the new pip). Never put an ink colour (Amber, Amethyst, Emerald, Ruby, Sapphire, Steel) on a key; next to cards it reads as a card or a player. If Tweaks swaps the signal to Coral, Olive or Trace, the matching key shares that colour; that is accepted.
+
+The card drawer's head is the card's owner (ink ticks) and its state on the board (`P2 · exerted · 2 under`). The full text card sits under it on glass, as in the text-mode preview, so the name, type and stats are not repeated.
+
 ### Paper module
 
 Background paper, 1px `#E0DBD1`, radius 10–12px, padding 8px. Used for players, win-probability, hover-details, draw odds. Do not nest a paper module inside a paper module.
@@ -271,4 +297,5 @@ Used only on the public site. Paper modules on chassis, 22px radius. Headline `d
 - Don't invent a signal outside Ember, Radio, Coral, Olive, and Trace.
 - Don't replace card faces with generated illustration. Name, subtitle, and the three figures are enough.
 - Don't hide zero-copy odds rows.
-- Don't make a second filled button. Challenge, Undo, Timelines, and Save a copy stay paper tools.
+- Don't make a second filled button on the board or the shell. Challenge, Undo, Timelines, and Save a copy stay paper tools. The phone card drawer and hand are the exception: they are panels of function keys (see Function keys).
+- Don't put an ink colour on a function key, and don't invent a key colour outside Coral, Olive, Trace, Graphite and Bone.

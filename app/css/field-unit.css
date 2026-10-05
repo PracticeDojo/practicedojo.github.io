@@ -2780,6 +2780,247 @@ body.palette-competition .autosave-item.is-p2::before {
     background: var(--border-strong);
 }
 
+/* The card's full text in the drawer: the text-mode preview, on glass.
+   Capped so a long card scrolls here and the actions stay in reach. */
+.cs-text {
+    flex: none;
+    max-height: 32vh;
+    max-height: 32dvh;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 12px 12px 10px;
+    border-radius: var(--radius-inset);
+    background: var(--fu-glass);
+    color: var(--fu-light);
+    --text: var(--fu-light);
+    --text-dim: var(--fu-glass-mute);
+    --border-soft: var(--fu-glass-rule);
+    font-size: 12.5px;
+    line-height: 1.4;
+}
+
+.cs-text .ctv-name {
+    font-size: 14px;
+}
+
+.cs-text .ctv-ab {
+    font-size: 12.5px;
+}
+
+:root[data-theme="night"] .cs-text {
+    box-shadow: inset 0 0 0 1px var(--fu-line);
+}
+
+/* The drawer's head: whose card it is (ink ticks) and its state on the
+   board. The text card under it carries the name, type and stats. */
+.cs-state {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font: 500 10px var(--font-mono);
+    letter-spacing: var(--label-track);
+    text-transform: uppercase;
+    color: var(--text-dim);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.cs-ticks {
+    flex: none;
+    width: 8px;
+    height: 16px;
+}
+
+.cs-ticks.is-p1 {
+    background: var(--tick-p1);
+}
+
+.cs-ticks.is-p2 {
+    background: var(--tick-p2);
+    -webkit-mask-image: var(--tick-mask);
+    mask-image: var(--tick-mask);
+}
+
+/* ===================================================================
+   FUNCTION KEYS (Feature 48) — the phone card drawer and hand.
+   Every control is a key with a darker foot edge that drops when
+   pressed. Neutral keys for adjustments and moves; a fixed colour per
+   verb from the Field Unit key family (design.md · Function keys):
+   Coral = challenge, Olive = quest / ink, Trace = exert / ready,
+   Graphite = banish / discard, the signal = the view's primary confirm.
+   Never an ink colour.
+=================================================================== */
+:root {
+    --key-coral: #ED3F1C;
+    --key-coral-ink: #FFF8F4;
+    --key-olive: #8C8A2E;
+    --key-olive-ink: #141311;
+    --key-trace: #2F9E96;
+    --key-trace-ink: #041413;
+    --key-graphite: #2B2925;
+    --key-graphite-ink: oklch(0.72 0.17 28);
+    --key-graphite-line: transparent;
+    /* Neutral key on paper */
+    --key-bone: #E7E2D8;
+    --key-bone-ink: #161513;
+    --key-edge: oklch(0.2 0.02 80 / 0.16);
+    --key-off-ink: var(--fu-zero);
+    --key-off-line: var(--fu-line);
+}
+
+:root[data-theme="night"] {
+    --key-graphite: #0C0C0C;
+    --key-graphite-line: #2C2924;
+    --key-bone: #312D28;
+    --key-bone-ink: #F4F0E8;
+    --key-edge: oklch(0 0 0 / 0.5);
+    --key-off-ink: #6B655C;
+    --key-off-line: #2C2924;
+}
+
+/* The hand sits on glass in both themes: neutral keys go dark there. */
+.hand-focus {
+    --key-graphite: #0A0A0A;
+    --key-graphite-line: #3B3A37;
+    --key-bone: #262624;
+    --key-bone-ink: #F4F0E8;
+    --key-edge: oklch(0 0 0 / 0.55);
+    --key-off-ink: #6F6A62;
+    --key-off-line: #2A2A2A;
+}
+
+.cs-btn.key,
+.cs-seg.key {
+    border: 0;
+    border-radius: 10px;
+    background: var(--key-bone);
+    color: var(--key-bone-ink);
+    box-shadow: inset 0 -3px 0 var(--key-edge);
+    opacity: 1;
+    transition: transform var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
+}
+
+.cs-seg.key {
+    border-radius: 8px;
+}
+
+.cs-btn.key:active:not(:disabled),
+.cs-seg.key:active {
+    transform: translateY(1px);
+    box-shadow: inset 0 -1px 0 var(--key-edge);
+}
+
+.cs-btn.key-coral {
+    background: var(--key-coral);
+    color: var(--key-coral-ink);
+    box-shadow: inset 0 -3px 0 oklch(0 0 0 / 0.22);
+}
+
+.cs-btn.key-olive {
+    background: var(--key-olive);
+    color: var(--key-olive-ink);
+    box-shadow: inset 0 -3px 0 oklch(0 0 0 / 0.22);
+}
+
+.cs-btn.key-trace {
+    background: var(--key-trace);
+    color: var(--key-trace-ink);
+    box-shadow: inset 0 -3px 0 oklch(0 0 0 / 0.22);
+}
+
+.cs-btn.key-graphite {
+    background: var(--key-graphite);
+    color: var(--key-graphite-ink);
+    box-shadow: inset 0 -3px 0 oklch(1 0 0 / 0.06), 0 0 0 1px var(--key-graphite-line);
+}
+
+/* The view's primary confirm (Play) is the signal key. Short on ink, it
+   stays tappable but hollow: the way through, not the usual one. */
+.cs-btn.key-signal {
+    background: var(--accent);
+    color: var(--accent-ink);
+    box-shadow: inset 0 -3px 0 oklch(0 0 0 / 0.22);
+}
+
+.cs-btn.key-signal-hollow {
+    background: transparent;
+    color: var(--accent-hi);
+    box-shadow: inset 0 0 0 1.5px var(--accent);
+}
+
+.cs-btn.key:active:not(:disabled):is(.key-coral, .key-olive, .key-trace, .key-signal) {
+    box-shadow: inset 0 -1px 0 oklch(0 0 0 / 0.22);
+}
+
+/* A key you can't press is hollow, so it never reads as a neutral key. */
+.cs-btn.key:disabled {
+    background: transparent;
+    color: var(--key-off-ink);
+    box-shadow: inset 0 0 0 1px var(--key-off-line);
+    cursor: default;
+}
+
+/* Damage: lit segments are red keys; the lethal one keeps a red foot. */
+.cs-seg.key.on {
+    background: var(--danger);
+    color: #FFF8F4;
+    box-shadow: inset 0 -3px 0 oklch(0 0 0 / 0.24);
+}
+
+.cs-seg.key.last:not(.on) {
+    box-shadow: inset 0 -3px 0 var(--danger);
+}
+
+.cs-acts .cs-btn.key {
+    min-height: 52px;
+    font-weight: 620;
+    letter-spacing: -0.01em;
+}
+
+/* Moves: an even row of keys under a label, like the damage track. */
+.cs-more {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 6px;
+}
+
+.cs-more .cs-btn.key,
+.hf-more .cs-btn.key {
+    min-height: 48px;
+    padding: 4px;
+    border-radius: 10px;
+    font: 600 12px/1.15 var(--font-sans);
+}
+
+/* ----- Phone hand: the same keys on the glass overlay ----- */
+.hf-acts {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 6px;
+}
+
+.hf-acts .cs-btn.key {
+    min-height: 52px;
+    font-weight: 620;
+    letter-spacing: -0.01em;
+}
+
+.hf-acts [data-act="play"] {
+    grid-column: span 2;
+}
+
+.hf-more {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.hf-label {
+    width: 100%;
+    max-width: 380px;
+    margin-bottom: -4px;
+}
+
 .cs-btn,
 .cs-seg,
 .ip-btn,
@@ -2787,28 +3028,6 @@ body.palette-competition .autosave-item.is-p2::before {
     background: var(--surface);
     border-color: var(--border);
     color: var(--text);
-}
-
-.cs-btn.is-primary {
-    background: var(--accent);
-    border-color: transparent;
-    color: var(--accent-ink);
-}
-
-.cs-btn.is-challenge {
-    background: color-mix(in oklch, var(--danger) 14%, var(--surface));
-    border-color: var(--danger);
-    color: var(--text);
-}
-
-.cs-btn.is-danger {
-    color: var(--danger);
-}
-
-.cs-btn.is-short {
-    background: var(--fu-glass);
-    border-color: var(--fu-glass);
-    color: var(--fu-light);
 }
 
 .cs-seg.on {
@@ -2847,17 +3066,6 @@ body.palette-competition .autosave-item.is-p2::before {
     background: oklch(0.1 0 0 / 0.82);
 }
 
-.hf-more .cs-btn {
-    background: var(--fu-glass-raised);
-    border-color: var(--fu-glass-line);
-    color: var(--fu-light);
-}
-
-.hf-acts .cs-btn:not(.is-primary) {
-    background: var(--fu-glass-raised);
-    border-color: var(--fu-glass-line);
-    color: var(--fu-light);
-}
 
 /* ----- Multiverse: chassis frame, glass canvas, paper nodes. Edges are
        #6A655E at 1.2px; the path to the node you are on is signal. ----- */
