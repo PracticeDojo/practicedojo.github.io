@@ -7651,9 +7651,13 @@
         html,
         body {
             font-family: var(--font-sans);
-            font-size: 13px;
             letter-spacing: 0;
             font-optical-sizing: auto;
+        }
+
+        /* html keeps 14px so Tailwind's rem-based utilities don't shift. */
+        body {
+            font-size: 13px;
         }
 
         body {
@@ -21100,10 +21104,11 @@
             bindTweaks() {
                 const t = this.loadTweaks();
                 // Feature 46 (Field Unit) made the signal orange the default accent.
-                // Move existing installs across once, like the Feature 36 palette
-                // migration below, so a later deliberate pick is never undone.
+                // Installs still on the old default (Amber) move across once, like the
+                // Feature 36 palette migration below; any other pick is kept, and a
+                // later deliberate pick is never undone.
                 if (!t.accentV) {
-                    t.accent = 'signal';
+                    if (!t.accent || t.accent === 'amber') t.accent = 'signal';
                     t.accentV = 46;
                 }
                 if (!t.accent || !ACCENT_PRESETS[t.accent]) t.accent = 'signal';
