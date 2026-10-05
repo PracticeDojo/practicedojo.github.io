@@ -6962,16 +6962,115 @@
             }
         }
 
+        /* Big card + prev/next chevrons. Horizontal swipes here cycle the hand
+           (handled in JS); vertical ones stay native so a long text card scrolls. */
+        .hf-stage {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            flex: none;
+            touch-action: pan-y;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        .hf-cardbox {
+            position: relative;
+            flex: none;
+        }
+
+        /* The fan stays tappable above this overlay, so on short phones the card
+           gives up height (down to 168px) to keep the action buttons clear of it. */
         .hf-card {
             position: relative;
-            width: 180px;
-            height: 252px;
+            aspect-ratio: 5 / 7;
+            height: clamp(168px, calc(100vh - 430px), 252px);
+            height: clamp(168px, calc(100dvh - 430px), 252px);
             border-radius: 12px;
             overflow: hidden;
             flex: none;
-            font-size: 15px;
             box-shadow: 0 0 0 1px var(--border-strong), 0 24px 50px -14px oklch(0 0 0 / 0.95);
             background: var(--surface-2);
+            transition: transform .2s cubic-bezier(.3, 1.2, .5, 1);
+        }
+
+        /* The recreated text card under the artwork: what shows in text mode,
+           while the image loads, and when it can't load at all. */
+        .hf-text {
+            position: absolute;
+            inset: 0;
+            overflow-y: auto;
+            overscroll-behavior: contain;
+            /* A scroll container starts a fresh touch-action, so restate pan-y
+               or the browser claims the horizontal swipe. */
+            touch-action: pan-y;
+            padding: 12px 12px 14px;
+            color: var(--text);
+            text-align: left;
+            font-size: 11px;
+            line-height: 1.35;
+        }
+
+        .hf-card.is-art .hf-text {
+            visibility: hidden;
+        }
+
+        .hf-card.hf-from-right {
+            animation: hfFromRight .22s cubic-bezier(.2, 1, .4, 1);
+        }
+
+        .hf-card.hf-from-left {
+            animation: hfFromLeft .22s cubic-bezier(.2, 1, .4, 1);
+        }
+
+        @keyframes hfFromRight {
+            from {
+                opacity: 0;
+                transform: translateX(70px) rotate(3deg);
+            }
+        }
+
+        @keyframes hfFromLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-70px) rotate(-3deg);
+            }
+        }
+
+        .hf-count {
+            position: absolute;
+            left: 50%;
+            bottom: -9px;
+            transform: translateX(-50%);
+            font: 600 10px var(--font-mono);
+            letter-spacing: 0.06em;
+            color: var(--text-2);
+            background: oklch(0.13 0.008 60 / 0.92);
+            border: 1px solid var(--border);
+            padding: 2px 8px;
+            border-radius: 999px;
+            white-space: nowrap;
+            pointer-events: none;
+        }
+
+        .hf-nav {
+            width: 34px;
+            height: 34px;
+            flex: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 999px;
+            border: 1px solid var(--border);
+            background: oklch(0.13 0.008 60 / 0.8);
+            color: var(--text-2);
+            font-size: 13px;
+            cursor: pointer;
+        }
+
+        .hf-nav:disabled {
+            visibility: hidden;
         }
 
         .hf-meta {
@@ -7170,6 +7269,21 @@
 
             body.hand-open #bottom-board .hand .card-wrap:first-child {
                 margin-left: 0;
+            }
+
+            /* While a card is focused the fan stays above the focus backdrop, so
+               a tap on another card switches to it. The focused one sits raised. */
+            body.hand-focus-open #bottom-board .hand-wrap {
+                z-index: 75;
+            }
+
+            body.hand-open #bottom-board .hand .card-wrap.is-focused {
+                translate: 0 calc(var(--fan-arc, 0) * 2px - 18px);
+            }
+
+            body.hand-open #bottom-board .hand .card-wrap.is-focused .card {
+                outline: 2px solid var(--accent);
+                outline-offset: 1px;
             }
 
             .hand-scrim {
@@ -8070,7 +8184,7 @@
         onclick="event.stopPropagation()"></div>
     <div id="hand-scrim" class="hand-scrim" onclick="App.setHandFan(false)"></div>
     <div id="hand-focus" class="hand-focus" role="dialog" aria-label="Card in hand" aria-hidden="true"
-        onclick="if(event.target===this) App.closeHandFocus()"></div>
+        onclick="App.handFocusBackdropTap(event)"></div>
 
     <!-- ============ TWEAKS PANEL ============ -->
     <div class="tweaks-panel" id="tweaks-panel">
@@ -8137,7 +8251,7 @@
     <script>
         let cardFuse = null;
 
-        const APP_VERSION = "v2.24.0"; // Centralized version string (redesign)
+        const APP_VERSION = "v2.25.0"; // Centralized version string (redesign)
 
         // Tweaks panel accent presets (hue values for the OKLCH accent ramp)
         const ACCENT_PRESETS = {
@@ -14916,12 +15030,17 @@
                 document.body.classList.toggle('hand-open', !!open);
                 if (!open) this.closeHandFocus();
             },
+            // One tap on the hand opens the fan *and* brings that card up front with
+            // its actions; a tap on another card in the open fan switches to it.
             handFanTap(instanceId) {
-                if (!document.body.classList.contains('hand-open')) { this.setHandFan(true); return; }
+                if (!document.body.classList.contains('hand-open')) this.setHandFan(true);
                 this.openHandFocus(instanceId);
             },
-            openHandFocus(instanceId) {
+            // `dir` (+1 / −1) is the swipe direction, so the next card slides in
+            // from the matching side. Consumed by the next render only.
+            openHandFocus(instanceId, dir) {
                 this._handFocusIid = instanceId;
+                this._handFocusDir = dir || 0;
                 this.renderHandFocus();
             },
             closeHandFocus() {
@@ -14931,6 +15050,82 @@
                 hf.classList.remove('is-open');
                 hf.setAttribute('aria-hidden', 'true');
                 hf.innerHTML = '';
+                document.body.classList.remove('hand-focus-open');
+                this.markHandFocus(null);
+            },
+            // A tap on the dim backdrop closes the focus — except the click the
+            // browser fires at the end of a swipe that wandered off the card.
+            handFocusBackdropTap(e) {
+                if (e.target !== e.currentTarget) return;
+                if (Date.now() - (this._hfSwipeAt || 0) < 400) return;
+                this.closeHandFocus();
+            },
+            // Step through the hand from the focused card, wrapping at either end.
+            cycleHandFocus(step) {
+                const f = this._handFocusIid ? this.findCard(this._handFocusIid) : null;
+                if (!f || f.loc !== 'hand') return;
+                const hand = f.player.hand, n = hand.length;
+                if (n < 2) return;
+                const i = hand.findIndex(c => c.instanceId === this._handFocusIid);
+                this.openHandFocus(hand[(i + step + n) % n].instanceId, step);
+            },
+            // Lift the focused card in the fan so it's clear which one is up front.
+            markHandFocus(id) {
+                document.querySelectorAll('#bottom-hand .card-wrap[data-hand-iid]').forEach(w => {
+                    w.classList.toggle('is-focused', w.dataset.handIid === id);
+                });
+            },
+            // The big card: artwork over the recreated text card, so text mode, no
+            // connection and a failed image all show the full card text, not just
+            // the name. The text layer hides once the artwork has actually loaded.
+            buildHandFocusFace(db) {
+                const face = document.createElement('div');
+                face.className = 'hf-card';
+                const text = document.createElement('div');
+                text.className = 'hf-text';
+                text.appendChild(this.buildCardTextView(db));
+                face.appendChild(text);
+                if (!this.isTextCardMode()) {
+                    const img = this.makeCardImg(db, { lazy: false });
+                    img.addEventListener('load', () => face.classList.add('is-art'));
+                    img.addEventListener('error', () => face.classList.remove('is-art'));
+                    face.appendChild(img);
+                }
+                return face;
+            },
+            // Horizontal swipe on the big card cycles the hand; the card follows the
+            // finger and springs back on a short drag. Vertical moves are left to the
+            // browser (touch-action: pan-y) so a long text card still scrolls.
+            bindHandFocusSwipe(stage, face) {
+                let s = null;
+                stage.addEventListener('pointerdown', (e) => {
+                    if (e.button > 0 || e.target.closest('button')) return;
+                    s = { id: e.pointerId, x: e.clientX, y: e.clientY, dx: 0, on: false };
+                });
+                stage.addEventListener('pointermove', (e) => {
+                    if (!s || e.pointerId !== s.id) return;
+                    const dx = e.clientX - s.x, dy = e.clientY - s.y;
+                    if (!s.on) {
+                        if (Math.abs(dy) > 10 && Math.abs(dy) > Math.abs(dx)) { s = null; return; }
+                        if (Math.abs(dx) < 10) return;
+                        s.on = true;
+                        try { stage.setPointerCapture(e.pointerId); } catch (_) { /* pointer already gone */ }
+                        face.style.transition = 'none';
+                    }
+                    s.dx = dx;
+                    face.style.transform = `translateX(${dx}px) rotate(${(dx / 24).toFixed(2)}deg)`;
+                });
+                const end = (e) => {
+                    if (!s || e.pointerId !== s.id) return;
+                    const g = s; s = null;
+                    if (!g.on) return;
+                    this._hfSwipeAt = Date.now();
+                    if (Math.abs(g.dx) > 48) { this.cycleHandFocus(g.dx < 0 ? 1 : -1); return; }
+                    face.style.transition = '';
+                    face.style.transform = '';
+                };
+                stage.addEventListener('pointerup', end);
+                stage.addEventListener('pointercancel', end);
             },
             renderHandFocus() {
                 const id = this._handFocusIid;
@@ -14941,11 +15136,39 @@
                 const ready = f.player.inkReady || 0, cost = db.cost || 0;
                 const short = cost > ready;
                 const esc = (s) => this._esc(s);
+                const hand = f.player.hand, n = hand.length;
+                const idx = hand.findIndex(c => c.instanceId === id);
+                const dir = this._handFocusDir || 0;
+                this._handFocusDir = 0;
                 hf.innerHTML = '';
-                const face = document.createElement('div');
-                face.className = 'hf-card';
-                this.paintCardFace(face, db, { lazy: false });
-                hf.appendChild(face);
+                const stage = document.createElement('div');
+                stage.className = 'hf-stage';
+                const face = this.buildHandFocusFace(db);
+                if (dir && !this.reducedMotion()) face.classList.add(dir > 0 ? 'hf-from-right' : 'hf-from-left');
+                const box = document.createElement('div');
+                box.className = 'hf-cardbox';
+                box.appendChild(face);
+                if (n > 1) {
+                    const count = document.createElement('span');
+                    count.className = 'hf-count';
+                    count.textContent = `${idx + 1} / ${n}`;
+                    box.appendChild(count);
+                }
+                const nav = (step, icon, label) => {
+                    const b = document.createElement('button');
+                    b.type = 'button';
+                    b.className = 'hf-nav';
+                    b.innerHTML = `<i class="fa-solid ${icon}"></i>`;
+                    b.setAttribute('aria-label', label);
+                    b.disabled = n < 2;
+                    b.addEventListener('click', (e) => { e.stopPropagation(); this.cycleHandFocus(step); });
+                    return b;
+                };
+                stage.appendChild(nav(-1, 'fa-chevron-left', 'Previous card in hand'));
+                stage.appendChild(box);
+                stage.appendChild(nav(1, 'fa-chevron-right', 'Next card in hand'));
+                hf.appendChild(stage);
+                this.bindHandFocusSwipe(stage, face);
                 const rest = document.createElement('div');
                 rest.style.cssText = 'display:contents';
                 rest.innerHTML = `<span class="hf-meta">${esc(db.name || '')}${db.version ? ' · ' + esc(db.version) : ''}<br>${esc(db.type || '')} · cost ${cost}${db.inkwell ? ' · inkable' : ' · not inkable'}${short ? ` <span class="warn">· ${ready} ink ready</span>` : ''}</span>
@@ -14960,6 +15183,8 @@
                 hf.appendChild(rest);
                 hf.classList.add('is-open');
                 hf.setAttribute('aria-hidden', 'false');
+                document.body.classList.add('hand-focus-open');
+                this.markHandFocus(id);
                 const pos = f.player.id === this.state.activePlayer ? 'bottom' : 'top';
                 rest.onclick = (e) => {
                     e.stopPropagation();
@@ -15061,6 +15286,7 @@
                         if (badge) wrap.appendChild(badge);
                     }
                 }
+                if (opts.loc === 'hand') wrap.dataset.handIid = c.instanceId;
                 const fx = this.takeFx(c.instanceId);
                 if (fx) this.applyFx(wrap, el, fx);
 
@@ -17212,6 +17438,13 @@
 
             // Game hotkeys never act on the board hidden behind the home screen.
             if (!document.getElementById('setup-modal').classList.contains('hidden')) return;
+
+            // Phone hand focus: ← / → step through the hand.
+            if (App._handFocusIid && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) {
+                App.cycleHandFocus(e.key === 'ArrowRight' ? 1 : -1);
+                e.preventDefault();
+                return;
+            }
 
             // Feature 37: hover-card hotkeys (+ − 0–9 E B) and C for challenge mode.
             // Only while no modal is up, so they never fire behind the tree or a dialog.
