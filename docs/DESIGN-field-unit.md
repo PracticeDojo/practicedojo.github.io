@@ -1,9 +1,9 @@
 ---
 name: Practice Dojo
 system: Field Unit
-version: 1
-product: Lorcana theorycraft sandbox
-source: practicedojo.github.io
+version: 2
+theme_day: mineral
+theme_night: kiln
 
 colors:
   chassis: "#E7E2D8"
@@ -23,6 +23,27 @@ colors:
   emerald: "#1F9D6A"
   sapphire: "#3C7DFF"
   steel: "#8E8C88"
+
+colors_night:
+  chassis: "#141311"
+  paper: "#221F1B"
+  glass: "#0C0C0C"
+  glass-raised: "#161412"
+  ink: "#F4F0E8"
+  body: "#C9C3B8"
+  mute: "#8A847A"
+  line: "#2C2924"
+  line-soft: "#2C2924"
+  signal: "#E86B2A"
+  signal-ink: "#1A0A05"
+
+signals:
+  ember: "#E4572E"      # day default
+  radio: "#E86B2A"      # night default
+  coral: "#ED3F1C"      # hotter numeral
+  olive: "#8C8A2E"      # quiet, non-orange
+  trace: "#2F9E96"      # non-orange instrument
+
 
 typography:
   display: "Inter Display"
@@ -54,14 +75,16 @@ motion:
 
 Practice Dojo is a theorycrafting sandbox for the Lorcana TCG. Import a duels.ink log, replay the match, rewind, branch, hot-swap. Field Unit is the visual language for the marketing site and the app: a calibrated instrument, not a fantasy table and not a marketing page.
 
-The shell is warm mineral. Data lives in a recessed black glass well. One signal orange is the confirm key, a live lore count, and the branch you are on. Ink colors identify cards and players. They are ticks, not a wash.
+The shell is warm mineral by day and warm black at night. Data lives in a recessed black glass well in both themes. One signal color is the confirm key, a live lore count, and the branch you are on. Ink colors identify cards and players. They are ticks, not a wash.
+
+Day signal is Ember. Night signal is Radio. Coral, Olive, and Trace are the only approved swaps. Do not invent a fifth accent.
 
 The app is information-dense. A restyle must keep every reading the live board already shows: players, deck and hand counts, BCR and LVI, the action log, both discard piles, ready counts, field cards with cost / strength / lore, hand actions, deck size, zone stats (CTL, BCR, RDS, LVI), draw odds with copies remaining, and multiverse node recaps (played, inked, drawn, banished, quested, lore, note).
 
 ### Principles
 
 1. Chassis outside, glass inside. Marketing and controls sit on the mineral shell. The match and the tree sit in the well.
-2. Signal once. Orange is a state, not a theme.
+2. Signal once. The accent is a state, not a theme. Day and night may use different approved signals, never two at once.
 3. Engraved, not decorated. Mono indexes, hairlines, tabular numbers. No icons-in-circles, no gradients, no script.
 4. Density is the product. Do not simplify a board by deleting a pile, a log, or a recap.
 5. The user is the referee. The interface never looks like it is blocking a line.
@@ -79,8 +102,43 @@ Name by role. Do not invent new accents.
 - **Mute**: `#8A847A` — labels, timestamps, empty odds, inactive tree edges.
 - **Line**: `#D5CFC4` — borders on the chassis, top bar rule.
 - **Line soft**: `#E0DBD1` — row rules, meter tracks, node bars that are not live.
-- **Signal**: `#E4572E` — End turn, live lore numerals, the branch you are on, auto-save when on, a single "new" pip. Nowhere else.
-- **Signal ink**: `#FFF8F4` — text on a signal fill.
+- **Signal**: `#E4572E` Ember — day default. End turn, live lore numerals, the branch you are on, auto-save when on, a single "new" pip. Nowhere else.
+- **Signal ink**: `#FFF8F4` — text on an Ember, Coral, or Vermillion fill. Radio, Olive, and Trace use dark ink `#1A0A05` or `#141311`.
+
+### Signal family
+
+One signal per theme. It must not be an ink color. Amber `#E0A23A`, Ruby `#D64545`, Amethyst `#7A5CFF`, Emerald `#1F9D6A`, and Sapphire `#3C7DFF` already name cards.
+
+Approved:
+
+- **Ember** `#E4572E` — day default. Warm, not ruby. Text on fill is `#FFF8F4`.
+- **Radio** `#E86B2A` — night default. Sanyo grille orange. Cleaner on warm black than Ember. Text on fill is `#1A0A05`.
+- **Coral** `#ED3F1C` — Rams second key. Hotter numeral, still not Ruby. Use when lore has to win on the well. Text on fill is `#FFF8F4`.
+- **Olive** `#8C8A2E` — Rams fourth key, lifted so it reads at night. Quiet confirm. Do not also use green for a "valid log" badge. Lore numeral may lift to `#C6C45A`. Text on fill is `#141311`.
+- **Trace** `#2F9E96` — erase-key teal. Instrument, not Sapphire. Only if the signal should stop being orange. Text on fill is `#041413`.
+
+Rejected for the signal role: Copper `#C4622D` (fails on glass), Cadmium `#FF5A1F` (too loud on the day chassis), Rams red `#BF1B1B` (reads as Ruby).
+
+### Dark mode — Kiln
+
+Kiln is the only dark theme. Do not ship a cool grey night or a pure `#000` page.
+
+- **Chassis**: `#141311` — page and app ground.
+- **Paper**: `#221F1B` — modules, side panels, nodes, inputs. Not grey.
+- **Glass**: `#0C0C0C` — playfield, multiverse canvas, the lore well. Blacker than the chassis.
+- **Glass raised**: `#161412` — hand tray, inset controls inside the well.
+- **Ink**: `#F4F0E8` — primary text on chassis and paper.
+- **Body**: `#C9C3B8` — secondary prose.
+- **Mute**: `#8A847A` — labels, timestamps, inactive edges.
+- **Line**: `#2C2924` — hairlines, top bar rule, meter tracks.
+- **Signal**: `#E86B2A` Radio, unless the theme explicitly swaps to Coral, Olive, or Trace.
+- **Signal ink**: `#1A0A05` on Radio.
+
+Night type does not change size or family. The muted headline on marketing is `#8A847A`, not a second accent. Glass secondary text stays `#C9C3B8`. Inactive tree edges are `#6A655E`. The live edge is the night signal at 1.6px.
+
+Auto-save off is `#2C2924` with an `#F4F0E8` knob. Auto-save on is the night signal with a `#141311` knob. Paper tools invert: `#221F1B` fill, `#2C2924` border, `#F4F0E8` text. The open tool is glass `#0C0C0C` with paper text.
+
+Instrument `#101214` and Oxide `#1A1612` are studies, not themes. Do not mix them into Kiln.
 - **Amber**: `#E0A23A` — Amber ink identity. Player tick, card cost pip.
 - **Amethyst**: `#7A5CFF` — Amethyst ink identity.
 - **Ruby**: `#D64545` — Ruby ink identity.
@@ -199,14 +257,18 @@ Used only on the public site. Paper modules on chassis, 22px radius. Headline `d
 ## Do's and don'ts
 
 - Do keep the live readings. A Field Unit board that drops the discard, the log, the odds, or the node recap is wrong.
-- Do use orange only for End turn / Launch, live lore, the active branch, auto-save on, and a new-card pip.
+- Do use the approved signal only for End turn / Launch, live lore, the active branch, auto-save on, and a new-card pip.
+- Do use Ember `#E4572E` by day and Radio `#E86B2A` on Kiln, unless a theme explicitly picks Coral, Olive, or Trace.
+- Do keep Kiln paper at `#221F1B` and the well at `#0C0C0C`. Do not grey the night chassis.
 - Do use ink colors only as player ticks and cost pips.
 - Do keep mono labels uppercase and prose in sentence case.
 - Don't import the current gold gradient, purple node glow, or amber table wash.
 - Don't use script, brush underlines, brush banners, or stroke highlights.
 - Don't put icons in circles as a feature list.
 - Don't nest paper modules, and don't float cards on the chassis. Cards sit on glass.
-- Don't color meter tracks or tree edges orange unless that reading is the live one.
+- Don't color meter tracks or tree edges with the signal unless that reading is the live one.
+- Don't use Amber, Ruby, Amethyst, Emerald, or Sapphire as the signal.
+- Don't invent a signal outside Ember, Radio, Coral, Olive, and Trace.
 - Don't replace card faces with generated illustration. Name, subtitle, and the three figures are enough.
 - Don't hide zero-copy odds rows.
 - Don't make a second filled button. Challenge, Undo, Timelines, and Save a copy stay paper tools.

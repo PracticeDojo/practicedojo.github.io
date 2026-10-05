@@ -5,6 +5,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lorcana Practice Dojo</title>
+    <!-- Field Unit theme before first paint, so a night (Kiln) user never sees the day shell flash -->
+    <script>
+        try {
+            var fuTheme = (JSON.parse(localStorage.getItem('lorcana_dojo_tweaks') || '{}').theme) || 'auto';
+            var fuNight = fuTheme === 'night' || (fuTheme === 'auto' && window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches);
+            document.documentElement.dataset.theme = fuNight ? 'night' : 'day';
+        } catch (e) { }
+    </script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
@@ -8239,6 +8247,14 @@
         </div>
         <div class="tweaks-body">
             <div class="tweak">
+                <div class="tweak-label"><span>Theme</span></div>
+                <div class="tweak-radio" id="tweak-theme">
+                    <button data-val="auto" class="is-active" title="Follow this device's light / dark setting">Auto</button>
+                    <button data-val="day" title="Mineral: the warm light shell">Day</button>
+                    <button data-val="night" title="Kiln: the warm black shell">Night</button>
+                </div>
+            </div>
+            <div class="tweak">
                 <div class="tweak-label"><span>Accent</span><span class="tweak-val" id="tweak-accent-name">Signal</span>
                 </div>
                 <div class="swatch-row" id="tweak-accent-row"></div>
@@ -8296,19 +8312,18 @@
     <script>
         let cardFuse = null;
 
-        const APP_VERSION = "v2.27.0"; // Centralized version string (Field Unit redesign)
+        const APP_VERSION = "v2.28.0"; // Centralized version string (Field Unit redesign)
 
         // Tweaks panel accent presets (hue values for the OKLCH accent ramp)
-        // Tweaks → Accent. Field Unit's signal is the default; the others keep a
-        // signal-like weight (a filled key that paper text reads on, and that
-        // stays AA as a numeral on the glass well).
+        // Tweaks → Accent: the approved Field Unit signals only (design.md ·
+        // Signal family). "Signal" is the theme's own — Ember by day, Radio on
+        // Kiln — and writes nothing; the swaps carry their colour, the ink that
+        // sits on them, and (Olive) the lifted numeral for the well.
         const ACCENT_PRESETS = {
-            signal: { name: 'Signal', l: 0.637, c: 0.184, h: 36.5 },
-            amber: { name: 'Amber', l: 0.70, c: 0.15, h: 70 },
-            rose: { name: 'Rose', l: 0.62, c: 0.19, h: 12 },
-            emerald: { name: 'Emerald', l: 0.60, c: 0.13, h: 155 },
-            violet: { name: 'Violet', l: 0.60, c: 0.19, h: 292 },
-            azure: { name: 'Azure', l: 0.60, c: 0.17, h: 252 },
+            signal: { name: 'Signal', title: 'Ember by day, Radio at night', swatch: 'linear-gradient(90deg, #E4572E 50%, #E86B2A 50%)' },
+            coral: { name: 'Coral', l: 0.625, c: 0.215, h: 32.9, ink: '#FFF8F4' },
+            olive: { name: 'Olive', l: 0.617, c: 0.113, h: 108.1, ink: '#141311', numL: 0.801, numC: 0.129 },
+            trace: { name: 'Trace', l: 0.636, c: 0.098, h: 188.0, ink: '#041413' },
         };
 
         window.addEventListener('DOMContentLoaded', () => {
@@ -17260,20 +17275,42 @@
                 return e;
             },
 
-            // --- Tweaks panel (accent / card size / layout / palette) ---
+            // --- Tweaks panel (theme / accent / card size / layout / palette) ---
+            // Field Unit day (Mineral) / night (Kiln) on <html data-theme>. "auto"
+            // follows prefers-color-scheme and keeps following it while open.
+            applyTheme(pref) {
+                this._themePref = pref || 'auto';
+                if (!this._themeMQ && window.matchMedia) {
+                    this._themeMQ = window.matchMedia('(prefers-color-scheme: dark)');
+                    const follow = () => { if (this._themePref === 'auto') this.applyTheme('auto'); };
+                    if (this._themeMQ.addEventListener) this._themeMQ.addEventListener('change', follow);
+                    else if (this._themeMQ.addListener) this._themeMQ.addListener(follow);
+                }
+                const night = this._themePref === 'night' ||
+                    (this._themePref === 'auto' && !!(this._themeMQ && this._themeMQ.matches));
+                document.documentElement.dataset.theme = night ? 'night' : 'day';
+            },
             loadTweaks() {
                 try { return JSON.parse(localStorage.getItem('lorcana_dojo_tweaks') || '{}'); } catch (e) { return {}; }
             },
             saveTweaks(t) { localStorage.setItem('lorcana_dojo_tweaks', JSON.stringify(t)); },
             applyTweaks(t) {
                 const root = document.documentElement;
+                // Field Unit day / night (Kiln). Auto follows the device.
+                this.applyTheme(t.theme);
+                const thm = this.$('tweak-theme');
+                if (thm) thm.querySelectorAll('button').forEach(b => b.classList.toggle('is-active', b.dataset.val === (t.theme || 'auto')));
                 if (t.accent && ACCENT_PRESETS[t.accent]) {
                     // The stylesheet derives every accent token (fill, hover, pressed,
-                    // the lighter numeral on glass) from these three.
+                    // numeral) from these inputs. "Signal" leaves them to the theme.
                     const a = ACCENT_PRESETS[t.accent];
-                    root.style.setProperty('--accent-l', String(a.l));
-                    root.style.setProperty('--accent-c', String(a.c));
-                    root.style.setProperty('--accent-h', String(a.h));
+                    const set = (k, v) => v === undefined ? root.style.removeProperty(k) : root.style.setProperty(k, String(v));
+                    set('--accent-l', a.l);
+                    set('--accent-c', a.c);
+                    set('--accent-h', a.h);
+                    set('--accent-ink', a.ink);
+                    set('--accent-num-l', a.numL);
+                    set('--accent-num-c', a.numC);
                     const nm = this.$('tweak-accent-name'); if (nm) nm.textContent = a.name;
                 }
                 if (t.cardSize) {
@@ -17340,15 +17377,10 @@
             },
             bindTweaks() {
                 const t = this.loadTweaks();
-                // Feature 46 (Field Unit) made the signal orange the default accent.
-                // Installs still on the old default (Amber) move across once, like the
-                // Feature 36 palette migration below; any other pick is kept, and a
-                // later deliberate pick is never undone.
-                if (!t.accentV) {
-                    if (!t.accent || t.accent === 'amber') t.accent = 'signal';
-                    t.accentV = 46;
-                }
+                // Only approved signals exist (design.md). Older picks — Amber, Rose,
+                // Emerald, Violet, Azure, all ink colours — fall back to the theme's.
                 if (!t.accent || !ACCENT_PRESETS[t.accent]) t.accent = 'signal';
+                if (!['auto', 'day', 'night'].includes(t.theme)) t.theme = 'auto';
                 // Smaller default cards on touch devices so the board fits a phone screen.
                 if (!t.cardSize) t.cardSize = (window.matchMedia && window.matchMedia('(pointer: coarse)').matches) ? 0.8 : 1;
                 if (!t.layout) t.layout = 'docked';
@@ -17367,9 +17399,9 @@
                 if (row && !row.children.length) {
                     Object.entries(ACCENT_PRESETS).forEach(([key, def]) => {
                         const s = this.el('div', 'swatch');
-                        s.style.background = `oklch(${def.l} ${def.c} ${def.h})`;
-                        s.style.color = `oklch(${def.l} ${def.c} ${def.h})`;
-                        s.title = def.name;
+                        s.style.background = def.swatch || `oklch(${def.l} ${def.c} ${def.h})`;
+                        s.style.color = 'var(--text)';
+                        s.title = def.title || def.name;
                         if (t.accent === key) s.classList.add('is-active');
                         s.addEventListener('click', () => {
                             t.accent = key; this.saveTweaks(t); this.applyTweaks(t);
@@ -17388,6 +17420,8 @@
                 });
                 const lay = this.$('tweak-layout');
                 if (lay) lay.querySelectorAll('button').forEach(b => b.addEventListener('click', () => { t.layout = b.dataset.val; this.saveTweaks(t); this.applyTweaks(t); }));
+                const thm = this.$('tweak-theme');
+                if (thm) thm.querySelectorAll('button').forEach(b => b.addEventListener('click', () => { t.theme = b.dataset.val; this.saveTweaks(t); this.applyTweaks(t); }));
                 const pal = this.$('tweak-palette');
                 if (pal) pal.querySelectorAll('button').forEach(b => b.addEventListener('click', () => { t.palette = b.dataset.val; this.saveTweaks(t); this.applyTweaks(t); }));
                 const cm = this.$('tweak-card-mode');

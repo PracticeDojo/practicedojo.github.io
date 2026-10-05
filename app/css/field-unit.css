@@ -51,6 +51,9 @@
     --fu-line-soft: #E0DBD1;
     --fu-row-rule: #E4DFD6;
     --fu-signal-ink: #FFF8F4;
+    /* Fixed in both themes: light text on glass, dark text on a light fill. */
+    --fu-light: #F4F0E8;
+    --fu-dark: #161513;
     --fu-glass-line: #2A2A2A;
     --fu-glass-rule: #242424;
     --fu-glass-2: #C9C3B8;
@@ -63,12 +66,15 @@
     --ink-sapphire: #3C7DFF;
     --ink-steel: #8E8C88;
 
-    /* --- Signal. Tweaks → Accent rewrites these three on <html>; every
-           accent token below is derived from them. Default = signal
-           #E4572E (hover #C94A24, active #B3411E). --- */
+    /* --- Signal. The theme sets the default (Ember by day, Radio on Kiln);
+           Tweaks → Accent writes a swap (Coral, Olive, Trace) onto <html>.
+           Every accent token below is derived from these inputs.
+           --accent-num-l / -c (optional) lift the numeral on glass (Olive). --- */
     --accent-l: 0.637;
     --accent-c: 0.184;
     --accent-h: 36.5;
+    --accent-ink: var(--fu-signal-ink);
+    color-scheme: light;
 
     /* --- Shell roles (chassis + paper) --- */
     --bg: var(--fu-chassis);
@@ -154,7 +160,9 @@ body,
     --accent-dim: oklch(calc(var(--accent-l) - 0.108) calc(var(--accent-c) * 0.85) var(--accent-h));
     --accent-soft: oklch(var(--accent-l) var(--accent-c) var(--accent-h) / 0.16);
     --accent-faint: oklch(var(--accent-l) var(--accent-c) var(--accent-h) / 0.08);
-    --accent-ink: var(--fu-signal-ink);
+    /* The signal as a numeral (lore, turn number). Same as the fill unless the
+       signal asks for a lift on glass. */
+    --accent-num: oklch(var(--accent-num-l, var(--accent-l)) var(--accent-num-c, var(--accent-c)) var(--accent-h));
 }
 
 /* Player identity ticks: two 3×16 bars for the ink pair. P2's bars are
@@ -186,7 +194,7 @@ body {
     --border: var(--fu-glass-line);
     --border-soft: var(--fu-glass-rule);
     --border-strong: #3B3A37;
-    --text: var(--fu-paper);
+    --text: var(--fu-light);
     --text-2: var(--fu-glass-2);
     --text-dim: var(--fu-glass-mute);
     --text-faint: #6F6A62;
@@ -200,6 +208,42 @@ body {
     --shadow-2: 0 12px 32px -8px oklch(0 0 0 / 0.6);
     --shadow-3: 0 24px 60px -12px oklch(0 0 0 / 0.7);
     color: var(--text);
+}
+
+/* ===================================================================
+   KILN — the night theme (design.md · Dark mode). <html data-theme="night">
+   is set by Tweaks → Theme (Auto follows the device). Only the palette
+   flips: warm black chassis, warm dark paper, a blacker well, light ink,
+   and Radio as the default signal. Every role token above reads these. */
+:root[data-theme="night"] {
+    color-scheme: dark;
+    --fu-chassis: #141311;
+    --fu-paper: #221F1B;
+    --fu-paper-sunk: #1A1815;
+    --fu-glass: #0C0C0C;
+    --fu-glass-raised: #161412;
+    --fu-ink: #F4F0E8;
+    --fu-body: #C9C3B8;
+    --fu-mute: #8A847A;
+    --fu-zero: #6B655C;
+    --fu-line: #2C2924;
+    --fu-line-soft: #2C2924;
+    --fu-row-rule: #2A2622;
+    --fu-signal-ink: #1A0A05;
+
+    /* Radio #E86B2A */
+    --accent-l: 0.67;
+    --accent-c: 0.172;
+    --accent-h: 44.5;
+
+    --surface-3: #2A2622;
+    --surface-hi: #2E2A25;
+    --border-strong: #3E3933;
+    --danger: oklch(0.66 0.18 24.5);
+    --danger-soft: oklch(0.66 0.18 24.5 / 0.18);
+    --shadow-1: 0 1px 0 oklch(0 0 0 / 0.3);
+    --shadow-2: 0 14px 30px -14px oklch(0 0 0 / 0.75);
+    --shadow-3: 0 28px 64px -20px oklch(0 0 0 / 0.85);
 }
 
 /* Paper sits on glass in two places: multiverse nodes and card faces. */
@@ -220,6 +264,13 @@ body {
     --danger: oklch(0.56 0.18 24.5);
     --accent-hi: oklch(calc(var(--accent-l) - 0.06) var(--accent-c) var(--accent-h));
     color: var(--text);
+}
+
+:root[data-theme="night"] :is(.tree-node, .fu-paper) {
+    --surface-3: #2A2622;
+    --surface-hi: #2E2A25;
+    --border-strong: #3E3933;
+    --danger: oklch(0.66 0.18 24.5);
 }
 
 /* MONO PALETTE — the whole interface desaturated.
@@ -263,14 +314,27 @@ body.palette-mono {
 
 body.palette-mono :is(.play, #tree-viewport, .preview-pane, .chal-fc, .hand-focus, .touch-drag-ghost, .turn-pill, .fu-glass) {
     --accent-l: 0.90;
-    --accent-ink: var(--fu-ink);
+    --accent-ink: var(--fu-dark);
     --danger: oklch(0.80 0 0);
 }
 
 body.palette-mono :is(.tree-node, .fu-paper) {
     --accent-l: 0.34;
-    --accent-ink: var(--fu-signal-ink);
+    --accent-ink: var(--fu-light);
     --danger: oklch(0.40 0 0);
+}
+
+/* Mono on Kiln: the key turns near-white with dark text, and P2 lifts a
+   little so its tick still reads on dark paper. */
+:root[data-theme="night"] body.palette-mono,
+:root[data-theme="night"] body.palette-mono :is(.tree-node, .fu-paper) {
+    --accent-l: 0.86;
+    --accent-ink: var(--fu-dark);
+    --danger: oklch(0.80 0 0);
+}
+
+:root[data-theme="night"] body.palette-mono {
+    --p2: oklch(0.52 0 0);
 }
 
 /* ===================================================================
@@ -617,14 +681,14 @@ body:has(#tree-modal:not(.hidden)) #btn-multiverse,
 body:has(#tweaks-panel.is-open) #btn-tweaks {
     background: var(--fu-glass);
     border-color: var(--fu-glass);
-    color: var(--fu-paper);
+    color: var(--fu-light);
 }
 
 #btn-challenge-mode.is-active i,
 body:has(#timeline-drawer.is-open) #btn-timelines i,
 body:has(#tree-modal:not(.hidden)) #btn-multiverse i,
 body:has(#tweaks-panel.is-open) #btn-tweaks i {
-    color: var(--fu-paper);
+    color: var(--fu-light);
 }
 
 /* The turn chip is a little piece of the well: glass, signal numeral. */
@@ -652,7 +716,7 @@ body:has(#tweaks-panel.is-open) #btn-tweaks i {
     font-family: var(--font-mono);
     font-size: 13px;
     font-weight: 700;
-    color: var(--accent);
+    color: var(--accent-num);
     font-variant-numeric: tabular-nums;
 }
 
@@ -661,7 +725,7 @@ body:has(#tweaks-panel.is-open) #btn-tweaks i {
 }
 
 .turn-pill .turn-actor {
-    color: var(--fu-paper);
+    color: var(--fu-light);
     font-weight: 560;
 }
 
@@ -1000,7 +1064,7 @@ body.palette-competition .player-row.is-p2::before {
     padding: 7px 8px;
     border-radius: var(--radius-sm);
     background: var(--fu-glass);
-    color: var(--fu-paper);
+    color: var(--fu-light);
     font-size: 11px;
     line-height: 1.35;
 }
@@ -1062,7 +1126,7 @@ body.palette-competition .player-row.is-p2::before {
 
 .switch input:checked+.slider::before {
     transform: translateX(12px);
-    background: var(--fu-paper);
+    background: var(--accent-ink);
 }
 
 .action-row {
@@ -1243,7 +1307,7 @@ body.palette-competition .player-row.is-p2::before {
 .lore-badge .lore-row button.plus:hover,
 .lore-badge .lore-row button.minus:hover {
     background: var(--surface-3);
-    color: var(--fu-paper);
+    color: var(--fu-light);
 }
 
 .lore-badge .lore-value,
@@ -1256,7 +1320,7 @@ body.palette-competition .player-row.is-p2::before {
     letter-spacing: -0.04em;
     font-variation-settings: 'opsz' 32;
     font-variant-numeric: tabular-nums;
-    color: var(--accent);
+    color: var(--accent-num);
     padding: 2px 0 1px;
 }
 
@@ -1314,7 +1378,7 @@ body.palette-competition .player-row.is-p2::before {
 .ink-readout {
     background: transparent;
     border: 1px solid var(--fu-glass-line);
-    color: var(--fu-paper);
+    color: var(--fu-light);
     font-family: var(--font-mono);
 }
 
@@ -1332,7 +1396,7 @@ body.palette-competition .player-row.is-p2::before {
 }
 
 .ink-pip.fresh {
-    background: radial-gradient(circle, var(--fu-glass) 0 30%, var(--fu-paper) 34%);
+    background: radial-gradient(circle, var(--fu-glass) 0 30%, var(--fu-light) 34%);
 }
 
 .ink-pip.fresh.used {
@@ -1343,7 +1407,7 @@ body.palette-competition .player-row.is-p2::before {
 .ip-fresh {
     background: transparent;
     border: 1px solid var(--fu-glass-2);
-    color: var(--fu-paper);
+    color: var(--fu-light);
     font-family: var(--font-mono);
 }
 
@@ -1359,11 +1423,11 @@ body.palette-competition .player-row.is-p2::before {
 }
 
 .ink-tile.is-fresh {
-    box-shadow: 0 0 0 1.5px var(--fu-paper);
+    box-shadow: 0 0 0 1.5px var(--fu-light);
 }
 
 .ink-tile.is-sel {
-    outline: 1.5px solid var(--fu-paper);
+    outline: 1.5px solid var(--fu-light);
     outline-offset: 2px;
 }
 
@@ -1408,7 +1472,7 @@ body.palette-competition .player-row.is-p2::before {
         margin-right: 4px;
         font-size: 13px;
         font-weight: 700;
-        color: var(--fu-paper);
+        color: var(--fu-light);
         font-variant-numeric: tabular-nums;
     }
 
@@ -1460,7 +1524,7 @@ body.palette-competition .player-row.is-p2::before {
     .ii-step button:hover:not(:disabled),
     .ii-all:hover:not(:disabled) {
         background: var(--surface-3);
-        color: var(--fu-paper);
+        color: var(--fu-light);
     }
 
     .ii-slot.is-sel {
@@ -1469,7 +1533,7 @@ body.palette-competition .player-row.is-p2::before {
     }
 
     .ii-name {
-        color: var(--fu-paper);
+        color: var(--fu-light);
         font-weight: 600;
     }
 
@@ -1483,7 +1547,7 @@ body.palette-competition .player-row.is-p2::before {
 
     .ii-acts button:hover {
         border-color: var(--fu-glass-2);
-        color: var(--fu-paper);
+        color: var(--fu-light);
     }
 }
 
@@ -1630,7 +1694,7 @@ body.cards-text .ink-tile.is-back {
 
 .card-actions .chip {
     background: oklch(0.12 0 0 / 0.86);
-    color: var(--fu-paper);
+    color: var(--fu-light);
     border: 1px solid oklch(0.96 0.01 85 / 0.38);
     border-radius: 6px;
     font-family: var(--font-mono);
@@ -1640,9 +1704,9 @@ body.cards-text .ink-tile.is-back {
 }
 
 .card-actions .chip:hover {
-    background: var(--fu-paper);
-    color: var(--fu-ink);
-    border-color: var(--fu-paper);
+    background: var(--fu-light);
+    color: var(--fu-dark);
+    border-color: var(--fu-light);
 }
 
 /* Field hover controls: glass, paper glyphs. Challenge keeps its red. */
@@ -1658,9 +1722,9 @@ body.cards-text .ink-tile.is-back {
 }
 
 .card-verbs .chip:hover {
-    background: var(--fu-paper);
-    color: var(--fu-ink);
-    border-color: var(--fu-paper);
+    background: var(--fu-light);
+    color: var(--fu-dark);
+    border-color: var(--fu-light);
 }
 
 .card-verbs .chip.is-challenge {
@@ -1699,7 +1763,7 @@ body.cards-text .ink-tile.is-back {
     font-family: var(--font-sans);
     font-size: 11px;
     line-height: 1.35;
-    color: var(--fu-paper);
+    color: var(--fu-light);
     outline: none;
 }
 
@@ -1786,7 +1850,7 @@ body.cards-text .ink-tile.is-back {
 
 .dl-row:hover,
 .dl-row:focus-visible {
-    color: var(--fu-paper);
+    color: var(--fu-light);
     background: oklch(1 0 0 / 0.04);
     outline: none;
 }
@@ -1997,7 +2061,7 @@ body.cards-text .ink-tile.is-back {
     }
 
     .board-half .pile:not(.deck) .pile-inspect:hover {
-        color: var(--fu-paper);
+        color: var(--fu-light);
         border-color: var(--fu-glass-2);
     }
 
@@ -2044,7 +2108,7 @@ body.cards-text .ink-tile.is-back {
 
 .peek-toggle:hover {
     background: var(--surface-3);
-    color: var(--fu-paper);
+    color: var(--fu-light);
 }
 
 .peek-toggle i {
@@ -2307,7 +2371,7 @@ button.ctx-item:focus-visible {
 }
 
 .card-grid .card-slot.is-selected {
-    box-shadow: 0 0 0 2px var(--fu-paper) inset;
+    box-shadow: 0 0 0 2px var(--fu-light) inset;
 }
 
 .card-grid .card-slot.is-unknown {
@@ -2365,7 +2429,7 @@ button.ctx-item:focus-visible {
 .toast {
     background: var(--fu-glass);
     border: 1px solid var(--fu-glass-line);
-    color: var(--fu-paper);
+    color: var(--fu-light);
     border-radius: 999px;
     font-size: 12px;
     font-weight: 500;
@@ -2379,12 +2443,12 @@ button.ctx-item:focus-visible {
 .toast .toast-action {
     background: transparent;
     border: 1px solid var(--fu-glass-2);
-    color: var(--fu-paper);
+    color: var(--fu-light);
 }
 
 .toast .toast-action:hover {
-    background: var(--fu-paper);
-    color: var(--fu-ink);
+    background: var(--fu-light);
+    color: var(--fu-dark);
 }
 
 #time-flash {
@@ -2447,7 +2511,7 @@ button.ctx-item:focus-visible {
 
 .tweak-radio button.is-active {
     background: var(--fu-glass);
-    color: var(--fu-paper);
+    color: var(--fu-light);
 }
 
 .swatch {
@@ -2622,7 +2686,7 @@ body.palette-competition .autosave-item.is-p2::before {
 
 .autosave-item .as-restore {
     background: oklch(0.13 0 0 / 0.86);
-    color: var(--fu-paper);
+    color: var(--fu-light);
     font-family: var(--font-mono);
     font-size: 10px;
     letter-spacing: var(--label-track);
@@ -2681,7 +2745,7 @@ body.palette-competition .autosave-item.is-p2::before {
 
 .chal-banner .cb-seg button.is-active {
     background: var(--fu-glass);
-    color: var(--fu-paper);
+    color: var(--fu-light);
 }
 
 .chal-banner .cb-done {
@@ -2744,7 +2808,7 @@ body.palette-competition .autosave-item.is-p2::before {
 .cs-btn.is-short {
     background: var(--fu-glass);
     border-color: var(--fu-glass);
-    color: var(--fu-paper);
+    color: var(--fu-light);
 }
 
 .cs-seg.on {
@@ -2786,13 +2850,13 @@ body.palette-competition .autosave-item.is-p2::before {
 .hf-more .cs-btn {
     background: var(--fu-glass-raised);
     border-color: var(--fu-glass-line);
-    color: var(--fu-paper);
+    color: var(--fu-light);
 }
 
 .hf-acts .cs-btn:not(.is-primary) {
     background: var(--fu-glass-raised);
     border-color: var(--fu-glass-line);
-    color: var(--fu-paper);
+    color: var(--fu-light);
 }
 
 /* ----- Multiverse: chassis frame, glass canvas, paper nodes. Edges are
@@ -2912,7 +2976,7 @@ body.palette-competition .tree-node.is-active.tn-p2 {
 }
 
 .tree-node.is-nav {
-    outline: 2px solid var(--fu-paper);
+    outline: 2px solid var(--fu-light);
     outline-offset: 3px;
 }
 
@@ -3169,16 +3233,16 @@ body.palette-competition .tree-node.is-victory.tn-p2::before {
 .well-in {
     border-radius: calc(var(--radius-well) - 1px);
     background: var(--fu-glass);
-    --text: var(--fu-paper);
+    --text: var(--fu-light);
     --text-2: var(--fu-glass-2);
     --text-dim: var(--fu-glass-mute);
     --text-faint: #6F6A62;
     --border-soft: var(--fu-glass-rule);
-    color: var(--fu-paper);
+    color: var(--fu-light);
 }
 
 .well textarea {
-    color: var(--fu-paper);
+    color: var(--fu-light);
     font-size: 12.5px;
 }
 
@@ -3204,7 +3268,7 @@ body.palette-competition .tree-node.is-victory.tn-p2::before {
 
 .well-ft .btn:hover {
     background: #232323;
-    color: var(--fu-paper);
+    color: var(--fu-light);
     border-color: var(--fu-glass-2);
 }
 
@@ -3388,7 +3452,7 @@ body.palette-competition .tree-node.is-victory.tn-p2::before {
 
 .acct-btn.is-signed-in .acct-avatar {
     background-color: var(--fu-glass);
-    color: var(--fu-paper);
+    color: var(--fu-light);
 }
 
 /* ----- Loading screen: chassis, the mark in ink ----- */
@@ -3526,14 +3590,14 @@ body.palette-competition .tree-node.is-victory.tn-p2::before {
         font-family: var(--font-display);
         font-weight: 520;
         letter-spacing: -0.04em;
-        color: var(--accent);
+        color: var(--accent-num);
     }
 
     .pile-row .ink-cluster.is-counter .ink-readout {
         font-family: var(--font-display);
         font-weight: 520;
         letter-spacing: -0.03em;
-        color: var(--fu-paper);
+        color: var(--fu-light);
     }
 
     .lore-chip-btns button {
@@ -3553,13 +3617,13 @@ body.palette-competition .tree-node.is-victory.tn-p2::before {
     .pile-row .pile-num {
         background: var(--fu-glass);
         border-color: var(--fu-glass-line);
-        color: var(--fu-paper);
+        color: var(--fu-light);
     }
 
     .mobile-quick-actions .mqa-quest {
         background: var(--fu-glass-raised);
         border-color: var(--fu-glass-line);
-        color: var(--fu-paper);
+        color: var(--fu-light);
     }
 
     .mobile-quick-actions .mqa-quest i {
@@ -3721,20 +3785,21 @@ body.palette-competition .tree-node.is-victory.tn-p2::before {
 }
 
 #craft-hand-grid .bg-green-600\/90 {
-    background: var(--fu-paper) !important;
-    color: var(--fu-ink) !important;
+    background: var(--fu-light) !important;
+    color: var(--fu-dark) !important;
     font-family: var(--font-mono);
     font-size: 11px !important;
 }
 
 /* The focused card in the phone hand: a paper outline, not signal. */
 body.hand-open #bottom-board .hand .card-wrap.is-focused .card {
-    outline-color: var(--fu-paper);
+    outline-color: var(--fu-light);
 }
 
 /* Node subline: lore pair and the time it was saved. */
 .tn-stats {
     font-size: 9.5px;
+    letter-spacing: -0.03em;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -3769,4 +3834,45 @@ body.hand-open #bottom-board .hand .card-wrap.is-focused .card {
     background: var(--surface-2);
     color: var(--text);
     border-color: var(--text);
+}
+
+/* ----- Kiln: the few things drawn against a light chassis by day ----- */
+/* The well is blacker than the night chassis; a hairline keeps its edge. */
+:root[data-theme="night"] .play,
+:root[data-theme="night"] #tree-viewport {
+    box-shadow: 0 0 0 1px var(--fu-line);
+}
+
+/* Glass chips on the warm black shell (turn chip, an open tool) get a line. */
+:root[data-theme="night"] .turn-pill,
+:root[data-theme="night"] #btn-challenge-mode.is-active,
+:root[data-theme="night"] body:has(#timeline-drawer.is-open) #btn-timelines,
+:root[data-theme="night"] body:has(#tree-modal:not(.hidden)) #btn-multiverse,
+:root[data-theme="night"] body:has(#tweaks-panel.is-open) #btn-tweaks,
+:root[data-theme="night"] .tweak-radio button.is-active,
+:root[data-theme="night"] .chal-banner .cb-seg button.is-active,
+:root[data-theme="night"] .log-note,
+:root[data-theme="night"] .toast {
+    box-shadow: inset 0 0 0 1px var(--fu-line);
+}
+
+/* The mark and the warning tone, re-read on dark. */
+:root[data-theme="night"] .brand-mark {
+    filter: brightness(0) invert(0.94);
+}
+
+:root[data-theme="night"] .deck-note.is-warn,
+:root[data-theme="night"] .lib-meta .is-warn,
+:root[data-theme="night"] .readout .ro-detail .is-warn,
+:root[data-theme="night"] .seat .seat-count.is-warn,
+:root[data-theme="night"] .lib-badge.is-dirty {
+    color: oklch(0.80 0.12 75);
+}
+
+/* Scrims darken instead of tinting warm grey. */
+:root[data-theme="night"] .modal-backdrop,
+:root[data-theme="night"] .dlg-backdrop,
+:root[data-theme="night"] .lib-scrim,
+:root[data-theme="night"] .sheet-scrim {
+    background: oklch(0 0 0 / 0.6);
 }

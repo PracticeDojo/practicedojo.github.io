@@ -681,6 +681,19 @@ Implements the "Field Unit" design system (`docs/DESIGN-field-unit.md`) across t
 - **Type.** Inter (with its display optical size) for names and prose, Liberation Mono for labels, indexes and figures (self-hosted, OFL, `app/fonts/`).
 - **Fixes on the way.** Tweaks → Panel layout *Floating* and *Hide* used to squash or lose the board; both lay out properly now.
 
+## Feature 47: Kiln night theme and the signal family (v2.28.0)
+
+### User Story
+- As a player I want a dark version of the Dojo for late sessions, that follows my device unless I pick one.
+- As a player I want to swap the accent without it ever clashing with the ink colours that name cards and players.
+
+### Details
+Implements version 2 of `docs/DESIGN-field-unit.md` (Kiln dark mode, signal family).
+- **Tweaks → Theme: Auto / Day / Night.** Auto follows the device's light/dark setting and keeps following it while the app is open. The choice is applied before first paint (a few lines in `<head>`), so a night user never sees the day shell flash.
+- **Kiln** (night): warm black chassis `#141311`, warm dark paper `#221F1B`, a blacker well `#0C0C0C`, glass raised `#161412`, light ink `#F4F0E8`, hairlines `#2C2924`. Only the palette flips: every surface, card face, node, sheet and modal follows. Native controls switch with `color-scheme`.
+- **Signal family.** By day the signal is Ember `#E4572E`; on Kiln it is Radio `#E86B2A` with dark text on the key. Tweaks → Accent offers only the approved swaps: **Signal** (the theme's own), **Coral**, **Olive** (its lore numeral lifts to `#C6C45A` on the well) and **Trace**. Each carries the text colour that sits on it. The old Amber / Rose / Emerald / Violet / Azure accents were ink colours, so a saved pick of one falls back to Signal.
+- **CSS file.** The Field Unit tokens, themes, palettes and component styles moved from the inline `<style>` to `app/css/field-unit.css`, loaded right after it (pixel-identical move). The older inline rules stay put.
+
 ## Refactor 2: Own repository (v2.18.1)
 
 ### Details
@@ -741,3 +754,4 @@ Implements the "Field Unit" design system (`docs/DESIGN-field-unit.md`) across t
 - [x] Feature 44: Phone hand — one tap to a card, swipe through the hand
 - [x] Feature 45: Inkwell as cards — in the ink bar on desktop, a compact sheet on phones
 - [x] Feature 46: Field Unit visual redesign
+- [x] Feature 47: Kiln night theme and the signal family
