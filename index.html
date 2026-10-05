@@ -516,7 +516,7 @@
       <div class="flex items-center gap-3">
         <img src="img/practice_dojo.svg" class="w-8 h-8" alt="Logo" />
         <div class="font-display font-semibold text-[15px] tracking-tight">Practice Dojo</div>
-        <span class="tag hidden sm:inline-block ml-2">v1.0 · sandbox build</span>
+        <span class="tag hidden sm:inline-block ml-2">v2.26.1</span>
       </div>
       <nav class="hidden md:flex items-center gap-7 text-sm text-[var(--ink-dim)]">
         <a href="#screenshot" class="hover:text-white transition">See it</a>
@@ -753,7 +753,7 @@
           </div>
         </div>
         <div class="relative">
-          <img src="img/dojo_gui.png"
+          <img src="img/dojo_gui_01.png"
             alt="Practice Dojo showing a live Lorcana match between two decks with the win-probability meters, game log, and player boards visible"
             class="block w-full h-auto" />
           <!-- subtle annotation overlays -->
@@ -818,14 +818,14 @@
   </section>
 
   <!-- ============ STAT STRIP / PROBLEM ============ -->
-  <section class="relative border-y hairline" style="background: var(--bg-2);">
+  <!-- <section class="relative border-y hairline" style="background: var(--bg-2);">
     <div class="max-w-7xl mx-auto px-6 py-14 grid md:grid-cols-3 gap-10">
       <div>
         <div class="tag mb-3">The idea</div>
         <h3 class="font-display text-2xl text-white leading-snug">One match. A thousand lines you didn't get to play.
         </h3>
-        <p class="mt-3 text-[var(--ink-dim)] text-[15px] leading-relaxed">Every match leaves “what if I had quested with
-          Maui instead” sitting in your head. The dojo is where you go to actually find out — without having to replay
+        <p class="mt-3 text-[var(--ink-dim)] text-[15px] leading-relaxed">Every match leaves <i><b> “what if I had quested with
+          Maui instead” </b></i> sitting in your head. The dojo is where you go to actually find out — without having to replay
           the whole game again.</p>
       </div>
       <div class="md:col-span-2 grid grid-cols-3 gap-px bg-[var(--line)] rounded-xl overflow-hidden border hairline">
@@ -847,7 +847,7 @@
         </div>
       </div>
     </div>
-  </section>
+  </section> -->
 
   <!-- ============ IMPORT FROM DUELS.INK ============ -->
   <section id="import" class="relative overflow-hidden">
@@ -857,11 +857,11 @@
     <div class="max-w-7xl mx-auto px-6 py-28 relative">
 
       <div class="max-w-3xl mb-14">
-        <div class="chip mb-6"
+        <!-- <div class="chip mb-6"
           style="background: rgba(74,222,128,0.08); border-color: rgba(74,222,128,0.25); color: #86efac;">
           <i class="fa-solid fa-file-lines text-[11px]"></i>
           New · v1.16 · Match log import
-        </div>
+        </div> -->
         <h2 class="font-display text-4xl md:text-5xl text-white font-bold leading-[1.05]">
           Paste a <span style="color:#86efac;">duels.ink</span> log.<br />
           Get the whole match back.
@@ -1139,12 +1139,12 @@
                 <path d="M 620,200 C 660,220 680,260 700,300" stroke="#2e2a25" stroke-width="1.5" fill="none"
                   stroke-linecap="round" stroke-dasharray="3 4" />
                 <!-- branch labels -->
-                <text x="320" y="280" fill="#6a6459" font-family="Geist Mono" font-size="10"
-                  letter-spacing="1">branch · inkwell skip</text>
-                <text x="285" y="380" fill="#6a6459" font-family="Geist Mono" font-size="10"
-                  letter-spacing="1">branch · mulligan retry</text>
-                <text x="640" y="265" fill="#6a6459" font-family="Geist Mono" font-size="10"
-                  letter-spacing="1">branch · alt finisher</text>
+                <text x="320" y="280" fill="#6a6459" font-family="Geist Mono" font-size="10" letter-spacing="1">branch ·
+                  inkwell skip</text>
+                <text x="285" y="380" fill="#6a6459" font-family="Geist Mono" font-size="10" letter-spacing="1">branch ·
+                  mulligan retry</text>
+                <text x="640" y="265" fill="#6a6459" font-family="Geist Mono" font-size="10" letter-spacing="1">branch ·
+                  alt finisher</text>
               </svg>
 
               <!-- Nodes -->
@@ -1416,11 +1416,13 @@
               style="background: rgba(250,204,21,0.12); border: 1px solid rgba(250,204,21,0.3);">
               <i class="fa-solid fa-scale-balanced text-[var(--yellow)]"></i>
             </div>
-            <span class="tag">Engine</span>
+            <span class="tag">Probability</span>
           </div>
-          <h3 class="font-display text-lg text-white font-semibold">Live win-prob meters</h3>
-          <p class="mt-2 text-sm text-[var(--ink-dim)] leading-relaxed">BCR, LVI, RDS, CTL update in real time.
-            Tug-of-war bars show the matchup shifting turn by turn.</p>
+          <h3 class="font-display text-lg text-white font-semibold">Live Draw Probability</h3>
+          <p class="mt-2 text-sm text-[var(--ink-dim)] leading-relaxed">Check live what are the stats for drawing any
+            specific card in your deck. It includes how many copies are left in the deck, how many have been played
+            already, and what is the probability of drawing it on the next draw step or 1, 2, X turns ahead.
+          </p>
         </div>
 
         <!-- Feature: Decklist DB -->
@@ -1495,7 +1497,8 @@
               <div class="text-[var(--ink-faint)]">… 49 more</div>
             </div>
             <div class="mt-3 flex items-center justify-between">
-              <div class="flex items-center gap-2 text-xs text-[var(--p2-hi)]"><i class="fa-solid fa-user-ninja"></i> Player
+              <div class="flex items-center gap-2 text-xs text-[var(--p2-hi)]"><i class="fa-solid fa-user-ninja"></i>
+                Player
                 2</div>
               <button class="text-[11px] btn-primary px-3 py-1.5 rounded-md font-semibold">Start match <i
                   class="fa-solid fa-arrow-right text-[10px] ml-0.5"></i></button>
@@ -1582,7 +1585,7 @@
 
           <!-- mock: mini tree -->
           <div class="panel-2 p-4 relative" style="min-height: 174px;">
-            <svg viewBox="0 0 300 140" class="w-full h-32">
+            <!-- <svg viewBox="0 0 300 140" class="w-full h-32">
               <defs>
                 <linearGradient id="mg" x1="0" y1="0" x2="1" y2="0">
                   <stop offset="0%" stop-color="#e0a34d" />
@@ -1603,134 +1606,19 @@
               <text x="144" y="58" fill="#6a6459" font-family="Geist Mono" font-size="8">T3 · branch</text>
               <text x="200" y="20" fill="#f2cf93" font-family="Geist Mono" font-size="8">T5 · here</text>
               <text x="200" y="120" fill="#6a6459" font-family="Geist Mono" font-size="8">T5' · alt</text>
-            </svg>
-            <div
+            </svg> -->
+            <img src="img/multivers_gui_01.png" alt="Multiverse GUI example" class="block w-full h-auto" />
+            <!-- <div
               class="absolute bottom-3 left-4 right-4 flex items-center justify-between text-[10px] font-mono text-[var(--ink-faint)]">
               <span><i class="fa-solid fa-bookmark text-[var(--accent-hi)] mr-1"></i> 4 bookmarks</span>
               <span>2 branches · 1 active</span>
-            </div>
+            </div> -->
           </div>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- ============ METRICS DEEP-DIVE ============ -->
-  <section id="metrics" class="relative border-y hairline" style="background: var(--bg-2);">
-    <div class="max-w-7xl mx-auto px-6 py-24 grid lg:grid-cols-12 gap-12 items-center">
-      <div class="lg:col-span-5">
-        <div class="tag mb-3">Win-probability engine</div>
-        <h2 class="font-display text-4xl text-white font-bold leading-[1.1]">Numbers on the board, not vibes in your
-          head.</h2>
-        <p class="mt-5 text-[var(--ink-dim)] leading-relaxed">
-          Every card in every zone is run through the Unified Win Probability library. Four metrics — BCR, LVI, RDS, CTL
-          — update on every action so you can see which branch is actually winning, not which one feels stronger.
-        </p>
-
-        <div class="mt-8 grid grid-cols-2 gap-3">
-          <div class="panel-2 p-4">
-            <div class="text-[10px] tracking-widest uppercase text-[var(--ink-faint)] font-mono">BCR</div>
-            <div class="mt-1 text-sm text-white font-display font-semibold">Board Control Rating</div>
-            <p class="text-xs text-[var(--ink-dim)] mt-2 leading-relaxed">Who actually owns the table right now.</p>
-          </div>
-          <div class="panel-2 p-4">
-            <div class="text-[10px] tracking-widest uppercase text-[var(--ink-faint)] font-mono">LVI</div>
-            <div class="mt-1 text-sm text-white font-display font-semibold">Lore Velocity Index</div>
-            <p class="text-xs text-[var(--ink-dim)] mt-2 leading-relaxed">How fast you're trending toward 20.</p>
-          </div>
-          <div class="panel-2 p-4">
-            <div class="text-[10px] tracking-widest uppercase text-[var(--ink-faint)] font-mono">RDS</div>
-            <div class="mt-1 text-sm text-white font-display font-semibold">Resource Development Score</div>
-            <p class="text-xs text-[var(--ink-dim)] mt-2 leading-relaxed">How many resources can you generate: Draw
-              cards, Ramp, Cheat Ink, etc.</p>
-          </div>
-          <div class="panel-2 p-4">
-            <div class="text-[10px] tracking-widest uppercase text-[var(--ink-faint)] font-mono">CTL</div>
-            <div class="mt-1 text-sm text-white font-display font-semibold">Card Threat Level</div>
-            <p class="text-xs text-[var(--ink-dim)] mt-2 leading-relaxed">All those previous metrics combined in to a
-              single Threat Level Value.</p>
-          </div>
-        </div>
-      </div>
-
-      <!-- Metrics mockup -->
-      <div class="lg:col-span-7">
-        <div class="panel relative overflow-hidden">
-          <div class="px-5 py-3 border-b hairline bg-[var(--panel-2)] flex items-center justify-between">
-            <div class="flex items-center gap-2">
-              <div class="w-2 h-2 rounded-full bg-red-500/70"></div>
-              <div class="w-2 h-2 rounded-full bg-yellow-500/70"></div>
-              <div class="w-2 h-2 rounded-full bg-green-500/70"></div>
-              <span class="ml-3 font-mono text-[11px] text-[var(--ink-faint)]">dojo · win-prob meters</span>
-            </div>
-            <span class="font-mono text-[11px] text-[var(--ink-faint)]">turn 5 · P1 active</span>
-          </div>
-          <div class="p-6 grid md:grid-cols-2 gap-5">
-            <!-- BCR -->
-            <div>
-              <div class="flex justify-between items-baseline mb-2">
-                <span class="text-[10px] uppercase tracking-widest text-[var(--ink-dim)] font-mono">Board Control ·
-                  BCR</span>
-                <i class="fa-solid fa-khanda text-blue-400 text-xs"></i>
-              </div>
-              <div class="meter-track">
-                <div style="background: var(--orange); width: 64%;" class="shine"></div>
-                <div style="background: var(--p2); width: 36%;"></div>
-              </div>
-              <div class="flex justify-between text-[11px] font-mono mt-1.5">
-                <span class="text-orange-400">14.6</span>
-                <span class="text-[var(--p2-hi)]">8.2</span>
-              </div>
-            </div>
-            <!-- LVI -->
-            <div>
-              <div class="flex justify-between items-baseline mb-2">
-                <span class="text-[10px] uppercase tracking-widest text-[var(--ink-dim)] font-mono">Lore Velocity ·
-                  LVI</span>
-                <i class="fa-solid fa-gem text-yellow-400 text-xs"></i>
-              </div>
-              <div class="meter-track">
-                <div style="background: var(--orange); width: 52%;" class="shine"></div>
-                <div style="background: var(--p2); width: 48%;"></div>
-              </div>
-              <div class="flex justify-between text-[11px] font-mono mt-1.5">
-                <span class="text-orange-400">11.4</span>
-                <span class="text-[var(--p2-hi)]">10.5</span>
-              </div>
-            </div>
-
-            <!-- Card preview metrics -->
-            <div class="md:col-span-2 mt-2 panel-2 p-4 flex items-center gap-5">
-              <div class="card-ph amber" style="width: 76px; height: 106px;">
-                <svg class="ink" viewBox="0 0 100 100"
-                  style="width:18px;height:18px;position:absolute;top:6px;left:6px;">
-                  <polygon points="50,5 95,25 95,75 50,95 5,75 5,25" fill="#3a2510" stroke="#d4af37" stroke-width="6" />
-                </svg>
-              </div>
-              <div class="flex-1 grid grid-cols-4 gap-3 font-mono">
-                <div class="text-center">
-                  <div class="text-[9px] tracking-widest uppercase text-[var(--ink-faint)]">CTL</div>
-                  <div class="text-base text-white font-bold mt-1">8.20</div>
-                </div>
-                <div class="text-center">
-                  <div class="text-[9px] tracking-widest uppercase text-[var(--ink-faint)]">BCR</div>
-                  <div class="text-base text-blue-400 font-bold mt-1">3.40</div>
-                </div>
-                <div class="text-center">
-                  <div class="text-[9px] tracking-widest uppercase text-[var(--ink-faint)]">RDS</div>
-                  <div class="text-base text-green-400 font-bold mt-1">1.10</div>
-                </div>
-                <div class="text-center">
-                  <div class="text-[9px] tracking-widest uppercase text-[var(--ink-faint)]">LVI</div>
-                  <div class="text-base text-yellow-400 font-bold mt-1">2.80</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
 
   <!-- ============ CTA ============ -->
   <section id="cta" class="relative overflow-hidden">
