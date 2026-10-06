@@ -3414,21 +3414,186 @@ body.palette-competition .tree-node.is-victory.tn-p2::before {
     background: var(--bg);
 }
 
-.home-hd h1 {
-    font-family: var(--font-mono);
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: var(--label-track);
-    text-transform: uppercase;
+/* Two columns: the brand on its own at the left, and everything you act on
+   to its right (theme and account, the headline, the well, the table and
+   your sessions). Tablets put the brand in a row beside the controls;
+   phones stack it above them. */
+.home-wrap {
+    display: grid;
+    grid-template-columns: minmax(200px, 256px) minmax(0, 1fr);
+    column-gap: clamp(40px, 5.5vw, 88px);
+    row-gap: 22px;
+    align-items: start;
+    max-width: 1320px;
+    padding: 28px 48px 56px;
 }
 
-.home-hd .home-ver {
+.home-wrap > * {
+    grid-column: 2;
+    min-width: 0;
+}
+
+/* The brand starts level with the headline, under the controls row. */
+.home-brand {
+    grid-column: 1;
+    grid-row: 2 / span 3;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    padding-top: 30px;
+}
+
+/* The mark's artwork is centred in a square with ~13% blank above and
+   below; the box takes the artwork's own ratio so nothing floats. */
+.home-brand .home-logo {
+    display: block;
+    width: 100%;
+    max-width: 232px;
+    height: auto;
+    aspect-ratio: 3337 / 2632;
+    background-size: cover;
+}
+
+.home-id {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-top: 22px;
+}
+
+.home-id h1 {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1.3;
+    letter-spacing: var(--label-track);
+    text-transform: uppercase;
+    color: var(--text);
+}
+
+.home-id .home-ver {
+    font-family: var(--font-mono);
     font-size: 11px;
+    line-height: 1.3;
+    font-variant-numeric: tabular-nums;
     color: var(--text-dim);
+}
+
+.home-tagline {
+    margin: 26px 0 0;
+    font-family: var(--font-display);
+    font-size: 22px;
+    font-weight: 500;
+    line-height: 1.15;
+    letter-spacing: -0.03em;
+    color: var(--text);
+    text-wrap: balance;
+}
+
+/* Two beats, as on the landing page: the muted half starts its own line. */
+.home-tagline .mute {
+    display: block;
+    color: var(--fu-mute);
+}
+
+.home-hd {
+    grid-row: 1;
+    justify-content: flex-end;
+    flex-wrap: wrap;
 }
 
 .home-hd .btn {
     min-height: 30px;
+}
+
+@media (max-width: 1023px) {
+    .home-wrap {
+        grid-template-columns: minmax(0, 1fr) auto;
+        padding: 20px 24px 48px;
+    }
+
+    .home-wrap > * {
+        grid-column: 1 / -1;
+    }
+
+    /* Mark at the left, name and tagline beside it. */
+    .home-brand {
+        grid-column: 1;
+        grid-row: 1;
+        display: grid;
+        grid-template-columns: 56px minmax(0, 1fr);
+        column-gap: 14px;
+        row-gap: 4px;
+        align-items: center;
+        padding-top: 0;
+    }
+
+    .home-brand .home-logo {
+        grid-row: 1 / span 2;
+        width: 56px;
+    }
+
+    .home-id {
+        flex-direction: row;
+        align-items: baseline;
+        flex-wrap: wrap;
+        gap: 4px 10px;
+        margin-top: 0;
+        align-self: end;
+    }
+
+    .home-id h1 {
+        font-size: 12px;
+    }
+
+    .home-tagline {
+        grid-column: 2;
+        margin: 0;
+        font-size: 16px;
+        line-height: 1.2;
+        letter-spacing: -0.02em;
+        align-self: start;
+    }
+
+    .home-tagline .mute {
+        display: inline;
+    }
+
+    .home-hd {
+        grid-column: 2;
+        grid-row: 1;
+    }
+}
+
+@media (max-width: 760px) {
+    .home-wrap {
+        padding: 14px 14px 32px;
+        row-gap: 16px;
+    }
+
+    .home-brand,
+    .home-hd {
+        grid-column: 1 / -1;
+    }
+
+    .home-hd {
+        grid-row: 2;
+        justify-content: flex-start;
+    }
+
+    .home-brand {
+        grid-template-columns: 44px minmax(0, 1fr);
+        column-gap: 12px;
+    }
+
+    .home-brand .home-logo {
+        width: 44px;
+    }
+
+    .home-tagline {
+        font-size: 15px;
+    }
 }
 
 /* Segmented control (Theme: Auto / Day / Night), as on the landing page's
@@ -3476,24 +3641,50 @@ body.palette-competition .tree-node.is-victory.tn-p2::before {
     }
 }
 
+/* The headline is the landing page's hero (display/xl, css/landing.css
+   .display): Inter Display 500, tight, in two beats. The muted second
+   beat starts its own line; it is #8A847A, not a second accent. */
 .home-lede h2 {
+    margin: 30px 0 0;
+    max-width: none;
     font-family: var(--font-display);
-    font-size: clamp(26px, 3.4vw, 32px);
-    font-weight: 520;
-    line-height: 1.05;
-    letter-spacing: -0.04em;
-    font-variation-settings: 'opsz' 32;
-    max-width: 22ch;
+    font-size: clamp(40px, 5vw, 72px);
+    font-weight: 500;
+    line-height: 0.94;
+    letter-spacing: -0.045em;
+    color: var(--text);
+    text-wrap: balance;
 }
 
-.home-lede h2 em {
-    color: var(--text);
-    font-style: normal;
+.home-lede h2 .mute {
+    display: block;
+    color: var(--fu-mute);
 }
 
 .home-lede p {
+    margin: 18px 0 0;
+    max-width: 62ch;
     color: var(--text-2);
-    font-size: 13px;
+    font-size: 16px;
+    line-height: 1.5;
+}
+
+@media (max-width: 1023px) {
+    .home-lede h2 {
+        margin-top: 14px;
+    }
+}
+
+@media (max-width: 760px) {
+    .home-lede h2 {
+        margin-top: 4px;
+        font-size: 38px;
+    }
+
+    .home-lede p {
+        margin-top: 12px;
+        font-size: 14px;
+    }
 }
 
 .well.is-idle {
@@ -3991,10 +4182,6 @@ body.palette-competition .tree-node.is-victory.tn-p2::before {
 
 .drawer-overlay {
     background: color-mix(in oklch, var(--fu-chassis) 94%, transparent);
-}
-
-.home-lede h2 {
-    max-width: 26ch;
 }
 
 /* Narrow desktops: give the board back what the side columns can spare

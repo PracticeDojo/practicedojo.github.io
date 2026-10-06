@@ -974,31 +974,6 @@ body {
     gap: 10px;
 }
 
-.home-hd h1 {
-    margin: 0;
-    font-size: 17px;
-    font-weight: 600;
-    letter-spacing: -0.01em;
-    display: flex;
-    align-items: center;
-    gap: 9px;
-}
-
-.home-hd .brand-mark {
-    width: 18px;
-    height: 18px;
-}
-
-.home-hd .home-ver {
-    font-family: var(--font-mono);
-    font-size: 11px;
-    color: var(--text-faint);
-}
-
-.home-spacer {
-    flex: 1;
-}
-
 .ht-count {
     font-family: var(--font-mono);
     font-size: 10.5px;
@@ -1010,26 +985,6 @@ body {
 
 .ht-count:empty {
     display: none;
-}
-
-.home-lede h2 {
-    margin: 18px 0 6px;
-    font-size: clamp(28px, 4.4vw, 44px);
-    line-height: 1.04;
-    letter-spacing: -0.035em;
-    font-weight: 600;
-    max-width: 16ch;
-}
-
-.home-lede h2 em {
-    font-style: normal;
-    color: var(--accent-hi);
-}
-
-.home-lede p {
-    margin: 0;
-    color: var(--text-2);
-    font-size: 14px;
 }
 
 /* The well: a hairline at rest, accent when focused, all six inks
@@ -5348,14 +5303,6 @@ input[type="range"]::-moz-range-thumb {
     .home-wrap {
         padding: 14px 14px 32px;
         gap: 16px;
-    }
-
-    .home-hd .home-ver {
-        display: none;
-    }
-
-    .home-lede h2 {
-        margin-top: 6px;
     }
 
     .well textarea {

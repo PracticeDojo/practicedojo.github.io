@@ -700,6 +700,15 @@ Implements version 2 of `docs/DESIGN-field-unit.md` (Kiln dark mode, signal fami
 - **Signal family.** By day the signal is Ember `#E4572E`; on Kiln it is Radio `#E86B2A` with dark text on the key. Tweaks → Accent offers only the approved swaps: **Signal** (the theme's own), **Coral**, **Olive** (its lore numeral lifts to `#C6C45A` on the well) and **Trace**. Each carries the text colour that sits on it. The old Amber / Rose / Emerald / Violet / Azure accents were ink colours, so a saved pick of one falls back to Signal.
 - **CSS file.** The Field Unit tokens, themes, palettes and component styles moved from the inline `<style>` to `app/css/field-unit.css`, loaded right after it (pixel-identical move). The older inline rules stay put.
 
+## Patch: Home page in two columns (v3.2.4)
+
+### Details
+- **Brand column.** The home page's left column is the brand: the Practice Dojo mark in ink (black by day, light on Kiln, never orange), `PRACTICE DOJO` in mono caps with the version under it, and the tagline *A table for Lorcana. Paste a list, sit down, play.* in Inter Display, the second beat muted.
+- **Everything else to the right.** Theme, account and Library sit at the top right; under them the headline, the intake well, the readout, and the table and recent sessions side by side. Nothing was removed or rewired.
+- **Hero headline.** *Paste a decklist / or a Duels.ink game.* uses the landing page hero's type (`display/xl`: Inter Display 500, up to 72px, the second beat muted on its own line), and the line under it the landing's lede (16px).
+- **No glows or gradients** on the page.
+- **Tablets** (761–1023px) put the brand in a row beside the controls; **phones** stack the brand (a 44px mark), then the controls, then the headline. This also fixes the phone header, where Library used to run off the screen.
+
 ## Patch: Self-hosted Inter and Inter Display (v3.2.2)
 
 ### Details
@@ -828,3 +837,4 @@ The public page (`index.html`) follows Field Unit too, as `docs/DESIGN-field-uni
 - [x] Feature 49: Phone hand in the card drawer
 - [x] Patch: Framed phone board
 - [x] Patch: Self-hosted Inter and Inter Display
+- [x] Patch: Home page in two columns

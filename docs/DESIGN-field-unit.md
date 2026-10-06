@@ -161,7 +161,7 @@ Contrast: ink on paper and signal on glass must stay at least WCAG AA. Do not pu
 
 Families: Inter Display for names and numerals, Inter for prose, Liberation Mono for every label, index, stamp, and table figure. All three are self-hosted in `app/fonts/` (the app and the landing page share them) and never come from a font CDN. Inter is the Inter 4.1 variable font with both axes, so text sizes get their optical size; Inter Display is the same font pinned at the display optical size (opsz 32), every weight. Use the `--font-display` token for titles and numerals of 20px and up. Mono labels are uppercase with `letter-spacing: 0.14em`.
 
-- **display/xl**: 72px, 500, 0.9, tracking -0.045em — marketing headline only. Sentence case.
+- **display/xl**: 72px, 500, 0.9, tracking -0.045em — marketing headline, and the app's home headline (the one exception inside the app). Sentence case.
 - **display/lg**: 32px, 520, 1.0, tracking -0.04em — lore numerals inside the well. Color signal.
 - **title/md**: 16px, 560, 1.2, tracking -0.02em — panel titles, node titles.
 - **body/md**: 15px, 400, 1.45 — marketing prose. Not used inside the match board.
@@ -278,7 +278,11 @@ On the glass canvas. Inactive `#6A655E` at 1.2px. The path to the node you are o
 
 ### Marketing chassis
 
-Used only on the public site. Paper modules on chassis, 22px radius. Headline `display/xl`. One signal key. Spec rows separated by 1px `#E0DBD1`, indexed `01–04` in signal mono. A black inset may show the turn stamp and a lore pair. Do not reuse marketing radius or display type inside the app.
+Used only on the public site. Paper modules on chassis, 22px radius. Headline `display/xl`. One signal key. Spec rows separated by 1px `#E0DBD1`, indexed `01–04` in signal mono. A black inset may show the turn stamp and a lore pair. Do not reuse marketing radius or display type inside the app; the home page's headline is the one exception (see Home).
+
+### Home
+
+The app's front door, on the chassis. Two columns: the brand on the left (the mark in ink, about 232px wide; the name in mono caps, 14px weight 700, tracking 0.14em; the version as a mono figure; a two-beat tagline in Inter Display 22px, the second beat mute), and everything the player acts on to its right (theme and account controls, the headline, the glass intake well, the table and recent sessions). The headline is the marketing hero (`display/xl`, two beats, the second mute on its own line). No glows, gradients or watermarks. Tablets put the brand in a row beside the controls; phones stack it above them with a 44px mark.
 
 ## Do's and don'ts
 

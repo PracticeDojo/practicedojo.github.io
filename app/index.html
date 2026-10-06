@@ -160,10 +160,17 @@
          Duels.ink log or replay, or a session file, and says what it understood. -->
     <div id="setup-modal" class="home-page hidden" role="dialog" aria-modal="true" aria-labelledby="home-title">
         <div class="home-wrap">
+            <!-- The brand column: the mark, the name and version, the tagline -->
+            <div class="home-brand">
+                <span class="brand-mark home-logo" aria-hidden="true"></span>
+                <div class="home-id">
+                    <h1 id="home-title">Practice Dojo</h1>
+                    <span class="home-ver" id="app-version-setup"></span>
+                </div>
+                <p class="home-tagline">A table for Lorcana. <span class="mute">Paste a list, sit down, play.</span></p>
+            </div>
+
             <header class="home-hd">
-                <h1 id="home-title"><span class="brand-mark"></span> Practice Dojo</h1>
-                <span class="home-ver" id="app-version-setup"></span>
-                <span class="home-spacer"></span>
                 <div class="seg" id="home-theme" role="group" aria-label="Theme">
                     <button type="button" data-val="auto" aria-pressed="false" title="Follow this device">Auto</button>
                     <button type="button" data-val="day" aria-pressed="false" title="Mineral">Day</button>
@@ -185,7 +192,7 @@
             </header>
 
             <section class="home-lede">
-                <h2>Paste a decklist or a <em>Duels.ink</em> game.</h2>
+                <h2>Paste a decklist <span class="mute">or a Duels.ink game.</span></h2>
                 <p>Or drop a saved session anywhere on this page. The Dojo works out what it is.</p>
             </section>
 
@@ -1022,7 +1029,7 @@
     <script>
         let cardFuse = null;
 
-        const APP_VERSION = "v3.2.3"; // Centralized version string (v3: Field Unit)
+        const APP_VERSION = "v3.2.4"; // Centralized version string (v3: Field Unit)
 
         // Tweaks panel accent presets (hue values for the OKLCH accent ramp)
         // Tweaks → Accent: the approved Field Unit signals only (design.md ·
