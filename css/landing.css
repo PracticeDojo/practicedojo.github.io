@@ -24,6 +24,35 @@
     src: local('Liberation Mono Bold'), local('LiberationMono-Bold'), url('../app/fonts/LiberationMono-Bold.woff2') format('woff2');
 }
 
+/* Inter (text) and Inter Display (titles, names, numerals), self-hosted so
+   they always load. Built from the Inter 4.1 release (rsms/inter, OFL — see
+   app/fonts/Inter-OFL.txt), Latin subset. InterVariable keeps both axes, so text
+   gets its optical size automatically; InterDisplayVariable is the same
+   design pinned at the display optical size (opsz 32), every weight. */
+@font-face {
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 100 900;
+    font-display: swap;
+    src: url('../app/fonts/InterVariable.woff2') format('woff2');
+}
+
+@font-face {
+    font-family: 'Inter';
+    font-style: italic;
+    font-weight: 100 900;
+    font-display: swap;
+    src: url('../app/fonts/InterVariable-Italic.woff2') format('woff2');
+}
+
+@font-face {
+    font-family: 'Inter Display';
+    font-style: normal;
+    font-weight: 100 900;
+    font-display: swap;
+    src: url('../app/fonts/InterDisplayVariable.woff2') format('woff2');
+}
+
 /* ===================================================================
    TOKENS — Mineral (day)
 =================================================================== */
@@ -98,6 +127,7 @@
 
     /* Type */
     --font-sans: 'Inter', 'Noto Sans Display', system-ui, -apple-system, sans-serif;
+    --font-display: 'Inter Display', 'Inter', 'Noto Sans Display', system-ui, -apple-system, sans-serif;
     --font-mono: 'Liberation Mono', 'DejaVu Sans Mono', ui-monospace, monospace;
     --label-track: 0.14em;
 
@@ -573,6 +603,7 @@ button {
 /* display/xl — marketing headline only. Sentence case. */
 .display {
     margin: 0;
+    font-family: var(--font-display);
     font-size: clamp(44px, 6.2vw, 72px);
     font-weight: 500;
     line-height: 0.94;
@@ -583,6 +614,7 @@ button {
 
 .h2 {
     margin: 22px 0 0;
+    font-family: var(--font-display);
     font-size: clamp(32px, 4.2vw, 48px);
     font-weight: 500;
     line-height: 1;
@@ -869,7 +901,7 @@ button {
 }
 
 .turn-stamp b {
-    font-family: var(--font-sans);
+    font-family: var(--font-display);
     font-size: 15px;
     font-weight: 560;
     color: var(--signal-text);
@@ -893,6 +925,7 @@ button {
 
 .lore-box .num {
     margin-top: 2px;
+    font-family: var(--font-display);
     font-size: 32px;
     font-weight: 520;
     line-height: 1;
@@ -1166,6 +1199,7 @@ button {
 
 .intake-q {
     margin: 4px 2px 2px;
+    font-family: var(--font-display);
     font-size: 22px;
     font-weight: 560;
     letter-spacing: -0.03em;
@@ -2181,6 +2215,7 @@ button {
 
 .step h3 {
     margin: 0;
+    font-family: var(--font-display);
     font-size: 22px;
     font-weight: 560;
     letter-spacing: -0.03em;

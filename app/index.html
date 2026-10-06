@@ -16,14 +16,11 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-    <!-- Field Unit fonts: Inter with its optical-size axis (the display cut at
-         large sizes) from Google Fonts; Liberation Mono is self-hosted in fonts/
-         (OFL, see fonts/OFL.txt) since no font CDN carries it. -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400..700&display=swap"
-        rel="stylesheet">
+    <!-- Field Unit fonts, all self-hosted in fonts/ (declared in css/field-unit.css):
+         Inter and Inter Display (Inter 4.1, OFL, see fonts/Inter-OFL.txt) and
+         Liberation Mono (OFL, see fonts/OFL.txt). -->
+    <link rel="preload" href="fonts/InterVariable.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="fonts/InterDisplayVariable.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="preload" href="fonts/LiberationMono-Regular.woff2" as="font" type="font/woff2" crossorigin>
 
     <!-- Fuse, marked, and DOMPurify (marked passes raw HTML through; comments come from session files) -->
@@ -1004,7 +1001,7 @@
     <script>
         let cardFuse = null;
 
-        const APP_VERSION = "v3.2.1"; // Centralized version string (v3: Field Unit)
+        const APP_VERSION = "v3.2.2"; // Centralized version string (v3: Field Unit)
 
         // Tweaks panel accent presets (hue values for the OKLCH accent ramp)
         // Tweaks → Accent: the approved Field Unit signals only (design.md ·

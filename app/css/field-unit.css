@@ -36,6 +36,35 @@
     src: local('Liberation Mono Bold'), local('LiberationMono-Bold'), url('../fonts/LiberationMono-Bold.woff2') format('woff2');
 }
 
+/* Inter (text) and Inter Display (titles, names, numerals), self-hosted so
+   they always load. Built from the Inter 4.1 release (rsms/inter, OFL — see
+   fonts/Inter-OFL.txt), Latin subset. InterVariable keeps both axes, so text
+   gets its optical size automatically; InterDisplayVariable is the same
+   design pinned at the display optical size (opsz 32), every weight. */
+@font-face {
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 100 900;
+    font-display: swap;
+    src: url('../fonts/InterVariable.woff2') format('woff2');
+}
+
+@font-face {
+    font-family: 'Inter';
+    font-style: italic;
+    font-weight: 100 900;
+    font-display: swap;
+    src: url('../fonts/InterVariable-Italic.woff2') format('woff2');
+}
+
+@font-face {
+    font-family: 'Inter Display';
+    font-style: normal;
+    font-weight: 100 900;
+    font-display: swap;
+    src: url('../fonts/InterDisplayVariable.woff2') format('woff2');
+}
+
 :root {
     /* --- Raw palette (design.md · colors) --- */
     --fu-chassis: #E7E2D8;
@@ -129,7 +158,7 @@
 
     /* --- Type (design.md · typography) --- */
     --font-sans: 'Inter', 'Noto Sans Display', system-ui, -apple-system, sans-serif;
-    --font-display: 'Inter', 'Noto Sans Display', system-ui, -apple-system, sans-serif;
+    --font-display: 'Inter Display', 'Inter', 'Noto Sans Display', system-ui, -apple-system, sans-serif;
     --font-mono: 'Liberation Mono', 'DejaVu Sans Mono', ui-monospace, monospace;
     --label-track: 0.14em;
 

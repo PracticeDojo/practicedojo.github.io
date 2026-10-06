@@ -159,7 +159,7 @@ Contrast: ink on paper and signal on glass must stay at least WCAG AA. Do not pu
 
 ## Typography
 
-Families: Inter Display for names and numerals, Inter for prose, Liberation Mono for every label, index, stamp, and table figure. Mono labels are uppercase with `letter-spacing: 0.14em`.
+Families: Inter Display for names and numerals, Inter for prose, Liberation Mono for every label, index, stamp, and table figure. All three are self-hosted in `app/fonts/` (the app and the landing page share them) and never come from a font CDN. Inter is the Inter 4.1 variable font with both axes, so text sizes get their optical size; Inter Display is the same font pinned at the display optical size (opsz 32), every weight. Use the `--font-display` token for titles and numerals of 20px and up. Mono labels are uppercase with `letter-spacing: 0.14em`.
 
 - **display/xl**: 72px, 500, 0.9, tracking -0.045em — marketing headline only. Sentence case.
 - **display/lg**: 32px, 520, 1.0, tracking -0.04em — lore numerals inside the well. Color signal.

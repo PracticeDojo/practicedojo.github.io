@@ -700,6 +700,16 @@ Implements version 2 of `docs/DESIGN-field-unit.md` (Kiln dark mode, signal fami
 - **Signal family.** By day the signal is Ember `#E4572E`; on Kiln it is Radio `#E86B2A` with dark text on the key. Tweaks → Accent offers only the approved swaps: **Signal** (the theme's own), **Coral**, **Olive** (its lore numeral lifts to `#C6C45A` on the well) and **Trace**. Each carries the text colour that sits on it. The old Amber / Rose / Emerald / Violet / Azure accents were ink colours, so a saved pick of one falls back to Signal.
 - **CSS file.** The Field Unit tokens, themes, palettes and component styles moved from the inline `<style>` to `app/css/field-unit.css`, loaded right after it (pixel-identical move). The older inline rules stay put.
 
+## Patch: Self-hosted Inter and Inter Display (v3.2.2)
+
+### Details
+- Inter came from Google Fonts, which sent fixed-weight files without the optical-size axis (and nothing at all when the request was blocked), so titles never got Inter Display and weights like 520 / 560 snapped to 500 / 600.
+- Now self-hosted in `app/fonts/` for the app and the landing page, built from the official Inter 4.1 release (OFL, `app/fonts/Inter-OFL.txt`), Latin subset:
+  - `InterVariable.woff2` (216 KB) and `InterVariable-Italic.woff2` (239 KB, loaded only when italic text appears): family **Inter**, weight and optical-size axes.
+  - `InterDisplayVariable.woff2` (142 KB): family **Inter Display**, the same font pinned at opsz 32, every weight.
+- `--font-display` is now `'Inter Display', 'Inter', …` (lore numerals, deck counts, the home headline). On the landing page the headlines, section titles, lore numerals and step titles use it. Both pages preload Inter and Inter Display; the Google Fonts links are gone.
+- Rebuild (fonttools + brotli): `fonttools varLib.instancer InterVariable.ttf opsz=32 -o InterDisplay-var.ttf`, then `pyftsubset <font> --unicodes="U+0000-024F,U+02B0-02FF,U+0300-036F,U+1E00-1EFF,U+2000-206F,U+20A0-20CF,U+2100-214F,U+2190-21FF,U+2200-22FF,U+2300-23FF,U+25A0-25FF,U+2600-26FF,U+2700-27BF,U+FEFF,U+FFFD" --layout-features='*' --flavor=woff2` for each of the three.
+
 ## Patch: Framed phone board (v3.2.1)
 
 ### Details
@@ -817,3 +827,4 @@ The public page (`index.html`) follows Field Unit too, as `docs/DESIGN-field-uni
 - [x] Feature 48: Phone card drawer and hand as function keys
 - [x] Feature 49: Phone hand in the card drawer
 - [x] Patch: Framed phone board
+- [x] Patch: Self-hosted Inter and Inter Display

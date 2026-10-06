@@ -21,7 +21,7 @@ This file provides system instructions and context for AI agents working in this
 | `app/js/` | Small modules split out of the app (see "Splitting rule"). `library.js` = device library |
 | `app/defaults/` | Default decks and demos shipped with the app (manifests + files) |
 | `app/css/` | All of the app's CSS. `base.css` = the original stylesheet (loaded first), `field-unit.css` = the Field Unit design system on top (tokens, day/night themes, palettes, component styles) |
-| `app/fonts/` | Self-hosted Liberation Mono (Field Unit's mono face, OFL — see `OFL.txt`) |
+| `app/fonts/` | Self-hosted Field Unit fonts, used by the app and the landing page: Inter and Inter Display (built from Inter 4.1, OFL — see `Inter-OFL.txt`) and Liberation Mono (OFL — see `OFL.txt`). Never load fonts from a font CDN |
 | `img/` | Images used by the landing page and the app |
 | `docs/` | Feature list, dev guide, architecture, implementation and research notes, test protocols |
 | `docs/samples/` | Sample Duels.ink logs and replays for testing imports |

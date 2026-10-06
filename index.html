@@ -41,11 +41,10 @@
     })();
   </script>
 
-  <!-- Field Unit type: Inter (with its display optical size) from Google Fonts;
-       Liberation Mono is the app's self-hosted copy (app/fonts, OFL). -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400..700&display=swap" rel="stylesheet">
+  <!-- Field Unit type, self-hosted with the app (app/fonts, OFL): Inter for text,
+       Inter Display for titles and numerals, Liberation Mono for labels. -->
+  <link rel="preload" href="app/fonts/InterVariable.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="app/fonts/InterDisplayVariable.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="app/fonts/LiberationMono-Regular.woff2" as="font" type="font/woff2" crossorigin>
   <!-- Icons only where the app itself uses them: the multiverse nodes and tools. -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
@@ -60,7 +59,7 @@
       <a class="brand" href="#top" aria-label="Practice Dojo, back to top">
         <img src="img/practice_dojo.svg" class="brand-mark" alt="" />
         <span class="name">Practice Dojo</span>
-        <span class="ver">v3.2.1</span>
+        <span class="ver">v3.2.2</span>
       </a>
       <nav class="nav-links" aria-label="Sections">
         <a href="#screenshot">See it</a>
@@ -153,7 +152,7 @@
 
         <figure class="shot module">
           <div class="shot-bar">
-            <span class="label">app · v3.2.1 · Set 13 example · turn 16</span>
+            <span class="label">app · v3.2.2 · Set 13 example · turn 16</span>
             <div class="seg" role="group" aria-label="Theme">
               <button type="button" data-theme-pick="auto" aria-pressed="false" title="Follow this device">Auto</button>
               <button type="button" data-theme-pick="day" aria-pressed="false" title="Mineral">Day</button>
@@ -546,7 +545,7 @@
         <p class="lede">A companion to your favorite Lorcana simulator. Open the Dojo. Load two decks. Play. Rewind.
           Branch. Repeat.</p>
         <a href="app/" class="key lg">Open Practice Dojo <span aria-hidden="true">→</span></a>
-        <div class="label foot">v3.2.1 · Field Unit · your sessions stay on this device</div>
+        <div class="label foot">v3.2.2 · Field Unit · your sessions stay on this device</div>
       </div>
     </section>
 
