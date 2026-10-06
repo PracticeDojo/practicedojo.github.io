@@ -111,11 +111,13 @@
                     onchange="App.renameCurrentSession(this.value)"
                     onkeydown="if(event.key==='Enter'){this.blur()}else if(event.key==='Escape'){this.value=App.session?App.session.title:'';this.blur()}">
                 <button class="icon-btn ghost" id="btn-session-save" onclick="App.saveSessionNow()"
-                    title="Save to this device" aria-label="Save session"><i class="fa-solid fa-floppy-disk"></i></button>
-                <button class="icon-btn ghost session-copy" onclick="App.saveSessionAsCopy()"
-                    title="Save as copy" aria-label="Save session as a copy"><i class="fa-regular fa-copy"></i></button>
+                    title="Save to this device" aria-label="Save session"><i
+                        class="fa-solid fa-floppy-disk"></i></button>
+                <button class="icon-btn ghost session-copy" onclick="App.saveSessionAsCopy()" title="Save as copy"
+                    aria-label="Save session as a copy"><i class="fa-regular fa-copy"></i></button>
                 <button class="icon-btn ghost" id="btn-session-share" onclick="App.shareCurrentSession()"
-                    title="Share a link to this session" aria-label="Share session"><i class="fa-solid fa-share-nodes"></i></button>
+                    title="Share a link to this session" aria-label="Share session"><i
+                        class="fa-solid fa-share-nodes"></i></button>
             </div>
         </div>
         <div class="topbar-center">
@@ -132,13 +134,15 @@
                 aria-pressed="false"><i class="fa-solid fa-hand-fist"></i> <span>Challenge</span></button>
             <button class="icon-btn" onclick="App.undo()" title="Undo last action"><i
                     class="fa-solid fa-rotate-left"></i> <span>Undo</span></button>
-            <button class="icon-btn" id="btn-timelines" onclick="App.toggleTimelines()" title="Timelines &amp; bookmarks (T)"><i
-                    class="fa-solid fa-clock-rotate-left"></i> <span>Timelines</span></button>
+            <button class="icon-btn" id="btn-timelines" onclick="App.toggleTimelines()"
+                title="Timelines &amp; bookmarks (T)"><i class="fa-solid fa-clock-rotate-left"></i>
+                <span>Timelines</span></button>
             <button class="icon-btn" id="btn-multiverse" onclick="App.openTreeModal()" title="Multiverse tree (M)"><i
                     class="fa-solid fa-network-wired"></i> <span>Multiverse</span></button>
             <div class="divider-v"></div>
-            <button class="icon-btn" id="btn-tweaks" onclick="document.getElementById('tweaks-panel').classList.toggle('is-open')"
-                title="Tweaks" aria-label="Tweaks"><i class="fa-solid fa-sliders"></i></button>
+            <button class="icon-btn" id="btn-tweaks"
+                onclick="document.getElementById('tweaks-panel').classList.toggle('is-open')" title="Tweaks"
+                aria-label="Tweaks"><i class="fa-solid fa-sliders"></i></button>
             <button class="icon-btn" onclick="App.confirmShowSetup()" title="Reset / change decks"
                 aria-label="Reset or change decks"><i class="fa-solid fa-rotate-right"></i></button>
         </div>
@@ -160,16 +164,23 @@
                 <h1 id="home-title"><span class="brand-mark"></span> Practice Dojo</h1>
                 <span class="home-ver" id="app-version-setup"></span>
                 <span class="home-spacer"></span>
+                <div class="seg" id="home-theme" role="group" aria-label="Theme">
+                    <button type="button" data-val="auto" aria-pressed="false" title="Follow this device">Auto</button>
+                    <button type="button" data-val="day" aria-pressed="false" title="Mineral">Day</button>
+                    <button type="button" data-val="night" aria-pressed="false" title="Kiln">Night</button>
+                </div>
                 <button class="btn btn-ghost hidden" id="btn-setup-back" onclick="App.closeSetup()">
                     <i class="fa-solid fa-arrow-left"></i> Back to match
                 </button>
                 <button class="btn btn-ghost acct-btn" id="btn-account" onclick="App.openAccount()"
                     title="Optional: keep your decks and sessions on every device">
-                    <span class="acct-avatar" id="acct-avatar" aria-hidden="true"><i class="fa-regular fa-user"></i></span>
+                    <span class="acct-avatar" id="acct-avatar" aria-hidden="true"><i
+                            class="fa-regular fa-user"></i></span>
                     <span id="acct-label">Sign in</span>
                 </button>
                 <button class="btn btn-ghost" id="btn-open-library" onclick="App.openLibrary('sessions')">
-                    <i class="fa-solid fa-book-bookmark"></i> Library <span class="ht-count" id="home-count-sessions"></span>
+                    <i class="fa-solid fa-book-bookmark"></i> Library <span class="ht-count"
+                        id="home-count-sessions"></span>
                 </button>
             </header>
 
@@ -186,12 +197,15 @@
                         oninput="App.onIntakeInput()"></textarea>
                     <div class="well-ft">
                         <span class="hint">Nothing to paste? Try an example:</span>
-                        <button class="btn btn-ghost" id="btn-example-deck" onclick="App.intakeExample('deck')"><i class="fa-solid fa-layer-group"></i> A decklist</button>
-                        <button class="btn btn-ghost" onclick="App.intakeExample('log')"><i class="fa-solid fa-film"></i> A Duels.ink log</button>
+                        <button class="btn btn-ghost" id="btn-example-deck" onclick="App.intakeExample('deck')"><i
+                                class="fa-solid fa-layer-group"></i> A decklist</button>
+                        <button class="btn btn-ghost" onclick="App.intakeExample('log')"><i
+                                class="fa-solid fa-film"></i> A Duels.ink log</button>
                         <input type="file" id="intake-file" class="hidden"
                             accept=".json,.gz,.txt,.md,.log,.replay,application/json,application/gzip,text/plain"
                             onchange="App.onIntakeFile(event)">
-                        <button class="btn" onclick="document.getElementById('intake-file').click()"><i class="fa-solid fa-file-arrow-up"></i> Choose a file</button>
+                        <button class="btn" onclick="document.getElementById('intake-file').click()"><i
+                                class="fa-solid fa-file-arrow-up"></i> Choose a file</button>
                     </div>
                 </div>
             </div>
@@ -213,7 +227,8 @@
                 </section>
                 <section class="home-box" aria-labelledby="home-recent-title">
                     <h3 id="home-recent-title">Pick up again
-                        <button class="link-btn" onclick="App.openLibrary('sessions')">All sessions</button></h3>
+                        <button class="link-btn" onclick="App.openLibrary('sessions')">All sessions</button>
+                    </h3>
                     <div id="home-recent"></div>
                 </section>
             </div>
@@ -222,7 +237,8 @@
 
     <!-- Library: every session and deck on this device -->
     <div class="lib-scrim hidden" id="library-scrim" onclick="App.closeLibrary()"></div>
-    <aside class="lib-drawer" id="library-drawer" role="dialog" aria-modal="true" aria-labelledby="library-title" hidden>
+    <aside class="lib-drawer" id="library-drawer" role="dialog" aria-modal="true" aria-labelledby="library-title"
+        hidden>
         <div class="lib-hd">
             <h2 id="library-title">Library</h2>
             <button class="icon-btn ghost" onclick="App.closeLibrary()" aria-label="Close library">&times;</button>
@@ -231,8 +247,8 @@
             <button type="button" class="home-tab is-active" role="tab" id="lib-tab-sessions" data-tab="sessions"
                 aria-selected="true" aria-controls="lib-panel-sessions" onclick="App.libTab('sessions')">
                 <i class="fa-solid fa-folder-open"></i> Sessions</button>
-            <button type="button" class="home-tab" role="tab" id="lib-tab-decks" data-tab="decks"
-                aria-selected="false" aria-controls="lib-panel-decks" tabindex="-1" onclick="App.libTab('decks')">
+            <button type="button" class="home-tab" role="tab" id="lib-tab-decks" data-tab="decks" aria-selected="false"
+                aria-controls="lib-panel-decks" tabindex="-1" onclick="App.libTab('decks')">
                 <i class="fa-solid fa-layer-group"></i> Decks</button>
             <button type="button" class="home-tab" role="tab" id="lib-tab-shared" data-tab="shared"
                 aria-selected="false" aria-controls="lib-panel-shared" tabindex="-1" onclick="App.libTab('shared')">
@@ -242,8 +258,8 @@
         <section class="lib-panel" id="lib-panel-sessions" role="tabpanel" aria-labelledby="lib-tab-sessions">
             <div class="lib-toolbar">
                 <span class="lib-hint">Kept on this device. Every match saves itself as you play.</span>
-                <input type="file" id="setup-import-file" class="hidden" accept=".json,.gz,application/json,application/gzip"
-                    onchange="App.importTimelines(event)">
+                <input type="file" id="setup-import-file" class="hidden"
+                    accept=".json,.gz,application/json,application/gzip" onchange="App.importTimelines(event)">
                 <button class="btn btn-ghost" onclick="document.getElementById('setup-import-file').click()">
                     <i class="fa-solid fa-file-import"></i> Import file
                 </button>
@@ -277,11 +293,12 @@
                     placeholder="Paste decklist&#10;(e.g. 4 Tinker Bell - Giant Fairy)"
                     oninput="App.checkDeckEditor()"></textarea>
                 <div class="deck-note" id="deck-editor-note" role="status" aria-live="polite"></div>
-                <input type="text" id="deck-editor-notes" class="input" maxlength="4000"
-                    placeholder="Notes (optional)" aria-label="Deck notes">
+                <input type="text" id="deck-editor-notes" class="input" maxlength="4000" placeholder="Notes (optional)"
+                    aria-label="Deck notes">
                 <div class="de-actions">
                     <button type="button" class="btn btn-ghost" onclick="App.closeDeckEditor()">Cancel</button>
-                    <button type="submit" class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> Save deck</button>
+                    <button type="submit" class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> Save
+                        deck</button>
                 </div>
             </form>
 
@@ -292,7 +309,8 @@
 
         <section class="lib-panel" id="lib-panel-shared" role="tabpanel" aria-labelledby="lib-tab-shared" hidden>
             <div class="lib-toolbar">
-                <span class="lib-hint">Links you've shared from this browser. A link is a snapshot; deleting it stops it opening for everyone.</span>
+                <span class="lib-hint">Links you've shared from this browser. A link is a snapshot; deleting it stops it
+                    opening for everyone.</span>
             </div>
             <div class="lib-list" id="lib-shared-list"></div>
         </section>
@@ -560,38 +578,40 @@
 
             <!-- Hover details: the card on a glass inset, its figures underneath -->
             <div class="hover-module">
-            <!-- Card Preview Panel -->
-            <div class="preview-pane">
-                <span id="sidebar-preview-placeholder" class="preview-placeholder">Hover a card for details</span>
-                <div id="preview-fallback" class="preview-fallback hidden"></div>
-                <div id="sidebar-preview" class="preview-image opacity-0"
-                    style="background-size:100% auto;background-position:bottom center;pointer-events:none"></div>
-                <div id="preview-ink-container" class="opacity-0"
-                    style="position:absolute;bottom:10px;right:10px;width:46px;height:46px;display:flex;align-items:center;justify-content:center;pointer-events:none;transition:opacity .2s ease;filter:drop-shadow(0 3px 7px rgba(0,0,0,.55))">
-                    <svg id="preview-ink-hex" class="hidden" viewBox="0 0 100 100"
-                        style="position:absolute;inset:0;width:100%;height:100%">
-                        <polygon points="50,5 95,25 95,75 50,95 5,75 5,25" fill="#222" stroke="#666" stroke-width="4" />
-                    </svg>
-                    <svg id="preview-ink-circle" class="hidden" viewBox="0 0 100 100"
-                        style="position:absolute;inset:0;width:100%;height:100%">
-                        <circle cx="50" cy="50" r="45" fill="#D4AF37" stroke="#FFF" stroke-width="4" />
-                    </svg>
-                    <span id="preview-ink-cost"
-                        style="position:relative;z-index:1;font-weight:700;font-size:18px"></span>
+                <!-- Card Preview Panel -->
+                <div class="preview-pane">
+                    <span id="sidebar-preview-placeholder" class="preview-placeholder">Hover a card for details</span>
+                    <div id="preview-fallback" class="preview-fallback hidden"></div>
+                    <div id="sidebar-preview" class="preview-image opacity-0"
+                        style="background-size:100% auto;background-position:bottom center;pointer-events:none"></div>
+                    <div id="preview-ink-container" class="opacity-0"
+                        style="position:absolute;bottom:10px;right:10px;width:46px;height:46px;display:flex;align-items:center;justify-content:center;pointer-events:none;transition:opacity .2s ease;filter:drop-shadow(0 3px 7px rgba(0,0,0,.55))">
+                        <svg id="preview-ink-hex" class="hidden" viewBox="0 0 100 100"
+                            style="position:absolute;inset:0;width:100%;height:100%">
+                            <polygon points="50,5 95,25 95,75 50,95 5,75 5,25" fill="#222" stroke="#666"
+                                stroke-width="4" />
+                        </svg>
+                        <svg id="preview-ink-circle" class="hidden" viewBox="0 0 100 100"
+                            style="position:absolute;inset:0;width:100%;height:100%">
+                            <circle cx="50" cy="50" r="45" fill="#D4AF37" stroke="#FFF" stroke-width="4" />
+                        </svg>
+                        <span id="preview-ink-cost"
+                            style="position:relative;z-index:1;font-weight:700;font-size:18px"></span>
+                    </div>
                 </div>
-            </div>
 
-            <!-- Card Metrics Bar -->
-            <div id="preview-metrics-bar" class="preview-metrics opacity-0">
-                <div class="pm-cell"><span class="pm-label">CTL</span><span class="pm-val" id="metric-ctl">0.00</span>
+                <!-- Card Metrics Bar -->
+                <div id="preview-metrics-bar" class="preview-metrics opacity-0">
+                    <div class="pm-cell"><span class="pm-label">CTL</span><span class="pm-val"
+                            id="metric-ctl">0.00</span>
+                    </div>
+                    <div class="pm-cell is-bcr"><span class="pm-label">BCR</span><span class="pm-val"
+                            id="metric-bcr">0.00</span></div>
+                    <div class="pm-cell is-rds"><span class="pm-label">RDS</span><span class="pm-val"
+                            id="metric-rds">0.00</span></div>
+                    <div class="pm-cell is-lvi"><span class="pm-label">LVI</span><span class="pm-val"
+                            id="metric-lvi">0.00</span></div>
                 </div>
-                <div class="pm-cell is-bcr"><span class="pm-label">BCR</span><span class="pm-val"
-                        id="metric-bcr">0.00</span></div>
-                <div class="pm-cell is-rds"><span class="pm-label">RDS</span><span class="pm-val"
-                        id="metric-rds">0.00</span></div>
-                <div class="pm-cell is-lvi"><span class="pm-label">LVI</span><span class="pm-val"
-                        id="metric-lvi">0.00</span></div>
-            </div>
             </div>
 
             <div class="log-pane" id="game-log"><!-- Log entries injected here --></div>
@@ -636,8 +656,8 @@
                     <button class="icon-btn ghost" onclick="App.toggleTimelines()">&times;</button>
                 </div>
                 <div class="drawer-row">
-                    <input type="file" id="import-file" class="hidden" accept=".json,.gz,application/json,application/gzip"
-                        onchange="App.importTimelines(event)">
+                    <input type="file" id="import-file" class="hidden"
+                        accept=".json,.gz,application/json,application/gzip" onchange="App.importTimelines(event)">
                     <button class="icon-btn" onclick="document.getElementById('import-file').click()"><i
                             class="fa-solid fa-file-import"></i> Import</button>
                     <button class="icon-btn" onclick="App.exportTimelines()"><i class="fa-solid fa-file-export"></i>
@@ -725,8 +745,8 @@
                     </div>
                     <div class="ink-cluster is-counter drop-zone" ondragover="App.allowDrop(event)"
                         ondragenter="App.dragEnter(event)" ondragleave="App.dragLeave(event)"
-                        ondrop="App.drop(event, 'inkwell', 'top')" role="button" tabindex="0"
-                        aria-haspopup="dialog" title="Inkwell — click to manage, drop a card to ink it"
+                        ondrop="App.drop(event, 'inkwell', 'top')" role="button" tabindex="0" aria-haspopup="dialog"
+                        title="Inkwell — click to manage, drop a card to ink it"
                         onclick="App.openInkPanel(App.state.inactivePlayer, event)"
                         onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();App.openInkPanel(App.state.inactivePlayer, event)}">
                         <div class="ink-readout"><span class="ink-icon"></span><span id="top-ink">0/0</span><span
@@ -821,22 +841,23 @@
                     </div>
                     <div class="ink-cluster is-counter drop-zone" ondragover="App.allowDrop(event)"
                         ondragenter="App.dragEnter(event)" ondragleave="App.dragLeave(event)"
-                        ondrop="App.drop(event, 'inkwell', 'bottom')" role="button" tabindex="0"
-                        aria-haspopup="dialog" title="Inkwell — click to manage, drop a card to ink it"
+                        ondrop="App.drop(event, 'inkwell', 'bottom')" role="button" tabindex="0" aria-haspopup="dialog"
+                        title="Inkwell — click to manage, drop a card to ink it"
                         onclick="App.openInkPanel(App.state.activePlayer, event)"
                         onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();App.openInkPanel(App.state.activePlayer, event)}">
                         <div class="ink-readout"><span class="ink-icon"></span><span id="bottom-ink">0/0</span><span
                                 class="ink-new" id="bottom-ink-new" hidden>+1</span></div>
                         <div class="inkwell is-counter" id="bottom-inkwell-cards"></div>
                     </div>
-<div class="pile-cluster">
+                    <div class="pile-cluster">
                         <div class="pile drop-zone" id="bottom-discard" ondragover="App.allowDrop(event)"
                             ondragenter="App.dragEnter(event)" ondragleave="App.dragLeave(event)"
                             ondrop="App.drop(event, 'discard', 'bottom')"
                             oncontextmenu="App.showDiscardContextMenu(event, App.state.activePlayer)">
                             <span class="pile-label">Discard</span>
                             <span class="pile-num" id="bottom-discard-count">0</span>
-                            <div class="discard-list" id="bottom-discard-list" role="list" aria-label="Discard pile"></div>
+                            <div class="discard-list" id="bottom-discard-list" role="list" aria-label="Discard pile">
+                            </div>
                             <button class="pile-inspect" title="Inspect discard pile"
                                 onclick="event.stopPropagation(); App.inspectDiscard(App.state.activePlayer)"><i
                                     class="fa-solid fa-magnifying-glass"></i></button>
@@ -857,20 +878,20 @@
 
                 <!-- hand -->
                 <div class="hand-wrap">
-                <!-- Mobile-only quick actions: the two most-used current-player actions
+                    <!-- Mobile-only quick actions: the two most-used current-player actions
                      (Quest with all, End turn), in the hand tray. Hidden on desktop. -->
-                <div class="mobile-quick-actions" id="mobile-quick-actions">
-                    <button class="btn mqa-btn mqa-quest" onclick="App.questWithAll()"
-                        title="Quest with all available characters">
-                        <i class="fa-solid fa-diamond" style="color:var(--lvi)"></i>
-                        <span class="mqa-label">Quest</span>
-                        <span class="mqa-count" id="quest-count-mobile">0</span>
-                    </button>
-                    <button class="btn btn-p1 mqa-btn mqa-end" onclick="App.endTurn()" title="End turn">
-                        <span class="mqa-label">End turn</span>
-                        <i class="fa-solid fa-arrow-right"></i>
-                    </button>
-                </div>
+                    <div class="mobile-quick-actions" id="mobile-quick-actions">
+                        <button class="btn mqa-btn mqa-quest" onclick="App.questWithAll()"
+                            title="Quest with all available characters">
+                            <i class="fa-solid fa-diamond" style="color:var(--lvi)"></i>
+                            <span class="mqa-label">Quest</span>
+                            <span class="mqa-count" id="quest-count-mobile">0</span>
+                        </button>
+                        <button class="btn btn-p1 mqa-btn mqa-end" onclick="App.endTurn()" title="End turn">
+                            <span class="mqa-label">End turn</span>
+                            <i class="fa-solid fa-arrow-right"></i>
+                        </button>
+                    </div>
                     <div class="hand drop-zone" ondragover="App.allowDrop(event)" ondragenter="App.dragEnter(event)"
                         ondragleave="App.dragLeave(event)" ondrop="App.drop(event, 'hand', 'bottom')">
                         <div id="bottom-hand" style="display:flex;justify-content:center;"></div>
@@ -906,8 +927,7 @@
     <div id="context-menu"></div>
 
     <!-- Feature 37: challenge mode banner + forecast -->
-    <div id="challenge-banner" class="chal-banner" role="status" aria-live="polite"
-        onclick="event.stopPropagation()">
+    <div id="challenge-banner" class="chal-banner" role="status" aria-live="polite" onclick="event.stopPropagation()">
         <span class="cb-key">CHALLENGE MODE</span>
         <span class="cb-text" id="challenge-banner-text"></span>
         <div class="cb-seg" role="group" aria-label="Forecast detail">
@@ -938,7 +958,8 @@
             <div class="tweak">
                 <div class="tweak-label"><span>Theme</span></div>
                 <div class="tweak-radio" id="tweak-theme">
-                    <button data-val="auto" class="is-active" title="Follow this device's light / dark setting">Auto</button>
+                    <button data-val="auto" class="is-active"
+                        title="Follow this device's light / dark setting">Auto</button>
                     <button data-val="day" title="Mineral: the warm light shell">Day</button>
                     <button data-val="night" title="Kiln: the warm black shell">Night</button>
                 </div>
@@ -1001,7 +1022,7 @@
     <script>
         let cardFuse = null;
 
-        const APP_VERSION = "v3.2.2"; // Centralized version string (v3: Field Unit)
+        const APP_VERSION = "v3.2.3"; // Centralized version string (v3: Field Unit)
 
         // Tweaks panel accent presets (hue values for the OKLCH accent ramp)
         // Tweaks → Accent: the approved Field Unit signals only (design.md ·
@@ -9925,6 +9946,8 @@
                 this.applyTheme(t.theme);
                 const thm = this.$('tweak-theme');
                 if (thm) thm.querySelectorAll('button').forEach(b => b.classList.toggle('is-active', b.dataset.val === (t.theme || 'auto')));
+                const homeThm = this.$('home-theme');
+                if (homeThm) homeThm.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.val === (t.theme || 'auto'))));
                 if (t.accent && ACCENT_PRESETS[t.accent]) {
                     // The stylesheet derives every accent token (fill, hover, pressed,
                     // numeral) from these inputs. "Signal" leaves them to the theme.
@@ -10047,6 +10070,9 @@
                 if (lay) lay.querySelectorAll('button').forEach(b => b.addEventListener('click', () => { t.layout = b.dataset.val; this.saveTweaks(t); this.applyTweaks(t); }));
                 const thm = this.$('tweak-theme');
                 if (thm) thm.querySelectorAll('button').forEach(b => b.addEventListener('click', () => { t.theme = b.dataset.val; this.saveTweaks(t); this.applyTweaks(t); }));
+                // The home screen's Auto / Day / Night switch is the same choice.
+                const homeThm = this.$('home-theme');
+                if (homeThm) homeThm.querySelectorAll('button').forEach(b => b.addEventListener('click', () => { t.theme = b.dataset.val; this.saveTweaks(t); this.applyTweaks(t); }));
                 const pal = this.$('tweak-palette');
                 if (pal) pal.querySelectorAll('button').forEach(b => b.addEventListener('click', () => { t.palette = b.dataset.val; this.saveTweaks(t); this.applyTweaks(t); }));
                 const cm = this.$('tweak-card-mode');

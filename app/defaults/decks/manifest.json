@@ -5,21 +5,21 @@
       "decks": [
         {
           "id": "s13-princess-aggro",
-          "name": "Amber/Sapphire - Princess Aggro",
+          "name": "S13 - GY - Princess Aggro",
           "file": "set-13/princess-aggro.txt",
-          "notes": "Amber/Sapphire Princess Aggro deck"
+          "notes": "Amber/Emerald Princess Aggro deck"
         },
         {
           "id": "s13-purple-yellow-control",
-          "name": "Amethyst/Amber - Control",
+          "name": "S13 - PY - Control",
           "file": "set-13/purple-yellow-control.txt",
           "notes": "Amethyst/Amber Control deck"
         },
         {
           "id": "s13-evasive-tempo",
-          "name": "Evasive Tempo",
+          "name": "S13 - AR - Evasive Tempo",
           "file": "set-13/evasive-tempo.txt",
-          "notes": "Evasive Tempo deck"
+          "notes": "Amber/Ruby Evasive Tempo deck"
         }
       ]
     },
@@ -28,7 +28,7 @@
       "decks": [
         {
           "id": "s12-amethyst-ruby",
-          "name": "Amethyst/Ruby",
+          "name": "S12 - AR - Control",
           "file": "set-12/amethyst-ruby.txt",
           "notes": "The list from the sample Duels.ink replay in docs/samples"
         }
