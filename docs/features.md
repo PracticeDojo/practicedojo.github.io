@@ -703,7 +703,7 @@ Implements version 2 of `docs/DESIGN-field-unit.md` (Kiln dark mode, signal fami
 ## Patch: Home page in two columns (v3.2.4)
 
 ### Details
-- **Brand column.** The home page's left column is the brand: the Practice Dojo mark in ink (black by day, light on Kiln, never orange), `PRACTICE DOJO` in mono caps with the version under it, and the tagline *A table for Lorcana. Paste a list, sit down, play.* in Inter Display, the second beat muted.
+- **Brand column.** The home page's left column is the brand: the Practice Dojo mark in ink (black by day, light on Kiln, never orange), `PRACTICE DOJO` in mono caps with the version under it, and the tagline *A Lorcana Sandbox. Come in, play, rewind.* in Inter Display, the second beat muted.
 - **Everything else to the right.** Theme, account and Library sit at the top right; under them the headline, the intake well, the readout, and the table and recent sessions side by side. Nothing was removed or rewired.
 - **Hero headline.** *Paste a decklist / or a Duels.ink game.* uses the landing page hero's type (`display/xl`: Inter Display 500, up to 72px, the second beat muted on its own line), and the line under it the landing's lede (16px).
 - **No glows or gradients** on the page.
