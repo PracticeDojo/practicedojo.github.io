@@ -89,7 +89,7 @@
           <div class="label top">A theorycrafting sandbox for Lorcana</div>
           <h1 class="display">Try every line. <span class="mute">Branch any turn.</span></h1>
           <p class="lede lg">
-            Replay any match between two decks turn by turn, then rewind to any moment, branch a new timeline,
+            Play or replay any match between two decks turn by turn, rewind to any moment, branch a new timeline,
             reshuffle, or hot-swap cards to see how a different line would have played out.
           </p>
           <p class="lede">
@@ -99,11 +99,12 @@
           <div class="hero-actions">
             <a href="app/" class="key">Open the Dojo <span aria-hidden="true">→</span></a>
             <a href="#multiverse" class="tool">See the multiverse</a>
+
           </div>
           <ul class="hero-points label">
             <li><span class="n">01</span> Manual sandbox</li>
             <li><span class="n">02</span> Rewind and branch</li>
-            <li><span class="n">03</span> Win-probability meters</li>
+            <li><span class="n">03</span> Draw probability displays</li>
           </ul>
         </div>
 
@@ -128,7 +129,8 @@
           </div>
           <div class="stamp-row">
             <span class="label">Every saved node · the line you're on in signal</span>
-            <span class="turn-stamp"><span class="label">Turn</span><b data-mv="turn"></b><span aria-hidden="true">→</span>
+            <span class="turn-stamp"><span class="label">Turn</span><b data-mv="turn"></b><span
+                aria-hidden="true">→</span>
               <span data-mv="player"></span></span>
           </div>
           <div class="map-wrap" id="hero-map"></div>
@@ -147,7 +149,8 @@
           <div>
             <h2 class="h2">A real match, <span class="mute">mid-turn.</span></h2>
           </div>
-          <p class="lede">Two decks loaded, a turn-by-turn log, and the multiverse of possible turns one keystroke
+          <p class="lede">Two decks loaded, a turn-by-turn log, draw probabilities shown. The multiverse of possible
+            timelines is just one keystroke
             away. This is the Set 13 demo at turn 16, as the Dojo shows it today.</p>
         </div>
 
@@ -166,25 +169,26 @@
             <img class="is-night" src="img/dojo_board_night.webp" width="2400" height="1500" loading="lazy"
               decoding="async"
               alt="The same match in the Kiln night theme: warm black chassis, the board in the well, lore numerals in orange" />
-            <span class="pin" style="left:19.8%;top:25%" aria-hidden="true">01</span>
+            <span class="pin" style="left:50.8%;top: 6px;%" aria-hidden="true">05</span>
             <span class="pin" style="left:19.8%;top:47%" aria-hidden="true">02</span>
             <span class="pin" style="left:19.8%;top:73%" aria-hidden="true">03</span>
             <span class="pin" style="left:45%;top:55%" aria-hidden="true">04</span>
-            <span class="pin" style="left:79.7%;top:14%" aria-hidden="true">05</span>
+            <span class="pin" style="left:79.7%;top:14%" aria-hidden="true">01</span>
           </div>
         </figure>
 
         <ol class="spec cols c5 shot-notes">
           <li><span class="n">01</span>
             <div>
-              <h3>Win-probability meters</h3>
-              <p>Board control (BCR) and lore velocity (LVI) show who actually owns the board, updated on every action.</p>
+              <h3>Draw odds</h3>
+              <p>Every card left in your deck, with the chance to draw it on the next draw and the ones after.
+                Fully customizable: 3, 5, X draws away</p>
             </div>
           </li>
           <li><span class="n">02</span>
             <div>
               <h3>Card details on hover</h3>
-              <p>Hover any card for the full card, with its CTL, BCR, RDS and LVI underneath.</p>
+              <p>Hover any card for the full card info</p>
             </div>
           </li>
           <li><span class="n">03</span>
@@ -201,10 +205,12 @@
           </li>
           <li><span class="n">05</span>
             <div>
-              <h3>Draw odds</h3>
-              <p>Every card left in your deck, with the chance to draw it on the next draw and the ones after.</p>
+              <h3>Challenge Mode</h3>
+              <p>Hit <b>C</b> to enter challenge mode. Check at a glance what are the trades looking like.</p>
             </div>
           </li>
+
+
         </ol>
       </div>
     </section>
@@ -217,8 +223,10 @@
           <div>
             <h2 class="h2">Paste a Duels.ink log. <span class="mute">Get the whole match back.</span></h2>
           </div>
-          <p class="lede">Export the match log from your Duels.ink game and paste it into the Dojo. Every turn becomes a
-            node in the multiverse tree, with hands, ink, board and cards played rebuilt for you.</p>
+          <p class="lede">Export the match log from your Duels.ink game and paste it into the Dojo. Or import a
+            Duels.ink replay file for max information.
+            Every turn becomes a node in the multiverse tree, with hands, ink, board and cards played rebuilt for you.
+          </p>
         </div>
 
         <div class="import-grid">
@@ -271,13 +279,14 @@
             <div>
               <h3>It reads what you paste</h3>
               <p>A decklist, a log, a replay or a saved session: the readout says what it found and offers the next
-                step. No silent failures.</p>
+                step.</p>
             </div>
           </li>
           <li><span class="n">03</span>
             <div>
               <h3>Branch from any turn</h3>
               <p>Once imported, every turn is a save point. Jump back to turn 3 and try the line you wish you'd played.
+                Hot-swap a card to try out a different line.
                 The original game stays intact.</p>
             </div>
           </li>
@@ -339,13 +348,15 @@
           <li><span class="n">02</span>
             <div>
               <h3>Branch without losing</h3>
-              <p>When you jump back, the line you left is saved to a side branch. Compare both outcomes side by side.</p>
+              <p>When you jump back, the line you left is saved to a side branch. Compare both outcomes side by side.
+              </p>
             </div>
           </li>
           <li><span class="n">03</span>
             <div>
-              <h3>Reshuffle and redraw</h3>
-              <p>Don't like the hand? Reshuffle from any node to see what a different draw does to the same matchup.</p>
+              <h3>Change your deck order or reshuffle and redraw</h3>
+              <p>What if I had drawn a different card? Reshuffle from any node to see what a different draw does to the
+                same matchup.</p>
             </div>
           </li>
         </ol>
@@ -361,11 +372,6 @@
             <h2 class="h2">A real sandbox, <span class="mute">not a referee.</span></h2>
             <p class="lede">The Dojo never blocks you. Play an illegal move if it surfaces a line worth checking. The
               point is theorycraft, not enforcement.</p>
-          </div>
-          <div class="directive">
-            <span class="label">// directive</span>
-            do not hard-block actions.<br />
-            the user is the referee.
           </div>
         </div>
 
@@ -384,7 +390,8 @@
           </li>
           <li><span class="n">03</span>
             <h3>Hot-swap any card</h3>
-            <p>Drag cards between hand, field, ink and discard. Substitute a card mid-line, or add one that isn't in your
+            <p>Drag cards between hand, field, ink and discard. Substitute a card mid-line, or add one that isn't in
+              your
               deck to test it.</p>
             <span class="tag label">Manual</span>
           </li>
@@ -402,7 +409,8 @@
           </li>
           <li><span class="n">06</span>
             <h3>Import Duels.ink games</h3>
-            <p>Paste a match log or drop a replay file and the whole game lands in the multiverse, one node per turn.</p>
+            <p>Paste a match log or drop a replay file and the whole game lands in the multiverse, one node per turn.
+            </p>
             <span class="tag label">Import</span>
           </li>
           <li><span class="n">07</span>
@@ -412,20 +420,20 @@
             <span class="tag label">Library</span>
           </li>
           <li><span class="n">08</span>
-            <h3>Day and night</h3>
-            <p>Mineral by day, Kiln at night. The Dojo follows your device, or pick one in Tweaks.</p>
+            <h3>Dark Mode?</h3>
+            <p>Obviously...</p>
             <span class="tag label">Theme</span>
           </li>
         </ol>
 
         <div class="keys module">
           <span class="label">Built for the keyboard</span>
+          <span><span class="kbd">←</span><span class="kbd">→</span> Walk the tree</span>
           <span><span class="kbd">M</span> Multiverse tree</span>
           <span><span class="kbd">T</span> Save the turn you’re in</span>
           <span><span class="kbd">Q</span> Quest all ready</span>
           <span><span class="kbd">Space</span> End turn</span>
           <span><span class="kbd">C</span> Challenge mode</span>
-          <span><span class="kbd">←</span><span class="kbd">→</span> Walk the tree</span>
         </div>
       </div>
     </section>
@@ -449,17 +457,17 @@
 
             <div class="table-mock module" aria-hidden="true">
               <div class="label">On the table</div>
-              <div class="seat"><span class="label">You</span><span class="ticks p1"></span><span>Amber/Amethyst</span><span
-                  class="cnt">60</span></div>
-              <div class="seat"><span class="label">Opponent</span><span class="ticks p2"></span><span>Amethyst/Ruby</span><span
-                  class="cnt">60</span></div>
+              <div class="seat"><span class="label">You</span><span
+                  class="ticks p1"></span><span>Amber/Amethyst</span><span class="cnt">60</span></div>
+              <div class="seat"><span class="label">Opponent</span><span
+                  class="ticks p2"></span><span>Amethyst/Ruby</span><span class="cnt">60</span></div>
               <div class="deck-chips">
                 <span class="deck-chip"><span class="pip" style="background:var(--ink-amber)"></span><span class="pip"
                     style="background:var(--ink-sapphire)"></span>Princess Aggro</span>
-                <span class="deck-chip"><span class="pip" style="background:var(--ink-amethyst)"></span><span class="pip"
-                    style="background:var(--ink-amber)"></span>Control</span>
-                <span class="deck-chip"><span class="pip" style="background:var(--ink-amethyst)"></span><span class="pip"
-                    style="background:var(--ink-ruby)"></span>Amethyst/Ruby</span>
+                <span class="deck-chip"><span class="pip" style="background:var(--ink-amethyst)"></span><span
+                    class="pip" style="background:var(--ink-amber)"></span>Control</span>
+                <span class="deck-chip"><span class="pip" style="background:var(--ink-amethyst)"></span><span
+                    class="pip" style="background:var(--ink-ruby)"></span>Amethyst/Ruby</span>
               </div>
               <div class="go">
                 <span class="key">Start match <span>→</span></span>
@@ -546,9 +554,11 @@
         <p class="lede">A companion to your favorite Lorcana simulator. Open the Dojo. Load two decks. Play. Rewind.
           Branch. Repeat.</p>
         <a href="app/" class="key lg">Open Practice Dojo <span aria-hidden="true">→</span></a>
-        <div class="label foot">v3.4.3 · Field Unit · your sessions stay on this device</div>
+        <div class="label foot">v3.4.3 · your sessions stay on this device</div>
       </div>
     </section>
+
+
 
   </main>
 
