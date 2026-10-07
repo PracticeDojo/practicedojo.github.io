@@ -2040,7 +2040,11 @@ body.cards-text .ink-tile.is-back {
     color: var(--fu-glass-mute);
 }
 
-/* ----- Desktop board: each half is discard 168 · field · deck 92 ----- */
+/* ----- Desktop board: each half is discard 168 · field · lore 92.
+       The lore box is as tall as the hand; your notes take the hand row
+       too, so notes, hand and lore share top and bottom. The deck is a
+       card (5:7, the ink cards' size) at the end of the ink row, as on
+       phones, and the ink row and field run the full width. ----- */
 @media (min-width: 761px) {
     .board-half {
         display: grid;
@@ -2056,17 +2060,17 @@ body.cards-text .ink-tile.is-back {
         grid-template-rows: auto auto minmax(0, 1fr);
         grid-template-areas:
             "tag  hand  lore"
-            "disc ink   lore"
-            "disc field deck";
+            "disc ink   ink"
+            "disc field field";
     }
 
     .board-half.bottom {
         padding: 8px 12px 10px;
         grid-template-rows: auto minmax(0, 1fr) auto auto;
         grid-template-areas:
-            "tag  field deck"
-            "disc field deck"
-            "disc ink   lore"
+            "tag  field field"
+            "disc field field"
+            "disc ink   ink"
             "note hand  lore";
     }
 
@@ -2075,6 +2079,12 @@ body.cards-text .ink-tile.is-back {
     .board-half.top .pile-row,
     .board-half .pile-cluster {
         display: contents;
+    }
+
+    /* The deck card is an ink card's size (the opponent's row is smaller). */
+    .board-half .pile-row {
+        --deck-h: calc(var(--pile-h) - 10px);
+        --deck-w: calc(var(--deck-h) * 5 / 7);
     }
 
     .board-half .lore-chip {
@@ -2096,9 +2106,11 @@ body.cards-text .ink-tile.is-back {
         min-width: 0;
     }
 
+    /* Room at the end of the ink row for the deck. */
     .board-half .ink-cluster {
         grid-area: ink;
         min-width: 0;
+        padding-right: calc(var(--deck-w) + 22px);
     }
 
     .board-half .field-strip {
@@ -2110,46 +2122,45 @@ body.cards-text .ink-tile.is-back {
         min-height: calc(var(--card-h) + 22px);
     }
 
+    /* Lore takes the hand's height; the zone stats sit on its floor. */
     .board-half .lore-badge {
         grid-area: lore;
         position: static;
         width: 92px;
+        align-self: stretch;
     }
 
-    .board-half.top .lore-badge {
-        align-self: start;
-    }
-
-    .board-half.bottom .lore-badge {
-        align-self: end;
+    .board-half .lore-badge .hand-meta {
+        margin-top: auto;
     }
 
     .board-half .notes-panel {
         grid-area: note;
         position: static;
         width: auto;
-        align-self: end;
+        align-self: stretch;
     }
 
+    .board-half .notes-panel textarea {
+        flex: 1 1 auto;
+    }
+
+    /* The deck sits inside the ink row's end, the size of an ink card. */
     .board-half .pile.deck,
     .board-half.top .pile-row .pile.deck {
-        grid-area: deck;
-        justify-self: center;
-        width: 72px;
-        height: 96px;
-        padding: 8px;
+        grid-area: ink;
+        justify-self: end;
+        align-self: center;
+        position: relative;
+        z-index: 1;
+        width: var(--deck-w);
+        height: var(--deck-h);
+        margin-right: 9px;
+        padding: 7px;
         display: flex;
         flex-direction: column;
         align-items: flex-start;
         justify-content: space-between;
-    }
-
-    .board-half.top .pile.deck {
-        align-self: end;
-    }
-
-    .board-half.bottom .pile.deck {
-        align-self: end;
     }
 
     .board-half .pile.deck .pile-label {
@@ -2230,6 +2241,7 @@ body.cards-text .ink-tile.is-back {
 
     /* Your hand sits in a tray of raised glass. */
     .board-half.bottom .hand-wrap {
+        justify-content: center;
         padding: 6px 8px 8px;
         background: var(--fu-glass-raised);
         border: 1px solid var(--fu-glass-line);
@@ -5032,12 +5044,6 @@ body.palette-competition .tree-node.tn-p2::before {
 
     .board-half .lore-badge {
         width: 84px;
-    }
-
-    .board-half .pile.deck,
-    .board-half.top .pile-row .pile.deck {
-        width: 68px;
-        height: 90px;
     }
 }
 
