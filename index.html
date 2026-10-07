@@ -60,10 +60,11 @@
       <a class="brand" href="#top" aria-label="Practice Dojo, back to top">
         <img src="img/practice_dojo.svg" class="brand-mark" alt="" />
         <span class="name">Practice Dojo</span>
-        <span class="ver">v3.4.3</span>
+        <span class="ver" data-app-version>v3.4.3</span>
       </a>
       <nav class="nav-links" aria-label="Sections">
         <a href="#screenshot">See it</a>
+        <a href="#phone">Phone</a>
         <a href="#import">Import logs</a>
         <a href="#multiverse">Multiverse</a>
         <a href="#features">Features</a>
@@ -118,11 +119,11 @@
             </div>
             <div class="inset-readouts">
               <div class="lore-box">
-                <div class="label"><span class="ticks p1 sm"></span>P1 lore</div>
+                <div class="label"><span class="deck-icon is-p1 sm"></span>P1 lore</div>
                 <div class="num" data-mv="lore1"></div>
               </div>
               <div class="lore-box">
-                <div class="label"><span class="ticks p2 sm"></span>P2 lore</div>
+                <div class="label"><span class="deck-icon is-p2 sm"></span>P2 lore</div>
                 <div class="num" data-mv="lore2"></div>
               </div>
             </div>
@@ -156,7 +157,7 @@
 
         <figure class="shot module">
           <div class="shot-bar">
-            <span class="label">app · v3.4.3 · Set 13 example · turn 16</span>
+            <span class="label">app · <span data-app-version>v3.4.3</span> · Set 13 example · turn 16</span>
             <div class="seg" role="group" aria-label="Theme">
               <button type="button" data-theme-pick="auto" aria-pressed="false" title="Follow this device">Auto</button>
               <button type="button" data-theme-pick="day" aria-pressed="false" title="Mineral">Day</button>
@@ -169,7 +170,7 @@
             <img class="is-night" src="img/dojo_board_night.webp" width="2400" height="1500" loading="lazy"
               decoding="async"
               alt="The same match in the Kiln night theme: warm black chassis, the board in the well, lore numerals in orange" />
-            <span class="pin" style="left:50.8%;top:6%" aria-hidden="true">05</span>
+            <span class="pin" style="left:49.5%;top:6%" aria-hidden="true">05</span>
             <span class="pin" style="left:19.8%;top:47%" aria-hidden="true">02</span>
             <span class="pin" style="left:19.8%;top:73%" aria-hidden="true">03</span>
             <span class="pin" style="left:45%;top:55%" aria-hidden="true">04</span>
@@ -215,10 +216,75 @@
       </div>
     </section>
 
-    <!-- ============ 02 · IMPORT FROM DUELS.INK ============ -->
+    <!-- ============ 02 · ON YOUR PHONE ============ -->
+    <section id="phone" class="section">
+      <div class="wrap">
+        <div class="sec-head label"><span class="n">02</span> On your phone</div>
+        <div class="sec-intro">
+          <div>
+            <h2 class="h2">The whole Dojo, <span class="mute">in your pocket.</span></h2>
+          </div>
+          <p class="lede">Same board, same multiverse, built for thumbs. Every card opens a drawer of keys, your hand
+            sits under the board, and the turn's big buttons are always in reach. This is the same match at turn 16.</p>
+        </div>
+        <div class="phone-grid">
+          <figure class="phones module">
+            <div class="phone-frame">
+              <img class="is-day" src="img/dojo_phone_board_day.webp" width="780" height="1688" loading="lazy"
+                decoding="async"
+                alt="The Practice Dojo on a phone: both halves of the board in the well, each player's lore, ink and deck in one row, and the hand tray with Quest and End turn at the bottom" />
+              <img class="is-night" src="img/dojo_phone_board_night.webp" width="780" height="1688" loading="lazy"
+                decoding="async" alt="The same phone board in the Kiln night theme" />
+              <span class="pin" style="left:26%;top:13.5%" aria-hidden="true">03</span>
+              <span class="pin" style="left:50%;top:96%" aria-hidden="true">02</span>
+              <span class="pin" style="left:68%;top:87.5%" aria-hidden="true">04</span>
+            </div>
+            <div class="phone-frame">
+              <img class="is-day" src="img/dojo_phone_drawer_day.webp" width="780" height="1688" loading="lazy"
+                decoding="async"
+                alt="Dumbo tapped on a phone: the card drawer with the card's full text, damage segments, and keys for Challenge, Quest, Exert, Banish and where to move it" />
+              <img class="is-night" src="img/dojo_phone_drawer_night.webp" width="780" height="1688" loading="lazy"
+                decoding="async" alt="The same card drawer in the Kiln night theme" />
+              <span class="pin" style="left:50%;top:82%" aria-hidden="true">01</span>
+            </div>
+          </figure>
+          <ol class="spec phone-notes">
+            <li><span class="n">01</span>
+              <div>
+                <h3>A drawer of keys for every card</h3>
+                <p>Tap any card for its full text, then set damage, Challenge, Quest, Exert, Banish, or move it to
+                  hand, deck or under another card.</p>
+              </div>
+            </li>
+            <li><span class="n">02</span>
+              <div>
+                <h3>Your hand, one tap away</h3>
+                <p>The hand peeks from the bottom of the board. Tap a card to open it in the same drawer, and swipe
+                  through the rest.</p>
+              </div>
+            </li>
+            <li><span class="n">03</span>
+              <div>
+                <h3>Lore, ink and deck in one row</h3>
+                <p>Each player gets one strip: lore you can nudge, the ink you have left this turn, the discard and
+                  the deck.</p>
+              </div>
+            </li>
+            <li><span class="n">04</span>
+              <div>
+                <h3>Quest and End turn under your thumb</h3>
+                <p>The turn's two big buttons sit in the hand tray. The multiverse is in the top bar, as on desktop.</p>
+              </div>
+            </li>
+          </ol>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 03 · IMPORT FROM DUELS.INK ============ -->
     <section id="import" class="section">
       <div class="wrap">
-        <div class="sec-head label"><span class="n">02</span> Import</div>
+        <div class="sec-head label"><span class="n">03</span> Import</div>
         <div class="sec-intro">
           <div>
             <h2 class="h2">Paste a Duels.ink log. <span class="mute">Get the whole match back.</span></h2>
@@ -238,9 +304,9 @@
               <div class="intake-bar">
                 <span>Nothing to paste? Try an example:</span>
                 <span class="chips" aria-hidden="true">
-                  <span class="g-chip">A decklist</span>
-                  <span class="g-chip is-on">A Duels.ink log</span>
-                  <span class="g-chip">Choose a file</span>
+                  <span class="g-chip"><i class="fa-solid fa-layer-group"></i> A decklist</span>
+                  <span class="g-chip is-on"><i class="fa-solid fa-film"></i> A Duels.ink log</span>
+                  <span class="g-chip"><i class="fa-solid fa-file-arrow-up"></i> Choose a file</span>
                 </span>
               </div>
             </div>
@@ -294,10 +360,10 @@
       </div>
     </section>
 
-    <!-- ============ 03 · MULTIVERSE ============ -->
+    <!-- ============ 04 · MULTIVERSE ============ -->
     <section id="multiverse" class="section">
       <div class="wrap">
-        <div class="sec-head label"><span class="n">03</span> Multiverse</div>
+        <div class="sec-head label"><span class="n">04</span> Multiverse</div>
         <div class="sec-intro">
           <div>
             <h2 class="h2">Every turn is a save point. <span class="mute">Every save point is a branch.</span></h2>
@@ -310,9 +376,9 @@
         <!-- The whole Set 13 demo session, explorable -->
         <div class="mv-frame module">
           <div class="mv-head">
-            <h3><i class="fa-solid fa-network-wired mute" aria-hidden="true"></i> Multiverse</h3>
-            <span class="hint label">Drag to pan · Ctrl + scroll to zoom · click a node · arrow keys to walk the
-              tree</span>
+            <h3><i class="fa-solid fa-code-branch sig" aria-hidden="true"></i> Multiverse</h3>
+            <span class="hint label">Click a node to select it · Drag to pan · Ctrl + scroll to zoom · Arrow keys
+              walk the tree</span>
             <div class="mv-tools">
               <button class="tool" type="button" id="ex-view" aria-label="Switch to full nodes"
                 title="Switch to full nodes"><i class="fa-solid fa-list-ul"></i></button>
@@ -329,8 +395,8 @@
               <div class="mv-viewport is-draggable is-interactive" id="multi-mv" tabindex="0"
                 aria-label="Multiverse tree of a real Set 13 match. Use the arrow keys to move between nodes."></div>
               <div class="mv-legend">
-                <span><span class="ticks p1"></span>Player 1 · Amber/Amethyst</span>
-                <span><span class="ticks p2"></span>Player 2 · Amethyst/Ruby</span>
+                <span><span class="deck-icon is-p1"></span>Player 1 · Amber/Amethyst</span>
+                <span><span class="deck-icon is-p2"></span>Player 2 · Amethyst/Ruby</span>
               </div>
             </div>
             <aside class="mv-side" id="mv-side" aria-live="polite"></aside>
@@ -363,10 +429,10 @@
       </div>
     </section>
 
-    <!-- ============ 04 · FEATURES ============ -->
+    <!-- ============ 05 · FEATURES ============ -->
     <section id="features" class="section">
       <div class="wrap">
-        <div class="sec-head label"><span class="n">04</span> What's in the box</div>
+        <div class="sec-head label"><span class="n">05</span> What's in the box</div>
         <div class="sec-intro">
           <div>
             <h2 class="h2">A real sandbox, <span class="mute">not a referee.</span></h2>
@@ -414,9 +480,9 @@
             <span class="tag label">Import</span>
           </li>
           <li><span class="n">07</span>
-            <h3>Library and share links</h3>
-            <p>Decks and sessions stay on this device. Share a deck or a whole multiverse with a short link, and sign in
-              if you want them on every device.</p>
+            <h3>Library shelves and share links</h3>
+            <p>Decks and sessions stay on this device. Sign in to keep them in your account too, and the Library shows
+              at a glance what lives where. Share a deck or a whole multiverse with a short link.</p>
             <span class="tag label">Library</span>
           </li>
           <li><span class="n">08</span>
@@ -438,10 +504,10 @@
       </div>
     </section>
 
-    <!-- ============ 05 · HOW IT WORKS ============ -->
+    <!-- ============ 06 · HOW IT WORKS ============ -->
     <section id="how" class="section">
       <div class="wrap">
-        <div class="sec-head label"><span class="n">05</span> How it works</div>
+        <div class="sec-head label"><span class="n">06</span> How it works</div>
         <div class="sec-intro">
           <div>
             <h2 class="h2">From two decklists to a mapped multiverse <span class="mute">in five minutes.</span></h2>
@@ -457,17 +523,12 @@
 
             <div class="table-mock module" aria-hidden="true">
               <div class="label">On the table</div>
-              <div class="seat"><span class="label">You</span><span
-                  class="ticks p1"></span><span>Amber/Amethyst</span><span class="cnt">60</span></div>
-              <div class="seat"><span class="label">Opponent</span><span
-                  class="ticks p2"></span><span>Amethyst/Ruby</span><span class="cnt">60</span></div>
+              <div class="seat"><span class="label">You</span><span class="deck-icon is-p1"></span><span>Amber/Amethyst</span><span class="cnt">60</span></div>
+              <div class="seat"><span class="label">Opponent</span><span class="deck-icon is-p2"></span><span>Amethyst/Ruby</span><span class="cnt">60</span></div>
               <div class="deck-chips">
-                <span class="deck-chip"><span class="pip" style="background:var(--ink-amber)"></span><span class="pip"
-                    style="background:var(--ink-sapphire)"></span>Princess Aggro</span>
-                <span class="deck-chip"><span class="pip" style="background:var(--ink-amethyst)"></span><span
-                    class="pip" style="background:var(--ink-amber)"></span>Control</span>
-                <span class="deck-chip"><span class="pip" style="background:var(--ink-amethyst)"></span><span
-                    class="pip" style="background:var(--ink-ruby)"></span>Amethyst/Ruby</span>
+                <span class="deck-chip"><span class="deck-icon" style="--di-a:var(--ink-amber);--di-b:var(--ink-sapphire)"></span>Princess Aggro</span>
+                <span class="deck-chip"><span class="deck-icon" style="--di-a:var(--ink-amethyst);--di-b:var(--ink-amber)"></span>Control</span>
+                <span class="deck-chip"><span class="deck-icon" style="--di-a:var(--ink-amethyst);--di-b:var(--ink-ruby)"></span>Amethyst/Ruby</span>
               </div>
               <div class="go">
                 <span class="key">Start match <span>→</span></span>
@@ -487,7 +548,7 @@
               <div class="board-mock glass">
                 <div class="bm-half">
                   <div>
-                    <div class="bm-who label"><span class="ticks p1 sm"></span><b>P1</b> · waiting</div>
+                    <div class="bm-who label"><span class="deck-icon is-p1 sm"></span><b>P1</b> · waiting</div>
                     <div class="bm-cards">
                       <span class="bm-card"><img alt="" loading="lazy"
                           src="https://api.lorcana.ravensburger.com/images/en/set12/11_5c4cacfd09e1a43e08743ea40d21bf7d45537783.jpg"><span
@@ -508,7 +569,7 @@
                 <div class="bm-rule"></div>
                 <div class="bm-half">
                   <div>
-                    <div class="bm-who label"><span class="ticks p2 sm"></span><b>P2</b> · to play</div>
+                    <div class="bm-who label"><span class="deck-icon is-p2 sm"></span><b>P2</b> · to play</div>
                     <div class="bm-cards">
                       <span class="bm-card"><img alt="" loading="lazy"
                           src="https://api.lorcana.ravensburger.com/images/en/set6/56_27e73c3880e21571b4889f846207c24b3c5c7013.jpg"></span>
@@ -554,7 +615,7 @@
         <p class="lede">A companion to your favorite Lorcana simulator. Open the Dojo. Load two decks. Play. Rewind.
           Branch. Repeat.</p>
         <a href="app/" class="key lg">Open Practice Dojo <span aria-hidden="true">→</span></a>
-        <div class="label foot">v3.4.3 · your sessions stay on this device</div>
+        <div class="label foot"><span data-app-version>v3.4.3</span> · your sessions stay on this device</div>
       </div>
     </section>
 
