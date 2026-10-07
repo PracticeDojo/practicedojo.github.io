@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lorcana Practice Dojo</title>
+    <link rel="icon" type="image/svg+xml" href="../img/deck_icon.svg">
     <!-- Field Unit theme before first paint, so a night (Kiln) user never sees the day shell flash -->
     <script>
         try {
@@ -540,10 +541,12 @@
                 </div>
                 <div class="player-rows">
                     <div class="player-row is-p1 is-active" id="p0-badge">
+                        <span class="deck-icon is-p1"></span>
                         <span class="player-name">Player 1 (You)</span>
                         <span class="player-count" id="p0-cards">0 cards</span>
                     </div>
                     <div class="player-row is-p2" id="p1-badge">
+                        <span class="deck-icon is-p2"></span>
                         <span class="player-name">Player 2</span>
                         <span class="player-count" id="p1-cards">0 cards</span>
                     </div>
@@ -1029,7 +1032,7 @@
     <script>
         let cardFuse = null;
 
-        const APP_VERSION = "v3.2.4"; // Centralized version string (v3: Field Unit)
+        const APP_VERSION = "v3.2.5"; // Centralized version string (v3: Field Unit)
 
         // Tweaks panel accent presets (hue values for the OKLCH accent ramp)
         // Tweaks → Accent: the approved Field Unit signals only (design.md ·
@@ -1604,7 +1607,7 @@
                 const label = (arr) => arr.map(c => c.charAt(0).toUpperCase() + c.slice(1)).join(' / ');
                 host.innerHTML = [0, 1].map(i => `
                     <span class="ink-pair" title="Player ${i + 1}: ${label(inks[i])}">
-                        <span class="ink-chip" style="background-image:var(--weave-p${i + 1}-h)"></span>P${i + 1}
+                        <span class="deck-icon is-p${i + 1}"></span>P${i + 1}
                     </span>`).join('');
             },
 
@@ -1726,7 +1729,7 @@
             // The player's weave on a deck box: P1 split, P2 barber pole (Feature 36).
             deckBoxHtml(inks, n) {
                 if (!inks || !inks.length) return '<span class="deck-box is-empty"></span>';
-                return `<span class="deck-box is-p${n}" style="--i1:${this.inkCss(inks[0])};--i2:${this.inkCss(inks[1] || inks[0])}"></span>`;
+                return this.deckIconHtml(inks, n);
             },
 
             renderSeats() {
@@ -2162,11 +2165,16 @@
                 return inks.slice(0, 2).map(c => c.charAt(0).toUpperCase() + c.slice(1)).join(' · ');
             },
 
+            // The deck icon (img/deck_icon.svg) in a deck's own inks: the card
+            // takes the first, the star the second. n = 1 or 2 for a seated player.
+            deckIconHtml(inks, n) {
+                const a = this.inkCss(inks[0]), b = this.inkCss(inks[1] || inks[0]);
+                return `<span class="deck-icon${n ? ' is-p' + n : ''}" style="--di-a:${a};--di-b:${b}"></span>`;
+            },
+
             inkPipsHtml(inks) {
                 if (!inks || !inks.length) return '';
-                return `<span class="cc-pips">` + inks.slice(0, 2).map(c =>
-                    `<span class="cc-pip" style="--pip:${this.inkColorMap[c] || 'var(--text-faint)'}"></span>`
-                ).join('') + `</span>`;
+                return this.deckIconHtml(inks);
             },
 
             // --- Home screen: "The inkwell" (Feature 39) ---
@@ -5662,6 +5670,7 @@
                         `;
                     } else {
                         el.innerHTML = `
+                             <span class="deck-icon${pIdx === null ? '' : ' is-p' + (pIdx + 1)}"></span>
                              <div class="tn-body">
                                  <button onclick="App.restoreTimeline('${bid}', false)" class="tn-title"
                                      title="Restore this timeline" aria-label="Restore timeline: ${esc(b.name)}">
@@ -5701,6 +5710,7 @@
                         <div class="autosave-item${pCls}" role="button" tabindex="0" onclick="App.restoreTimeline('${bid}', true)"
                             onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();App.restoreTimeline('${bid}', true)}"
                             aria-label="Restore auto-save: ${esc(b.name)}">
+                            ${pIdx === null ? '' : `<span class="deck-icon is-p${pIdx + 1}"></span>`}
                             <div class="as-name">${esc(b.name)}</div>
                             <div class="as-stats">${esc(b.stats)}</div>
                             ${b.cardsPlayedData && b.cardsPlayedData.length > 0 ? `
@@ -7670,7 +7680,7 @@
                 sh.innerHTML = '';
                 const add = (html) => { const d = document.createElement('div'); d.innerHTML = html; while (d.firstChild) sh.appendChild(d.firstChild); };
                 add(`<span class="cs-grab"></span>
-                    <div class="cs-head"><span class="cs-state"><span class="cs-ticks is-p${pNo}"></span>P${pNo} · ${esc(state.join(' · ') || 'in play')}</span>
+                    <div class="cs-head"><span class="cs-state"><span class="deck-icon is-p${pNo}"></span>P${pNo} · ${esc(state.join(' · ') || 'in play')}</span>
                     <button class="cs-icon" data-act="close" aria-label="Close"><i class="fa-solid fa-xmark"></i></button></div>`);
                 // The full card text, as the preview shows it in text mode, so the
                 // rules are right there while picking an action.
@@ -7995,7 +8005,7 @@
                 const add = (html) => { const d = document.createElement('div'); d.innerHTML = html; while (d.firstChild) sh.appendChild(d.firstChild); };
                 const nav = (step, icon, label) => `<button class="cs-icon" data-step="${step}" aria-label="${label}" ${n < 2 ? 'disabled' : ''}><i class="fa-solid ${icon}"></i></button>`;
                 add(`<span class="cs-grab"></span>
-                    <div class="cs-head"><span class="cs-state"><span class="cs-ticks is-p${pNo}"></span>P${pNo} · in hand · ${idx + 1} / ${n}</span>
+                    <div class="cs-head"><span class="cs-state"><span class="deck-icon is-p${pNo}"></span>P${pNo} · in hand · ${idx + 1} / ${n}</span>
                     ${nav(-1, 'fa-chevron-left', 'Previous card in hand')}${nav(1, 'fa-chevron-right', 'Next card in hand')}
                     <button class="cs-icon" data-act="close" aria-label="Close"><i class="fa-solid fa-xmark"></i></button></div>`);
                 const text = document.createElement('div');
@@ -9809,7 +9819,7 @@
                 bottomBoard.classList.add(ap.id === 0 ? 'is-p1' : 'is-p2');
 
                 // --- TOP BOARD (Inactive Player) ---
-                document.getElementById('top-player-bg-text').innerText = `P${ip.id + 1}`;
+                document.getElementById('top-player-bg-text').innerHTML = `<span class="deck-icon is-p${ip.id + 1}"></span>P${ip.id + 1}`;
                 document.getElementById('top-lore').innerText = ip.lore;
                 document.getElementById('top-lore-chip').innerText = ip.lore;
                 document.getElementById('top-ink').innerText = `${ip.inkReady}/${ip.inkTotal}`;
@@ -9857,7 +9867,7 @@
                 this.renderDiscardList(ip, document.getElementById('top-discard-list'));
 
                 // --- BOTTOM BOARD (Active Player) ---
-                document.getElementById('bottom-player-bg-text').innerText = `P${ap.id + 1}`;
+                document.getElementById('bottom-player-bg-text').innerHTML = `<span class="deck-icon is-p${ap.id + 1}"></span>P${ap.id + 1}`;
                 document.getElementById('bottom-lore').innerText = ap.lore;
                 document.getElementById('bottom-lore-chip').innerText = ap.lore;
                 document.getElementById('bottom-ink').innerText = `${ap.inkReady}/${ap.inkTotal}`;
