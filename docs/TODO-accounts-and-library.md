@@ -7,7 +7,7 @@ The working checklist for [`ARCH-accounts-and-library.md`](ARCH-accounts-and-lib
 **(you)** need someone with access to a dashboard or another repo. New work found along the way goes
 into the right phase, or into *Parked* if it's outside the plan.
 
-*Last updated: 2026-10-04 · live: v2.23.0*
+*Last updated: 2026-10-07 · live: v3.3.0*
 
 | Phase | Status |
 |---|---|
@@ -109,6 +109,6 @@ App:
 ## Parked (outside the ARCH plan)
 
 - [x] Duels.ink's newer "You / Opponent" log format (`docs/IMP-newLog.md`). *Done in v2.22.0 (Feature 41); checked against the replay of the same game*
-- [ ] Library clarity: make *this device* vs *your account* readable at a glance. Prototypes in [`docs/design/library-clarity/`](design/library-clarity/README.md); **B · Shelves + C's Library button** chosen and built as Feature 50 (v3.3.0) on `claude/intelligent-newton-gh5utt`. *Checked in Chromium (desktop, phone, day, night, signed out, and signed in against a stand-in account service); tick once it's on `main`*
-- [ ] Bug: the Library tabs shrink to 1px once the list is taller than the drawer (about 9 sessions on a phone). `.home-tabs` scrolls sideways, so it gives way as a flex child. *Fixed in v3.3.0 (`flex-shrink: 0` on the drawer's children): with 12 sessions the tabs are 44px on a 390px phone and 39px on a 700px-tall desktop, where they were 1px; tick once it's on `main`*
+- [x] Library clarity: make *this device* vs *your account* readable at a glance. Prototypes in [`docs/design/library-clarity/`](design/library-clarity/README.md); **B · Shelves + C's Library button** chosen and built as Feature 50 (v3.3.0). *Checked in Chromium on desktop and phone, day and night, signed out and signed in against a stand-in account service (shelves, ⋯ menu, Save all to account, Sign in, the live match row), 2026-10-07. Not yet tried with a real Discord sign-in*
+- [x] Bug: the Library tabs shrink to 1px once the list is taller than the drawer (about 9 sessions on a phone). `.home-tabs` scrolls sideways, so it gives way as a flex child. *Fixed in v3.3.0 (`flex-shrink: 0` on the drawer's children): with 12 sessions the tabs are 44px on a 390px phone and 39px on a 700px-tall desktop, where they were 1px*
 - Deliberately not doing until a trigger fires: captcha, share expiry, backend-free deck links, slimmer session format, public gallery, background sync, profiles. See §13
