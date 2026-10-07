@@ -444,6 +444,8 @@ body {
 .drawer-head h2,
 .home-box h3,
 .lib-group-title,
+.shelf-name,
+.shelf-sub,
 .ctx-section,
 .notes-panel .notes-head,
 .preview-placeholder,
@@ -589,8 +591,7 @@ body {
 .deck-note.is-warn,
 .lib-meta .is-warn,
 .readout .ro-detail .is-warn,
-.seat .seat-count.is-warn,
-.lib-badge.is-dirty {
+.seat .seat-count.is-warn {
     color: oklch(0.55 0.13 70);
 }
 
@@ -3884,7 +3885,210 @@ body.palette-competition .tree-node.is-victory.tn-p2::before {
     color: var(--text-dim);
 }
 
+/* ----- Library shelves (Feature 50) -----
+   The Library's lists are sorted by where things live. Each place has one
+   colour from the key family (design.md · Place colours), never an ink:
+     Trace  this device · Olive your account · Coral public links · built in
+   neutral. A shelf has a spine in its place colour down its left side (two
+   bars when it's in both places, like a player's ink pair), a mono name and
+   count, one sentence and at most one action. -text tones keep AA on paper. */
+:root {
+    --place-device: var(--key-trace);
+    --place-device-text: #1E716B;
+    --place-account: var(--key-olive);
+    --place-account-ink: var(--key-olive-ink);
+    --place-account-text: #66641E;
+    --place-link: var(--key-coral);
+    --place-link-text: #C23315;
+    --place-builtin: var(--border-strong);
+}
+
+:root[data-theme="night"] {
+    --place-device-text: #3DB2A9;
+    --place-account: #9C9A34;
+    --place-account-text: #C6C45A;
+    --place-link-text: #F26446;
+}
+
+#home-sessions-list,
+#home-mydecks-list,
+#lib-shared-list {
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+}
+
+#home-defaultdecks {
+    margin-top: 10px;
+}
+
+.lib-toolbar.is-end {
+    justify-content: flex-end;
+}
+
+.shelf {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding-left: 16px;
+}
+
+.shelf::before,
+.shelf::after {
+    content: '';
+    position: absolute;
+    top: 2px;
+    bottom: 0;
+    width: 3px;
+    border-radius: 2px;
+}
+
+.shelf::before {
+    left: 0;
+    background: var(--spine-1);
+}
+
+.shelf.is-both {
+    padding-left: 21px;
+}
+
+.shelf.is-both::after {
+    left: 5px;
+    background: var(--spine-2);
+}
+
+.shelf.is-device {
+    --spine-1: var(--place-device);
+    --shelf-hd: var(--place-device-text);
+}
+
+.shelf.is-account {
+    --spine-1: var(--place-account);
+    --shelf-hd: var(--place-account-text);
+}
+
+.shelf.is-both {
+    --spine-1: var(--place-device);
+    --spine-2: var(--place-account);
+    --shelf-hd: var(--text);
+}
+
+.shelf.is-builtin {
+    --spine-1: var(--place-builtin);
+    --shelf-hd: var(--text-2);
+}
+
+.shelf.is-link {
+    --spine-1: var(--place-link);
+    --shelf-hd: var(--place-link-text);
+}
+
+/* Signed out: the account shelf is an empty, dashed slot */
+.shelf.is-ghost {
+    --shelf-hd: var(--place-account-text);
+}
+
+.shelf.is-ghost::before {
+    width: 0;
+    border-radius: 0;
+    background: none;
+    border-left: 3px dashed var(--place-account);
+}
+
+.shelf-hd {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 30px;
+}
+
+.shelf-name {
+    color: var(--shelf-hd);
+}
+
+.shelf-name .and,
+.shelf-count {
+    color: var(--text-dim);
+}
+
+.shelf-count {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-variant-numeric: tabular-nums;
+}
+
+.shelf-hd .btn {
+    margin-left: auto;
+}
+
+.shelf-say {
+    margin: -4px 0 2px;
+    max-width: 60ch;
+    font-size: 12.5px;
+    line-height: 1.45;
+    color: var(--text-2);
+}
+
+.shelf-say b {
+    color: var(--text);
+    font-weight: 560;
+}
+
+.shelf-sub {
+    color: var(--text-dim);
+    margin-top: 4px;
+}
+
+.shelf-ghost {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 12px;
+    border: 1px dashed var(--border-strong);
+    border-radius: var(--radius-sm);
+}
+
+.shelf-ghost p {
+    flex: 1 1 220px;
+    margin: 0;
+    font-size: 12.5px;
+    color: var(--text-2);
+}
+
+/* The action that moves something between places, in words, in Olive.
+   Hollow on a row; filled for Sign in on the empty account shelf. */
+.btn.place-act {
+    border: 1.5px solid var(--place-account);
+    background: transparent;
+    color: var(--place-account-text);
+    font-weight: 560;
+    white-space: nowrap;
+}
+
+.btn.place-act:hover {
+    border-color: var(--place-account);
+    background: color-mix(in oklch, var(--place-account) 12%, transparent);
+    color: var(--place-account-text);
+}
+
+.btn.place-act.is-fill {
+    background: var(--place-account);
+    color: var(--place-account-ink);
+}
+
+.btn.place-act.is-fill:hover {
+    background: color-mix(in oklch, var(--place-account) 86%, var(--fu-dark));
+    color: var(--place-account-ink);
+}
+
+/* Rows: title and actions on top, then an out-of-step note and the details,
+   full width. Open is a paper tool; the signal is for the match on the board. */
 .lib-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
     background: var(--surface);
     border: 1px solid var(--border-soft);
     border-radius: var(--radius-sm);
@@ -3894,18 +4098,241 @@ body.palette-competition .tree-node.is-victory.tn-p2::before {
     border-color: var(--text);
 }
 
+.lib-top {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-height: 32px;
+}
+
+.lib-top .lib-title {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
 .lib-title .lib-badge {
     color: var(--text-dim);
     letter-spacing: var(--label-track);
 }
 
-.lib-badge.is-account {
-    color: var(--text-2);
+.lib-note {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 560;
+    color: var(--place-account-text);
 }
 
 .lib-empty {
     border-color: var(--border);
     color: var(--text-dim);
+}
+
+/* ⋯ : Rename, Share, Duplicate, Export, Delete… */
+.row-more {
+    position: relative;
+    display: inline-flex;
+}
+
+.row-menu {
+    position: absolute;
+    right: 0;
+    top: calc(100% + 4px);
+    z-index: 6;
+    min-width: 208px;
+    padding: 4px;
+    display: flex;
+    flex-direction: column;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    box-shadow: var(--shadow-3);
+}
+
+.row-menu[hidden] {
+    display: none;
+}
+
+.row-menu.is-up {
+    top: auto;
+    bottom: calc(100% + 4px);
+}
+
+.row-menu [role="menuitem"] {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 32px;
+    padding: 6px 10px;
+    border: 0;
+    border-radius: 6px;
+    background: none;
+    color: var(--text);
+    font: 13px var(--font-sans);
+    text-align: left;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.row-menu [role="menuitem"] i {
+    width: 14px;
+    text-align: center;
+    color: var(--text-dim);
+}
+
+.row-menu [role="menuitem"]:hover,
+.row-menu [role="menuitem"]:focus-visible {
+    background: var(--surface-2);
+    outline: none;
+    box-shadow: inset 0 0 0 1px var(--border-strong);
+}
+
+.row-menu .is-danger,
+.row-menu .is-danger i {
+    color: var(--danger);
+}
+
+.row-menu-rule {
+    height: 1px;
+    margin: 4px 2px;
+    background: var(--border-soft);
+}
+
+/* Home: Pick up again rows carry their shelf's spine; the foot sums up */
+.rec {
+    position: relative;
+    padding-left: 22px;
+}
+
+.rec::before,
+.rec::after {
+    content: '';
+    position: absolute;
+    left: 9px;
+    top: 12px;
+    bottom: 12px;
+    width: 3px;
+    border-radius: 2px;
+    background: var(--place-device);
+}
+
+.rec::after {
+    display: none;
+}
+
+.rec.is-both {
+    padding-left: 27px;
+}
+
+.rec.is-both::after {
+    display: block;
+    left: 14px;
+    background: var(--place-account);
+}
+
+.rec.is-builtin::before {
+    background: var(--place-builtin);
+}
+
+.rec-sum {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px 14px;
+    margin-top: 6px;
+    padding: 10px 2px 0;
+    border-top: 1px solid var(--border-soft);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-dim);
+}
+
+.rec-bars {
+    display: inline-flex;
+    gap: 2px;
+    margin-right: 6px;
+    vertical-align: -2px;
+}
+
+.rec-bars i,
+.lib-fig i {
+    display: inline-block;
+    border-radius: 2px;
+    background: var(--place-device);
+}
+
+.rec-bars i {
+    width: 3px;
+    height: 12px;
+}
+
+.rec-bars .is-account,
+.lib-fig.is-account i {
+    background: var(--place-account);
+}
+
+.rec-sum .link-btn {
+    font-family: var(--font-sans);
+    font-size: 12px;
+}
+
+/* Home header: Library ▮5 ▮4 (sessions on this device, in your account) */
+.lib-figs {
+    display: inline-flex;
+    gap: 8px;
+    margin-left: 2px;
+}
+
+.lib-figs:empty {
+    display: none;
+}
+
+.lib-fig {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-2);
+    font-variant-numeric: tabular-nums;
+}
+
+.lib-fig i {
+    width: 8px;
+    height: 8px;
+}
+
+@media (max-width: 760px) {
+
+    /* Phone rows: title, then the note and details, then the actions at the
+       foot of the card (base.css makes them full width, right-aligned). */
+    .lib-top {
+        display: contents;
+    }
+
+    .lib-row > *,
+    .lib-top > * {
+        order: 1;
+    }
+
+    .lib-top > .lib-title {
+        order: 0;
+        white-space: normal;
+    }
+
+    .lib-top > .lib-actions {
+        order: 2;
+        margin-top: 2px;
+    }
+
+    .shelf-hd {
+        flex-wrap: wrap;
+    }
+
+    .row-menu [role="menuitem"] {
+        min-height: 44px;
+    }
 }
 
 .deck-editor {
@@ -4335,8 +4762,7 @@ body.palette-competition .tree-node.is-victory.tn-p2::before {
 :root[data-theme="night"] .deck-note.is-warn,
 :root[data-theme="night"] .lib-meta .is-warn,
 :root[data-theme="night"] .readout .ro-detail .is-warn,
-:root[data-theme="night"] .seat .seat-count.is-warn,
-:root[data-theme="night"] .lib-badge.is-dirty {
+:root[data-theme="night"] .seat .seat-count.is-warn {
     color: oklch(0.80 0.12 75);
 }
 

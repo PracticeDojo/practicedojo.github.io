@@ -1,5 +1,7 @@
 # Library clarity: three proposals
 
+> **Decision (2026-10-07):** B · Shelves, plus C's Library button on the home header, and the tab fix. Built as Feature 50 (v3.3.0).
+
 **Question:** in the Library (home screen → *Library*), it isn't clear what lives only on this device and what is in your account on every device. How do we make that easy to read?
 
 Three prototypes, all built on the app's own CSS (`app/css/base.css` + `field-unit.css`), the real home screen behind the drawer, and the same sample library:

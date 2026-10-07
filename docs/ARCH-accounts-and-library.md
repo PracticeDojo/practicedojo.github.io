@@ -237,7 +237,7 @@ One IndexedDB database `practice_dojo` (the existing `lorcana_dojo_cache` card c
 ```
 
 - **Decks tab:** two sections, **My decks** and **Default decks**, both treated the same everywhere (pick for P1 or P2, view, share link). Default decks are read-only. *Edit* on a default makes a copy in My decks. **Import deck** accepts paste, a `.txt` file, or "my list from a Duels.ink replay" (the replay's exact `decklist`). A pasted list at New match gets a *Save to My decks* checkbox.
-- **My sessions tab:** a list with ink pips, title, turn, lore, nodes, and updated time. Actions: Open, Rename, Duplicate, Export, Share link, Delete. Signed in, each row shows *This device*, *Account*, or both, with *Save to account* / *Download* buttons for the missing side.
+- **My sessions tab:** a list with ink pips, title, turn, lore, nodes, and updated time. Actions: Open, Rename, Duplicate, Export, Share link, Delete. Signed in, each row shows *This device*, *Account*, or both, with *Save to account* / *Download* buttons for the missing side. *As built (v3.3.0, Feature 50): sessions and decks sit on shelves by place (in your account + this device, only on this device, only in your account, built in), and Shared is called Links.*
 - **Demos tab:** from `defaults/demos/`.
 - **Duels.ink import:** unchanged parser. The result becomes a new device session automatically.
 - **In-game:** the topbar shows an editable session title, plus **Save** (device and, if signed in, account), **Save as copy**, and **Share**.

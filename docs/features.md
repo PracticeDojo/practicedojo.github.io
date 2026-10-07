@@ -700,6 +700,22 @@ Implements version 2 of `docs/DESIGN-field-unit.md` (Kiln dark mode, signal fami
 - **Signal family.** By day the signal is Ember `#E4572E`; on Kiln it is Radio `#E86B2A` with dark text on the key. Tweaks → Accent offers only the approved swaps: **Signal** (the theme's own), **Coral**, **Olive** (its lore numeral lifts to `#C6C45A` on the well) and **Trace**. Each carries the text colour that sits on it. The old Amber / Rose / Emerald / Violet / Azure accents were ink colours, so a saved pick of one falls back to Signal.
 - **CSS file.** The Field Unit tokens, themes, palettes and component styles moved from the inline `<style>` to `app/css/field-unit.css`, loaded right after it (pixel-identical move). The older inline rules stay put.
 
+## Feature 50: Library shelves — what's on this device and what's in your account (v3.3.0)
+
+### User Story
+- As a player I want to see at a glance which sessions and decks live only on this device and which are in my account on every device, without reading small print on each row.
+- As a player who isn't signed in I want to be told that clearing this browser's data deletes my library, and what signing in would change.
+
+### Details
+Chosen from three prototypes in `docs/design/library-clarity/`: **B · Shelves**, with the Library button of C · Places map.
+- **Shelves by place.** Library · Sessions sorts sessions into *In your account + this device*, *Only on this device* (with **Save all N to account**) and *Only in your account*. Each shelf has a spine in its place colour (two bars when it's in both places), a mono name and count, and one plain sentence about what that means. Signed out, everything sits on *On this device* (it says clearing site data or switching browser loses them) above an empty dashed *Your account · optional* shelf with **Sign in**.
+- **Rows say only what's out of step:** *Changed here since your last Save* with **Save to account**, or *Your account has a newer copy* with **Get newer copy**. Account-only rows offer **Download & open**.
+- **Decks** get the same shelves (*In your account + this device*, *Only on this device*, and **Built in**, which replaces *Default decks*, grouped by set). **Links** (was *Shared*: the word also read as "on all my devices") is one *Public links* shelf.
+- **Place colours** from the key family, never an ink colour: Trace this device, Olive your account, Coral public links, a neutral line for built in (`docs/DESIGN-field-unit.md` · Place colours).
+- **Quieter rows.** Title and actions on top, details under them. **Open** is a paper tool; only the match on the board gets the signal (*Back to it*). Rename, Share a link, Duplicate, Export and Delete move into a **⋯** menu (arrow keys, Home / End, Escape closes it before the Library; it opens upwards near the bottom). On phones the actions sit at the foot of each card.
+- **Home.** The Library button shows `▮ 5 ▮ 4`: sessions on this device (Trace) and, signed in, in your account (Olive). Pick up again rows carry their shelf's spine, and the box ends with the shelves summed up (or *All on this device only · Sign in to keep them in an account*).
+- **Fix:** the Library tabs no longer collapse to 1px when the list is taller than the drawer (about 9 sessions on a phone).
+
 ## Patch: Home page in two columns (v3.2.4)
 
 ### Details

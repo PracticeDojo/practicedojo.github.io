@@ -186,8 +186,7 @@
                     <span id="acct-label">Sign in</span>
                 </button>
                 <button class="btn btn-ghost" id="btn-open-library" onclick="App.openLibrary('sessions')">
-                    <i class="fa-solid fa-book-bookmark"></i> Library <span class="ht-count"
-                        id="home-count-sessions"></span>
+                    <i class="fa-solid fa-book-bookmark"></i> Library <span class="lib-figs" id="home-lib-figs"></span>
                 </button>
             </header>
 
@@ -242,7 +241,8 @@
         </div>
     </div>
 
-    <!-- Library: every session and deck on this device -->
+    <!-- Library: every session and deck, on shelves by where it lives (this device,
+         your account, built in, public links) -->
     <div class="lib-scrim hidden" id="library-scrim" onclick="App.closeLibrary()"></div>
     <aside class="lib-drawer" id="library-drawer" role="dialog" aria-modal="true" aria-labelledby="library-title"
         hidden>
@@ -259,19 +259,18 @@
                 <i class="fa-solid fa-layer-group"></i> Decks</button>
             <button type="button" class="home-tab" role="tab" id="lib-tab-shared" data-tab="shared"
                 aria-selected="false" aria-controls="lib-panel-shared" tabindex="-1" onclick="App.libTab('shared')">
-                <i class="fa-solid fa-share-nodes"></i> Shared</button>
+                <i class="fa-solid fa-link"></i> Links</button>
         </div>
 
         <section class="lib-panel" id="lib-panel-sessions" role="tabpanel" aria-labelledby="lib-tab-sessions">
-            <div class="lib-toolbar">
-                <span class="lib-hint">Kept on this device. Every match saves itself as you play.</span>
+            <div class="lib-toolbar is-end">
                 <input type="file" id="setup-import-file" class="hidden"
                     accept=".json,.gz,application/json,application/gzip" onchange="App.importTimelines(event)">
                 <button class="btn btn-ghost" onclick="document.getElementById('setup-import-file').click()">
                     <i class="fa-solid fa-file-import"></i> Import file
                 </button>
             </div>
-            <div class="lib-list" id="home-sessions-list"></div>
+            <div id="home-sessions-list"></div>
         </section>
 
         <section class="lib-panel" id="lib-panel-decks" role="tabpanel" aria-labelledby="lib-tab-decks" hidden>
@@ -309,17 +308,12 @@
                 </div>
             </form>
 
-            <div class="lib-group-title">My decks</div>
-            <div class="lib-list" id="home-mydecks-list"></div>
+            <div id="home-mydecks-list"></div>
             <div id="home-defaultdecks"></div>
         </section>
 
         <section class="lib-panel" id="lib-panel-shared" role="tabpanel" aria-labelledby="lib-tab-shared" hidden>
-            <div class="lib-toolbar">
-                <span class="lib-hint">Links you've shared from this browser. A link is a snapshot; deleting it stops it
-                    opening for everyone.</span>
-            </div>
-            <div class="lib-list" id="lib-shared-list"></div>
+            <div id="lib-shared-list"></div>
         </section>
     </aside>
 
@@ -1029,7 +1023,7 @@
     <script>
         let cardFuse = null;
 
-        const APP_VERSION = "v3.2.4"; // Centralized version string (v3: Field Unit)
+        const APP_VERSION = "v3.3.0"; // Centralized version string (v3: Field Unit)
 
         // Tweaks panel accent presets (hue values for the OKLCH accent ramp)
         // Tweaks → Accent: the approved Field Unit signals only (design.md ·
@@ -2269,9 +2263,36 @@
                     el.addEventListener('click', (e) => {
                         const btn = e.target.closest('[data-act]');
                         const row = e.target.closest('[data-id]');
-                        if (btn && row) fn(btn.dataset.act, row.dataset.id, row, btn);
+                        if (!btn || !row) return;
+                        if (btn.dataset.act === 'more') { this.toggleRowMenu(btn); return; }
+                        this.closeRowMenu();
+                        fn(btn.dataset.act, row.dataset.id, row, btn);
                     });
                 };
+                // A row's ⋯ menu closes on a click anywhere else, and steps with the
+                // arrow keys; Escape closes it before it closes the Library.
+                document.addEventListener('click', (e) => {
+                    if (this._rowMenu && !e.target.closest('.row-more')) this.closeRowMenu();
+                });
+                document.getElementById('library-drawer').addEventListener('keydown', (e) => {
+                    const m = this._rowMenu;
+                    if (!m || !document.body.contains(m.menu)) return;
+                    const items = Array.from(m.menu.querySelectorAll('[role="menuitem"]'));
+                    const i = items.indexOf(document.activeElement);
+                    if (e.key === 'Escape') {
+                        this.closeRowMenu(true);
+                    } else if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+                        const step = e.key === 'ArrowDown' ? 1 : items.length - 1;
+                        items[i < 0 ? 0 : (i + step) % items.length].focus();
+                    } else if (e.key === 'Home' || e.key === 'End') {
+                        items[e.key === 'Home' ? 0 : items.length - 1].focus();
+                    } else {
+                        if (e.key === 'Tab') this.closeRowMenu();
+                        return;
+                    }
+                    e.preventDefault();
+                    e.stopPropagation();
+                });
                 on('home-sessions-list', (act, id, row, btn) => this.onSessionAction(act, id, btn));
                 on('home-mydecks-list', (act, id) => this.onDeckAction(act, 'my', id));
                 on('home-defaultdecks', (act, id) => this.onDeckAction(act, 'def', id));
@@ -2279,6 +2300,7 @@
                 on('home-recent', (act, id, row) => {
                     if (act === 'open-session') this.openDeviceSession(id);
                     else if (act === 'open-demo') this.openDemo(id, row);
+                    else if (act === 'sign-in') this.openAccount();
                 });
 
                 document.getElementById('readout').addEventListener('click', (e) => {
@@ -2564,6 +2586,10 @@
             },
 
             // --- Pick up again: the last session first, then recent ones and demos ---
+            // Each row carries the place spine its shelf has in the Library (one Trace
+            // bar: only on this device; Trace + Olive: in your account too), and the
+            // foot sums the shelves up. The header's Library button shows the same
+            // counts (Feature 50).
             async renderRecent() {
                 const el = document.getElementById('home-recent');
                 if (!el) return;
@@ -2571,8 +2597,6 @@
                 try { rows = await DojoLibrary.listSessions(); } catch (e) { rows = null; }
                 let demos = [];
                 try { demos = await DojoLibrary.loadDemoManifest(); } catch (e) { demos = []; }
-                const count = document.getElementById('home-count-sessions');
-                if (count) count.textContent = rows && rows.length ? String(rows.length) : '';
 
                 const esc = (v) => this.escapeHtml(v);
                 const lastId = await DojoLibrary.getPref('lastSessionId');
@@ -2581,6 +2605,20 @@
                 const shown = (cont ? [cont] : []).concat(list.filter(r => r !== cont)).slice(0, 4);
                 const live = this.hasLiveMatch() && this.session ? this.session.id : null;
                 const go = (label) => `<span class="rec-go">${label} <i class="fa-solid fa-arrow-right"></i></span>`;
+                const linked = (r) => !!this.account && this.isLinked(r);
+
+                // Account sessions that aren't on this device; fetched once per sign-in.
+                if (this.account && this._accountSessions == null && !this._accountSessionsLoading) {
+                    this._accountSessionsLoading = true;
+                    DojoCloud.listAccountSessions()
+                        .then(acc => { this._accountSessions = acc; })
+                        .catch(e => console.warn('Account sessions unavailable:', e))
+                        .finally(() => { this._accountSessionsLoading = false; if (this._accountSessions) this.renderRecent(); });
+                }
+                const both = list.filter(linked).length;
+                const here = list.length - both;
+                const there = this.account ? (this._accountSessions || []).filter(a => !list.some(r => r.id === a.id)).length : 0;
+                this.renderLibraryFigures(list.length, this.account ? both + there : null);
 
                 let html = '';
                 if (rows === null) {
@@ -2589,18 +2627,42 @@
                     html += `<div class="home-empty">Every match you play is kept here, on this device. Nothing yet.</div>`;
                 }
                 html += shown.map(r => `
-                    <button class="rec${r === cont ? ' is-continue' : ''}" data-act="open-session" data-id="${esc(r.id)}">
+                    <button class="rec${r === cont ? ' is-continue' : ''}${linked(r) ? ' is-both' : ''}" data-act="open-session" data-id="${esc(r.id)}">
                         <span class="rec-main"><span class="rec-title">${esc(r.title)}</span>
                         <span class="rec-meta">${this.sessionMetaHtml(r.summary, r.updatedAt)}</span></span>
                         ${go(r.id === live ? 'Back to it' : r === cont ? 'Resume' : 'Open')}
                     </button>`).join('');
                 html += demos.map(d => `
-                    <button class="rec" data-act="open-demo" data-id="${esc(d.id)}">
+                    <button class="rec is-builtin" data-act="open-demo" data-id="${esc(d.id)}">
                         <span class="rec-main"><span class="rec-title">${esc(d.title)}</span>
                         <span class="rec-meta">Demo · opens as your own copy</span></span>
                         ${go('Explore')}
                     </button>`).join('');
+                if (list.length) {
+                    const bars = (...places) => `<span class="rec-bars" aria-hidden="true">${places.map(p => `<i class="is-${p}"></i>`).join('')}</span>`;
+                    const parts = this.account
+                        ? [both && `<span>${bars('device', 'account')}${both} in your account</span>`,
+                            here && `<span>${bars('device')}${here} only on this device</span>`,
+                            there && `<span>${bars('account')}${there} only in your account</span>`].filter(Boolean)
+                        : [`<span>${bars('device')}All on this device only</span>`,
+                            `<button type="button" class="link-btn" data-act="sign-in">Sign in to keep them in an account</button>`];
+                    html += `<div class="rec-sum" data-id="sum">${parts.join('')}</div>`;
+                }
                 el.innerHTML = html;
+            },
+
+            // The header's Library button: sessions on this device (Trace) and, signed
+            // in, in your account (Olive). account is null when signed out.
+            renderLibraryFigures(device, account) {
+                const el = document.getElementById('home-lib-figs');
+                const btn = document.getElementById('btn-open-library');
+                if (!el || !btn) return;
+                const fig = (place, n) => `<span class="lib-fig is-${place}"><i aria-hidden="true"></i>${n}</span>`;
+                el.innerHTML = device || account ? fig('device', device) + (account != null ? fig('account', account) : '') : '';
+                const say = [`${device} ${device === 1 ? 'session' : 'sessions'} on this device`];
+                if (account != null) say.push(`${account} in your account`);
+                btn.setAttribute('aria-label', `Library: ${say.join(', ')}`);
+                btn.title = `Library · ${say.join(' · ')}`;
             },
 
             // --- Share links (Feature 40, ARCH §9) ---
@@ -2610,7 +2672,7 @@
             shareErrorMessage(e) {
                 switch (e && e.code) {
                     case 'limit':
-                        return "You've reached the sharing limit: 20 links a day and 100 in total. Delete old links in Library → Shared, or try again tomorrow.";
+                        return "You've reached the sharing limit: 20 links a day and 100 in total. Delete old links in Library → Links, or try again tomorrow.";
                     case 'storage_full':
                         return "Sharing sessions is paused because the Dojo's shared storage is full. Deck links still work.";
                     case 'too_big': {
@@ -2646,7 +2708,7 @@
             async showShareLink(url, what) {
                 const ok = await this.dialog({
                     title: 'Link ready', icon: 'fa-share-nodes',
-                    message: `Anyone with this link can open ${what}. It's a snapshot: later changes aren't included, so share again for a new link. Your links are listed in Library → Shared.`,
+                    message: `Anyone with this link can open ${what}. It's a snapshot: later changes aren't included, so share again for a new link. Your links are listed in Library → Links.`,
                     prompt: true, readOnly: true, value: url, confirmText: 'Copy link', cancelText: 'Done'
                 });
                 if (ok) this.copyText(url);
@@ -2775,33 +2837,35 @@
             async renderLibShared() {
                 const el = document.getElementById('lib-shared-list');
                 const esc = (v) => this.escapeHtml(v);
+                const shelf = (count, body) => this.libShelfHtml('link', 'Public links', count,
+                    `<b>Anyone with one of these links can open it.</b> Each is a snapshot: later changes aren't in it. ${this.account ? 'They belong to your account.' : 'Made from this browser.'} Deleting a link stops it opening for everyone.`, body);
                 const empty = `<div class="lib-empty">No links yet. Use Share on a match (topbar), a session or a deck, and the link is listed here so you can copy or delete it.</div>`;
-                if (!DojoCloud.hasIdentity()) { el.innerHTML = empty; return; }
-                el.innerHTML = `<div class="lib-empty">Loading your links…</div>`;
+                if (!DojoCloud.hasIdentity()) { el.innerHTML = shelf(0, empty); return; }
+                el.innerHTML = shelf(null, `<div class="lib-empty">Loading your links…</div>`);
                 let rows;
                 try { rows = await DojoCloud.listMyShares(); } catch (e) {
-                    el.innerHTML = `<div class="lib-empty">${esc(this.shareErrorMessage(e))}</div>`;
+                    el.innerHTML = shelf(null, `<div class="lib-empty">${esc(this.shareErrorMessage(e))}</div>`);
                     return;
                 }
                 this._myShares = rows;
-                if (!rows.length) { el.innerHTML = empty; return; }
+                if (!rows.length) { el.innerHTML = shelf(0, empty); return; }
                 const sep = '<span class="cc-sep">·</span>';
-                el.innerHTML = rows.map(r => {
+                el.innerHTML = shelf(rows.length, `<div class="lib-list">${rows.map(r => {
                     const bits = [r.kind === 'deck' ? 'Deck' : 'Session', this.relativeTime(Date.parse(r.created_at))];
                     if (r.kind === 'session' && r.blob_bytes) bits.push(`${Math.max(1, Math.round(r.blob_bytes / 1024))} KB`);
                     return `
                     <div class="lib-row" data-id="${esc(r.id)}">
-                        <div class="lib-main">
+                        <div class="lib-top">
                             <div class="lib-title">${esc(r.title)}</div>
-                            <div class="lib-meta">${bits.map(esc).join(sep)}${sep}<span>${esc(r.url.replace(/^https?:\/\//, ''))}</span></div>
+                            <div class="lib-actions"><button class="btn btn-ghost" data-act="copy">Copy link</button>${this.rowMenuHtml(r.title, [
+                        ['open', 'fa-solid fa-arrow-up-right-from-square', 'Open in a new tab'],
+                        '-',
+                        ['delete', 'fa-solid fa-trash', 'Delete link', true]
+                    ])}</div>
                         </div>
-                        <div class="lib-actions">
-                            <button class="btn btn-primary" data-act="copy">Copy link</button>
-                            <button class="icon-btn ghost" data-act="open" title="Open in a new tab" aria-label="Open ${esc(r.title)} in a new tab"><i class="fa-solid fa-arrow-up-right-from-square"></i></button>
-                            <button class="icon-btn ghost" data-act="delete" title="Delete link" aria-label="Delete link to ${esc(r.title)}"><i class="fa-solid fa-trash"></i></button>
-                        </div>
+                        <div class="lib-meta">${bits.map(esc).join(sep)}${sep}<span>${esc(r.url.replace(/^https?:\/\//, ''))}</span></div>
                     </div>`;
-                }).join('');
+                }).join('')}</div>`);
             },
 
             async onSharedAction(act, id) {
@@ -2847,6 +2911,7 @@
                 this.renderAccountButton();
                 if (res.error) await this.handleSignInError(res.error);
                 if (!this.account) return;
+                this.renderRecent();
                 this.syncAccountDecks().catch(e => console.warn('Deck sync failed:', e));
                 if (res.justSignedIn) {
                     this.showToast(`Signed in as ${this.account.name}`);
@@ -3142,6 +3207,7 @@
             closeLibrary() {
                 const drawer = document.getElementById('library-drawer');
                 if (!drawer || drawer.hidden) return;
+                this.closeRowMenu();
                 drawer.hidden = true;
                 document.getElementById('library-scrim').classList.add('hidden');
                 this.closeDeckEditor();
@@ -3168,6 +3234,80 @@
                 else this.renderLibShared();
             },
 
+            // --- Library shelves (Feature 50) ---
+            // The lists are sorted by where things live. A shelf is a section with a
+            // spine in its place colour (two bars when it's in both places), a name,
+            // a count, one plain sentence and at most one shelf-wide action. Rows on a
+            // shelf don't repeat the place; only an out-of-step row says so.
+            // place: device · account · both · builtin · link · ghost (signed out)
+            libShelfHtml(place, name, count, say, body, action = '') {
+                return `<section class="shelf is-${place}" data-id="shelf">
+                    <header class="shelf-hd"><span class="shelf-name">${name}</span>${count != null ? `<span class="shelf-count">${count}</span>` : ''}${action}</header>
+                    ${say ? `<p class="shelf-say">${say}</p>` : ''}
+                    ${body}
+                </section>`;
+            },
+
+            libSignInShelfHtml(what) {
+                return this.libShelfHtml('ghost', 'Your account', null, '', `<div class="shelf-ghost">
+                    <p>Sign in to keep ${what} in an account too, so they're on every device you use. Optional: nothing else changes.</p>
+                    <button type="button" class="btn place-act is-fill" data-act="sign-in"><i class="fa-regular fa-user"></i> Sign in</button>
+                </div>`, '<span class="shelf-count">optional</span>');
+            },
+
+            // "Save N to account" for the Only on this device shelf.
+            libSaveAllHtml(n) {
+                return `<button type="button" class="btn place-act" data-act="push-all"><i class="fa-solid fa-arrow-up"></i> Save ${n > 1 ? `all ${n} ` : ''}to account</button>`;
+            },
+
+            libNoteHtml(dir, text) {
+                return `<div class="lib-note"><i class="fa-solid fa-arrow-${dir}"></i> ${text}</div>`;
+            },
+
+            // ⋯ for everything a row can do besides Open and its place action.
+            // items: [act, icon, label, danger?] or '-' for a rule.
+            rowMenuHtml(label, items) {
+                const esc = (v) => this.escapeHtml(v);
+                return `<div class="row-more">
+                    <button type="button" class="icon-btn ghost" data-act="more" aria-haspopup="menu" aria-expanded="false" title="More" aria-label="More for ${esc(label)}"><i class="fa-solid fa-ellipsis"></i></button>
+                    <div class="row-menu" role="menu" aria-label="${esc(label)}" hidden>${items.map(it => it === '-'
+                        ? '<span class="row-menu-rule" role="separator"></span>'
+                        : `<button type="button" role="menuitem" tabindex="-1" data-act="${it[0]}"${it[3] ? ' class="is-danger"' : ''}><i class="${it[1]}"></i>${it[2]}</button>`).join('')}</div>
+                </div>`;
+            },
+
+            _rowMenu: null, // { menu, btn } while a row's ⋯ menu is open
+
+            toggleRowMenu(btn) {
+                const menu = btn.closest('.row-more').querySelector('.row-menu');
+                const opening = menu.hidden;
+                this.closeRowMenu();
+                if (!opening) return;
+                menu.hidden = false;
+                btn.setAttribute('aria-expanded', 'true');
+                this._rowMenu = { menu, btn };
+                // Open upwards when it would run off the bottom of the drawer.
+                const r = menu.getBoundingClientRect();
+                const d = document.getElementById('library-drawer').getBoundingClientRect();
+                if (r.bottom > d.bottom - 8) menu.classList.add('is-up');
+                const first = menu.querySelector('[role="menuitem"]');
+                if (first) first.focus();
+            },
+
+            // → true if a menu was open.
+            closeRowMenu(refocus) {
+                const m = this._rowMenu;
+                if (!m) return false;
+                this._rowMenu = null;
+                m.menu.hidden = true;
+                m.menu.classList.remove('is-up');
+                m.btn.setAttribute('aria-expanded', 'false');
+                if (refocus && document.body.contains(m.btn)) m.btn.focus();
+                return true;
+            },
+
+            _libDeviceOnly: { sessions: [], decks: [] }, // what "Save all to account" saves
+
             // --- Library · Sessions ---
 
             async renderHomeSessions() {
@@ -3185,65 +3325,95 @@
                 }
                 const accById = new Map((acc || []).map(r => [r.id, r]));
                 const accountOnly = (acc || []).filter(r => !rows.some(d => d.id === r.id));
-                if (!rows.length && !accountOnly.length) {
-                    list.innerHTML = `<div class="lib-empty">No sessions yet. Start a match or study a Duels.ink game, and it shows up here.</div>`;
-                    return;
-                }
                 const esc = (v) => this.escapeHtml(v);
                 const live = this.hasLiveMatch() && this.session ? this.session.id : null;
-                const icon = (act, title, fa, label) => `<button class="icon-btn ghost" data-act="${act}" title="${title}" aria-label="${esc(label)}"><i class="${fa}"></i></button>`;
+                const empty = `<div class="lib-empty">No sessions yet. Start a match or study a Duels.ink game, and it shows up here.</div>`;
+                const lst = (html) => `<div class="lib-list">${html}</div>`;
 
-                const deviceRow = (r) => {
+                // device (only here) · synced · ahead (account is behind) · behind (account is newer)
+                const placeOf = (r) => {
+                    if (!this.account || !this.isLinked(r)) return 'device';
+                    if (!acc) return r.accountDirty ? 'ahead' : 'synced'; // account unreachable: what this device knows
                     const ar = accById.get(r.id);
-                    const linked = this.isLinked(r) && !!ar;
-                    let badge = '', sync = '';
-                    if (this.account) {
-                        if (!linked) {
-                            sync = icon('push', 'Save to your account', 'fa-solid fa-cloud-arrow-up', `Save ${r.title} to your account`);
-                        } else if (ar.revision > r.account.revision && !r.accountDirty) {
-                            badge = '<span class="lib-badge is-account">Newer in account</span>';
-                            sync = icon('pull', 'Get the newer copy from your account', 'fa-solid fa-cloud-arrow-down', `Get the newer copy of ${r.title}`);
-                        } else if (r.accountDirty || ar.revision > r.account.revision) {
-                            badge = '<span class="lib-badge is-dirty">Changes not in account</span>';
-                            sync = icon('push', 'Save changes to your account', 'fa-solid fa-cloud-arrow-up', `Save ${r.title} to your account`);
-                        } else {
-                            badge = '<span class="lib-badge is-account">This device · Account</span>';
-                        }
-                    }
+                    if (!ar) return 'device'; // removed from the account elsewhere
+                    if (ar.revision > r.account.revision && !r.accountDirty) return 'behind';
+                    if (r.accountDirty || ar.revision > r.account.revision) return 'ahead';
+                    return 'synced';
+                };
+
+                const deviceRow = (r, place) => {
+                    const isLive = r.id === live;
+                    const placeBtn = place === 'ahead'
+                        ? `<button class="btn place-act" data-act="push"><i class="fa-solid fa-arrow-up"></i> Save to account</button>`
+                        : place === 'behind' ? `<button class="btn place-act" data-act="pull"><i class="fa-solid fa-arrow-down"></i> Get newer copy</button>` : '';
+                    const note = place === 'ahead' ? this.libNoteHtml('up', 'Changed here since your last Save')
+                        : place === 'behind' ? this.libNoteHtml('down', 'Your account has a newer copy') : '';
+                    const menu = this.rowMenuHtml(r.title, [
+                        ...(this.account && place === 'device' ? [['push', 'fa-solid fa-arrow-up', 'Save to account'], '-'] : []),
+                        ['rename', 'fa-solid fa-pen', 'Rename'],
+                        ['share', 'fa-solid fa-share-nodes', 'Share a link'],
+                        ['duplicate', 'fa-regular fa-copy', 'Duplicate'],
+                        ['export', 'fa-solid fa-file-export', 'Export file (.dojo.json.gz)'],
+                        '-',
+                        ['delete', 'fa-solid fa-trash', 'Delete…', true]
+                    ]);
                     return `
-                    <div class="lib-row${r.id === live ? ' is-live' : ''}" data-id="${esc(r.id)}">
-                        <div class="lib-main">
-                            <div class="lib-title">${esc(r.title)}${r.id === live ? '<span class="lib-badge">on the board</span>' : ''}</div>
-                            <div class="lib-meta">${badge}${this.sessionMetaHtml(r.summary, r.updatedAt)}</div>
+                    <div class="lib-row${isLive ? ' is-live' : ''}" data-id="${esc(r.id)}">
+                        <div class="lib-top">
+                            <div class="lib-title">${esc(r.title)}${isLive ? '<span class="lib-badge">on the board</span>' : ''}</div>
+                            <div class="lib-actions">${placeBtn}<button class="btn ${isLive ? 'btn-primary' : 'btn-ghost'}" data-act="open">${isLive ? 'Back to it' : 'Open'}</button>${menu}</div>
                         </div>
-                        <div class="lib-actions">
-                            <button class="btn btn-primary" data-act="open">${r.id === live ? 'Back to it' : 'Open'}</button>
-                            ${sync}
-                            ${icon('rename', 'Rename', 'fa-solid fa-pen', `Rename ${r.title}`)}
-                            ${icon('share', 'Share a link', 'fa-solid fa-share-nodes', `Share ${r.title}`)}
-                            ${icon('duplicate', 'Duplicate', 'fa-regular fa-copy', `Duplicate ${r.title}`)}
-                            ${icon('export', 'Export (.dojo.json.gz)', 'fa-solid fa-file-export', `Export ${r.title}`)}
-                            ${icon('delete', 'Delete', 'fa-solid fa-trash', `Delete ${r.title}`)}
-                        </div>
+                        ${note}
+                        <div class="lib-meta">${this.sessionMetaHtml(r.summary, r.updatedAt)}</div>
                     </div>`;
                 };
                 const accountRow = (r) => `
                     <div class="lib-row" data-id="${esc(r.id)}">
-                        <div class="lib-main">
+                        <div class="lib-top">
                             <div class="lib-title">${esc(r.title)}</div>
-                            <div class="lib-meta"><span class="lib-badge is-account">Account</span>${this.sessionMetaHtml(r.summary, Date.parse(r.updated_at))}</div>
+                            <div class="lib-actions"><button class="btn btn-ghost" data-act="open-account">Download &amp; open</button>${this.rowMenuHtml(r.title, [
+                        ['pull', 'fa-solid fa-arrow-down', 'Download to this device'],
+                        '-',
+                        ['delete-account', 'fa-solid fa-trash', 'Delete from your account', true]
+                    ])}</div>
                         </div>
-                        <div class="lib-actions">
-                            <button class="btn btn-primary" data-act="open-account">Open</button>
-                            ${icon('pull', 'Download to this device', 'fa-solid fa-cloud-arrow-down', `Download ${r.title} to this device`)}
-                            ${icon('delete-account', 'Delete from your account', 'fa-solid fa-trash', `Delete ${r.title} from your account`)}
-                        </div>
+                        <div class="lib-meta">${this.sessionMetaHtml(r.summary, Date.parse(r.updated_at))}</div>
                     </div>`;
-                list.innerHTML = rows.map(deviceRow).join('') +
-                    (accountOnly.length ? `<div class="lib-group-title">Only in your account</div>` + accountOnly.map(accountRow).join('') : '');
+
+                if (!this.account) {
+                    this._libDeviceOnly.sessions = [];
+                    list.innerHTML = this.libShelfHtml('device', 'On this device', rows.length,
+                        '<b>Kept in this browser, and only here.</b> Every match saves itself as you play. Clearing site data or switching browser loses them, so Export a file to keep a backup.',
+                        rows.length ? lst(rows.map(r => deviceRow(r, 'device')).join('')) : empty) +
+                        this.libSignInShelfHtml('your sessions and decks');
+                    return;
+                }
+                if (!rows.length && !accountOnly.length) { list.innerHTML = empty; return; }
+                const placed = rows.map(r => ({ r, place: placeOf(r) }));
+                const both = placed.filter(x => x.place !== 'device');
+                const here = placed.filter(x => x.place === 'device');
+                this._libDeviceOnly.sessions = here.map(x => x.r);
+                list.innerHTML =
+                    (both.length ? this.libShelfHtml('both', 'In your account <span class="and">+ this device</span>', both.length,
+                        acc ? "Safe in your account. Save sends this device's changes there."
+                            : "Your account couldn't be reached just now, so this is what this device last knew.",
+                        lst(both.map(x => deviceRow(x.r, x.place)).join(''))) : '') +
+                    (here.length ? this.libShelfHtml('device', 'Only on this device', here.length,
+                        "<b>Not in your account yet.</b> Clearing this browser's data would delete them.",
+                        lst(here.map(x => deviceRow(x.r, 'device')).join('')), this.libSaveAllHtml(here.length)) : '') +
+                    (accountOnly.length ? this.libShelfHtml('account', 'Only in your account', accountOnly.length,
+                        'Saved from another device. Open downloads a copy here.',
+                        lst(accountOnly.map(accountRow).join(''))) : '');
             },
 
             async onSessionAction(act, id, btn) {
+                if (act === 'sign-in') { this.openAccount(); return; }
+                if (act === 'push-all') {
+                    await this.flushDeviceSave();
+                    await this.uploadToAccount([], this._libDeviceOnly.sessions);
+                    this.renderRecent();
+                    return;
+                }
                 const isLive = !!(this.session && this.session.id === id);
                 const accRow = (this._accountSessions || []).find(r => r.id === id) || null;
 
@@ -3388,27 +3558,25 @@
                 meta.push(esc(`${info.count} cards`));
                 if (info.unmatched.length) meta.push(`<span class="is-warn">⚠ ${esc(info.unmatched.length)} not recognised</span>`);
                 const notes = d.notes ? ` title="${esc(d.notes)}"` : '';
-                let badge = '', sync = '';
-                if (src === 'my' && this.account) {
-                    if (this.isLinked(d) && !d.accountDirty) badge = '<span class="lib-badge is-account">Account</span>';
-                    else sync = `<button class="icon-btn ghost" data-act="push" title="Save to your account" aria-label="Save ${esc(d.name)} to your account"><i class="fa-solid fa-cloud-arrow-up"></i></button>`;
-                }
+                const mine = src === 'my';
+                const linked = mine && this.isLinked(d);
+                const dirty = linked && d.accountDirty;
+                const menu = this.rowMenuHtml(d.name, mine
+                    ? [...(this.account && !linked ? [['push', 'fa-solid fa-arrow-up', 'Save to account'], '-'] : []),
+                        ['edit', 'fa-solid fa-pen', 'Edit'],
+                        ['share', 'fa-solid fa-share-nodes', 'Share a link'],
+                        '-',
+                        ['delete', 'fa-solid fa-trash', 'Delete…', true]]
+                    : [['edit', 'fa-regular fa-copy', 'Copy to my decks and edit'],
+                        ['share', 'fa-solid fa-share-nodes', 'Share a link']]);
                 return `
                     <div class="lib-row" data-id="${esc(d.id)}">
-                        <div class="lib-main"${notes}>
-                            <div class="lib-title">${esc(d.name)}</div>
-                            <div class="lib-meta">${badge}${meta.join(sep)}</div>
+                        <div class="lib-top">
+                            <div class="lib-title"${notes}>${esc(d.name)}</div>
+                            <div class="lib-actions">${dirty ? `<button class="btn place-act" data-act="push"><i class="fa-solid fa-arrow-up"></i> Save to account</button>` : ''}<button class="btn btn-ghost" data-act="p1" title="Seat as your deck">You</button><button class="btn btn-ghost" data-act="p2" title="Seat as the opponent's deck">Opponent</button>${menu}</div>
                         </div>
-                        <div class="lib-actions">
-                            <button class="btn btn-ghost" data-act="p1" title="Seat as your deck">You</button>
-                            <button class="btn btn-ghost" data-act="p2" title="Seat as the opponent's deck">Opponent</button>
-                            ${sync}
-                            <button class="icon-btn ghost" data-act="share" title="Share a link" aria-label="Share ${esc(d.name)}"><i class="fa-solid fa-share-nodes"></i></button>
-                            ${src === 'my'
-                        ? `<button class="icon-btn ghost" data-act="edit" title="Edit" aria-label="Edit ${esc(d.name)}"><i class="fa-solid fa-pen"></i></button>
-                               <button class="icon-btn ghost" data-act="delete" title="Delete" aria-label="Delete ${esc(d.name)}"><i class="fa-solid fa-trash"></i></button>`
-                        : `<button class="icon-btn ghost" data-act="edit" title="Copy to My decks and edit" aria-label="Copy ${esc(d.name)} to My decks"><i class="fa-regular fa-copy"></i></button>`}
-                        </div>
+                        ${dirty ? this.libNoteHtml('up', "Changed here; not in your account yet") : ''}
+                        <div class="lib-meta">${meta.join(sep)}</div>
                     </div>`;
             },
 
@@ -3418,22 +3586,41 @@
                 let mine = [];
                 let mineFailed = false;
                 try { mine = await DojoLibrary.listDecks(); } catch (e) { mineFailed = true; }
-                mineEl.innerHTML = mineFailed
-                    ? `<div class="lib-empty">This browser isn't letting the Dojo keep a library (private window?).</div>`
-                    : mine.length ? mine.map(d => this.deckRowHtml(d, 'my')).join('')
-                        : `<div class="lib-empty">No decks yet. Paste a list on the home screen and choose Save to My decks, or use New deck.</div>`;
+                const lst = (decks) => `<div class="lib-list">${decks.map(d => this.deckRowHtml(d, 'my')).join('')}</div>`;
+                const empty = `<div class="lib-empty">No decks yet. Paste a list on the home screen and choose Save to My decks, or use New deck.</div>`;
+                this._libDeviceOnly.decks = [];
+                if (mineFailed) {
+                    mineEl.innerHTML = `<div class="lib-empty">This browser isn't letting the Dojo keep a library (private window?).</div>`;
+                } else if (!this.account) {
+                    mineEl.innerHTML = this.libShelfHtml('device', 'On this device', mine.length,
+                        "<b>Kept in this browser, and only here.</b> Clearing its site data deletes your decks.", mine.length ? lst(mine) : empty) +
+                        this.libSignInShelfHtml('your decks');
+                } else {
+                    const both = mine.filter(d => this.isLinked(d));
+                    const here = mine.filter(d => !this.isLinked(d));
+                    this._libDeviceOnly.decks = here;
+                    mineEl.innerHTML =
+                        (both.length || !here.length ? this.libShelfHtml('both', 'In your account <span class="and">+ this device</span>', both.length,
+                            "Decks follow your account by themselves: save one here and it's on your other devices too.", both.length ? lst(both) : empty) : '') +
+                        (here.length ? this.libShelfHtml('device', 'Only on this device', here.length,
+                            '<b>Not in your account yet.</b>', lst(here), this.libSaveAllHtml(here.length)) : '');
+                }
 
                 const groups = await this.getDefaultDecks();
                 if (!groups) {
-                    defEl.innerHTML = `<div class="lib-group-title">Default decks</div><div class="lib-empty">Default decks couldn't be loaded. Check your connection.</div>`;
+                    defEl.innerHTML = this.libShelfHtml('builtin', 'Built in', null, "Built-in decks couldn't be loaded. Check your connection.", '');
                     return;
                 }
-                defEl.innerHTML = groups.filter(g => g.decks.length).map(g => `
-                    <div class="lib-group-title">Default decks · ${this.escapeHtml(g.title)}</div>
-                    <div class="lib-list">${g.decks.map(d => this.deckRowHtml(d, 'def')).join('')}</div>`).join('');
+                const shown = groups.filter(g => g.decks.length);
+                defEl.innerHTML = this.libShelfHtml('builtin', 'Built in', shown.reduce((n, g) => n + g.decks.length, 0),
+                    'Comes with the Dojo, the same for everyone. Seat one, or copy it to make your own.',
+                    shown.map(g => `<div class="shelf-sub">${this.escapeHtml(g.title)}</div>
+                    <div class="lib-list">${g.decks.map(d => this.deckRowHtml(d, 'def')).join('')}</div>`).join(''));
             },
 
             async onDeckAction(act, src, id) {
+                if (act === 'sign-in') { this.openAccount(); return; }
+                if (act === 'push-all') { await this.uploadToAccount(this._libDeviceOnly.decks, []); return; }
                 const deck = this._deckIndex[`${src}:${id}`] || (src === 'my' ? await DojoLibrary.getDeck(id) : null);
                 if (!deck) { this.refreshDeckIndex().then(() => this.renderHomeDecks()); return; }
                 if (act === 'p1' || act === 'p2') {

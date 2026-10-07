@@ -126,6 +126,17 @@ Approved:
 
 Rejected for the signal role: Copper `#C4622D` (fails on glass), Cadmium `#FF5A1F` (too loud on the day chassis), Rams red `#BF1B1B` (reads as Ruby).
 
+### Place colours
+
+The Library sorts decks and sessions by where they live. Each place takes one colour from the key family (see Function keys), never an ink colour:
+
+- **This device** — Trace `#2F9E96`. Coloured words `#1E716B` by day, `#3DB2A9` on Kiln.
+- **Your account** — Olive `#8C8A2E` (`#9C9A34` on Kiln). The banking colour, as for Quest and Ink. Coloured words `#66641E` by day, `#C6C45A` on Kiln. Text on an Olive fill is `#141311`.
+- **Public links** — Coral `#ED3F1C`. Coloured words `#C23315` by day, `#F26446` on Kiln.
+- **Built in** — no colour: the strong line `#BDB6AA` (`#3E3933` on Kiln).
+
+Places are a reading, not the signal: the signal stays for the match on the board. A place shows as a spine (3px bars, two when it's in both places, like an ink pair), as a mono shelf name, and as the outline of the one action that moves something between places (*Save to account*, *Get newer copy*). Don't fill a row or a panel with a place colour.
+
 ### Dark mode — Kiln
 
 Kiln is the only dark theme. Do not ship a cool grey night or a pure `#000` page.
@@ -280,6 +291,10 @@ On the glass canvas. Inactive `#6A655E` at 1.2px. The path to the node you are o
 
 Used only on the public site. Paper modules on chassis, 22px radius. Headline `display/xl`. One signal key. Spec rows separated by 1px `#E0DBD1`, indexed `01–04` in signal mono. A black inset may show the turn stamp and a lore pair. Do not reuse marketing radius or display type inside the app; the home page's headline is the one exception (see Home).
 
+### Library shelves
+
+The Library drawer's lists are shelves, one per place. A shelf has a spine in its place colour down its left side, a `label/sm` name in the place's text colour (*In your account + this device* keeps ink for the name and mutes the second part), a mono count, one 12.5px sentence in body tone, and at most one shelf action (*Save all N to account*). Rows are paper (8px radius) with title and actions on top and the `figure/sm` details under them. A row repeats its place only when it's out of step, as an Olive line with an arrow. Open is a paper tool; the session on the board gets the signal key (*Back to it*). Everything else on a row sits behind ⋯. Signed out, the account shelf is an empty dashed slot with a filled Olive *Sign in*.
+
 ### Home
 
 The app's front door, on the chassis. Two columns: the brand on the left (the mark in ink, about 232px wide; the name in mono caps, 14px weight 700, tracking 0.14em; the version as a mono figure; a two-beat tagline in Inter Display 22px, the second beat mute), and everything the player acts on to its right (theme and account controls, the headline, the glass intake well, the table and recent sessions). The headline is the marketing hero (`display/xl`, two beats, the second mute on its own line). No glows, gradients or watermarks. Tablets put the brand in a row beside the controls; phones stack it above them with a 44px mark.
@@ -303,3 +318,4 @@ The app's front door, on the chassis. Two columns: the brand on the left (the ma
 - Don't hide zero-copy odds rows.
 - Don't make a second filled button on the board or the shell. Challenge, Undo, Timelines, and Save a copy stay paper tools. The card drawer is the exception: it is a panel of function keys (see Function keys).
 - Don't put an ink colour on a function key, and don't invent a key colour outside Coral, Olive, Trace, Graphite and Bone.
+- Don't colour a place (this device, your account, public links) with anything but its key colour, and don't wash a row or panel in it.
