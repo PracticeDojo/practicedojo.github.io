@@ -86,7 +86,7 @@ The shell is warm mineral by day and warm black at night. Data lives in a recess
 
 Day signal is Ember. Night signal is Radio. Coral, Olive, and Trace are the only approved swaps. Do not invent a fifth accent.
 
-The app is information-dense. A restyle must keep every reading the live board already shows: players, deck and hand counts, BCR and LVI, the action log, both discard piles, ready counts, field cards with cost / strength / lore, hand actions, deck size, zone stats (BCR, RDS, LVI), draw odds with copies remaining, and multiverse node recaps (played, inked, drawn, banished, quested, lore, note).
+The app is information-dense. A restyle must keep every reading the live board already shows: players, deck and hand counts, BCR and LVI, the action log, both discard piles, ready counts, field cards with cost / strength / lore, hand actions, deck size, draw odds with copies remaining, and multiverse node recaps (played, inked, drawn, banished, quested, lore, note).
 
 ### Principles
 
@@ -249,7 +249,7 @@ Glass fill, paper text, 8px radius, 7px 8px padding, 11px. This is the turn note
 
 ### Lore box
 
-Glass raised, 1px `#2A2A2A`, 10px radius. Label `label/sm` mute. Numeral `display/lg` signal. Zone stats on its floor, `figure/sm` glass-mute: `BCR 4.2 · RDS 0.5 · LVI 0.6`. On the board it stretches to the hand's height.
+Glass raised, 1px `#2A2A2A`, 10px radius. Label `label/sm` mute between − and +, numeral `display/lg` signal under it, nothing else (the hand's zone stats were dropped in v3.4.1). On the board it stretches to the hand's height with its count centred.
 
 ### Ready row
 

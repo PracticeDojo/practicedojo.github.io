@@ -728,12 +728,6 @@
                             title="Increase Lore">+</button>
                     </div>
                     <div class="lore-value" id="top-lore">0</div>
-                    <!-- Zone stats: total potential of the cards in this player's hand -->
-                    <div class="hand-meta" title="Total potential metrics of all cards in hand">
-                        <span><span class="meta-key is-bcr">BCR</span><span id="top-hand-bcr">0.0</span></span>
-                        <span><span class="meta-key is-rds">RDS</span><span id="top-hand-rds">0.0</span></span>
-                        <span><span class="meta-key is-lvi">LVI</span><span id="top-hand-lvi">0.0</span></span>
-                    </div>
                 </div>
 
                 <!-- hand row -->
@@ -830,12 +824,6 @@
                             title="Increase Lore">+</button>
                     </div>
                     <div class="lore-value" id="bottom-lore">0</div>
-                    <!-- Zone stats: total potential of the cards in this player's hand -->
-                    <div class="hand-meta" title="Total potential metrics of all cards in hand">
-                        <span><span class="meta-key is-bcr">BCR</span><span id="bottom-hand-bcr">0.0</span></span>
-                        <span><span class="meta-key is-rds">RDS</span><span id="bottom-hand-rds">0.0</span></span>
-                        <span><span class="meta-key is-lvi">LVI</span><span id="bottom-hand-lvi">0.0</span></span>
-                    </div>
                 </div>
 
                 <!-- field (touches divider) -->
@@ -9723,40 +9711,6 @@
                     bcrValP1.parentElement.style.flexDirection = 'row';
                     lviValP1.parentElement.style.flexDirection = 'row';
                 }
-
-                // --- Calculate Hand Potential ---
-                let p0Hand = { ctl: 0, bcr: 0, rds: 0, lvi: 0 };
-                let p1Hand = { ctl: 0, bcr: 0, rds: 0, lvi: 0 };
-
-                const calcHand = (hand, metricsObj) => {
-                    hand.forEach(c => {
-                        const dbCard = this.cardDB[c.cardId];
-                        if (dbCard && dbCard.fullTextSections) {
-                            try {
-                                const m = UnifiedWinProbabiliyCalculation.calculateCardMetrics(dbCard);
-                                metricsObj.bcr += m.bcr || 0;
-                                metricsObj.rds += m.rds || 0;
-                                metricsObj.lvi += m.lvi || 0;
-                                metricsObj.ctl += m.ctl !== undefined ? m.ctl : ((m.bcr || 0) + (m.rds || 0) + (m.lvi || 0));
-                            } catch (e) { }
-                        }
-                    });
-                };
-
-                calcHand(this.state.players[0].hand, p0Hand);
-                calcHand(this.state.players[1].hand, p1Hand);
-
-                // Assign to Active (Bottom) and Inactive (Top)
-                const apHand = this.state.activePlayer === 0 ? p0Hand : p1Hand;
-                const ipHand = this.state.activePlayer === 0 ? p1Hand : p0Hand;
-
-                document.getElementById('bottom-hand-bcr').innerText = apHand.bcr.toFixed(1);
-                document.getElementById('bottom-hand-rds').innerText = apHand.rds.toFixed(1);
-                document.getElementById('bottom-hand-lvi').innerText = apHand.lvi.toFixed(1);
-
-                document.getElementById('top-hand-bcr').innerText = ipHand.bcr.toFixed(1);
-                document.getElementById('top-hand-rds').innerText = ipHand.rds.toFixed(1);
-                document.getElementById('top-hand-lvi').innerText = ipHand.lvi.toFixed(1);
             },
 
             // Helper to get active user base card scale from tweaks (0.7 to 1.4)

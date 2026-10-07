@@ -1476,56 +1476,6 @@ body.palette-competition .player-row::before {
     padding: 2px 0 1px;
 }
 
-/* Zone stats: figure/sm glass-mute, one per line so they fit the column.
-   (.board-half prefix: outranks the old top-half hand-meta squeeze.) */
-.board-half .lore-badge .hand-meta {
-    display: grid;
-    grid-template-columns: auto auto;
-    justify-content: space-between;
-    gap: 1px 6px;
-    width: 100%;
-    margin-top: 5px;
-    padding: 5px 0 0;
-    background: none;
-    border: 0;
-    border-top: 1px solid var(--fu-glass-rule);
-    border-radius: 0;
-    font-family: var(--font-mono);
-    font-size: 10.5px;
-    line-height: 1.35;
-    color: var(--fu-glass-2);
-    font-variant-numeric: tabular-nums;
-    transform: none;
-}
-
-.lore-badge .hand-meta>span {
-    display: contents;
-}
-
-.lore-badge .hand-meta .meta-key,
-.lore-badge .hand-meta .meta-key.is-bcr,
-.lore-badge .hand-meta .meta-key.is-lvi,
-.lore-badge .hand-meta .meta-key.is-rds {
-    margin: 0;
-    font-size: 10px;
-    letter-spacing: 0.06em;
-    color: var(--fu-glass-mute);
-}
-
-.lore-badge .hand-meta>span>span:last-child {
-    text-align: right;
-}
-
-.lore-badge .hand-meta::before {
-    content: 'Hand';
-    grid-column: 1 / -1;
-    font-size: 9.5px;
-    letter-spacing: var(--label-track);
-    text-transform: uppercase;
-    color: var(--fu-glass-mute);
-    margin-bottom: 1px;
-}
-
 /* ----- Ready row: `2 / 9 ready`, then −, +, Ready all as glass outlines ----- */
 .ink-readout {
     background: transparent;
@@ -2122,16 +2072,13 @@ body.cards-text .ink-tile.is-back {
         min-height: calc(var(--card-h) + 22px);
     }
 
-    /* Lore takes the hand's height; the zone stats sit on its floor. */
+    /* Lore takes the hand's height, its count centred in it. */
     .board-half .lore-badge {
         grid-area: lore;
         position: static;
         width: 92px;
         align-self: stretch;
-    }
-
-    .board-half .lore-badge .hand-meta {
-        margin-top: auto;
+        justify-content: center;
     }
 
     .board-half .notes-panel {
