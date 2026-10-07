@@ -4,7 +4,8 @@
 //
 // Multiverse tree renderer. Same layout as App.renderTree() in app/index.html
 // (leaves stack, parents centre between children, 230px nodes in 310px columns),
-// same Field Unit node card (ink ticks, subline, recap, label · value sections),
+// same Field Unit node card (deck icon, subline, the note as glass, the Played
+// strip or every label · value section),
 // same edges (#6A655E hairlines, the path to the node you're on in signal).
 // Data: window.MV_DATA (the Set 13 demo). Colours come from css/landing.css
 // classes, so switching day / night restyles everything without a re-render.
@@ -59,6 +60,10 @@ window.MV = (function () {
   const time = (n) => new Date(n.ts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' });
   const subline = (n) => `${n.stats.replace(/ \| /g, ' · ')} · ${time(n)}`;
   const entriesOf = (n, key) => (n.sections[key] || []).map(e => (e && typeof e === 'object') ? e : { id: e });
+  // App.shownComment(): the auto-save's stock first line is never shown.
+  const shown = (c) => String(c || '').replace(/^\s*Auto-saved at start of turn\.\s*/, '').trim();
+  // The owner's deck icon (P2's hatched), as the app draws it.
+  const deckIcon = (p, extra) => `<span class="deck-icon${p ? ' is-p' + p : ''}${extra ? ' ' + extra : ''}" aria-hidden="true"></span>`;
 
   function card(id) { return D.cards[id] || { name: 'Unknown card' }; }
   // Same as App.cardThumbHtml(): a text face (name + ink strip) underneath, the
@@ -93,12 +98,16 @@ window.MV = (function () {
     opts = opts || {};
     const view = opts.view || 'compact';
     const style = opts.pos ? ` style="left:${opts.pos.x}px;top:${opts.pos.y}px"` : '';
+    // The whole comment (the note and the turn recap text) as a glass note,
+    // only when there's something to show.
+    const c = shown(n.comment);
     return `<div class="mv-node paper tn-p${n.player}${n.active ? ' is-active' : ''}" data-id="${esc(n.id)}"${style}>` +
+      deckIcon(n.player) +
       `<div class="mv-nb">` +
       `<div class="mv-title"><i class="fa-solid fa-bookmark" aria-hidden="true"></i> <span>${esc(n.name)}</span></div>` +
       `<div class="mv-stats">${esc(subline(n))}</div>` +
-      `<div class="mv-comment">${md(n.comment)}</div>` +
-      `<span class="mv-ibtn e" aria-hidden="true"><i class="fa-solid fa-pen"></i></span>` +
+      (c ? `<div class="mv-note"><div class="mv-note-head"><span>Note</span><i class="fa-solid fa-pen" aria-hidden="true"></i></div>` +
+        `<div class="mv-comment">${md(c)}</div></div>` : '') +
       `<span class="mv-ibtn d" aria-hidden="true"><i class="fa-solid fa-trash"></i></span>` +
       `</div>${sectionsHtml(n, view)}</div>`;
   }
@@ -184,11 +193,11 @@ window.MV = (function () {
     };
   }
 
-  return { D, byId, kids, roots, active, mainLine, onMain, leaves, esc, md, thumb, card, subline, entriesOf, nodeHtml, sectionsHtml, layout, edgesSvg, mount, NODE_H, SECTIONS };
+  return { D, byId, kids, roots, active, mainLine, onMain, leaves, esc, md, shown, deckIcon, thumb, card, subline, entriesOf, nodeHtml, sectionsHtml, layout, edgesSvg, mount, NODE_H, SECTIONS };
 })();
 
 (function () {
-  const { D, byId, kids, roots, active, mainLine, onMain, leaves, esc, md, thumb, card, subline, entriesOf, SECTIONS } = MV;
+  const { D, byId, kids, roots, active, mainLine, onMain, leaves, esc, md, shown, deckIcon, thumb, card, subline, entriesOf, SECTIONS } = MV;
   const $ = (id) => document.getElementById(id);
   const fill = (k, v) => document.querySelectorAll(`[data-mv="${k}"]`).forEach(el => { el.textContent = v; });
   const TURN_RE = /^Turn (\d+) - Player (\d) Active$/;
@@ -331,7 +340,7 @@ window.MV = (function () {
     const m = TURN_RE.exec(n.name);
     const own = !isAuto(n) ? `<span class="note">${esc(note(n))}</span><br>` : '';
     const played = entriesOf(n, 'played').slice(0, 3).map(e => thumb(e.id)).join('');
-    return `<div class="lg-row"><span class="ticks p${n.player}"></span>
+    return `<div class="lg-row">${deckIcon(n.player)}
       <div class="lg-turn">Turn ${n.turn}<span class="label">Player ${m ? m[2] : n.player}</span></div>
       <div class="lg-what">${own}<span class="rc">${isAuto(n) ? recapLine(n) : ''}</span></div>
       <div class="lg-right">${played}<span class="lg-lore">${n.lore[0]}–${n.lore[1]}</span></div></div>`;
@@ -363,41 +372,53 @@ window.MV = (function () {
       t.cam.z = z; t.apply();
     }
 
-    // Side panel: the selected node on the paper frame.
-    const meter = (p, v) => `<div class="meter-row"><span class="who"><span class="ticks p${p} sm"></span>P${p}</span>
-      <div class="track"><span class="mk" style="left:${v / 20 * 100}%"></span></div><span class="v">${v}</span></div>`;
+    // Side panel: the app's Multiverse panel (renderTreePanel) for the selected
+    // node, plus the line so far and its branches to walk the tree by.
+    const meter = (p, v) => `<div class="meter-row"><span class="who">${deckIcon(p)}P${p}</span>
+      <div class="track"><span class="mk" style="left:${Math.min(100, v / 20 * 100)}%"></span></div><span class="v">${v}</span></div>`;
     function renderSide() {
       const n = byId[sel];
       const path = []; for (let p = n; p; p = byId[p.parent]) path.unshift(p);
       const crumbs = path.slice(-5);
       const ch = kids[n.id] || [];
+      const c = shown(n.comment);
       const secs = SECTIONS.map(s => {
         const ids = entriesOf(n, s.key);
         if (!ids.length) return '';
-        return `<div class="side-sec"><div class="mv-sec-label">${s.label}<span class="mv-sec-n">${ids.length}</span></div>
+        const left = ids.filter(e => e.left).length;
+        return `<div class="side-sec"><div class="mv-sec-label">${s.label}<span class="mv-sec-n">${s.marksLeft && left ? `${ids.length} · −${left}` : ids.length}</span></div>
           <div class="side-thumbs">${ids.map(e => thumb(e.id, e.left ? 'is-left' : '')).join('')}</div></div>`;
       }).join('');
       side.innerHTML = `
         <div>
-          <div class="label">Selected node${n.active ? '<span class="side-here">· you are here</span>' : ''}</div>
-          <div class="side-name">${esc(n.name)}</div>
+          <div class="label">Selected${n.active ? '<span class="side-here">· you are here</span>' : ''}</div>
+          <div class="side-title">${deckIcon(n.player)}<span class="side-name">${esc(n.name)}</span></div>
           <div class="side-stats">${esc(subline(n))}</div>
         </div>
+        <div class="side-open">
+          <a href="app/" class="tool strong"><i class="fa-solid fa-play" aria-hidden="true"></i> Play it in the Dojo</a>
+          <p>The Set 13 demo is under “Pick up again”.</p>
+        </div>
+        <div class="side-note${c ? '' : ' is-empty'}"><div class="side-note-head">Turn ${n.turn} note · Player ${n.player}</div>
+          <div class="side-note-body">${c ? md(c) : 'No note on this node.'}</div></div>
         <div class="side-block"><div class="label">Lore race to 20</div>${meter(1, n.lore[0])}${meter(2, n.lore[1])}</div>
         <div class="side-block"><div class="label">Line so far · ${path.length} nodes</div>
           <div class="crumbs">${path.length > crumbs.length ? '<span class="more">…</span>' : ''}
           ${crumbs.map(p => `<button type="button" data-go="${esc(p.id)}" class="${p.id === n.id ? 'is-cur' : ''}">${esc(short(p))}</button>`).join('')}</div></div>
         ${ch.length > 1 ? `<div class="side-block"><div class="label">Branches from here · ${ch.length}</div>
           <div class="crumbs">${ch.map(c => `<button type="button" data-go="${esc(c.id)}">${esc(short(c))}</button>`).join('')}</div></div>` : ''}
-        ${n.active && D.turnNote ? `<div class="side-note"><div class="label">Turn ${n.turn} note</div>${esc(D.turnNote)}</div>` : ''}
-        ${n.comment ? `<div class="side-recap">${md(n.comment)}</div>` : ''}
-        ${secs ? `<div class="side-secs">${secs}</div>` : ''}
-        <div class="side-open">
-          <a href="app/" class="tool strong">Open this match in the Dojo <span aria-hidden="true">→</span></a>
-          <p>It's the Set 13 demo under “Pick up again”.</p>
+        <div class="side-block">
+          <div class="side-recap-head"><span class="label">Turn recap</span>
+            <button type="button" class="side-switch-row" data-act="toggle-view" role="switch" aria-checked="${view === 'full'}"
+              title="Show the full recap inside every node">Show in nodes<span class="side-switch${view === 'full' ? ' is-on' : ''}"></span></button></div>
+          ${secs ? `<div class="side-secs">${secs}</div>` : '<p class="side-empty">No cards recorded for this turn.</p>'}
         </div>`;
     }
-    side.addEventListener('click', (e) => { const b = e.target.closest('[data-go]'); if (b) select(b.dataset.go, true); });
+    side.addEventListener('click', (e) => {
+      const b = e.target.closest('[data-go]');
+      if (b) select(b.dataset.go, true);
+      else if (e.target.closest('[data-act="toggle-view"]')) setView(view === 'compact' ? 'full' : 'compact');
+    });
 
     // Drag to pan. Touch pans sideways only, so the page still scrolls.
     let drag = null;
@@ -450,15 +471,19 @@ window.MV = (function () {
     $('ex-in').addEventListener('click', () => { el.classList.add('is-glide'); zoomAt(...mid(), 1.25); });
     $('ex-out').addEventListener('click', () => { el.classList.add('is-glide'); zoomAt(...mid(), 0.8); });
     $('ex-home').addEventListener('click', () => { select(active.id, false); el.classList.add('is-glide'); t.center(active.id, zDefault(), -el.clientWidth * 0.08); });
-    $('ex-view').addEventListener('click', (e) => {
-      view = view === 'compact' ? 'full' : 'compact';
+    // Compact (lean) or full nodes: the header tool and the panel's
+    // "Show in nodes" switch, as in the app.
+    function setView(v) {
+      view = v;
       const z = t.cam.z;
       t.setView(view); mark();
       el.classList.remove('is-glide'); t.center(sel, z);
-      const b = e.currentTarget, label = view === 'full' ? 'Switch to compact nodes' : 'Switch to full nodes';
+      const b = $('ex-view'), label = view === 'full' ? 'Switch to compact nodes' : 'Switch to full nodes';
       b.innerHTML = `<i class="fa-solid ${view === 'full' ? 'fa-grip-lines' : 'fa-list-ul'}"></i>`;
       b.title = label; b.setAttribute('aria-label', label);
-    });
+      renderSide();
+    }
+    $('ex-view').addEventListener('click', () => setView(view === 'compact' ? 'full' : 'compact'));
 
     t.center(active.id, zDefault(), -el.clientWidth * 0.08);
     select(active.id, false);

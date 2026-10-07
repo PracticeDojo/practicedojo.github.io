@@ -25,6 +25,7 @@ This file provides system instructions and context for AI agents working in this
 | `img/` | Images used by the landing page and the app |
 | `docs/` | Feature list, dev guide, architecture, implementation and research notes, test protocols |
 | `.claude/skills/` | Agent skills. `dojo-screenshots/` = the screenshot tool (see below) |
+| `tools/` | Node scripts for the repo, never loaded by the site. `refresh-landing.mjs` = keeps the landing page in step with the app (see below) |
 | `docs/samples/` | Sample Duels.ink logs and replays for testing imports |
 
 ## Screenshots
@@ -35,6 +36,15 @@ node .claude/skills/dojo-screenshots/shoot.mjs --demo --widths 1440,390 --themes
 ```
 
 It serves the repo, opens the Set 13 demo and saves PNGs. It can also shoot any git ref for before/after (`--ref origin/main`), drive the page (`--steps`), inject mock-ups (`--inject`), and `compose.mjs` lays labelled shots out on one sheet. Keep screenshots out of the repo.
+
+## Keeping the landing page current
+The landing page (`index.html`) shows the app: its version, screenshots of the board and the phone, and the Set 13 demo's multiverse. After any visible change to the app (or a version bump), run:
+
+```bash
+node tools/refresh-landing.mjs
+```
+
+It copies `APP_VERSION` into the page, rebuilds `js/landing-multiverse-data.js` from the demo, and retakes `img/dojo_board_*.webp` and `img/dojo_phone_*.webp`. Commit what it changed in the same PR. If the board's layout moved, check the numbered pins over the screenshots in `index.html`. `--no-shots` skips the browser; `--check` only reports whether the version and data are stale. The landing's multiverse (`js/landing-multiverse.js`, `css/landing.css`) is a port of the app's tree: when a change reshapes the Multiverse node or panel, port it there too.
 
 ## Splitting rule (YAGNI)
 The app started as a single HTML file. A new concern with its own reason to change (for example device storage or Supabase) gets its own classic `<script src>` file in `app/js/`, exposing one global. Existing code is only extracted when a feature has to change it substantially anyway. No build step, no bundler, no framework.
@@ -52,7 +62,7 @@ This project uses Semantic Versioning (`MAJOR.MINOR.PATCH`) to track progress, a
 
 **Whenever you complete a feature or patch that requires a version bump:**
 1. Update `APP_VERSION` in `app/index.html` (the UI reads it from there).
-2. Update the version label in the landing page (`index.html`).
+2. Run `node tools/refresh-landing.mjs` to carry it (and the new look) to the landing page (`index.html`).
 
 ## Branch naming
 

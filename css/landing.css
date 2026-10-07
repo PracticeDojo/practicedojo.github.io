@@ -320,7 +320,8 @@ button {
 }
 
 /* Ink ticks: two 3×16 bars for a deck's ink pair. P2's are striped, so a
-   mirror match still reads when colour alone can't. */
+   mirror match still reads when colour alone can't. The app keeps them on
+   the win-probability meters; everywhere else a deck is its deck icon. */
 .ticks {
     display: inline-block;
     flex: 0 0 auto;
@@ -341,6 +342,62 @@ button {
 
 .ticks.sm {
     height: 11px;
+}
+
+/* Deck icon (img/deck_icon.svg): a card in the deck's first ink with a
+   star cut out of it in the second. Two masks, so both inks come from
+   tokens: --di-a (card) and --di-b (star). A mono-ink deck fills both.
+   P2's card is hatched — the barber pole — so a mirror match still reads.
+   Size it with height; the width follows the card's 0.684 aspect. */
+:root {
+    --deck-icon-card: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 3393 4961'%3E%3Cpath transform='matrix(300.833978,0,0,300.833978,-628927.680203,-668522.017211)' d='M2090.614,2232.243L2090.614,2223.357C2090.614,2222.735 2091.119,2222.229 2091.741,2222.229L2094.709,2222.229C2094.68,2227.769 2092.86,2232.243 2090.623,2232.243L2090.614,2232.243ZM2097.78,2222.229L2100.762,2222.229C2101.384,2222.229 2101.889,2222.735 2101.889,2223.357L2101.889,2237.591C2101.889,2238.213 2101.384,2238.719 2100.762,2238.719L2097.166,2238.719C2098.174,2235.957 2099.91,2234.13 2101.882,2234.123L2101.882,2232.243L2101.866,2232.243C2099.629,2232.243 2097.81,2227.769 2097.78,2222.229ZM2095.33,2238.719L2091.741,2238.719C2091.119,2238.719 2090.614,2238.213 2090.614,2237.591L2090.614,2234.123C2092.586,2234.129 2094.322,2235.957 2095.33,2238.719Z'/%3E%3C/svg%3E");
+    --deck-icon-star: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 3393 4961'%3E%3Cpath transform='matrix(5.785071,0,0,5.785071,283.638917,191.904772)' d='M199.155,350.491C241.006,151.68 235.663,5.994 241.771,3.116C251.505,-1.47 246.476,7.481 249.025,37.224C271.674,301.528 281.264,506.929 463.988,532.906C465.191,533.077 510.547,539.524 474.207,544.146C253.295,572.238 254.91,783.269 246.196,788.666C242.992,790.651 239.777,789.023 231.613,743.864C212.427,637.733 117.149,557.177 31.199,545.902C29.242,545.645 -20.275,539.15 9.51,534.134C123.536,514.934 163.64,470.61 199.155,350.491Z'/%3E%3C/svg%3E");
+}
+
+.deck-icon {
+    --di-a: var(--text-dim);
+    --di-b: var(--di-a);
+    position: relative;
+    display: inline-block;
+    flex: none;
+    height: 16px;
+    aspect-ratio: 3393 / 4961;
+    vertical-align: -3px;
+}
+
+.deck-icon::before,
+.deck-icon::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--di-a);
+    -webkit-mask: var(--deck-icon-card) center / contain no-repeat;
+    mask: var(--deck-icon-card) center / contain no-repeat;
+}
+
+.deck-icon::after {
+    background: var(--di-b);
+    -webkit-mask-image: var(--deck-icon-star);
+    mask-image: var(--deck-icon-star);
+}
+
+.deck-icon.is-p1 {
+    --di-a: var(--p1);
+    --di-b: var(--p1-2);
+}
+
+.deck-icon.is-p2 {
+    --di-a: var(--p2);
+    --di-b: var(--p2-2);
+}
+
+.deck-icon.is-p2::before {
+    background: repeating-linear-gradient(135deg, var(--di-a) 0 1.5px, transparent 1.5px 3px);
+}
+
+.deck-icon.sm {
+    height: 12px;
+    vertical-align: -2px;
 }
 
 /* ===================================================================
@@ -1170,6 +1227,70 @@ button {
 }
 
 /* ===================================================================
+   ON YOUR PHONE — the board and the card drawer, day and night
+=================================================================== */
+.phone-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    gap: 48px;
+    align-items: center;
+}
+
+/* Two phones side by side on one paper module. The screens carry the
+   app's own chassis, so the frame is only a hairline and a radius. */
+.phones {
+    margin: 0;
+    padding: 24px;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 24px;
+}
+
+.phone-frame {
+    position: relative;
+    max-width: 340px;
+    justify-self: center;
+    width: 100%;
+    border-radius: 28px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    box-shadow: 0 18px 40px -26px oklch(0 0 0 / 0.55);
+}
+
+.phone-frame img {
+    display: block;
+    width: 100%;
+    height: auto;
+}
+
+.phone-frame .is-night,
+:root[data-theme="night"] .phone-frame .is-day {
+    display: none;
+}
+
+:root[data-theme="night"] .phone-frame .is-night {
+    display: block;
+}
+
+@media (max-width: 1000px) {
+    .phone-grid {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 32px;
+    }
+}
+
+@media (max-width: 560px) {
+    .phones {
+        padding: 12px;
+        gap: 12px;
+    }
+
+    .phone-frame {
+        border-radius: 18px;
+    }
+}
+
+/* ===================================================================
    IMPORT
 =================================================================== */
 .import-grid {
@@ -1253,6 +1374,7 @@ button {
 .g-chip {
     display: inline-flex;
     align-items: center;
+    gap: 6px;
     height: 24px;
     padding: 0 9px;
     border: 1px solid var(--fu-glass-line);
@@ -1265,6 +1387,10 @@ button {
 .g-chip.is-on {
     border-color: var(--fu-glass-2);
     color: var(--fu-light);
+}
+
+.g-chip i {
+    font-size: 10px;
 }
 
 /* The readout: what the Dojo understood, and the next step. */
@@ -1590,8 +1716,9 @@ button {
     stroke-width: 1.6;
 }
 
-/* Node: paper, 10px radius, 230 wide; ticks, title, subline, recap, then a
-   label · value grid of the turn's cards; a 2px bar at the foot. */
+/* Node: paper, 10px radius, 230 wide; the owner's deck icon, title,
+   subline, the note as glass, then the Played strip (or, in full, a
+   label · value grid of the turn's cards); a 2px bar at the foot. */
 .mv-node {
     position: absolute;
     width: 230px;
@@ -1608,24 +1735,11 @@ button {
     transition: transform var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
 }
 
-.mv-node::before {
-    content: '';
+.mv-node > .deck-icon {
     position: absolute;
-    left: 9px;
-    top: 11px;
-    width: 8px;
-    height: 14px;
+    left: 8px;
+    top: 10px;
     z-index: 2;
-}
-
-.mv-node.tn-p1::before {
-    background: var(--tick-p1);
-}
-
-.mv-node.tn-p2::before {
-    background: var(--tick-p2);
-    -webkit-mask-image: var(--tick-mask);
-    mask-image: var(--tick-mask);
 }
 
 .mv-node::after {
@@ -1676,7 +1790,7 @@ button {
     display: flex;
     align-items: center;
     gap: 5px;
-    padding-right: 50px;
+    padding-right: 28px;
     font-size: 12px;
     font-weight: 620;
     letter-spacing: -0.01em;
@@ -1708,16 +1822,53 @@ button {
     flex-shrink: 0;
 }
 
+/* The note: glass raised with a hairline, so it sits on the paper card
+   instead of reading as a hole through to the canvas. */
+.mv-note {
+    flex: 1 1 0;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    margin-top: 7px;
+    padding: 6px 8px 7px;
+    border: 1px solid var(--fu-glass-line);
+    border-radius: var(--r-control);
+    background: var(--fu-glass-raised);
+    transition: border-color var(--dur) var(--ease);
+}
+
+.is-interactive .mv-node:hover .mv-note {
+    border-color: var(--fu-glass-2);
+}
+
+.mv-note-head,
+.side-note-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+    margin-bottom: 4px;
+    font-family: var(--font-mono);
+    font-size: 9px;
+    line-height: 1.2;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--fu-glass-mute);
+}
+
+.mv-note-head i {
+    font-size: 9px;
+}
+
 .mv-comment {
     flex: 1 1 0;
     min-height: 0;
-    margin-top: 5px;
     padding-right: 4px;
     overflow: hidden;
     overflow-wrap: break-word;
     font-size: 10.5px;
     line-height: 1.4;
-    color: var(--fu-body);
+    color: var(--fu-light);
 }
 
 .mv-comment p {
@@ -1725,7 +1876,7 @@ button {
 }
 
 .mv-comment strong {
-    color: var(--fu-ink);
+    color: var(--fu-light);
     font-weight: 620;
 }
 
@@ -1753,10 +1904,6 @@ button {
     color: var(--fu-body);
     font-size: 9px;
     z-index: 3;
-}
-
-.mv-ibtn.e {
-    right: 32px;
 }
 
 .mv-ibtn.d {
@@ -1961,8 +2108,16 @@ button {
     }
 }
 
-.side-name {
+.side-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
     margin-top: 6px;
+}
+
+.side-name {
+    min-width: 0;
+    overflow-wrap: anywhere;
     font-size: 18px;
     font-weight: 560;
     line-height: 1.2;
@@ -2066,40 +2221,105 @@ button {
 }
 
 .side-note {
-    padding: 7px 9px;
+    padding: 8px 10px 9px;
+    border: 1px solid var(--fu-glass-line);
     border-radius: var(--r-control);
     background: var(--fu-glass);
     color: var(--fu-light);
     font-size: 12px;
+    line-height: 1.45;
+    overflow-wrap: anywhere;
 }
 
-.side-note .label {
+.side-note.is-empty {
+    border-style: dashed;
+    border-color: var(--fu-edge);
+}
+
+.side-note.is-empty .side-note-body {
     color: var(--fu-glass-mute);
-    margin-bottom: 3px;
 }
 
-:root[data-theme="night"] .side-note {
-    box-shadow: inset 0 0 0 1px var(--fu-line);
-}
-
-.side-recap {
-    font-size: 12.5px;
-    line-height: 1.5;
-    color: var(--text-2);
-}
-
-.side-recap p {
+.side-note-body p {
     margin: 0 0 4px;
 }
 
-.side-recap strong {
-    color: var(--text);
-    font-weight: 560;
+.side-note-body p:last-child {
+    margin-bottom: 0;
 }
 
-.side-recap ul {
+.side-note-body strong {
+    font-weight: 620;
+}
+
+.side-note-body ul {
     margin: 0;
     padding-left: 16px;
+}
+
+/* "Turn recap" with the "Show in nodes" switch: a setting, so it is ink
+   when on, never the signal. */
+.side-recap-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 6px;
+}
+
+.side-switch-row {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 2px 0;
+    border: 0;
+    background: transparent;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    cursor: pointer;
+}
+
+.side-switch-row:hover {
+    color: var(--text);
+}
+
+.side-switch {
+    position: relative;
+    width: 26px;
+    height: 14px;
+    border-radius: 999px;
+    background: var(--border-soft);
+    transition: background var(--dur) var(--ease);
+}
+
+.side-switch::after {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--text);
+    transition: left var(--dur) var(--ease);
+}
+
+.side-switch.is-on {
+    background: var(--text);
+}
+
+.side-switch.is-on::after {
+    left: 14px;
+    background: var(--surface);
+}
+
+.side-empty {
+    margin: 0;
+    font-size: 11.5px;
+    color: var(--text-dim);
 }
 
 .side-secs {
@@ -2133,7 +2353,6 @@ button {
 }
 
 .side-open {
-    margin-top: auto;
     display: grid;
     gap: 6px;
     justify-items: start;
@@ -2236,7 +2455,7 @@ button {
 
 .seat {
     display: grid;
-    grid-template-columns: 74px 8px minmax(0, 1fr) auto;
+    grid-template-columns: 74px 11px minmax(0, 1fr) auto;
     align-items: center;
     gap: 10px;
     height: 40px;
@@ -2275,13 +2494,6 @@ button {
     border-radius: 999px;
     font-size: 12px;
     color: var(--text);
-}
-
-.pip {
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    display: inline-block;
 }
 
 .table-mock .go {

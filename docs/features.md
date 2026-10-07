@@ -700,6 +700,17 @@ Implements version 2 of `docs/DESIGN-field-unit.md` (Kiln dark mode, signal fami
 - **Signal family.** By day the signal is Ember `#E4572E`; on Kiln it is Radio `#E86B2A` with dark text on the key. Tweaks → Accent offers only the approved swaps: **Signal** (the theme's own), **Coral**, **Olive** (its lore numeral lifts to `#C6C45A` on the well) and **Trace**. Each carries the text colour that sits on it. The old Amber / Rose / Emerald / Violet / Azure accents were ink colours, so a saved pick of one falls back to Signal.
 - **CSS file.** The Field Unit tokens, themes, palettes and component styles moved from the inline `<style>` to `app/css/field-unit.css`, loaded right after it (pixel-identical move). The older inline rules stay put.
 
+## Landing page: up to date with v3.4 (v3.4.3)
+
+### Details
+The public page (`index.html`) caught up with the app's releases since v3.0.0. The app is unchanged, so there is no version bump (as for *Landing page: Field Unit*).
+- **One command keeps it current.** `node tools/refresh-landing.mjs` copies `APP_VERSION` into every `data-app-version` element of `index.html`, rebuilds `js/landing-multiverse-data.js` from the Set 13 demo (`tools/landing-data.mjs`, which used to be a by-hand step), and retakes the app screenshots with the dojo-screenshots skill (`tools/landing-shots.mjs`). `--no-shots` skips the browser; `--check` exits 1 when the version or the data is stale. `AGENTS.md` asks for it after any visible change to the app.
+- **Board screenshot retaken.** The v3.4.3 board, day and night: the grouped top bar, deck icons, the deck card in the ink row, lore and notes as tall as the hand. Pin 05 moved onto Challenge.
+- **New section 02 · On your phone.** The phone board and the card drawer (Dumbo tapped), day and night, with four pinned notes: the drawer of keys, the hand under the board, lore, ink and deck in one row, and Quest and End turn in the hand tray. Later sections are renumbered 03–06, and the nav gets *Phone*.
+- **Multiverse explorer in the v3.4 look.** Nodes carry the owner's deck icon and show their comment as a glass note (the auto-save's stock line is hidden), with only the delete button. The side panel follows the app's: *Selected* with the deck icon and name, the note as glass (*Turn 16 note · Player 2*), the lore race with deck icons, and *Turn recap* with a **Show in nodes** switch that flips compact and full nodes, in step with the header tool. The line-so-far and branch chips stay, to walk the tree. The header uses the branch icon in signal and the app's hint.
+- **Deck icons where the app has them.** The hero's lore labels, the canvas legend, the imported turns, the "On the table" seats and deck chips, and the board mock. Ink ticks stay on the win-probability meter, as in the app.
+- **Copy.** The intake chips have the app's icons; the feature list's library row now describes the shelves.
+
 ## Patch: Notes are glass in the Multiverse (v3.4.3)
 
 ### Details
@@ -910,3 +921,4 @@ The public page (`index.html`) follows Field Unit too, as `docs/DESIGN-field-uni
 - [x] Feature 51: Multiverse panel — Timelines merged into the Multiverse
 - [x] Patch: Turn recap text back in the Multiverse
 - [x] Patch: Notes are glass in the Multiverse
+- [x] Landing page: up to date with v3.4
