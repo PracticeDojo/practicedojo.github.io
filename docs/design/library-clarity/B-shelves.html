@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Library · B · Shelves</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="../../../app/css/base.css">
+<link rel="stylesheet" href="../../../app/css/field-unit.css">
+<link rel="stylesheet" href="_shared.css">
+<style>
+  /* B · SHELVES. The lists are sorted by where things live, not only by
+     what they are. Each place is a shelf: a coloured spine down its left
+     side (two bars when it's in both places, like a player's ink pair), a
+     name, a count, one plain sentence, and at most one shelf-wide action.
+     Rows on a shelf don't repeat the place; only an out-of-step row says so. */
+  .shelf { position: relative; display: flex; flex-direction: column; gap: 8px; padding-left: 16px; }
+  .shelf + .shelf { margin-top: 10px; }
+  .shelf::before, .shelf::after { content: ''; position: absolute; top: 2px; bottom: 0; width: 3px; border-radius: 2px; }
+  .shelf::before { left: 0; background: var(--spine-1); }
+  .shelf.is-both::after { left: 5px; background: var(--spine-2); }
+  .shelf.is-both { padding-left: 21px; }
+  .shelf.is-device { --spine-1: var(--pl-device); --hd: var(--pl-device-text); }
+  .shelf.is-account { --spine-1: var(--pl-account); --hd: var(--pl-account-text); }
+  .shelf.is-both { --spine-1: var(--pl-device); --spine-2: var(--pl-account); --hd: var(--text); }
+  .shelf.is-builtin { --spine-1: var(--border-strong); --hd: var(--text-2); }
+  .shelf.is-link { --spine-1: var(--pl-link); --hd: var(--pl-link-text); }
+  .shelf.is-ghost::before { background: none; border-left: 3px dashed var(--pl-account); width: 0; border-radius: 0; }
+
+  .shelf-hd { display: flex; align-items: center; gap: 10px; min-height: 30px; }
+  .shelf-name { font: 500 10.5px/1.3 var(--font-mono); letter-spacing: var(--label-track); text-transform: uppercase; color: var(--hd); }
+  .shelf-name .and { color: var(--text-dim); }
+  .shelf-count { font: 11px var(--font-mono); color: var(--text-dim); font-variant-numeric: tabular-nums; }
+  .shelf-hd .btn { margin-left: auto; }
+  .shelf-say { margin: -4px 0 2px; font-size: 12.5px; line-height: 1.45; color: var(--text-2); max-width: 60ch; }
+  .shelf-say b { color: var(--text); font-weight: 560; }
+  .shelf-sub { font: 500 10px/1.3 var(--font-mono); letter-spacing: var(--label-track); text-transform: uppercase; color: var(--text-dim); margin-top: 4px; }
+
+  .ghost-box { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; padding: 12px; border: 1px dashed var(--border-strong); border-radius: var(--radius-sm); }
+  .ghost-box p { flex: 1 1 220px; margin: 0; font-size: 12.5px; color: var(--text-2); }
+
+  /* An out-of-step row on the account shelf */
+  .row-note { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 560; color: var(--pl-account-text); }
+
+  /* Pick up again: the same spines on each row, and the shelves summed up */
+  .rec { position: relative; padding-left: 20px; }
+  .rec::before, .rec::after { content: ''; position: absolute; left: 8px; top: 12px; bottom: 12px; width: 3px; border-radius: 2px; background: var(--pl-device); }
+  .rec.is-both::after { left: 13px; background: var(--pl-account); }
+  .rec.is-both { padding-left: 25px; }
+  .rec-sum { display: flex; flex-wrap: wrap; gap: 4px 14px; align-items: center; margin-top: 8px; padding-top: 10px; border-top: 1px solid var(--border-soft); font: 11px var(--font-mono); color: var(--text-dim); }
+  .rec-sum .bars { display: inline-flex; gap: 2px; margin-right: 6px; vertical-align: -2px; }
+  .rec-sum .bars i { display: inline-block; width: 3px; height: 12px; border-radius: 2px; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script src="_home.js"></script>
+<script src="_data.js"></script>
+<script>
+  function shelf(kind, name, count, say, rows, action = '') {
+    return `<section class="shelf is-${kind}">
+      <header class="shelf-hd"><span class="shelf-name">${name}</span>${count != null ? `<span class="shelf-count">${count}</span>` : ''}${action}</header>
+      ${say ? `<p class="shelf-say">${say}</p>` : ''}
+      ${rows}
+    </section>`;
+  }
+
+  function sessionRow(s) {
+    const note = s.place === 'ahead' ? `<div class="row-note"><i class="fa-solid fa-arrow-up"></i> Changed here since your last Save</div>`
+      : s.place === 'behind' ? `<div class="row-note"><i class="fa-solid fa-arrow-down"></i> Your account has a newer copy</div>` : '';
+    return `<div class="lib-row row2">
+      <div class="row-top"><div class="lib-title">${esc(s.title)}</div>
+        <div class="lib-actions">${s.place === 'ahead' || s.place === 'behind' ? placeAction(s.place) : ''}<button class="btn row-open">${s.place === 'account' ? 'Download & open' : 'Open'}</button>${moreMenu('session', s.id)}</div></div>
+      ${note}
+      <div class="lib-meta">${sessionMeta(s)}</div>
+    </div>`;
+  }
+  function deckRow(d, builtin) {
+    return `<div class="lib-row row2">
+      <div class="row-top"><div class="lib-title">${esc(d.name)}</div>
+        <div class="lib-actions"><button class="btn btn-ghost">You</button><button class="btn btn-ghost">Opponent</button>${moreMenu(builtin ? 'builtin' : 'deck', d.id)}</div></div>
+      <div class="lib-meta">${deckMeta(d)}</div>
+    </div>`;
+  }
+  function linkRow(l) {
+    return `<div class="lib-row row2">
+      <div class="row-top"><div class="lib-title">${esc(l.title)}</div>
+        <div class="lib-actions"><button class="btn">Copy link</button>${moreMenu('link', l.id)}</div></div>
+      <div class="lib-meta">${[l.kind, l.ago, l.size, `practicedojo.github.io/app/?s=${l.id}`].filter(Boolean).join(SEP)}</div>
+    </div>`;
+  }
+  const list = (rows) => `<div class="lib-list">${rows.join('')}</div>`;
+  const signInGhost = (what) => `<section class="shelf is-account is-ghost">
+      <header class="shelf-hd"><span class="shelf-name">Your account</span><span class="shelf-count">optional</span></header>
+      <div class="ghost-box"><p>Sign in to keep ${what} in an account too, so they're on every device you use. Nothing else changes.</p>
+        <button class="btn place-act sign-in"><i class="fa-brands fa-discord"></i> Continue with Discord</button></div>
+    </section>`;
+
+  function sessionsPanel() {
+    const tools = `<div class="lib-toolbar" style="justify-content:flex-end"><button class="btn btn-ghost"><i class="fa-solid fa-file-import"></i> Import file</button></div>`;
+    if (!SIGNED) {
+      return tools + shelf('device', 'On this device', SESSIONS.length,
+        '<b>Kept in this browser, and only here.</b> Every match saves itself as you play. Clearing site data or switching browser loses them, so Export a file to keep a backup.',
+        list(SESSIONS.map(sessionRow))) + signInGhost('your sessions and decks');
+    }
+    const both = SESSIONS.filter(s => ['synced', 'ahead', 'behind'].includes(s.place));
+    const here = SESSIONS.filter(s => s.place === 'device');
+    const there = SESSIONS.filter(s => s.place === 'account');
+    return tools +
+      shelf('both', 'In your account <span class="and">+ this device</span>', both.length,
+        `Safe in ${USER.name}'s account. Save sends this device's changes there.`, list(both.map(sessionRow))) +
+      shelf('device', 'Only on this device', here.length,
+        '<b>Not in your account yet.</b> Clearing this browser\'s data would delete them.', list(here.map(sessionRow)),
+        `<button class="btn place-act to-account"><i class="fa-solid fa-arrow-up"></i> Save ${here.length} to account</button>`) +
+      shelf('account', 'Only in your account', there.length,
+        'Saved from another device. Open downloads a copy here.', list(there.map(sessionRow)));
+  }
+
+  function decksPanel() {
+    const tools = `<div class="lib-toolbar"><button class="btn btn-ghost"><i class="fa-solid fa-plus"></i> New deck</button><button class="btn btn-ghost"><i class="fa-solid fa-file-lines"></i> Import .txt</button><button class="btn btn-ghost"><i class="fa-solid fa-film"></i> From a replay</button></div>`;
+    const builtin = shelf('builtin', 'Built in', BUILTIN.reduce((n, g) => n + g.decks.length, 0),
+      'Comes with the Dojo, the same for everyone. Seat one, or copy it to make your own.',
+      BUILTIN.map(g => `<div class="shelf-sub">${g.title}</div>${list(g.decks.map(d => deckRow(d, true)))}`).join(''));
+    if (!SIGNED) {
+      return tools + shelf('device', 'On this device', DECKS.length, '<b>Kept in this browser, and only here.</b>', list(DECKS.map(d => deckRow(d)))) + signInGhost('your decks') + builtin;
+    }
+    const both = DECKS.filter(d => d.place === 'synced'), here = DECKS.filter(d => d.place === 'device');
+    return tools +
+      shelf('both', 'In your account <span class="and">+ this device</span>', both.length,
+        'Decks follow your account by themselves: save one here and it\'s on your other devices too.', list(both.map(d => deckRow(d)))) +
+      shelf('device', 'Only on this device', here.length, 'Made before you signed in.', list(here.map(d => deckRow(d))),
+        `<button class="btn place-act to-account"><i class="fa-solid fa-arrow-up"></i> Save to account</button>`) +
+      builtin;
+  }
+
+  function linksPanel() {
+    return shelf('link', 'Public links', LINKS.length,
+      '<b>Anyone with one of these links can open it.</b> Each is a snapshot: later changes aren\'t in it. Made from this browser. Deleting a link stops it opening for everyone.',
+      list(LINKS.map(linkRow)));
+  }
+
+  function drawer() {
+    const counts = { sessions: SESSIONS.length, decks: DECKS.length + BUILTIN.reduce((n, g) => n + g.decks.length, 0), links: LINKS.length };
+    const panel = STATE.tab === 'sessions' ? sessionsPanel() : STATE.tab === 'decks' ? decksPanel() : linksPanel();
+    return `<div class="lib-hd"><h2>Library</h2><button class="icon-btn ghost" aria-label="Close library">&times;</button></div>
+      ${tabs(counts)}<section class="lib-panel">${panel}</section>`;
+  }
+
+  function recent() {
+    const rows = SESSIONS.filter(s => s.place !== 'account').slice(0, 4);
+    const both = SESSIONS.filter(s => has(s.place, 'account') && s.place !== 'account').length;
+    const here = SESSIONS.filter(s => s.place === 'device').length;
+    const there = SESSIONS.filter(s => s.place === 'account').length;
+    const bars = (...c) => `<span class="bars">${c.map(v => `<i style="background:var(${v})"></i>`).join('')}</span>`;
+    const sum = SIGNED
+      ? `<div class="rec-sum"><span>${bars('--pl-device', '--pl-account')}${both} in your account</span><span>${bars('--pl-device')}${here} only on this device</span>${there ? `<span>${bars('--pl-account')}${there} only in your account</span>` : ''}</div>`
+      : `<div class="rec-sum"><span>${bars('--pl-device')}All on this device only</span><button class="link-btn">Sign in to keep them in an account</button></div>`;
+    return rows.map(s => `<button class="rec${s.last ? ' is-continue' : ''}${SIGNED && has(s.place, 'account') ? ' is-both' : ''}">
+        <span class="rec-main"><span class="rec-title">${esc(s.title)}</span>
+          <span class="rec-meta">${sessionMeta(s)}</span></span>
+        <span class="rec-go">${s.last ? 'Resume' : 'Open'} <i class="fa-solid fa-arrow-right"></i></span>
+      </button>`).join('') + sum;
+  }
+
+  mount({ name: 'B · Shelves', drawer, recent, recentTitle: 'Pick up again <button class="link-btn">All sessions</button>' });
+</script>
+</body>
+</html>

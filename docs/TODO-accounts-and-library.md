@@ -109,4 +109,6 @@ App:
 ## Parked (outside the ARCH plan)
 
 - [x] Duels.ink's newer "You / Opponent" log format (`docs/IMP-newLog.md`). *Done in v2.22.0 (Feature 41); checked against the replay of the same game*
+- [ ] Library clarity: make *this device* vs *your account* readable at a glance. Three prototypes in [`docs/design/library-clarity/`](design/library-clarity/README.md) (A · Lamps, B · Shelves, C · Places map); waiting on a pick
+- [ ] Bug: the Library tabs shrink to 1px once the list is taller than the drawer (about 9 sessions on a phone). `.home-tabs` scrolls sideways, so it gives way as a flex child; `flex-shrink: 0` on the drawer's children fixes it. *Reproduced in Chromium, 2026-10-07*
 - Deliberately not doing until a trigger fires: captcha, share expiry, backend-free deck links, slimmer session format, public gallery, background sync, profiles. See §13

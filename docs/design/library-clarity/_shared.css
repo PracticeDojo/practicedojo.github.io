@@ -1,0 +1,239 @@
+/* Library clarity proposals: shared layer on top of the app's own CSS
+   (app/css/base.css + field-unit.css are linked first, so every page here
+   uses the real Field Unit tokens, fonts and components).
+
+   PLACE COLOURS. Where a deck or session lives gets one colour each, taken
+   from the signal family's swaps (DESIGN-field-unit.md, "Signal family" and
+   "Function keys"), never from an ink colour:
+     Trace  #2F9E96  This device  (the instrument in your hand)
+     Olive  #8C8A2E  Your account (the keys that bank a resource)
+     Coral  #ED3F1C  Public links (anyone with the link)
+     Bone            Built in     (neutral key: ships with the Dojo)
+   The theme's signal (Ember / Radio) keeps its one job: the live thing.
+   -text variants are for coloured words; they keep WCAG AA on paper. */
+:root {
+    --pl-device: #2F9E96;
+    --pl-device-ink: #041413;
+    --pl-device-text: #1E716B;
+    --pl-account: #8C8A2E;
+    --pl-account-ink: #141311;
+    --pl-account-text: #66641E;
+    --pl-link: #ED3F1C;
+    --pl-link-ink: #FFF8F4;
+    --pl-link-text: #C23315;
+    --pl-builtin: #E7E2D8;
+    --pl-builtin-ink: #161513;
+    --pl-builtin-text: var(--text-2);
+    --pl-off: var(--border-strong);
+}
+
+:root[data-theme="night"] {
+    --pl-device-text: #3DB2A9;
+    --pl-account: #9C9A34;
+    --pl-account-text: #C6C45A;
+    --pl-link-text: #F26446;
+    --pl-builtin: #312D28;
+    --pl-builtin-ink: #F4F0E8;
+}
+
+/* The page is a still of the app: no scrolling chrome, no transitions. */
+body {
+    overflow: hidden;
+}
+
+.lib-drawer {
+    animation: none;
+}
+
+/* Fix for a bug in today's drawer: .home-tabs scrolls sideways, so as a
+   flex child it shrinks to 1px once the list is taller than the drawer
+   (9+ sessions on a phone). Nothing in the drawer's column should shrink. */
+.lib-drawer > * {
+    flex-shrink: 0;
+}
+
+/* Two-line rows: title and actions on top, then place and details full
+   width, so the status never wraps beside a column of buttons. */
+.lib-row.row2 {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
+}
+
+.row2 .row-top {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-height: 32px;
+}
+
+.row2 .row-top .lib-title {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+/* Review bar (hidden in screenshots with ?shot) */
+.review {
+    position: fixed;
+    left: 12px;
+    bottom: 12px;
+    z-index: 200;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 10px;
+    align-items: center;
+    max-width: calc(100vw - 600px);
+    padding: 8px 12px;
+    border-radius: 10px;
+    background: var(--fu-glass);
+    color: var(--fu-light);
+    font: 11px/1.3 var(--font-mono);
+}
+
+.review b {
+    color: var(--accent);
+    letter-spacing: var(--label-track);
+    text-transform: uppercase;
+    font-weight: 500;
+}
+
+.review a {
+    color: var(--fu-glass-2);
+    text-decoration: none;
+}
+
+.review a[aria-current] {
+    color: var(--fu-light);
+    text-decoration: underline;
+}
+
+.is-shot .review {
+    display: none;
+}
+
+/* Row actions shared by all three: Open is a paper tool (the signal stays
+   for the live match), the place action is a word, the rest sit behind ⋯ */
+.lib-actions .btn {
+    white-space: nowrap;
+}
+
+.lib-row .row-open.is-live {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--accent-ink);
+}
+
+.place-act {
+    border-width: 1.5px;
+    font-weight: 560;
+}
+
+.place-act.to-account,
+.place-act.from-account {
+    border-color: var(--pl-account);
+    color: var(--pl-account-text);
+    background: transparent;
+}
+
+.place-act.to-account:hover,
+.place-act.from-account:hover {
+    background: color-mix(in oklch, var(--pl-account) 12%, transparent);
+}
+
+.place-act.sign-in {
+    border-color: var(--pl-account);
+    background: var(--pl-account);
+    color: var(--pl-account-ink);
+}
+
+.row-more {
+    position: relative;
+}
+
+.more-menu {
+    position: absolute;
+    right: 0;
+    top: calc(100% + 4px);
+    z-index: 5;
+    min-width: 188px;
+    padding: 4px;
+    border-radius: var(--radius-sm);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-3);
+    display: flex;
+    flex-direction: column;
+}
+
+.more-menu button {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    padding: 7px 10px;
+    border: 0;
+    border-radius: 6px;
+    background: none;
+    color: var(--text);
+    font: 13px var(--font-sans);
+    text-align: left;
+    cursor: pointer;
+}
+
+.more-menu button i {
+    width: 14px;
+    color: var(--text-dim);
+}
+
+.more-menu button:hover {
+    background: var(--surface-2);
+}
+
+.more-menu .is-danger {
+    color: var(--danger);
+}
+
+.more-menu .is-danger i {
+    color: var(--danger);
+}
+
+.more-menu hr {
+    border: 0;
+    border-top: 1px solid var(--border-soft);
+    margin: 4px 2px;
+}
+
+/* The tabs carry a count */
+.home-tab .ht-count {
+    margin-left: 2px;
+}
+
+@media (max-width: 760px) {
+
+    /* Phone rows: title, then place and details, then the actions at the
+       foot of the card (base.css already makes them full width here). */
+    .row2 .row-top {
+        display: contents;
+    }
+
+    .row2 > *,
+    .row2 .row-top > * {
+        order: 1;
+    }
+
+    .row2 .row-top .lib-title {
+        order: 0;
+        white-space: normal;
+    }
+
+    .row2 .row-top .lib-actions {
+        order: 2;
+        margin-top: 2px;
+    }
+
+    .review {
+        max-width: none;
+        right: 12px;
+        bottom: auto;
+        top: auto;
+    }
+}

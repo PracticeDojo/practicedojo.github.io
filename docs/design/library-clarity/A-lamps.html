@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Library · A · Lamps</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="../../../app/css/base.css">
+<link rel="stylesheet" href="../../../app/css/field-unit.css">
+<link rel="stylesheet" href="_shared.css">
+<style>
+  /* A · LAMPS. Nothing moves: the drawer keeps its tabs and lists. Every row
+     gets a status panel of labelled lamps, the way a device shows what's
+     plugged in. Lit = a copy is there. Hollow = there, but out of date.
+     Dashed = not there. A key under the tabs says what the lamps mean. */
+  .lamps { display: inline-flex; gap: 3px; flex: 0 0 auto; }
+  .lamp {
+    display: inline-flex; align-items: center; height: 18px; padding: 0 7px; border-radius: 5px;
+    font: 500 9.5px/1 var(--font-mono); letter-spacing: 0.12em; text-transform: uppercase;
+    border: 1px dashed var(--pl-off); color: var(--text-faint); background: transparent; white-space: nowrap;
+  }
+  .lamp.on.is-device { background: var(--pl-device); border: 1px solid var(--pl-device); color: var(--pl-device-ink); }
+  .lamp.on.is-account { background: var(--pl-account); border: 1px solid var(--pl-account); color: var(--pl-account-ink); }
+  .lamp.stale.is-device { border: 1.5px solid var(--pl-device); color: var(--pl-device-text); }
+  .lamp.stale.is-account { border: 1.5px solid var(--pl-account); color: var(--pl-account-text); }
+  .lamp.on.is-builtin { background: var(--pl-builtin); border: 1px solid var(--border); color: var(--pl-builtin-ink); }
+  .lamp.on.is-link { background: var(--pl-link); border: 1px solid var(--pl-link); color: var(--pl-link-ink); }
+
+  .a-status { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .a-say { font-size: 12px; color: var(--text-2); }
+  .a-say.is-act { color: var(--text); font-weight: 560; }
+
+  /* The key: what the lamps mean, on the chassis (not a paper module) */
+  .a-key { display: grid; grid-template-columns: auto 1fr; gap: 7px 10px; align-items: center; padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); }
+  .a-key .k-say { font-size: 12px; color: var(--text-2); }
+  .a-key > .lamp { justify-self: start; }
+  .a-key .k-say b { color: var(--text); font-weight: 560; }
+  .a-key .k-row { display: contents; }
+  .a-key-ft { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; grid-column: 1 / -1; padding-top: 7px; margin-top: 2px; border-top: 1px solid var(--border-soft); }
+  .a-key-ft .k-say { flex: 1 1 200px; }
+  .lib-toolbar { justify-content: space-between; }
+
+  /* Pick up again: the same lamps, so home and Library speak one language */
+  .rec .rec-main { gap: 5px; }
+  .rec .lamps { margin-right: 2px; }
+  .rec-place { display: flex; gap: 8px; align-items: center; }
+  .rec-place .a-say { font-size: 11.5px; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script src="_home.js"></script>
+<script src="_data.js"></script>
+<script>
+  const LAMP = {
+    device: ['on', 'off'], synced: ['on', 'on'], ahead: ['on', 'stale'], behind: ['stale', 'on'], account: ['off', 'on']
+  };
+  function lamps(p) {
+    if (p === 'builtin') return `<span class="lamps"><span class="lamp on is-builtin">Built in</span></span>`;
+    if (p === 'link') return `<span class="lamps"><span class="lamp on is-link">Public link</span></span>`;
+    const [d, a] = LAMP[p];
+    return `<span class="lamps"><span class="lamp is-device ${d}">Device</span>${SIGNED ? `<span class="lamp is-account ${a}">Account</span>` : ''}</span>`;
+  }
+  const status = (p, say) => `<div class="a-status">${lamps(p)}<span class="a-say${p === 'ahead' || p === 'behind' ? ' is-act' : ''}">${say}</span></div>`;
+
+  function key(kind = 'sessions') {
+    const what = kind === 'decks'
+      ? ['<b>On this device.</b> Decks you make or import are kept here.', '<b>In your account,</b> on every device you sign in on. Decks you save go there by themselves.']
+      : ['<b>On this device.</b> Every match saves here as you play.', '<b>In your account,</b> on every device you sign in on. Press Save to put a session there.'];
+    if (!SIGNED) return `<div class="a-key">
+      <span class="lamp on is-device">Device</span><span class="k-say"><b>On this device.</b> Kept in this browser, and only here. Clearing its site data deletes ${kind === 'decks' ? 'your decks' : 'these sessions'}.</span>
+      <div class="a-key-ft"><span class="k-say">Sign in to keep a copy in your account too, on every device. Optional.</span>
+        <button class="btn place-act sign-in"><i class="fa-brands fa-discord"></i> Sign in</button></div>
+    </div>`;
+    return `<div class="a-key">
+      <span class="lamp on is-device">Device</span><span class="k-say">${what[0]}</span>
+      <span class="lamp on is-account">Account</span><span class="k-say">${what[1]}</span>
+      <span class="lamp stale is-account">Account</span><span class="k-say"><b>Hollow:</b> that copy is out of date. The row says which way to fix it.</span>
+    </div>`;
+  }
+
+  function sessionRow(s) {
+    return `<div class="lib-row row2">
+      <div class="row-top"><div class="lib-title">${esc(s.title)}</div>
+        <div class="lib-actions">${placeAction(s.place)}<button class="btn row-open">${s.place === 'account' ? 'Download & open' : 'Open'}</button>${moreMenu('session', s.id)}</div></div>
+      ${status(s.place, SAY[s.place])}
+      <div class="lib-meta">${sessionMeta(s)}</div>
+    </div>`;
+  }
+  function deckRow(d, builtin) {
+    const p = builtin ? 'builtin' : d.place;
+    const say = builtin ? 'Comes with the Dojo. Copy it to edit.' : p === 'synced' ? 'On this device and in your account' : SAY.device;
+    return `<div class="lib-row row2">
+      <div class="row-top"><div class="lib-title">${esc(d.name)}</div>
+        <div class="lib-actions">${builtin ? '' : placeAction(p)}<button class="btn btn-ghost">You</button><button class="btn btn-ghost">Opponent</button>${moreMenu(builtin ? 'builtin' : 'deck', d.id)}</div></div>
+      ${status(p, say)}
+      <div class="lib-meta">${deckMeta(d)}</div>
+    </div>`;
+  }
+  function linkRow(l) {
+    return `<div class="lib-row row2">
+      <div class="row-top"><div class="lib-title">${esc(l.title)}</div>
+        <div class="lib-actions"><button class="btn">Copy link</button>${moreMenu('link', l.id)}</div></div>
+      ${status('link', `${l.kind} · anyone with the link can open this snapshot`)}
+      <div class="lib-meta">${[l.ago, l.size, `practicedojo.github.io/app/?s=${l.id}`].filter(Boolean).join(SEP)}</div>
+    </div>`;
+  }
+
+  function drawer() {
+    const counts = { sessions: SESSIONS.length, decks: DECKS.length + BUILTIN.reduce((n, g) => n + g.decks.length, 0), links: LINKS.length };
+    let panel = '';
+    if (STATE.tab === 'sessions') {
+      panel = `<div class="lib-toolbar" style="justify-content:flex-end"><button class="btn btn-ghost"><i class="fa-solid fa-file-import"></i> Import file</button></div>
+        ${key()}
+        <div class="lib-list">${SESSIONS.map(sessionRow).join('')}</div>`;
+    } else if (STATE.tab === 'decks') {
+      panel = `<div class="lib-toolbar" style="justify-content:flex-start"><button class="btn btn-ghost"><i class="fa-solid fa-plus"></i> New deck</button><button class="btn btn-ghost"><i class="fa-solid fa-file-lines"></i> Import .txt</button><button class="btn btn-ghost"><i class="fa-solid fa-film"></i> From a replay</button></div>
+        ${key('decks')}
+        <div class="lib-group-title">My decks</div><div class="lib-list">${DECKS.map(d => deckRow(d)).join('')}</div>
+        ${BUILTIN.map(g => `<div class="lib-group-title">Built in · ${g.title}</div><div class="lib-list">${g.decks.map(d => deckRow(d, true)).join('')}</div>`).join('')}`;
+    } else {
+      panel = `<div class="a-key"><span class="lamp on is-link">Public link</span><span class="k-say"><b>A snapshot anyone with the link can open,</b> made from this browser. Later changes aren't in it. Deleting a link stops it opening for everyone.</span></div>
+        <div class="lib-list">${LINKS.map(linkRow).join('')}</div>`;
+    }
+    return `<div class="lib-hd"><h2>Library</h2><button class="icon-btn ghost" aria-label="Close library">&times;</button></div>
+      ${tabs(counts)}<section class="lib-panel">${panel}</section>`;
+  }
+
+  function recent() {
+    const rows = SESSIONS.filter(s => s.place !== 'account').slice(0, 4);
+    return rows.map(s => `<button class="rec${s.last ? ' is-continue' : ''}">
+        <span class="rec-main"><span class="rec-title">${esc(s.title)}</span>
+          <span class="rec-place">${lamps(s.place)}<span class="a-say">${SAY[s.place]}</span></span>
+          <span class="rec-meta">${sessionMeta(s)}</span></span>
+        <span class="rec-go">${s.last ? 'Resume' : 'Open'} <i class="fa-solid fa-arrow-right"></i></span>
+      </button>`).join('');
+  }
+
+  mount({ name: 'A · Lamps', drawer, recent, recentTitle: 'Pick up again <button class="link-btn">All sessions</button>' });
+</script>
+</body>
+</html>

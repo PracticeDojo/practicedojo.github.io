@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Library · C · Places map</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="../../../app/css/base.css">
+<link rel="stylesheet" href="../../../app/css/field-unit.css">
+<link rel="stylesheet" href="_shared.css">
+<style>
+  /* C · PLACES MAP. The drawer opens on a small map of where things live,
+     drawn like the multiverse: paper nodes on the glass well, hairline
+     edges, a 2px bar under each node in its place colour. The edge between
+     This device and Your account carries the rules (Save ▶, ◀ Get, decks go
+     by themselves). Every place is a filter for the list below, and the
+     readout under the map counts what's out of step. Rows keep a thin strip
+     in their place colour, so a filtered list still reads at a glance. */
+  .map { margin: 2px 18px 0; padding: 12px; border-radius: var(--radius); background: var(--fu-glass); color: var(--fu-light); display: flex; flex-direction: column; gap: 10px; }
+  .map-hd { display: flex; justify-content: space-between; font: 500 10px/1.3 var(--font-mono); letter-spacing: var(--label-track); text-transform: uppercase; color: var(--fu-glass-mute); }
+  .map-row { display: grid; grid-template-columns: minmax(0, 1fr) 92px minmax(0, 1fr); align-items: stretch; }
+
+  .node { position: relative; display: flex; flex-direction: column; gap: 3px; padding: 9px 10px 11px; border-radius: 10px; border: 1px solid var(--border-soft); background: var(--surface); color: var(--text); text-align: left; font: inherit; cursor: pointer; overflow: hidden; }
+  .node::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 3px; background: var(--bar); }
+  .node.is-device { --bar: var(--pl-device); --tx: var(--pl-device-text); }
+  .node.is-account { --bar: var(--pl-account); --tx: var(--pl-account-text); }
+  .node.is-link { --bar: var(--pl-link); --tx: var(--pl-link-text); }
+  .node.is-builtin { --bar: var(--border-strong); --tx: var(--text-2); }
+  .node.is-on { border-color: var(--bar); box-shadow: inset 0 0 0 1px var(--bar); }
+  .node.is-ghost { background: transparent; border: 1px dashed var(--fu-edge); color: var(--fu-light); }
+  .node.is-ghost::after { display: none; }
+  .n-name { font: 500 10px/1.3 var(--font-mono); letter-spacing: var(--label-track); text-transform: uppercase; color: var(--tx); }
+  .node.is-ghost .n-name { color: var(--fu-glass-2); }
+  .n-fig { font-size: 13px; font-weight: 560; letter-spacing: -0.01em; font-variant-numeric: tabular-nums; }
+  .n-fig .of { color: var(--text-dim); font-weight: 400; }
+  .n-sub { font: 10.5px var(--font-mono); color: var(--text-dim); }
+  .node.is-ghost .n-sub { color: var(--fu-glass-mute); }
+  .node.is-ghost .n-go { margin-top: 4px; align-self: flex-start; }
+
+  .edge { display: flex; flex-direction: column; justify-content: center; gap: 7px; padding: 0 8px; font: 500 9.5px/1.2 var(--font-mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--fu-glass-2); text-align: center; }
+  .edge .line { position: relative; height: 1.2px; background: var(--fu-edge); margin: 0 2px; }
+  .edge .line.to::after, .edge .line.from::before { content: ''; position: absolute; top: -3.4px; border: 4px solid transparent; }
+  .edge .line.to::after { right: -2px; border-left: 6px solid var(--fu-edge); border-right: 0; }
+  .edge .line.from::before { left: -2px; border-right: 6px solid var(--fu-edge); border-left: 0; }
+  .edge .line.is-dashed { background: none; border-top: 1.2px dashed var(--fu-edge); height: 0; }
+  .edge .rule { color: var(--fu-glass-mute); letter-spacing: 0.06em; text-transform: none; font-size: 10px; }
+  .map-rules { margin: -2px 0 0; font: 10.5px/1.45 var(--font-mono); color: var(--fu-glass-2); }
+  .map-rules b { color: var(--fu-light); font-weight: 400; }
+
+  .map-row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .map-row2 .node { padding: 7px 10px 9px; gap: 2px; }
+  .map-row2 .n-fig { font-size: 12.5px; }
+  .map-row2 .n-fig .n-sub { margin-left: 6px; }
+
+  .readout-row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; padding-top: 10px; border-top: 1px solid var(--fu-glass-line); }
+  .readout-row .ro-lab { font: 500 10px/1.3 var(--font-mono); letter-spacing: var(--label-track); text-transform: uppercase; color: var(--fu-glass-mute); margin-right: 4px; }
+  .ro-chip { display: inline-flex; gap: 6px; align-items: center; height: 26px; padding: 0 10px; border-radius: 999px; border: 1px solid var(--fu-glass-line); background: var(--fu-glass-raised); color: var(--fu-glass-2); font: 12px var(--font-sans); cursor: pointer; }
+  .ro-chip b { color: var(--fu-light); font-weight: 560; font-variant-numeric: tabular-nums; }
+  .ro-chip .dot { width: 7px; height: 7px; border-radius: 2px; background: var(--c); }
+  .ro-chip.is-on { border-color: var(--fu-light); color: var(--fu-light); }
+  .ro-ok { font-size: 12px; color: var(--fu-glass-2); }
+
+  .lib-drawer .home-tabs { margin-top: 12px; }
+  .filter-bar { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--text-2); }
+  .filter-bar .chip-x { display: inline-flex; align-items: center; gap: 8px; height: 28px; padding: 0 6px 0 10px; border-radius: 999px; border: 1px solid var(--border); background: var(--surface); color: var(--text); font: 12px var(--font-sans); }
+  .filter-bar .chip-x .dot { width: 8px; height: 8px; border-radius: 2px; background: var(--c); }
+  .filter-bar .chip-x i { color: var(--text-dim); padding: 4px; }
+
+  /* Rows: a thin strip in the place colour; split when it's in both */
+  .lib-row.row2 { position: relative; overflow: hidden; padding-left: 16px; }
+  .lib-row.row2::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: var(--strip); }
+  .p-device { --strip: var(--pl-device); }
+  .p-account { --strip: var(--pl-account); }
+  .p-both { --strip: linear-gradient(var(--pl-device) 0 50%, var(--pl-account) 50% 100%); }
+  .p-builtin { --strip: var(--border-strong); }
+  .p-link { --strip: var(--pl-link); }
+  .row-note { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 560; color: var(--pl-account-text); }
+
+  /* Home: the Library button is the map in miniature */
+  .lib-fig { display: inline-flex; align-items: center; gap: 4px; font: 11px var(--font-mono); color: var(--text-2); font-variant-numeric: tabular-nums; }
+  .lib-fig i { display: inline-block; width: 8px; height: 8px; border-radius: 2px; }
+  .lib-fig + .lib-fig { margin-left: 4px; }
+  .rec { position: relative; padding-left: 18px; overflow: hidden; }
+  .rec::before { content: ''; position: absolute; left: 6px; top: 12px; bottom: 12px; width: 4px; border-radius: 2px; background: var(--strip); }
+
+  @media (max-width: 760px) {
+    .map { margin: 2px 12px 0; }
+    .map-row { grid-template-columns: minmax(0, 1fr) 64px minmax(0, 1fr); }
+    .edge .rule { display: none; }
+    .map-row2 .n-sub { display: none; }
+  }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script src="_home.js"></script>
+<script src="_data.js"></script>
+<script>
+  const F = STATE.filter;
+  const onDevice = SESSIONS.filter(s => has(s.place, 'device'));
+  const inAccount = SESSIONS.filter(s => has(s.place, 'account'));
+  const onlyHere = SESSIONS.filter(s => s.place === 'device');
+  const outOfStep = SESSIONS.filter(s => s.place === 'ahead' || s.place === 'behind');
+  const strip = (p) => (p === 'device' ? 'p-device' : p === 'account' ? 'p-account' : `p-${['synced', 'ahead', 'behind'].includes(p) ? 'both' : p}`);
+
+  function map() {
+    const dev = `<button class="node is-device${F === 'device' ? ' is-on' : ''}">
+        <span class="n-name">This device</span>
+        <span class="n-fig">${onDevice.length} sessions · ${DECKS.length} decks</span>
+        <span class="n-sub">this browser only</span></button>`;
+    const acct = SIGNED
+      ? `<button class="node is-account${F === 'account' ? ' is-on' : ''}">
+          <span class="n-name">Your account</span>
+          <span class="n-fig">${inAccount.length}<span class="of">/${USER.usage.maxSessions}</span> sessions · ${USER.usage.decks}<span class="of">/${USER.usage.maxDecks}</span> decks</span>
+          <span class="n-sub">${USER.name} · ${USER.provider}</span></button>`
+      : `<button class="node is-account is-ghost">
+          <span class="n-name">Your account</span>
+          <span class="n-sub">optional · every device you sign in on</span>
+          <span class="btn place-act sign-in n-go"><i class="fa-brands fa-discord"></i> Sign in</span></button>`;
+    const edge = SIGNED
+      ? `<div class="edge"><span>Save</span><span class="line to"></span><span class="line from"></span><span>Get</span></div>`
+      : `<div class="edge"><span class="line to is-dashed"></span><span class="rule">sign in to sync</span></div>`;
+    const readout = SIGNED
+      ? `<div class="readout-row"><span class="ro-lab">Out of step</span>
+          <span class="ro-chip${F === 'only-device' ? ' is-on' : ''}" style="--c:var(--pl-device)"><span class="dot"></span><b>${onlyHere.length}</b> only on this device</span>
+          <span class="ro-chip${F === 'needs' ? ' is-on' : ''}" style="--c:var(--pl-account)"><span class="dot"></span><b>${outOfStep.length}</b> need a Save or a Get</span></div>`
+      : `<div class="readout-row"><span class="ro-lab">Heads up</span><span class="ro-ok">Clearing this browser's data deletes everything on this device. Export a file, or sign in, to keep a copy.</span></div>`;
+    return `<div class="map" aria-label="Where your things live">
+      <div class="map-hd"><span>Where things live</span><span>tap a place to filter</span></div>
+      <div class="map-row">${dev}${edge}${acct}</div>
+      ${SIGNED ? `<p class="map-rules"><b>Save</b> sends a session to your account · <b>Get</b> brings a newer copy back · decks go both ways by themselves</p>` : ''}
+      <div class="map-row2">
+        <button class="node is-builtin"><span class="n-name">Built in</span><span class="n-fig">${BUILTIN.reduce((n, g) => n + g.decks.length, 0)} decks · ${DEMOS.length} demo<span class="n-sub">read-only</span></span></button>
+        <button class="node is-link${STATE.tab === 'links' ? ' is-on' : ''}"><span class="n-name">Public links</span><span class="n-fig">${LINKS.length} links<span class="n-sub">anyone with the link</span></span></button>
+      </div>
+      ${readout}
+    </div>`;
+  }
+
+  function sessionRow(s) {
+    const note = s.place === 'ahead' ? `<div class="row-note"><i class="fa-solid fa-arrow-up"></i> Changed here since your last Save</div>`
+      : s.place === 'behind' ? `<div class="row-note"><i class="fa-solid fa-arrow-down"></i> Your account has a newer copy</div>` : '';
+    return `<div class="lib-row row2 ${strip(s.place)}">
+      <div class="row-top"><div class="lib-title">${esc(s.title)}</div>
+        <div class="lib-actions">${placeAction(s.place)}<button class="btn row-open">${s.place === 'account' ? 'Download & open' : 'Open'}</button>${moreMenu('session', s.id)}</div></div>
+      ${note}
+      <div class="lib-meta">${sessionMeta(s)}</div>
+    </div>`;
+  }
+  function deckRow(d, builtin) {
+    return `<div class="lib-row row2 ${builtin ? 'p-builtin' : strip(d.place)}">
+      <div class="row-top"><div class="lib-title">${esc(d.name)}</div>
+        <div class="lib-actions">${builtin ? '' : placeAction(d.place)}<button class="btn btn-ghost">You</button><button class="btn btn-ghost">Opponent</button>${moreMenu(builtin ? 'builtin' : 'deck', d.id)}</div></div>
+      <div class="lib-meta">${deckMeta(d)}</div>
+    </div>`;
+  }
+  function linkRow(l) {
+    return `<div class="lib-row row2 p-link">
+      <div class="row-top"><div class="lib-title">${esc(l.title)}</div>
+        <div class="lib-actions"><button class="btn">Copy link</button>${moreMenu('link', l.id)}</div></div>
+      <div class="lib-meta">${[l.kind, l.ago, l.size, `practicedojo.github.io/app/?s=${l.id}`].filter(Boolean).join(SEP)}</div>
+    </div>`;
+  }
+
+  const FILTERS = {
+    device: ['--pl-device', 'Everything on this device', s => has(s.place, 'device')],
+    account: ['--pl-account', 'Everything in your account', s => has(s.place, 'account')],
+    'only-device': ['--pl-device', 'Only on this device', s => s.place === 'device'],
+    needs: ['--pl-account', 'Needs a Save or a Get', s => s.place === 'ahead' || s.place === 'behind']
+  };
+  function sessionsPanel() {
+    const f = FILTERS[F];
+    const rows = f ? SESSIONS.filter(f[2]) : SESSIONS;
+    const bar = f
+      ? `<div class="filter-bar">Showing <span class="chip-x" style="--c:var(${f[0]})"><span class="dot"></span>${f[1]} · ${rows.length}<i class="fa-solid fa-xmark"></i></span><span style="margin-left:auto"></span><button class="btn btn-ghost"><i class="fa-solid fa-file-import"></i> Import file</button></div>`
+      : `<div class="lib-toolbar" style="justify-content:flex-end"><button class="btn btn-ghost"><i class="fa-solid fa-file-import"></i> Import file</button></div>`;
+    const bulk = F === 'only-device' ? `<div style="display:flex;justify-content:flex-end"><button class="btn place-act to-account"><i class="fa-solid fa-arrow-up"></i> Save all ${rows.length} to account</button></div>` : '';
+    return bar + bulk + `<div class="lib-list">${rows.map(sessionRow).join('')}</div>`;
+  }
+  function decksPanel() {
+    return `<div class="lib-toolbar"><button class="btn btn-ghost"><i class="fa-solid fa-plus"></i> New deck</button><button class="btn btn-ghost"><i class="fa-solid fa-file-lines"></i> Import .txt</button><button class="btn btn-ghost"><i class="fa-solid fa-film"></i> From a replay</button></div>
+      <div class="lib-group-title">My decks</div><div class="lib-list">${DECKS.map(d => deckRow(d)).join('')}</div>
+      ${BUILTIN.map(g => `<div class="lib-group-title">Built in · ${g.title}</div><div class="lib-list">${g.decks.map(d => deckRow(d, true)).join('')}</div>`).join('')}`;
+  }
+  function linksPanel() {
+    return `<div class="lib-toolbar"><span class="lib-hint">Snapshots anyone with the link can open, made from this browser. Deleting one stops it opening for everyone.</span></div>
+      <div class="lib-list">${LINKS.map(linkRow).join('')}</div>`;
+  }
+
+  function drawer() {
+    const counts = { sessions: SESSIONS.length, decks: DECKS.length + BUILTIN.reduce((n, g) => n + g.decks.length, 0), links: LINKS.length };
+    const panel = STATE.tab === 'sessions' ? sessionsPanel() : STATE.tab === 'decks' ? decksPanel() : linksPanel();
+    return `<div class="lib-hd"><h2>Library</h2><button class="icon-btn ghost" aria-label="Close library">&times;</button></div>
+      ${map()}${tabs(counts)}<section class="lib-panel">${panel}</section>`;
+  }
+
+  function library() {
+    const fig = (v, n, label) => `<span class="lib-fig" title="${label}"><i style="background:var(${v})"></i>${n}</span>`;
+    return `<button class="btn btn-ghost" id="btn-open-library"><i class="fa-solid fa-book-bookmark"></i> Library
+      ${fig('--pl-device', onDevice.length, 'on this device')}${SIGNED ? fig('--pl-account', inAccount.length, 'in your account') : ''}</button>`;
+  }
+  function recent() {
+    const rows = SESSIONS.filter(s => s.place !== 'account').slice(0, 4);
+    return rows.map(s => `<button class="rec${s.last ? ' is-continue' : ''}" style="--strip:${SIGNED && has(s.place, 'account') ? 'linear-gradient(var(--pl-device) 0 50%, var(--pl-account) 50% 100%)' : 'var(--pl-device)'}">
+        <span class="rec-main"><span class="rec-title">${esc(s.title)}</span>
+          <span class="rec-meta">${sessionMeta(s)}</span></span>
+        <span class="rec-go">${s.last ? 'Resume' : 'Open'} <i class="fa-solid fa-arrow-right"></i></span>
+      </button>`).join('');
+  }
+
+  mount({ name: 'C · Places map', drawer, recent, library, recentTitle: 'Pick up again <button class="link-btn">All sessions</button>' });
+</script>
+</body>
+</html>
