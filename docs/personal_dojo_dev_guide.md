@@ -98,7 +98,7 @@ The app uses the native HTML5 Drag and Drop API.
 
 * **Calculation:** Occurs during render() inside updateMetrics().  
 * **Field Metrics (Tug-of-War):** Iterates through state.players\[X\].field, queries UnifiedWinProbabiliyCalculation, sums the BCR/LVI values, and adjusts the widths of the HTML progress bars.  
-* **Hand Potential:** Iterates through state.players\[X\].hand to calculate absolute potential (CTL, BCR, RDS, LVI), displayed in badges attached to the hand containers.
+* **Hand Potential:** Removed in v3.4.1. It summed CTL, BCR, RDS and LVI over each hand and showed them in the lore boxes; the lore boxes now show only the lore count.
 
 ## **5\. Guidelines for Future AI Development**
 

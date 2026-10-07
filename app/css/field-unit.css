@@ -1476,56 +1476,6 @@ body.palette-competition .player-row::before {
     padding: 2px 0 1px;
 }
 
-/* Zone stats: figure/sm glass-mute, one per line so they fit the column.
-   (.board-half prefix: outranks the old top-half hand-meta squeeze.) */
-.board-half .lore-badge .hand-meta {
-    display: grid;
-    grid-template-columns: auto auto;
-    justify-content: space-between;
-    gap: 1px 6px;
-    width: 100%;
-    margin-top: 5px;
-    padding: 5px 0 0;
-    background: none;
-    border: 0;
-    border-top: 1px solid var(--fu-glass-rule);
-    border-radius: 0;
-    font-family: var(--font-mono);
-    font-size: 10.5px;
-    line-height: 1.35;
-    color: var(--fu-glass-2);
-    font-variant-numeric: tabular-nums;
-    transform: none;
-}
-
-.lore-badge .hand-meta>span {
-    display: contents;
-}
-
-.lore-badge .hand-meta .meta-key,
-.lore-badge .hand-meta .meta-key.is-bcr,
-.lore-badge .hand-meta .meta-key.is-lvi,
-.lore-badge .hand-meta .meta-key.is-rds {
-    margin: 0;
-    font-size: 10px;
-    letter-spacing: 0.06em;
-    color: var(--fu-glass-mute);
-}
-
-.lore-badge .hand-meta>span>span:last-child {
-    text-align: right;
-}
-
-.lore-badge .hand-meta::before {
-    content: 'Hand';
-    grid-column: 1 / -1;
-    font-size: 9.5px;
-    letter-spacing: var(--label-track);
-    text-transform: uppercase;
-    color: var(--fu-glass-mute);
-    margin-bottom: 1px;
-}
-
 /* ----- Ready row: `2 / 9 ready`, then −, +, Ready all as glass outlines ----- */
 .ink-readout {
     background: transparent;
@@ -2040,7 +1990,11 @@ body.cards-text .ink-tile.is-back {
     color: var(--fu-glass-mute);
 }
 
-/* ----- Desktop board: each half is discard 168 · field · deck 92 ----- */
+/* ----- Desktop board: each half is discard 168 · field · lore 92.
+       The lore box is as tall as the hand; your notes take the hand row
+       too, so notes, hand and lore share top and bottom. The deck is a
+       card (5:7, the ink cards' size) at the end of the ink row, as on
+       phones, and the ink row and field run the full width. ----- */
 @media (min-width: 761px) {
     .board-half {
         display: grid;
@@ -2056,17 +2010,17 @@ body.cards-text .ink-tile.is-back {
         grid-template-rows: auto auto minmax(0, 1fr);
         grid-template-areas:
             "tag  hand  lore"
-            "disc ink   lore"
-            "disc field deck";
+            "disc ink   ink"
+            "disc field field";
     }
 
     .board-half.bottom {
         padding: 8px 12px 10px;
         grid-template-rows: auto minmax(0, 1fr) auto auto;
         grid-template-areas:
-            "tag  field deck"
-            "disc field deck"
-            "disc ink   lore"
+            "tag  field field"
+            "disc field field"
+            "disc ink   ink"
             "note hand  lore";
     }
 
@@ -2075,6 +2029,12 @@ body.cards-text .ink-tile.is-back {
     .board-half.top .pile-row,
     .board-half .pile-cluster {
         display: contents;
+    }
+
+    /* The deck card is an ink card's size (the opponent's row is smaller). */
+    .board-half .pile-row {
+        --deck-h: calc(var(--pile-h) - 10px);
+        --deck-w: calc(var(--deck-h) * 5 / 7);
     }
 
     .board-half .lore-chip {
@@ -2096,9 +2056,11 @@ body.cards-text .ink-tile.is-back {
         min-width: 0;
     }
 
+    /* Room at the end of the ink row for the deck. */
     .board-half .ink-cluster {
         grid-area: ink;
         min-width: 0;
+        padding-right: calc(var(--deck-w) + 22px);
     }
 
     .board-half .field-strip {
@@ -2110,46 +2072,42 @@ body.cards-text .ink-tile.is-back {
         min-height: calc(var(--card-h) + 22px);
     }
 
+    /* Lore takes the hand's height, its count centred in it. */
     .board-half .lore-badge {
         grid-area: lore;
         position: static;
         width: 92px;
-    }
-
-    .board-half.top .lore-badge {
-        align-self: start;
-    }
-
-    .board-half.bottom .lore-badge {
-        align-self: end;
+        align-self: stretch;
+        justify-content: center;
     }
 
     .board-half .notes-panel {
         grid-area: note;
         position: static;
         width: auto;
-        align-self: end;
+        align-self: stretch;
     }
 
+    .board-half .notes-panel textarea {
+        flex: 1 1 auto;
+    }
+
+    /* The deck sits inside the ink row's end, the size of an ink card. */
     .board-half .pile.deck,
     .board-half.top .pile-row .pile.deck {
-        grid-area: deck;
-        justify-self: center;
-        width: 72px;
-        height: 96px;
-        padding: 8px;
+        grid-area: ink;
+        justify-self: end;
+        align-self: center;
+        position: relative;
+        z-index: 1;
+        width: var(--deck-w);
+        height: var(--deck-h);
+        margin-right: 9px;
+        padding: 7px;
         display: flex;
         flex-direction: column;
         align-items: flex-start;
         justify-content: space-between;
-    }
-
-    .board-half.top .pile.deck {
-        align-self: end;
-    }
-
-    .board-half.bottom .pile.deck {
-        align-self: end;
     }
 
     .board-half .pile.deck .pile-label {
@@ -2230,6 +2188,7 @@ body.cards-text .ink-tile.is-back {
 
     /* Your hand sits in a tray of raised glass. */
     .board-half.bottom .hand-wrap {
+        justify-content: center;
         padding: 6px 8px 8px;
         background: var(--fu-glass-raised);
         border: 1px solid var(--fu-glass-line);
@@ -5032,12 +4991,6 @@ body.palette-competition .tree-node.tn-p2::before {
 
     .board-half .lore-badge {
         width: 84px;
-    }
-
-    .board-half .pile.deck,
-    .board-half.top .pile-row .pile.deck {
-        width: 68px;
-        height: 90px;
     }
 }
 

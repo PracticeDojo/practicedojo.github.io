@@ -86,7 +86,7 @@ The shell is warm mineral by day and warm black at night. Data lives in a recess
 
 Day signal is Ember. Night signal is Radio. Coral, Olive, and Trace are the only approved swaps. Do not invent a fifth accent.
 
-The app is information-dense. A restyle must keep every reading the live board already shows: players, deck and hand counts, BCR and LVI, the action log, both discard piles, ready counts, field cards with cost / strength / lore, hand actions, deck size, zone stats (CTL, BCR, RDS, LVI), draw odds with copies remaining, and multiverse node recaps (played, inked, drawn, banished, quested, lore, note).
+The app is information-dense. A restyle must keep every reading the live board already shows: players, deck and hand counts, BCR and LVI, the action log, both discard piles, ready counts, field cards with cost / strength / lore, hand actions, deck size, draw odds with copies remaining, and multiverse node recaps (played, inked, drawn, banished, quested, lore, note).
 
 ### Principles
 
@@ -191,7 +191,7 @@ The match board is a fixed instrument, not a scrolling marketing page.
 - Top bar: 46px, chassis, 1px `#D5CFC4` bottom rule, 12px horizontal padding, 8px gaps.
 - Columns: players/log 292px, board fluid, draw odds 286px. Minimum board width 720px before the odds column collapses under the board.
 - Playfield: 8px margin from the columns, 16px radius, split in half by a 1px `#242424` rule. Opponent on top, you on bottom. Phones frame it the same way, like the multiverse canvas: 8px of chassis all round (plus the bottom safe area) and 16px corners. The phone hand tray sits on the well's bottom edge and its peeking cards are clipped by the well's corners.
-- Each half: discard column 168px, field fluid, deck 92px, gap 8px.
+- Each half: discard column 168px, field fluid, lore 92px, gap 8px. The lore box is as tall as the hand, and your turn note sits in the hand row too, so note, hand and lore share their top and bottom edges. The ready row and the field run under the lore column; the deck sits at the ready row's end, as on phones.
 - Multiverse: chassis frame, glass canvas with 16px radius, nodes absolutely placed, edges 1.2px `#6A655E`, live edge 1.6px signal. A 340px paper panel docks beside the canvas, right by default or left by preference, 8px from it; phones stack it under the canvas.
 
 Marketing grid is 12 columns, 48px page margin, modules at 22px radius. The app does not use that grid.
@@ -249,7 +249,7 @@ Glass fill, paper text, 8px radius, 7px 8px padding, 11px. This is the turn note
 
 ### Lore box
 
-Glass raised, 1px `#2A2A2A`, 10px radius. Label `label/sm` mute. Numeral `display/lg` signal. Zone stats directly under it, `figure/sm` glass-mute: `CTL 5.3 · BCR 4.2 · RDS 0.5 · LVI 0.6`.
+Glass raised, 1px `#2A2A2A`, 10px radius. Label `label/sm` mute between − and +, numeral `display/lg` signal under it, nothing else (the hand's zone stats were dropped in v3.4.1). On the board it stretches to the hand's height with its count centred.
 
 ### Ready row
 
@@ -265,7 +265,7 @@ Paper, 7–8px radius, 104×118 on the board, padding 6px. Name 11px weight 600.
 
 ### Deck
 
-Paper slab, 72×96, radius 8px. Label `label/sm`, count 22px weight 520.
+Paper slab with a card's 5:7 shape, the size of the ink cards beside it, radius 8px. Label `label/sm`, count 22px weight 520.
 
 ### Hand tray
 
