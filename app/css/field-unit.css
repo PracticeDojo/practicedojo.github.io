@@ -202,6 +202,57 @@ body {
     --tick-mask: linear-gradient(90deg, #000 0 3px, transparent 3px 5px, #000 5px 8px);
 }
 
+/* Deck icon (img/deck_icon.svg): a card in the deck's first ink with a
+   star cut out of it in the second. Two masks, so both inks come from
+   tokens: --di-a (card) and --di-b (star). A mono-ink deck fills both.
+   P2's card is hatched — the barber pole — so a mirror match still reads.
+   Size it with height; the width follows the card's 0.684 aspect. */
+:root {
+    --deck-icon-card: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 3393 4961'%3E%3Cpath transform='matrix(300.833978,0,0,300.833978,-628927.680203,-668522.017211)' d='M2090.614,2232.243L2090.614,2223.357C2090.614,2222.735 2091.119,2222.229 2091.741,2222.229L2094.709,2222.229C2094.68,2227.769 2092.86,2232.243 2090.623,2232.243L2090.614,2232.243ZM2097.78,2222.229L2100.762,2222.229C2101.384,2222.229 2101.889,2222.735 2101.889,2223.357L2101.889,2237.591C2101.889,2238.213 2101.384,2238.719 2100.762,2238.719L2097.166,2238.719C2098.174,2235.957 2099.91,2234.13 2101.882,2234.123L2101.882,2232.243L2101.866,2232.243C2099.629,2232.243 2097.81,2227.769 2097.78,2222.229ZM2095.33,2238.719L2091.741,2238.719C2091.119,2238.719 2090.614,2238.213 2090.614,2237.591L2090.614,2234.123C2092.586,2234.129 2094.322,2235.957 2095.33,2238.719Z'/%3E%3C/svg%3E");
+    --deck-icon-star: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 3393 4961'%3E%3Cpath transform='matrix(5.785071,0,0,5.785071,283.638917,191.904772)' d='M199.155,350.491C241.006,151.68 235.663,5.994 241.771,3.116C251.505,-1.47 246.476,7.481 249.025,37.224C271.674,301.528 281.264,506.929 463.988,532.906C465.191,533.077 510.547,539.524 474.207,544.146C253.295,572.238 254.91,783.269 246.196,788.666C242.992,790.651 239.777,789.023 231.613,743.864C212.427,637.733 117.149,557.177 31.199,545.902C29.242,545.645 -20.275,539.15 9.51,534.134C123.536,514.934 163.64,470.61 199.155,350.491Z'/%3E%3C/svg%3E");
+}
+
+.deck-icon {
+    --di-a: var(--text-faint);
+    --di-b: var(--di-a);
+    position: relative;
+    display: inline-block;
+    flex: none;
+    height: 16px;
+    aspect-ratio: 3393 / 4961;
+    vertical-align: -3px;
+}
+
+.deck-icon::before,
+.deck-icon::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--di-a);
+    -webkit-mask: var(--deck-icon-card) center / contain no-repeat;
+    mask: var(--deck-icon-card) center / contain no-repeat;
+}
+
+.deck-icon::after {
+    background: var(--di-b);
+    -webkit-mask-image: var(--deck-icon-star);
+    mask-image: var(--deck-icon-star);
+}
+
+.deck-icon.is-p1 {
+    --di-a: var(--p1);
+    --di-b: var(--p1-2);
+}
+
+.deck-icon.is-p2 {
+    --di-a: var(--p2);
+    --di-b: var(--p2-2);
+}
+
+.deck-icon.is-p2::before {
+    background: repeating-linear-gradient(135deg, var(--di-a) 0 1.5px, transparent 1.5px 3px);
+}
+
 /* --- The glass well: the match, the multiverse canvas, the card preview,
        and the overlays that float over the board. Same role tokens,
        glass values. --- */
@@ -854,27 +905,14 @@ body.palette-competition .player-row {
 
 .player-row::before,
 body.palette-competition .player-row::before {
-    content: '';
+    content: none;
+}
+
+.player-row > .deck-icon {
     position: absolute;
-    left: 9px;
+    left: 8px;
     top: 50%;
-    bottom: auto;
-    width: 8px;
-    height: 16px;
     margin-top: -8px;
-    border-radius: 0;
-}
-
-.player-row.is-p1::before,
-body.palette-competition .player-row.is-p1::before {
-    background: var(--tick-p1);
-}
-
-.player-row.is-p2::before,
-body.palette-competition .player-row.is-p2::before {
-    background: var(--tick-p2);
-    -webkit-mask-image: var(--tick-mask);
-    mask-image: var(--tick-mask);
 }
 
 .player-row .player-name {
@@ -1235,21 +1273,8 @@ body.palette-competition .player-row.is-p2::before {
     white-space: nowrap;
 }
 
-.board-bg-letter::before {
-    content: '';
-    flex: none;
-    width: 8px;
+.board-bg-letter .deck-icon {
     height: 14px;
-}
-
-.board-half.is-p1 .board-bg-letter::before {
-    background: var(--tick-p1);
-}
-
-.board-half.is-p2 .board-bg-letter::before {
-    background: var(--tick-p2);
-    -webkit-mask-image: var(--tick-mask);
-    mask-image: var(--tick-mask);
 }
 
 .board-half.top .board-bg-letter::after {
@@ -2553,22 +2578,6 @@ button.ctx-item:focus-visible {
     box-shadow: 0 0 0 2px var(--surface), 0 0 0 3px var(--text);
 }
 
-.tweak-inks .ink-chip {
-    width: 8px;
-    height: 14px;
-    border: 0;
-    border-radius: 0;
-}
-
-.tweak-inks .ink-pair:first-child .ink-chip {
-    background: var(--tick-p1) !important;
-}
-
-.tweak-inks .ink-pair:last-child .ink-chip {
-    background: var(--tick-p2) !important;
-    -webkit-mask-image: var(--tick-mask);
-    mask-image: var(--tick-mask);
-}
 
 input[type="range"]::-webkit-slider-runnable-track {
     height: 3px;
@@ -2678,26 +2687,17 @@ body.palette-competition .autosave-item.is-p2 {
     border-color: var(--border-strong);
 }
 
-.autosave-item.is-p1::before,
-.autosave-item.is-p2::before,
+.autosave-item::before,
 body.palette-competition .autosave-item.is-p1::before,
 body.palette-competition .autosave-item.is-p2::before {
-    content: '';
-    position: absolute;
-    left: 9px;
-    top: 9px;
-    bottom: auto;
-    width: 8px;
-    height: 14px;
-    border-radius: 0;
-    background: var(--tick-p1);
+    content: none;
 }
 
-.autosave-item.is-p2::before,
-body.palette-competition .autosave-item.is-p2::before {
-    background: var(--tick-p2);
-    -webkit-mask-image: var(--tick-mask);
-    mask-image: var(--tick-mask);
+.autosave-item > .deck-icon {
+    position: absolute;
+    left: 8px;
+    top: 8px;
+    height: 15px;
 }
 
 .autosave-item .as-name {
@@ -2855,21 +2855,6 @@ body.palette-competition .autosave-item.is-p2::before {
     text-overflow: ellipsis;
 }
 
-.cs-ticks {
-    flex: none;
-    width: 8px;
-    height: 16px;
-}
-
-.cs-ticks.is-p1 {
-    background: var(--tick-p1);
-}
-
-.cs-ticks.is-p2 {
-    background: var(--tick-p2);
-    -webkit-mask-image: var(--tick-mask);
-    mask-image: var(--tick-mask);
-}
 
 /* ===================================================================
    FUNCTION KEYS (Feature 48) — the phone card drawer and hand.
@@ -3214,45 +3199,20 @@ body.palette-competition .tree-node.is-active.tn-p2 {
     outline-offset: 3px;
 }
 
-/* Identity: the owner's ink ticks beside the title (P2 striped). */
+/* Identity: the owner's deck icon beside the title (P2 hatched). */
 .tree-node::before,
 .tree-node.is-victory::before,
 body.palette-competition .tree-node.tn-p1::before,
 body.palette-competition .tree-node.tn-p2::before {
-    content: '';
+    content: none;
+}
+
+.tree-node > .deck-icon {
+    --di-a: var(--node-c, var(--fu-line));
     position: absolute;
-    left: 9px;
-    top: 11px;
-    bottom: auto;
-    width: 8px;
-    height: 14px;
+    left: 8px;
+    top: 10px;
     z-index: 2;
-    background: var(--node-c, var(--fu-line));
-    -webkit-mask-image: var(--tick-mask);
-    mask-image: var(--tick-mask);
-}
-
-.tree-node.tn-p1::before,
-body.palette-competition .tree-node.tn-p1::before {
-    background: var(--tick-p1);
-    -webkit-mask-image: none;
-    mask-image: none;
-}
-
-.tree-node.tn-p2::before,
-body.palette-competition .tree-node.tn-p2::before {
-    background: var(--tick-p2);
-    -webkit-mask-image: var(--tick-mask);
-    mask-image: var(--tick-mask);
-}
-
-/* A won branch keeps the winner's deck inks — as ticks. */
-.tree-node.is-victory::before,
-body.palette-competition .tree-node.is-victory.tn-p1::before,
-body.palette-competition .tree-node.is-victory.tn-p2::before {
-    background: var(--node-g, var(--node-c, var(--accent)));
-    -webkit-mask-image: var(--tick-mask);
-    mask-image: var(--tick-mask);
 }
 
 .tn-body {
@@ -3784,16 +3744,6 @@ body.palette-competition .tree-node.is-victory.tn-p2::before {
     height: 16px;
     border-radius: 0;
     box-shadow: none;
-}
-
-.deck-box.is-p1 {
-    background: linear-gradient(90deg, var(--i1) 0 3px, transparent 3px 5px, var(--i2) 5px 8px);
-}
-
-.deck-box.is-p2 {
-    background: repeating-linear-gradient(135deg, var(--i1) 0 2px, var(--i2) 2px 4px);
-    -webkit-mask-image: var(--tick-mask);
-    mask-image: var(--tick-mask);
 }
 
 .deck-box.is-empty {
