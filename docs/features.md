@@ -716,6 +716,21 @@ Chosen from three prototypes in `docs/design/library-clarity/`: **B · Shelves**
 - **Home.** The Library button shows `▮ 5 ▮ 4`: sessions on this device (Trace) and, signed in, in your account (Olive). Pick up again rows carry their shelf's spine, and the box ends with the shelves summed up (or *All on this device only · Sign in to keep them in an account*).
 - **Fix:** the Library tabs no longer collapse to 1px when the list is taller than the drawer (about 9 sessions on a phone).
 
+## Patch: Top bar grouped by job (v3.2.6)
+
+### Details
+- **Left: the way home and the session.** `‹ DOJO` with the torii mark goes back to the home screen (the match stays saved). It replaces the reset button, whose ↻ arrow read as Undo flipped. Then the session title, **Save**, **Save as copy** and **Share**.
+- **Centre: the turn control.** **Undo**, the turn chip and **Challenge** are one joined control, so Undo sits on the turn it undoes. Undo's icon is the only circular arrow left in the bar.
+- **Right: Multiverse and Tweaks.** Multiverse is a paper button with a branch icon in the signal colour (the signal marks the branch you are on). The Timelines button left the bar: Timelines opens from the sidebar and with **T** until it merges into the Multiverse view.
+- **Narrow desktops** (761–1100px): Undo and Challenge are icon-only.
+- **Phones:** ☰ · Undo | turn | Challenge · Multiverse · ⋯. The ⋯ menu holds Save, Save as copy, Share link, Tweaks and Leave to the dojo. A second tap, Escape or a tap outside closes it.
+
+## Patch: Deck icon (v3.2.5)
+
+### Details
+- **Deck icon** (`img/deck_icon.svg`): a card in the deck's first ink with a star cut out of it in the second. It replaces the two-bar ink ticks in the sidebar player rows, the board's player tags, the phone card drawer, auto-saves, multiverse nodes, the home seats and deck chips, and the Tweaks palette readout. Player 2's card is striped so a mirror match still reads.
+- **Favicon:** the landing page and the app use the deck icon as their tab icon.
+
 ## Patch: Home page in two columns (v3.2.4)
 
 ### Details
@@ -854,3 +869,5 @@ The public page (`index.html`) follows Field Unit too, as `docs/DESIGN-field-uni
 - [x] Patch: Framed phone board
 - [x] Patch: Self-hosted Inter and Inter Display
 - [x] Patch: Home page in two columns
+- [x] Patch: Deck icon
+- [x] Patch: Top bar grouped by job
