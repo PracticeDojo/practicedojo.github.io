@@ -96,15 +96,17 @@
     </div>
 
     <!-- ============ TOP BAR ============ -->
+    <!-- Grouped by job: the way home and the session on the left; the play
+         controls joined to the turn they act on; the multiverse and tweaks on
+         the right. Phones fold the session tools and Tweaks into the ⋯ menu. -->
     <header class="topbar" id="topbar" style="display:none">
         <div class="topbar-left">
             <button id="mobile-menu-btn" class="icon-btn" onclick="App.toggleSidebar()" title="Menu"
                 aria-label="Open menu"><i class="fa-solid fa-bars"></i></button>
-            <div class="brand">
-                <span class="brand-mark"></span>
-                <span class="brand-name">Practice Dojo</span>
-                <span class="brand-tag">sandbox</span>
-            </div>
+            <button class="tb-home" onclick="App.confirmShowSetup()" title="Leave to the dojo (your match stays saved)"
+                aria-label="Leave to the dojo"><i class="fa-solid fa-chevron-left"></i><span
+                    class="brand-mark"></span><span class="tb-home-label">Dojo</span></button>
+            <div class="divider-v tb-home-rule"></div>
             <!-- The live session: rename in place; Save / Save as copy write to the device library -->
             <div class="session-ctl">
                 <input type="text" id="session-title" class="session-title" maxlength="120" spellcheck="false"
@@ -122,32 +124,48 @@
             </div>
         </div>
         <div class="topbar-center">
-            <div class="turn-pill" id="turn-pill">
-                <span class="mono">TURN</span>
-                <span class="turn-num" id="turn-num">1</span>
-                <span class="turn-arrow">&rarr;</span>
-                <span class="turn-actor" id="turn-actor">Player 1</span>
+            <div class="turn-ctl" role="group" aria-label="Turn">
+                <button class="icon-btn" id="btn-undo" onclick="App.undo()" title="Undo last action"
+                    aria-label="Undo"><i class="fa-solid fa-arrow-rotate-left"></i> <span>Undo</span></button>
+                <div class="turn-pill" id="turn-pill">
+                    <span class="mono">TURN</span>
+                    <span class="turn-num" id="turn-num">1</span>
+                    <span class="turn-arrow">&rarr;</span>
+                    <span class="turn-actor" id="turn-actor">Player 1</span>
+                </div>
+                <button class="icon-btn" id="btn-challenge-mode" onclick="App.toggleChallengeMode()"
+                    title="Challenge mode (C) — drag or tap one of your characters, then an opponent"
+                    aria-label="Challenge mode" aria-pressed="false"><i class="fa-solid fa-hand-fist"></i>
+                    <span>Challenge</span></button>
             </div>
         </div>
         <div class="topbar-right">
-            <button class="icon-btn" id="btn-challenge-mode" onclick="App.toggleChallengeMode()"
-                title="Challenge mode (C) — drag or tap one of your characters, then an opponent"
-                aria-pressed="false"><i class="fa-solid fa-hand-fist"></i> <span>Challenge</span></button>
-            <button class="icon-btn" onclick="App.undo()" title="Undo last action"><i
-                    class="fa-solid fa-rotate-left"></i> <span>Undo</span></button>
-            <button class="icon-btn" id="btn-timelines" onclick="App.toggleTimelines()"
-                title="Timelines &amp; bookmarks (T)"><i class="fa-solid fa-clock-rotate-left"></i>
-                <span>Timelines</span></button>
-            <button class="icon-btn" id="btn-multiverse" onclick="App.openTreeModal()" title="Multiverse tree (M)"><i
-                    class="fa-solid fa-network-wired"></i> <span>Multiverse</span></button>
-            <div class="divider-v"></div>
+            <button class="icon-btn" id="btn-multiverse" onclick="App.openTreeModal()" title="Multiverse (M)"
+                aria-label="Multiverse"><i class="fa-solid fa-code-branch"></i> <span>Multiverse</span></button>
             <button class="icon-btn" id="btn-tweaks"
                 onclick="document.getElementById('tweaks-panel').classList.toggle('is-open')" title="Tweaks"
                 aria-label="Tweaks"><i class="fa-solid fa-sliders"></i></button>
-            <button class="icon-btn" onclick="App.confirmShowSetup()" title="Reset / change decks"
-                aria-label="Reset or change decks"><i class="fa-solid fa-rotate-right"></i></button>
+            <button class="icon-btn" id="btn-topbar-more" onclick="App.toggleTopbarMenu(event)" title="More"
+                aria-label="More" aria-haspopup="menu" aria-expanded="false" aria-controls="topbar-menu"><i
+                    class="fa-solid fa-ellipsis"></i></button>
         </div>
     </header>
+
+    <!-- Phones: the session tools, Tweaks and the way home, behind ⋯ -->
+    <div id="topbar-menu" class="topbar-menu" role="menu" aria-label="More" hidden>
+        <button class="ctx-item" role="menuitem" onclick="App.closeTopbarMenu(); App.saveSessionNow()"><span><i
+                    class="fa-solid fa-floppy-disk"></i>Save</span></button>
+        <button class="ctx-item" role="menuitem" onclick="App.closeTopbarMenu(); App.saveSessionAsCopy()"><span><i
+                    class="fa-regular fa-copy"></i>Save as copy</span></button>
+        <button class="ctx-item" role="menuitem" onclick="App.closeTopbarMenu(); App.shareCurrentSession()"><span><i
+                    class="fa-solid fa-share-nodes"></i>Share link</span></button>
+        <button class="ctx-item" role="menuitem"
+            onclick="App.closeTopbarMenu(); document.getElementById('tweaks-panel').classList.toggle('is-open')"><span><i
+                    class="fa-solid fa-sliders"></i>Tweaks</span></button>
+        <div class="ctx-divider"></div>
+        <button class="ctx-item" role="menuitem" onclick="App.closeTopbarMenu(); App.confirmShowSetup()"><span><i
+                    class="fa-solid fa-arrow-right-from-bracket"></i>Leave to the dojo</span></button>
+    </div>
 
     <!-- Viewing someone else's shared session: nothing saves until you keep a copy -->
     <div class="shared-banner hidden" id="shared-banner" role="status">
@@ -1032,7 +1050,7 @@
     <script>
         let cardFuse = null;
 
-        const APP_VERSION = "v3.2.5"; // Centralized version string (v3: Field Unit)
+        const APP_VERSION = "v3.2.6"; // Centralized version string (v3: Field Unit)
 
         // Tweaks panel accent presets (hue values for the OKLCH accent ramp)
         // Tweaks → Accent: the approved Field Unit signals only (design.md ·
@@ -2264,6 +2282,39 @@
             // The match on the board is already in the library, so leaving it loses nothing.
             confirmShowSetup() {
                 this.showSetup();
+            },
+
+            // Phones: the top bar's ⋯ menu (session tools, Tweaks, the way home).
+            // It drops below the button; a click anywhere else or Escape closes it.
+            toggleTopbarMenu(e) {
+                if (e) e.stopPropagation();
+                const menu = document.getElementById('topbar-menu');
+                if (!menu.hidden) { this.closeTopbarMenu(); return; }
+                const btn = document.getElementById('btn-topbar-more');
+                const r = btn.getBoundingClientRect();
+                menu.style.top = `${r.bottom + 6}px`;
+                menu.style.right = `${Math.max(8, window.innerWidth - r.right)}px`;
+                menu.hidden = false;
+                btn.setAttribute('aria-expanded', 'true');
+                const first = menu.querySelector('.ctx-item');
+                if (first) first.focus();
+                this._topbarMenuOff = (ev) => {
+                    if (ev.type === 'keydown' && ev.key !== 'Escape') return;
+                    if (ev.type === 'click' && (menu.contains(ev.target) || btn.contains(ev.target))) return;
+                    this.closeTopbarMenu();
+                    if (ev.type === 'keydown') btn.focus();
+                };
+                document.addEventListener('click', this._topbarMenuOff, true);
+                document.addEventListener('keydown', this._topbarMenuOff, true);
+            },
+
+            closeTopbarMenu() {
+                const menu = document.getElementById('topbar-menu');
+                if (!menu || menu.hidden) return;
+                menu.hidden = true;
+                document.getElementById('btn-topbar-more').setAttribute('aria-expanded', 'false');
+                document.removeEventListener('click', this._topbarMenuOff, true);
+                document.removeEventListener('keydown', this._topbarMenuOff, true);
             },
 
             // Lists use data-act / data-id and one delegated listener each, so no
