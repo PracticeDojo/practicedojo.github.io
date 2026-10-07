@@ -189,7 +189,9 @@ Marketing grid is 12 columns, 48px page margin, modules at 22px radius. The app 
 
 ### Top bar
 
-Chassis. Logo is `label/sm` weight 600. Version and matchup are 12px ink. Tools are 28px tall, 8px radius, paper fill, `#D5CFC4` border. The open tool (Multiverse, Timelines) inverts to glass with paper text. Turn chip is glass, 8px radius; the turn number is signal. "Not saved yet" is mute. Save a copy is a paper tool, not a signal button.
+Chassis. Logo is `label/sm` weight 600. Version and matchup are 12px ink. Tools are 28px tall, 8px radius, paper fill, `#D5CFC4` border. The open tool (Multiverse, Challenge, Tweaks) inverts to glass with paper text. Turn chip is glass, 8px radius; the turn number is signal. "Not saved yet" is mute. Save a copy is a paper tool, not a signal button.
+
+Grouped by job: the way home (`‹ DOJO` with the mark) and the session on the left; Undo, the turn chip and Challenge joined as one turn control in the centre; Multiverse and Tweaks on the right. Multiverse is a paper tool whose branch icon is signal (the branch you are on); never a filled signal key. Only Undo uses a circular arrow. Phones keep ☰, the turn control, Multiverse and a ⋯ menu for the session tools, Tweaks and the way home.
 
 ### Signal key
 

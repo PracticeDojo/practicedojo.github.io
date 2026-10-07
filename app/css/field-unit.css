@@ -684,12 +684,21 @@ body {
     gap: 6px;
 }
 
-.brand {
-    gap: 8px;
-    padding-left: 2px;
+.topbar-left {
+    min-width: 0;
 }
 
-.brand-name {
+/* The way home: ‹, the torii and DOJO. A quiet tool until hovered. */
+.tb-home {
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    height: 28px;
+    padding: 0 9px 0 6px;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: var(--radius-sm);
     font-family: var(--font-mono);
     font-size: 10px;
     font-weight: 700;
@@ -697,15 +706,23 @@ body {
     text-transform: uppercase;
     color: var(--text);
     white-space: nowrap;
+    cursor: pointer;
 }
 
-.brand-tag {
-    font-size: 9.5px;
-    letter-spacing: 0.1em;
+.tb-home:hover,
+.tb-home:focus-visible {
+    background: var(--surface);
     border-color: var(--border);
+}
+
+.tb-home > i {
+    font-size: 9px;
     color: var(--text-dim);
-    border-radius: 4px;
-    padding: 2px 5px;
+}
+
+.tb-home .brand-mark {
+    width: 18px;
+    height: 18px;
 }
 
 .session-ctl {
@@ -752,9 +769,92 @@ body {
     justify-content: center;
 }
 
+/* The turn control: Undo and Challenge joined to the turn they act on,
+   one paper frame with the glass chip in the middle. */
+.turn-ctl {
+    display: inline-flex;
+    align-items: stretch;
+    height: 28px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+}
+
+.turn-ctl .turn-pill {
+    margin: -1px 0;
+}
+
+.topbar .turn-ctl .icon-btn {
+    height: 26px;
+    background: transparent;
+    border: 0;
+}
+
+.topbar .turn-ctl .icon-btn:first-child {
+    border-radius: var(--radius-sm) 0 0 var(--radius-sm);
+}
+
+.topbar .turn-ctl .icon-btn:last-child {
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+}
+
+.turn-ctl .turn-pill {
+    white-space: nowrap;
+}
+
+/* Narrow desktops: Undo and Challenge drop their words, keep their keys. */
+@media (min-width: 761px) and (max-width: 1100px) {
+    .topbar .turn-ctl .icon-btn {
+        width: 30px;
+        padding: 0;
+        justify-content: center;
+    }
+
+    .topbar .turn-ctl .icon-btn span {
+        display: none;
+    }
+}
+
+/* The multiverse holds the branch you are on, so its icon carries the
+   signal (design.md: the signal marks the live branch). Paper button. */
+.topbar #btn-multiverse i {
+    color: var(--accent);
+}
+
+/* ⋯ is the phone's home for the session tools and Tweaks. */
+#btn-topbar-more {
+    display: none;
+}
+
+.topbar-menu {
+    position: fixed;
+    z-index: 1000;
+    min-width: 200px;
+    padding: 4px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-inset);
+    box-shadow: var(--shadow-2);
+}
+
+.topbar-menu[hidden] {
+    display: none;
+}
+
+.topbar-menu .ctx-item {
+    padding: 9px 10px;
+    font-size: 13px;
+}
+
+.topbar-menu .ctx-item i {
+    width: 16px;
+    margin-right: 10px;
+    text-align: center;
+    color: var(--text-2);
+}
+
 /* An open tool inverts to glass. */
 #btn-challenge-mode.is-active,
-body:has(#timeline-drawer.is-open) #btn-timelines,
 body:has(#tree-modal:not(.hidden)) #btn-multiverse,
 body:has(#tweaks-panel.is-open) #btn-tweaks {
     background: var(--fu-glass);
@@ -763,7 +863,6 @@ body:has(#tweaks-panel.is-open) #btn-tweaks {
 }
 
 #btn-challenge-mode.is-active i,
-body:has(#timeline-drawer.is-open) #btn-timelines i,
 body:has(#tree-modal:not(.hidden)) #btn-multiverse i,
 body:has(#tweaks-panel.is-open) #btn-tweaks i {
     color: var(--fu-light);
@@ -4196,6 +4295,27 @@ body.palette-competition .tree-node.tn-p2::before {
         padding: 0 8px;
         gap: 5px;
     }
+
+    /* ☰ · Undo | turn | Challenge · Multiverse · ⋯ — the way home, the
+       session tools and Tweaks live in the ⋯ menu. */
+    .tb-home,
+    .tb-home-rule,
+    .session-ctl,
+    #btn-tweaks {
+        display: none;
+    }
+
+    #btn-topbar-more {
+        display: inline-flex;
+    }
+
+    .topbar .turn-ctl .icon-btn span {
+        display: none;
+    }
+
+    .topbar .turn-ctl .icon-btn {
+        width: 30px;
+    }
 }
 
 /* Menu icons are engraved too: no blue / purple accents on paper. */
@@ -4267,7 +4387,6 @@ body.palette-competition .tree-node.tn-p2::before {
 /* Glass chips on the warm black shell (turn chip, an open tool) get a line. */
 :root[data-theme="night"] .turn-pill,
 :root[data-theme="night"] #btn-challenge-mode.is-active,
-:root[data-theme="night"] body:has(#timeline-drawer.is-open) #btn-timelines,
 :root[data-theme="night"] body:has(#tree-modal:not(.hidden)) #btn-multiverse,
 :root[data-theme="night"] body:has(#tweaks-panel.is-open) #btn-tweaks,
 :root[data-theme="night"] .tweak-radio button.is-active,

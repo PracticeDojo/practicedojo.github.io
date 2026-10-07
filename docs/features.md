@@ -700,6 +700,21 @@ Implements version 2 of `docs/DESIGN-field-unit.md` (Kiln dark mode, signal fami
 - **Signal family.** By day the signal is Ember `#E4572E`; on Kiln it is Radio `#E86B2A` with dark text on the key. Tweaks → Accent offers only the approved swaps: **Signal** (the theme's own), **Coral**, **Olive** (its lore numeral lifts to `#C6C45A` on the well) and **Trace**. Each carries the text colour that sits on it. The old Amber / Rose / Emerald / Violet / Azure accents were ink colours, so a saved pick of one falls back to Signal.
 - **CSS file.** The Field Unit tokens, themes, palettes and component styles moved from the inline `<style>` to `app/css/field-unit.css`, loaded right after it (pixel-identical move). The older inline rules stay put.
 
+## Patch: Top bar grouped by job (v3.2.6)
+
+### Details
+- **Left: the way home and the session.** `‹ DOJO` with the torii mark goes back to the home screen (the match stays saved). It replaces the reset button, whose ↻ arrow read as Undo flipped. Then the session title, **Save**, **Save as copy** and **Share**.
+- **Centre: the turn control.** **Undo**, the turn chip and **Challenge** are one joined control, so Undo sits on the turn it undoes. Undo's icon is the only circular arrow left in the bar.
+- **Right: Multiverse and Tweaks.** Multiverse is a paper button with a branch icon in the signal colour (the signal marks the branch you are on). The Timelines button left the bar: Timelines opens from the sidebar and with **T** until it merges into the Multiverse view.
+- **Narrow desktops** (761–1100px): Undo and Challenge are icon-only.
+- **Phones:** ☰ · Undo | turn | Challenge · Multiverse · ⋯. The ⋯ menu holds Save, Save as copy, Share link, Tweaks and Leave to the dojo. A second tap, Escape or a tap outside closes it.
+
+## Patch: Deck icon (v3.2.5)
+
+### Details
+- **Deck icon** (`img/deck_icon.svg`): a card in the deck's first ink with a star cut out of it in the second. It replaces the two-bar ink ticks in the sidebar player rows, the board's player tags, the phone card drawer, auto-saves, multiverse nodes, the home seats and deck chips, and the Tweaks palette readout. Player 2's card is striped so a mirror match still reads.
+- **Favicon:** the landing page and the app use the deck icon as their tab icon.
+
 ## Patch: Home page in two columns (v3.2.4)
 
 ### Details
@@ -838,3 +853,5 @@ The public page (`index.html`) follows Field Unit too, as `docs/DESIGN-field-uni
 - [x] Patch: Framed phone board
 - [x] Patch: Self-hosted Inter and Inter Display
 - [x] Patch: Home page in two columns
+- [x] Patch: Deck icon
+- [x] Patch: Top bar grouped by job
