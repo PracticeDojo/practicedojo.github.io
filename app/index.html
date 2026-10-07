@@ -1029,7 +1029,7 @@
     <script>
         let cardFuse = null;
 
-        const APP_VERSION = "v3.4.1"; // Centralized version string (v3: Field Unit)
+        const APP_VERSION = "v3.4.2"; // Centralized version string (v3: Field Unit)
 
         // Tweaks panel accent presets (hue values for the OKLCH accent ramp)
         // Tweaks → Accent: the approved Field Unit signals only (design.md ·
@@ -5737,12 +5737,14 @@
                 // visible at once, and it's the one section where the count is unbounded.
                 { key: 'startingHand', label: 'Starting hand', color: 'var(--text-dim)', marksLeft: true, wrap: true }
             ],
-            // The panel shows the selected node's recap, so nodes are lean by default:
-            // title, note and the Played strip. "Show in nodes" (a saved preference)
-            // puts every section back in every node, as before.
+            // The panel shows the selected node's card sections, so nodes are lean by
+            // default: title, the comment (with its turn recap text) and the Played
+            // strip. "Show in nodes" (a saved preference) puts every card section back
+            // in every node, as before.
             treeRecapInNodes: false,
+            // lean = the pre-panel compact node (its comment box scrolls);
             // full = body + one label row (16px) and one thumb row (46px) per section.
-            TREE_NODE_H: { lean: 156, full: 510 },
+            TREE_NODE_H: { lean: 250, full: 510 },
 
             // A node saved before Feature 31 has no `sections`, so its cardsPlayedData is
             // the Played section. A node that HAS sections is authoritative, even if empty.
@@ -5810,9 +5812,10 @@
             },
 
             // A node's comment is the player's note, then (auto-saves, saved turns,
-            // imported logs) a "**Turn recap**" markdown block. The panel edits the
-            // note and shows the recap as cards, so the two are split. The auto-save's
-            // stock "Auto-saved at start of turn." counts as no note.
+            // imported logs) a "**Turn recap**" markdown block. Nodes and the panel show
+            // and edit it whole; the save form splits it so a turn note seeded from an
+            // older node doesn't carry that node's recap into the new one. The
+            // auto-save's stock "Auto-saved at start of turn." counts as no note.
             splitNodeComment(comment) {
                 const s = String(comment || '');
                 const i = s.indexOf('**Turn recap**');
@@ -6065,8 +6068,8 @@
                     // back to --node-c (the winner's single ink color) via the CSS default.
                     if (b.gradient) el.style.setProperty('--node-g', b.gradient);
 
-                    // Lean nodes show the player's note only; the recap is in the panel.
-                    const comment = this.treeRecapInNodes ? (b.comment || '') : this.splitNodeComment(b.comment).note;
+                    // The whole comment: the note and the text recap of the turn.
+                    const comment = b.comment || '';
 
                     el.innerHTML = `
                          <span class="deck-icon${pIdx === null ? '' : ' is-p' + (pIdx + 1)}"></span>
@@ -6126,7 +6129,7 @@
                 const pIdx = node ? this.bookmarkPlayerIndex(node) : this.autoSaveInfo(auto).activePlayer;
                 const time = new Date(b.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' });
                 const editing = this._tpEdit && this._tpEdit.id === b.id ? this._tpEdit.field : null;
-                const parts = this.splitNodeComment(node ? node.comment : '');
+                const comment = node ? (node.comment || '') : '';
 
                 const label = auto ? 'Where you jumped from'
                     : `Selected${isLive ? ' <span class="tp-here">· you are here</span>' : ''}`;
@@ -6138,10 +6141,10 @@
                 const noteHtml = auto
                     ? `<p class="tp-hint">Kept automatically when you jumped to another node, so the board you left is never lost. The last five stay until you keep one as a node.</p>`
                     : editing === 'note'
-                        ? `<textarea class="input tp-note-input custom-scrollbar" id="tp-note-input" rows="5" aria-label="Note" placeholder="Write a note (markdown)">${esc(parts.note)}</textarea>
+                        ? `<textarea class="input tp-note-input custom-scrollbar" id="tp-note-input" rows="8" aria-label="Comment" placeholder="Write a comment (markdown)">${esc(comment)}</textarea>
                            <div class="tp-edit-hint">Click away or Ctrl+Enter to save · Esc to cancel</div>`
-                        : `<div class="tp-note markdown-comment${parts.note ? '' : ' is-empty'}" data-act="edit-note" role="button" tabindex="0"
-                               title="Click to edit the note">${parts.note ? this.renderMarkdown(parts.note) : 'Add a note…'}</div>`;
+                        : `<div class="tp-note markdown-comment${comment ? '' : ' is-empty'}" data-act="edit-note" role="button" tabindex="0"
+                               title="Click to edit the comment">${comment ? this.renderMarkdown(comment) : 'Add a comment…'}</div>`;
                 const actions = `
                     <button class="btn btn-primary tp-play" data-act="play" title="Play from here (Enter, or double-click the node)"><i class="fa-solid fa-play"></i> Play from here</button>
                     ${auto ? `<button class="btn" data-act="keep"><i class="fa-solid fa-bookmark"></i> Keep as node</button>` : ''}
@@ -6165,9 +6168,6 @@
                             title="Show the full recap inside every node">Show in nodes<span class="tp-switch${this.treeRecapInNodes ? ' is-on' : ''}"></span></button>
                     </div>`;
                 const recapCards = this.buildPanelSectionsHtml(auto ? { cardsPlayedData: auto.cardsPlayedData || [] } : node, '');
-                // Nodes saved before the card sections existed only have the text recap.
-                const textRecap = node && !node.sections && parts.recap
-                    ? `<div class="tp-recap-text markdown-comment">${this.renderMarkdown(parts.recap)}</div>` : '';
 
                 host.innerHTML = `
                     <div class="tp-label">${label}</div>
@@ -6176,7 +6176,7 @@
                     <div class="tp-actions">${actions}</div>
                     ${noteHtml}
                     ${loreHtml}
-                    <div class="tp-recap">${recapHead}${recapCards}${textRecap}</div>`;
+                    <div class="tp-recap">${recapHead}${recapCards}</div>`;
 
                 if (editing) this.bindTreeEdit(b.id, editing);
             },
@@ -6221,10 +6221,9 @@
                     if (!name || name === node.name) return;
                     node.name = name;
                 } else {
-                    const parts = this.splitNodeComment(node.comment);
-                    const note = value.trim();
-                    if (note === parts.note) return;
-                    node.comment = [note, parts.recap].filter(Boolean).join('\n\n');
+                    const comment = value.trim();
+                    if (comment === (node.comment || '').trim()) return;
+                    node.comment = comment;
                 }
                 this.renderTree();
                 this.saveToDevice();

@@ -700,6 +700,14 @@ Implements version 2 of `docs/DESIGN-field-unit.md` (Kiln dark mode, signal fami
 - **Signal family.** By day the signal is Ember `#E4572E`; on Kiln it is Radio `#E86B2A` with dark text on the key. Tweaks → Accent offers only the approved swaps: **Signal** (the theme's own), **Coral**, **Olive** (its lore numeral lifts to `#C6C45A` on the well) and **Trace**. Each carries the text colour that sits on it. The old Amber / Rose / Emerald / Violet / Azure accents were ink colours, so a saved pick of one falls back to Signal.
 - **CSS file.** The Field Unit tokens, themes, palettes and component styles moved from the inline `<style>` to `app/css/field-unit.css`, loaded right after it (pixel-identical move). The older inline rules stay put.
 
+## Patch: Turn recap text back in the Multiverse (v3.4.2)
+
+### Details
+- Feature 51 showed only the player's note, cut off at `**Turn recap**`, so the text an end-of-turn auto-save or an imported log writes (*Drew / Inked / Played / Quested / Banished…*) seemed to have stopped. It was still saved; it just wasn't shown.
+- **Nodes** show their whole comment again, note and turn recap, at the pre-panel compact height (250px; the comment scrolls). "Show in nodes" still adds the card sections on top.
+- **The panel** shows the whole comment too, and clicking it edits all of it, as the old in-node editor did. The card thumbnails stay under *Turn recap*.
+- The panel's markdown is drawn in paper ink: its bold labels (*Turn recap*, *Drew:*…) were near-white on paper.
+
 ## Feature 51: Multiverse panel — Timelines merged into the Multiverse (v3.4.0)
 
 ### User Story
@@ -891,3 +899,4 @@ The public page (`index.html`) follows Field Unit too, as `docs/DESIGN-field-uni
 - [x] Patch: Top bar grouped by job
 - [x] Feature 50: Library shelves — what's on this device and what's in your account
 - [x] Feature 51: Multiverse panel — Timelines merged into the Multiverse
+- [x] Patch: Turn recap text back in the Multiverse

@@ -3581,6 +3581,17 @@ body.palette-competition .tree-node.tn-p2::before {
     outline: none;
 }
 
+/* The comment is markdown on paper: its bold and italic take the paper's
+   ink, not the old glass greys from base.css. */
+.tp-note strong {
+    color: var(--text);
+    font-weight: 620;
+}
+
+.tp-note em {
+    color: var(--text-2);
+}
+
 .tp-note.is-empty {
     border: 1px dashed var(--border);
     color: var(--text-faint);
@@ -3750,14 +3761,6 @@ body.palette-competition .tree-node.tn-p2::before {
 .tp-save-form .tp-sec-row .tp-thumb {
     width: 32px;
     height: 45px;
-}
-
-.tp-recap-text {
-    padding-top: 6px;
-    border-top: 1px solid var(--fu-row-rule);
-    font-size: 11.5px;
-    line-height: 1.45;
-    color: var(--text-2);
 }
 
 /* Phones: the canvas on top, the panel under it; the side preference waits
