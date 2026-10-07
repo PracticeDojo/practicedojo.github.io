@@ -54,5 +54,27 @@ This project uses Semantic Versioning (`MAJOR.MINOR.PATCH`) to track progress, a
 1. Update `APP_VERSION` in `app/index.html` (the UI reads it from there).
 2. Update the version label in the landing page (`index.html`).
 
+## Branch naming
+
+Every branch is named `<type>/<slug>`. Branches made by an AI agent put `claude/` in front: `claude/<type>-<slug>`.
+
+| Type | Use it for | Version bump |
+|---|---|---|
+| `feat` | A feature from `docs/features.md` | MINOR |
+| `fix` | A bug fix | PATCH |
+| `design` | A visual change (Field Unit, CSS, landing page look) | PATCH |
+| `refactor` | Moving or tidying code with no change in behaviour | PATCH |
+| `docs` | Docs only | none |
+| `chore` | Tooling, workflows, skills, repo housekeeping | none |
+
+- The slug says what changes, in 2–5 lowercase words joined by hyphens. Start with the area when it helps: `multiverse-`, `landing-`, `library-`, `board-`.
+- For a feature, put its number from `docs/features.md` first: `feat/23-share-links`.
+- No version numbers, dates or names in the branch name.
+- One branch per piece of work, one PR per branch. Delete the branch after it merges.
+
+Examples: `feat/23-share-links`, `fix/landing-pin-05-position`, `design/multiverse-glass-notes`, `docs/branch-naming`, `claude/fix-lore-box-count`.
+
+If your session starts on a branch named for you (for example `claude/epic-meitner-blh8tb`), create the conventional branch from it before your first commit and push that instead. If the environment won't let you push to it, keep the assigned branch, give the PR a title in the form `type: what changes`, and tell the user the conventional name so they can rename the branch on GitHub.
+
 ## Keeping a dev guide
 - Whenever the user asks to `update the dev guide`, add a concise distillation of the session as a section in `docs/personal_dojo_dev_guide.md`.
