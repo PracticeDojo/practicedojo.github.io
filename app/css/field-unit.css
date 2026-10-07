@@ -3563,47 +3563,148 @@ body.palette-competition .tree-node.tn-p2::before {
     color: var(--danger);
 }
 
-.tp-note {
-    padding: 7px 8px;
-    border: 1px solid transparent;
-    border-radius: var(--radius-sm);
-    font-size: 12px;
-    line-height: 1.45;
-    color: var(--text-2);
-    overflow-wrap: anywhere;
-    cursor: text;
+/* ----- Notes are glass (design.md · Note), wherever a note is shown: the
+       board, a multiverse node, the panel, the save form. A label row says
+       whose it is, with a pen: click anywhere on it to edit. Hover lights the
+       hairline; editing keeps it lit. ----- */
+.tn-note-head,
+.tp-note-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+    margin-bottom: 4px;
+    font-family: var(--font-mono);
+    font-size: 9px;
+    line-height: 1.2;
+    letter-spacing: var(--label-track);
+    text-transform: uppercase;
+    color: var(--fu-glass-mute);
 }
 
-.tp-note:hover,
-.tp-note:focus-visible {
-    border-color: var(--border);
-    background: var(--surface-2);
+.tn-note-head i,
+.tp-note-head i {
+    font-size: 9px;
+}
+
+/* In a paper node: glass raised with a hairline, so it sits on the card
+   instead of reading as a hole through to the canvas. */
+.tn-note {
+    flex: 1 1 0;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    margin-top: 7px;
+    padding: 6px 8px 7px;
+    border: 1px solid var(--fu-glass-line);
+    border-radius: var(--radius-sm);
+    background: var(--fu-glass-raised);
+    cursor: text;
+    transition: border-color var(--dur) var(--ease);
+}
+
+.tn-note:hover {
+    border-color: var(--fu-glass-2);
+}
+
+.tn-note:hover .tn-note-head i {
+    color: var(--fu-glass-2);
+}
+
+.tn-note .tn-comment {
+    margin-top: 0;
+    flex: 1 1 0;
+    min-height: 0;
+    overflow-y: auto;
+    color: var(--fu-light);
+}
+
+.tn-note .tn-comment strong {
+    color: var(--fu-light);
+}
+
+/* In the panel: glass on paper, like the board's notes box. */
+.tp-note-box {
+    padding: 8px 10px 9px;
+    border: 1px solid var(--fu-glass-line);
+    border-radius: var(--radius-sm);
+    background: var(--fu-glass);
+    color: var(--fu-light);
+    cursor: text;
+    transition: border-color var(--dur) var(--ease);
+}
+
+.tp-note-box:hover,
+.tp-note-box:focus-visible,
+.tp-note-box.is-editing {
+    border-color: var(--fu-glass-2);
     outline: none;
 }
 
-/* The comment is markdown on paper: its bold and italic take the paper's
-   ink, not the old glass greys from base.css. */
+.tp-note-box:hover .tp-note-head,
+.tp-note-box:focus-visible .tp-note-head,
+.tp-note-box.is-editing .tp-note-head {
+    color: var(--fu-glass-2);
+}
+
+.tp-note-box.is-editing {
+    cursor: auto;
+}
+
+.tp-note-box.is-empty {
+    border-style: dashed;
+    border-color: var(--fu-edge);
+}
+
+.tp-note {
+    font-size: 12px;
+    line-height: 1.45;
+    color: var(--fu-light);
+    overflow-wrap: anywhere;
+}
+
 .tp-note strong {
-    color: var(--text);
+    color: var(--fu-light);
     font-weight: 620;
 }
 
-.tp-note em {
-    color: var(--text-2);
+.tp-note-box.is-empty .tp-note {
+    color: var(--fu-glass-mute);
 }
 
-.tp-note.is-empty {
-    border: 1px dashed var(--border);
-    color: var(--text-faint);
-}
-
-.tp-note-input.input {
+.tp-note-input {
+    display: block;
     width: 100%;
-    min-height: 110px;
-    padding: 7px 8px;
+    min-height: 130px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--fu-light);
+    font-family: var(--font-sans);
     font-size: 12px;
     line-height: 1.45;
     resize: vertical;
+    outline: none;
+}
+
+.tp-note-input::placeholder {
+    color: var(--fu-glass-mute);
+}
+
+/* The save form's note is a note too. */
+#bookmark-comment.input {
+    background: var(--fu-glass);
+    border-color: var(--fu-glass-line);
+    color: var(--fu-light);
+}
+
+#bookmark-comment.input:focus {
+    background: var(--fu-glass);
+    border-color: var(--fu-glass-2);
+}
+
+#bookmark-comment.input::placeholder {
+    color: var(--fu-glass-mute);
 }
 
 .tp-edit-hint {

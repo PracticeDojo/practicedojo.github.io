@@ -247,6 +247,8 @@ Label is `label/sm`. Track is 3px `#E0DBD1`, radius 999. Marker is a 7px ink cir
 
 Glass fill, paper text, 8px radius, 7px 8px padding, 11px. This is the turn note ("Play Hades on Agustin?"). It is not a toast and not a card.
 
+A note looks the same wherever it is shown: the board's turn note and notes box, a multiverse node's comment, the Multiverse panel's note and the save form's note field. A `label/sm` row in glass mute says whose it is (`Turn 15 note · Player 2`, or `Note` inside a node) with a pen on the right; click anywhere on it to edit. Hover lights the hairline to `#C9C3B8`, and it stays lit while editing. Inside a paper node it is glass raised `#1A1A1A` with a 1px `#2A2A2A` hairline, so it sits on the card instead of reading as a hole through to the canvas. A node with nothing to show has no note; the panel shows a dashed `#6A655E` one, "Add a note…". The auto-save's stock line "Auto-saved at start of turn." is never shown.
+
 ### Lore box
 
 Glass raised, 1px `#2A2A2A`, 10px radius. Label `label/sm` mute between − and +, numeral `display/lg` signal under it, nothing else (the hand's zone stats were dropped in v3.4.1). On the board it stretches to the hand's height with its count centred.
@@ -283,7 +285,7 @@ Paper module. Header `label/sm`: `Draw odds · 24` and `1 · 2 · 4`. Columns: c
 
 Paper, 10px radius, 230px wide, padding 8px 9px, 1px `#E0DBD1`. Title 12px weight 620. Subline 10px mute: lore pair, timestamp, "auto-saved". Body is a 2-column grid, 10px: label `label/sm`, value ink. Bottom bar 2px. Live node: 1px signal border plus signal bar. Inactive bar is `#E0DBD1`.
 
-Node body must be able to show played, inked, drawn, discarded, banished, quested, hand size, and the note. Do not reduce a node to a title. With the card sections in the panel (the default) a node is lean: title, subline, its comment (the note and the turn recap text) and the Played strip; "Show in nodes" brings every section back.
+Node body must be able to show played, inked, drawn, discarded, banished, quested, hand size, and the note. Do not reduce a node to a title. With the card sections in the panel (the default) a node is lean: title, subline, its comment (the note and the turn recap text) as a glass Note, and the Played strip; "Show in nodes" brings every section back.
 
 A pre-jump auto-save is a ghost of a node: glass raised, 1px dashed `#6A655E` border, no bar, mute text, a dashed edge to the node it was taken from. It is not a node until kept.
 
@@ -293,7 +295,7 @@ On the glass canvas. Inactive `#6A655E` at 1.2px. The path to the node you are o
 
 ### Multiverse panel
 
-Paper module, 12px radius, 12px padding, beside the canvas. Top: one emphasised paper tool, **Save current unfinished turn**, that opens a name, a note and the cards the node will keep. Then the selected node: `label/sm` "Selected" (signal "· you are here" on the live node), the node's name as `title/md` that edits in place on click, the subline in mono mute, **Play from here** (the view's one signal key) and a paper bin, the comment, note and turn recap text in paper ink (click to edit all of it; dashed when empty), the lore race (two meters to 20), and the turn recap as label · card thumbnails with the "Show in nodes" switch (ink when on, never signal).
+Paper module, 12px radius, 12px padding, beside the canvas. Top: one emphasised paper tool, **Save current unfinished turn**, that opens a name, a note and the cards the node will keep. Then the selected node: `label/sm` "Selected" (signal "· you are here" on the live node), the node's name as `title/md` that edits in place on click, the subline in mono mute, **Play from here** (the view's one signal key) and a paper bin, the comment, note and turn recap text, as a glass Note (click to edit all of it; dashed when empty), the lore race (two meters to 20), and the turn recap as label · card thumbnails with the "Show in nodes" switch (ink when on, never signal).
 
 ### Marketing chassis
 

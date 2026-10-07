@@ -700,6 +700,15 @@ Implements version 2 of `docs/DESIGN-field-unit.md` (Kiln dark mode, signal fami
 - **Signal family.** By day the signal is Ember `#E4572E`; on Kiln it is Radio `#E86B2A` with dark text on the key. Tweaks → Accent offers only the approved swaps: **Signal** (the theme's own), **Coral**, **Olive** (its lore numeral lifts to `#C6C45A` on the well) and **Trace**. Each carries the text colour that sits on it. The old Amber / Rose / Emerald / Violet / Azure accents were ink colours, so a saved pick of one falls back to Signal.
 - **CSS file.** The Field Unit tokens, themes, palettes and component styles moved from the inline `<style>` to `app/css/field-unit.css`, loaded right after it (pixel-identical move). The older inline rules stay put.
 
+## Patch: Notes are glass in the Multiverse (v3.4.3)
+
+### Details
+- **A note looks the same everywhere.** A node's comment, the panel's note and the save form's note field now use the board's glass Note: paper text on glass, with a label row saying whose note it is (`NOTE` in a node, `TURN 15 NOTE · PLAYER 2` in the panel) and a pen, so it reads as yours to edit.
+- **Click to edit.** Clicking a note in a node selects that node and opens its note in the panel's editor, cursor in the text (a double-click on a note no longer jumps). In the panel, click the note (or Enter / Space on it). The editor is the same glass box with its hairline lit; click away or Ctrl+Enter saves, Esc cancels.
+- **Hover** lights the note's hairline (`#C9C3B8`). Phones show the label and pen all the time.
+- **Inside a node** the note is glass raised (`#1A1A1A`) with a `#2A2A2A` hairline, so it sits on the paper card. A node with nothing to show has no note block; the panel shows a dashed one with *Add a note…*.
+- **The auto-save's stock line** *Auto-saved at start of turn.* is no longer shown. It stays in the saved comment until the note is edited.
+
 ## Patch: Turn recap text back in the Multiverse (v3.4.2)
 
 ### Details
@@ -900,3 +909,4 @@ The public page (`index.html`) follows Field Unit too, as `docs/DESIGN-field-uni
 - [x] Feature 50: Library shelves — what's on this device and what's in your account
 - [x] Feature 51: Multiverse panel — Timelines merged into the Multiverse
 - [x] Patch: Turn recap text back in the Multiverse
+- [x] Patch: Notes are glass in the Multiverse

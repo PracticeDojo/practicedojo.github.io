@@ -1029,7 +1029,7 @@
     <script>
         let cardFuse = null;
 
-        const APP_VERSION = "v3.4.2"; // Centralized version string (v3: Field Unit)
+        const APP_VERSION = "v3.4.3"; // Centralized version string (v3: Field Unit)
 
         // Tweaks panel accent presets (hue values for the OKLCH accent ramp)
         // Tweaks → Accent: the approved Field Unit signals only (design.md ·
@@ -1990,10 +1990,13 @@
                     const isAuto = el.dataset.kind === 'auto';
                     if (e.target.closest('[data-act="delete"]')) { this.deleteTimeline(el.dataset.id, isAuto); return; }
                     this.selectTreeNode(el.dataset.id);
+                    // The note block: select the node and open its note in the panel's
+                    // editor (a link inside the note still just opens).
+                    if (e.target.closest('[data-act="edit-note"]') && !e.target.closest('a')) this.startTreeEdit('note');
                 });
                 nodes.addEventListener('dblclick', (e) => {
                     const el = e.target.closest('.tree-node');
-                    if (!el || !el.dataset.id || e.target.closest('[data-act="delete"]')) return;
+                    if (!el || !el.dataset.id || e.target.closest('[data-act="delete"], [data-act="edit-note"]')) return;
                     this.restoreTimeline(el.dataset.id, el.dataset.kind === 'auto');
                 });
                 // The camera is the canvas transform; the viewport itself never scrolls.
@@ -5825,6 +5828,22 @@
                 return { note, recap };
             },
 
+            // What a note block shows: the stored comment minus the auto-save's stock
+            // first line ("Auto-saved at start of turn." says nothing). The stored
+            // comment keeps it until the note is edited.
+            shownComment(comment) {
+                return String(comment || '').replace(/^\s*Auto-saved at start of turn\.\s*/, '').trim();
+            },
+
+            // A note block's label, worded like the board's: "Turn 15 note · Player 2".
+            noteLabel(b) {
+                const m = /Turn (\d+)/.exec((b && b.stats) || '');
+                const p = this.bookmarkPlayerIndex(b);
+                const who = p !== null && this.state && this.state.players && this.state.players[p]
+                    ? this.state.players[p].name : (p === null ? '' : `Player ${p + 1}`);
+                return `Turn ${m ? m[1] : '?'} note${who ? ` · ${who}` : ''}`;
+            },
+
             // An auto-save is a whole compressed state; read the few things the tree
             // needs from it once: where it hangs, whose turn, the turn number, the lore.
             autoSaveInfo(a) {
@@ -6068,8 +6087,9 @@
                     // back to --node-c (the winner's single ink color) via the CSS default.
                     if (b.gradient) el.style.setProperty('--node-g', b.gradient);
 
-                    // The whole comment: the note and the text recap of the turn.
-                    const comment = b.comment || '';
+                    // The whole comment (the note and the text recap of the turn) in a
+                    // glass note block, only when there's something to show.
+                    const comment = this.shownComment(b.comment);
 
                     el.innerHTML = `
                          <span class="deck-icon${pIdx === null ? '' : ' is-p' + (pIdx + 1)}"></span>
@@ -6079,7 +6099,11 @@
                                  ${icon} <span>${esc(b.name)}</span>
                              </button>
                              <div class="tn-stats">${esc(b.stats).replace(/ \| /g, ' · ')}<span class="tn-time"> · ${esc(timeStr)}</span></div>
-                             <div class="tn-comment custom-scrollbar markdown-comment">${comment ? this.renderMarkdown(comment) : ''}</div>
+                             ${comment ? `
+                             <div class="tn-note" data-act="edit-note" title="Click to edit the note">
+                                 <div class="tn-note-head"><span>Note</span><i class="fa-solid fa-pen" aria-hidden="true"></i></div>
+                                 <div class="tn-comment custom-scrollbar markdown-comment">${this.renderMarkdown(comment)}</div>
+                             </div>` : ''}
 
                              <button data-act="delete" class="tn-icon-btn tn-delete"
                                  title="Delete Node (children reattach to parent; Undo available)" aria-label="Delete node">
@@ -6129,7 +6153,8 @@
                 const pIdx = node ? this.bookmarkPlayerIndex(node) : this.autoSaveInfo(auto).activePlayer;
                 const time = new Date(b.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' });
                 const editing = this._tpEdit && this._tpEdit.id === b.id ? this._tpEdit.field : null;
-                const comment = node ? (node.comment || '') : '';
+                const comment = node ? this.shownComment(node.comment) : '';
+                const noteHead = (right) => `<div class="tp-note-head"><span>${esc(this.noteLabel(node))}</span><span>${right}</span></div>`;
 
                 const label = auto ? 'Where you jumped from'
                     : `Selected${isLive ? ' <span class="tp-here">· you are here</span>' : ''}`;
@@ -6141,10 +6166,14 @@
                 const noteHtml = auto
                     ? `<p class="tp-hint">Kept automatically when you jumped to another node, so the board you left is never lost. The last five stay until you keep one as a node.</p>`
                     : editing === 'note'
-                        ? `<textarea class="input tp-note-input custom-scrollbar" id="tp-note-input" rows="8" aria-label="Comment" placeholder="Write a comment (markdown)">${esc(comment)}</textarea>
+                        ? `<div class="tp-note-box is-editing">${noteHead('Editing')}
+                               <textarea class="tp-note-input custom-scrollbar" id="tp-note-input" rows="8" aria-label="Note" placeholder="Write a note (markdown)">${esc(comment)}</textarea>
+                           </div>
                            <div class="tp-edit-hint">Click away or Ctrl+Enter to save · Esc to cancel</div>`
-                        : `<div class="tp-note markdown-comment${comment ? '' : ' is-empty'}" data-act="edit-note" role="button" tabindex="0"
-                               title="Click to edit the comment">${comment ? this.renderMarkdown(comment) : 'Add a comment…'}</div>`;
+                        : `<div class="tp-note-box${comment ? '' : ' is-empty'}" data-act="edit-note" role="button" tabindex="0" title="Click to edit the note">
+                               ${noteHead('<i class="fa-solid fa-pen" aria-hidden="true"></i> Edit')}
+                               <div class="tp-note markdown-comment">${comment ? this.renderMarkdown(comment) : 'Add a note…'}</div>
+                           </div>`;
                 const actions = `
                     <button class="btn btn-primary tp-play" data-act="play" title="Play from here (Enter, or double-click the node)"><i class="fa-solid fa-play"></i> Play from here</button>
                     ${auto ? `<button class="btn" data-act="keep"><i class="fa-solid fa-bookmark"></i> Keep as node</button>` : ''}
@@ -6222,7 +6251,7 @@
                     node.name = name;
                 } else {
                     const comment = value.trim();
-                    if (comment === (node.comment || '').trim()) return;
+                    if (comment === this.shownComment(node.comment)) return;
                     node.comment = comment;
                 }
                 this.renderTree();
