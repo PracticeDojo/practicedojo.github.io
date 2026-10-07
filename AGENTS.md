@@ -24,7 +24,17 @@ This file provides system instructions and context for AI agents working in this
 | `app/fonts/` | Self-hosted Field Unit fonts, used by the app and the landing page: Inter and Inter Display (built from Inter 4.1, OFL — see `Inter-OFL.txt`) and Liberation Mono (OFL — see `OFL.txt`). Never load fonts from a font CDN |
 | `img/` | Images used by the landing page and the app |
 | `docs/` | Feature list, dev guide, architecture, implementation and research notes, test protocols |
+| `.claude/skills/` | Agent skills. `dojo-screenshots/` = the screenshot tool (see below) |
 | `docs/samples/` | Sample Duels.ink logs and replays for testing imports |
+
+## Screenshots
+To see a UI change or show the user what something looks like, use the screenshot tool in `.claude/skills/dojo-screenshots/` (Claude Code loads it as the `dojo-screenshots` skill). Don't write your own Playwright or http-server script. Read its `SKILL.md` for recipes; the common one is:
+
+```bash
+node .claude/skills/dojo-screenshots/shoot.mjs --demo --widths 1440,390 --themes day,night --out /tmp/shots
+```
+
+It serves the repo, opens the Set 13 demo and saves PNGs. It can also shoot any git ref for before/after (`--ref origin/main`), drive the page (`--steps`), inject mock-ups (`--inject`), and `compose.mjs` lays labelled shots out on one sheet. Keep screenshots out of the repo.
 
 ## Splitting rule (YAGNI)
 The app started as a single HTML file. A new concern with its own reason to change (for example device storage or Supabase) gets its own classic `<script src>` file in `app/js/`, exposing one global. Existing code is only extracted when a feature has to change it substantially anyway. No build step, no bundler, no framework.
