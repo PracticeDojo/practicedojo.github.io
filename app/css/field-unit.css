@@ -489,10 +489,8 @@ body {
 .toggle-row .toggle-label,
 .prob-head h3,
 .prob-cols,
-.drawer-list-head,
 .tweak-label,
 .tweaks-head h3,
-.drawer-head h2,
 .home-box h3,
 .lib-group-title,
 .shelf-name,
@@ -502,6 +500,8 @@ body {
 .preview-placeholder,
 .pm-label,
 .tn-sec-label,
+.tp-label,
+.tp-sec-label,
 .seat .seat-who,
 .readout .ro-kind {
     font-family: var(--font-mono);
@@ -2702,128 +2702,6 @@ input[type="range"]::-moz-range-thumb {
     border: 2px solid var(--surface);
 }
 
-/* ----- Timelines drawer: chassis glass-pane over the rail (Feature 11) ----- */
-.drawer-overlay {
-    background: color-mix(in oklch, var(--fu-chassis) 86%, transparent);
-    border-right: 1px solid var(--border);
-}
-
-.drawer-head {
-    border-bottom-color: var(--border);
-}
-
-.drawer-head h2 {
-    color: var(--text);
-    font-weight: 700;
-}
-
-.drawer-head h2 i {
-    color: var(--text-2) !important;
-}
-
-.drawer-row {
-    margin: 8px 10px 0;
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-    background: var(--surface);
-    overflow: hidden;
-}
-
-.drawer-row .icon-btn {
-    height: 30px;
-    padding: 0 4px;
-    border-right: 1px solid var(--border-soft);
-    color: var(--text);
-    font-size: 11.5px;
-    font-weight: 500;
-}
-
-.drawer-row .icon-btn i {
-    color: var(--text-2);
-}
-
-.drawer-row .icon-btn.is-accent,
-.drawer-row .icon-btn.is-ok {
-    color: var(--text);
-}
-
-.drawer-row .icon-btn:hover {
-    background: var(--surface-2);
-}
-
-.drawer-section {
-    border-bottom-color: var(--border-soft);
-    padding: 10px;
-}
-
-.drawer-section .btn-block:not(.btn-primary) {
-    min-height: 32px;
-}
-
-.drawer-section .btn i[style] {
-    color: var(--text-2) !important;
-}
-
-.drawer-list {
-    padding: 10px;
-}
-
-.drawer-list-head {
-    color: var(--text-dim);
-}
-
-/* Auto-saves and bookmarks: paper rows with the player's ticks. */
-.autosave-item,
-body.palette-competition .autosave-item.is-p1,
-body.palette-competition .autosave-item.is-p2 {
-    background: var(--surface);
-    border: 1px solid var(--border-soft);
-    border-radius: var(--radius-sm);
-    padding: 7px 9px 7px 24px;
-}
-
-.autosave-item:hover {
-    background: var(--surface);
-    border-color: var(--border-strong);
-}
-
-.autosave-item::before,
-body.palette-competition .autosave-item.is-p1::before,
-body.palette-competition .autosave-item.is-p2::before {
-    content: none;
-}
-
-.autosave-item > .deck-icon {
-    position: absolute;
-    left: 8px;
-    top: 8px;
-    height: 15px;
-}
-
-.autosave-item .as-name {
-    color: var(--text);
-    font-size: 11.5px;
-    font-weight: 560;
-}
-
-.autosave-item .as-stats {
-    font-size: 10px;
-    color: var(--text-dim);
-}
-
-.autosave-item .as-restore {
-    background: oklch(0.13 0 0 / 0.86);
-    color: var(--fu-light);
-    font-family: var(--font-mono);
-    font-size: 10px;
-    letter-spacing: var(--label-track);
-    text-transform: uppercase;
-}
-
-.autosave-empty {
-    color: var(--text-dim);
-}
-
 .bookmark {
     background: var(--surface);
     border: 1px solid var(--border-soft);
@@ -3325,7 +3203,7 @@ body.palette-competition .tree-node.tn-p2::before {
     letter-spacing: -0.01em;
     color: var(--fu-ink);
     gap: 5px;
-    padding-right: 50px;
+    padding-right: 28px;
 }
 
 .tn-title i,
@@ -3369,10 +3247,6 @@ body.palette-competition .tree-node.tn-p2::before {
     font-size: 9px;
 }
 
-.tn-icon-btn.tn-edit {
-    right: 32px;
-}
-
 .tn-icon-btn.tn-delete {
     right: 7px;
 }
@@ -3388,11 +3262,6 @@ body.palette-competition .tree-node.tn-p2::before {
     background: var(--danger-soft);
     border-color: var(--danger);
     color: var(--danger);
-}
-
-.tree-node .tn-edit-form {
-    background: var(--fu-paper);
-    padding: 9px;
 }
 
 .tn-cards {
@@ -3467,6 +3336,497 @@ body.palette-competition .tree-node.tn-p2::before {
     font-family: var(--font-mono);
     font-size: 11px;
     letter-spacing: 0.06em;
+}
+
+/* Pre-jump auto-saves: dashed ghosts of a node, hung off the node they were
+   taken from by a dashed edge. Not nodes until kept, so no paper and no bar. */
+.tn-edge.is-ghost {
+    stroke-dasharray: 4 4;
+}
+
+.tree-node.is-ghost {
+    background: var(--fu-glass-raised);
+    border: 1px dashed var(--fu-edge);
+    box-shadow: none;
+}
+
+.tree-node.is-ghost::after {
+    content: none;
+}
+
+.tree-node.is-ghost > .deck-icon {
+    opacity: 0.55;
+}
+
+.tree-node.is-ghost .tn-title {
+    color: var(--fu-glass-2);
+}
+
+.tree-node.is-ghost .tn-title i,
+.tree-node.is-ghost .tn-stats,
+.tree-node.is-ghost .tn-comment {
+    color: var(--fu-glass-mute);
+}
+
+.tree-node.is-ghost .tn-cards {
+    border-top-color: var(--fu-glass-line);
+}
+
+.tree-node.is-ghost .tn-icon-btn {
+    background: transparent;
+    border-color: var(--fu-glass-line);
+    color: var(--fu-glass-mute);
+}
+
+/* Lean nodes (the recap lives in the panel): the note gets the room, the
+   Played strip stays one row. */
+#tree-nodes.is-lean .tn-cards.is-compact .tn-sec-row {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    max-height: none;
+}
+
+#tree-nodes.is-lean .tn-cards.is-compact .tn-sec-row .tn-card-thumb {
+    width: 30px;
+    height: 42px;
+}
+
+/* ----- Multiverse header tools: Import / Export / Log (were the Timelines
+       drawer's row) ----- */
+.tree-tool {
+    height: 28px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0 10px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.tree-tool i {
+    color: var(--text-2);
+    font-size: 11px;
+}
+
+.tree-tool:hover {
+    background: var(--surface-2);
+    border-color: var(--border-strong);
+}
+
+.tree-head-rule {
+    height: 20px;
+}
+
+/* ----- Multiverse panel: save the turn you're in, then the selected node.
+       Paper module beside the glass canvas; docks right, or left by
+       preference. Phones stack it under the canvas. ----- */
+.tree-body {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+}
+
+.tree-body.is-dock-left {
+    flex-direction: row-reverse;
+}
+
+.tree-panel {
+    width: 340px;
+    flex: none;
+    margin: 8px 8px 8px 0;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    overflow-y: auto;
+    background: var(--surface);
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius);
+}
+
+.tree-body.is-dock-left .tree-panel {
+    margin: 8px 0 8px 8px;
+}
+
+.tree-panel [hidden] {
+    display: none !important;
+}
+
+.tp-block {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.tp-save {
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--border-soft);
+}
+
+.tp-save-open {
+    justify-content: center;
+    min-height: 38px;
+    font-size: 12.5px;
+    font-weight: 560;
+    border-color: var(--text);
+}
+
+.tp-save-open i,
+.tp-strong i {
+    color: var(--text-2);
+}
+
+.tp-save-form {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.tp-field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.tp-field .input {
+    width: 100%;
+    padding: 7px 9px;
+    font-size: 12.5px;
+}
+
+.tp-field textarea.input {
+    min-height: 96px;
+    resize: vertical;
+    line-height: 1.45;
+}
+
+.tp-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+}
+
+.tp-save-form .tp-actions {
+    justify-content: flex-end;
+}
+
+.tp-strong {
+    border-color: var(--text);
+    font-weight: 560;
+}
+
+.tp-here {
+    color: var(--accent);
+}
+
+.tp-empty,
+.tp-hint {
+    margin: 0;
+    font-size: 11.5px;
+    line-height: 1.45;
+    color: var(--text-dim);
+}
+
+.tp-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+}
+
+.tp-name {
+    flex: 1;
+    min-width: 0;
+    margin-left: -5px;
+    padding: 2px 4px;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--text);
+    font-family: var(--font-sans);
+    font-size: 16px;
+    font-weight: 560;
+    letter-spacing: -0.02em;
+    line-height: 1.25;
+    text-align: left;
+    overflow-wrap: anywhere;
+    cursor: text;
+}
+
+.tp-name:hover,
+.tp-name:focus-visible {
+    border-color: var(--border);
+    background: var(--surface-2);
+    outline: none;
+}
+
+.tp-name.is-static {
+    cursor: default;
+}
+
+.tp-name.is-static:hover {
+    border-color: transparent;
+    background: transparent;
+}
+
+.tp-name-input.input {
+    flex: 1;
+    min-width: 0;
+    padding: 4px 6px;
+    font-size: 15px;
+    font-weight: 560;
+}
+
+.tp-sub {
+    margin-top: -4px;
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    color: var(--text-dim);
+    font-variant-numeric: tabular-nums;
+}
+
+.tp-del {
+    width: 36px;
+    height: 36px;
+    margin-left: auto;
+    justify-content: center;
+}
+
+.tp-del:hover {
+    background: var(--danger-soft);
+    border-color: var(--danger);
+    color: var(--danger);
+}
+
+.tp-note {
+    padding: 7px 8px;
+    border: 1px solid transparent;
+    border-radius: var(--radius-sm);
+    font-size: 12px;
+    line-height: 1.45;
+    color: var(--text-2);
+    overflow-wrap: anywhere;
+    cursor: text;
+}
+
+.tp-note:hover,
+.tp-note:focus-visible {
+    border-color: var(--border);
+    background: var(--surface-2);
+    outline: none;
+}
+
+.tp-note.is-empty {
+    border: 1px dashed var(--border);
+    color: var(--text-faint);
+}
+
+.tp-note-input.input {
+    width: 100%;
+    min-height: 110px;
+    padding: 7px 8px;
+    font-size: 12px;
+    line-height: 1.45;
+    resize: vertical;
+}
+
+.tp-edit-hint {
+    margin-top: -4px;
+    font-family: var(--font-mono);
+    font-size: 9.5px;
+    letter-spacing: 0.04em;
+    color: var(--text-dim);
+}
+
+.tp-lore {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.tp-meter {
+    display: grid;
+    grid-template-columns: auto 20px minmax(0, 1fr) 22px;
+    align-items: center;
+    gap: 8px;
+}
+
+.tp-meter-p,
+.tp-meter-v {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text);
+    font-variant-numeric: tabular-nums;
+}
+
+.tp-meter-v {
+    text-align: right;
+}
+
+.tp-track {
+    position: relative;
+    height: 3px;
+    border-radius: 999px;
+    background: var(--fu-line-soft);
+}
+
+.tp-mark {
+    position: absolute;
+    top: 50%;
+    width: 7px;
+    height: 7px;
+    margin: -3.5px 0 0 -3.5px;
+    border-radius: 50%;
+    background: var(--text);
+}
+
+.tp-recap {
+    display: flex;
+    flex-direction: column;
+}
+
+.tp-recap-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding-bottom: 4px;
+}
+
+.tp-switch-row {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 2px 0;
+    border: 0;
+    background: transparent;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: var(--label-track);
+    text-transform: uppercase;
+    color: var(--text-dim);
+    cursor: pointer;
+}
+
+.tp-switch-row:hover {
+    color: var(--text);
+}
+
+/* A setting, not a live reading: ink when on, never the signal. */
+.tp-switch {
+    position: relative;
+    width: 26px;
+    height: 14px;
+    border-radius: 999px;
+    background: var(--fu-line-soft);
+    transition: background var(--dur) var(--ease);
+}
+
+.tp-switch::after {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--text);
+    transition: left var(--dur) var(--ease);
+}
+
+.tp-switch.is-on {
+    background: var(--text);
+}
+
+.tp-switch.is-on::after {
+    left: 14px;
+    background: var(--surface);
+}
+
+.tp-sec {
+    display: grid;
+    grid-template-columns: 76px minmax(0, 1fr);
+    align-items: start;
+    gap: 8px;
+    padding: 6px 0;
+    border-top: 1px solid var(--fu-row-rule);
+}
+
+.tp-sec-label {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    padding-top: 2px;
+}
+
+.tp-sec-n {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0;
+    color: var(--text);
+    font-variant-numeric: tabular-nums;
+}
+
+.tp-sec-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+.tp-sec-row .tp-thumb {
+    width: 40px;
+    height: 56px;
+    flex: none;
+    border-radius: 3px;
+    overflow: hidden;
+    box-shadow: 0 0 0 1px var(--fu-line-soft);
+}
+
+.tp-save-form .tp-sec-row .tp-thumb {
+    width: 32px;
+    height: 45px;
+}
+
+.tp-recap-text {
+    padding-top: 6px;
+    border-top: 1px solid var(--fu-row-rule);
+    font-size: 11.5px;
+    line-height: 1.45;
+    color: var(--text-2);
+}
+
+/* Phones: the canvas on top, the panel under it; the side preference waits
+   for a wider screen. The file tools keep their icons only. */
+@media (max-width: 760px) {
+    .tree-body,
+    .tree-body.is-dock-left {
+        flex-direction: column;
+    }
+
+    .tree-panel,
+    .tree-body.is-dock-left .tree-panel {
+        width: auto;
+        max-height: 46%;
+        margin: 0 8px calc(8px + env(safe-area-inset-bottom));
+    }
+
+    .tree-dock-toggle,
+    .tree-head-rule,
+    .tree-tool span {
+        display: none;
+    }
+
+    .tree-tool {
+        width: 28px;
+        padding: 0;
+        justify-content: center;
+    }
 }
 
 /* ----- Home: chassis page, paper modules, the intake is a glass well ----- */
@@ -4654,10 +5014,6 @@ body.palette-competition .tree-node.tn-p2::before {
 .brand-mark {
     filter: brightness(0);
     opacity: 0.88;
-}
-
-.drawer-overlay {
-    background: color-mix(in oklch, var(--fu-chassis) 94%, transparent);
 }
 
 /* Narrow desktops: give the board back what the side columns can spare

@@ -700,6 +700,24 @@ Implements version 2 of `docs/DESIGN-field-unit.md` (Kiln dark mode, signal fami
 - **Signal family.** By day the signal is Ember `#E4572E`; on Kiln it is Radio `#E86B2A` with dark text on the key. Tweaks → Accent offers only the approved swaps: **Signal** (the theme's own), **Coral**, **Olive** (its lore numeral lifts to `#C6C45A` on the well) and **Trace**. Each carries the text colour that sits on it. The old Amber / Rose / Emerald / Violet / Azure accents were ink colours, so a saved pick of one falls back to Signal.
 - **CSS file.** The Field Unit tokens, themes, palettes and component styles moved from the inline `<style>` to `app/css/field-unit.css`, loaded right after it (pixel-identical move). The older inline rules stay put.
 
+## Feature 51: Multiverse panel — Timelines merged into the Multiverse (v3.4.0)
+
+### User Story
+- As a player I want one place for my timelines: see the tree, save the turn I'm in, read a node's turn and jump to it, without a separate Timelines drawer.
+- As a player I want to look at a node before I jump to it, and to rename it or change its note by clicking on them.
+- As a player I want the panel on the side of the screen I prefer.
+
+### Details
+Proposal 1 of the Timelines + Multiverse merge, with the playtest notes applied.
+- **One view.** The Timelines drawer is gone. The Multiverse (top bar, the sidebar's branch button, **M**) is a glass canvas plus a paper **panel**. The drawer's Import / Export / Log moved to the Multiverse header; Save as copy was already in the top bar.
+- **Dock either side.** The header's columns button moves the panel left or right; the choice is saved with the Tweaks. Phones stack the panel under the canvas.
+- **Save current unfinished turn.** One button (or **T** from anywhere) reveals a name and a note. The name starts as `Turn N - Player X (unfinished)`; the note starts as the turn's note plus a recap of everything done so far this turn (drew, inked, played, quested, banished…), the same recap an end-of-turn auto-save writes. The form shows the cards the node will keep, and the node gets the same card sections an auto-save would.
+- **Select, then play.** Clicking a node selects it and the panel shows it; it no longer restores. **Play from here**, **Enter** or a double-click restores. Arrow keys move the selection as before.
+- **Edit in place.** Click the node's name to rename it (Enter saves, Esc cancels). Click its note to edit it (click away or Ctrl+Enter saves). Only the player's note is edited; the recap block stays with the node. The pen button and the edit form inside the node are gone.
+- **Lore race to 20** for the selected node, and its **turn recap as cards** (Played, Inked, Drawn, Discarded, Banished, Quested, Starting hand — empty sections left out). Nodes saved before card sections existed show their text recap too.
+- **Show in nodes.** A switch in the recap puts every section back inside every node, as before (saved preference). Off (the default) nodes are lean: title, subline, the note and the Played strip.
+- **Auto-saves are dashed nodes.** The snapshots taken before each jump (the drawer's "Auto-saves (time jumps)", still the last five) hang off the node you were on, with a dashed edge. Select one to **Play from here**, **Keep as node** (it becomes a real node where it hangs) or discard it (with Undo). Restoring the oldest of the five no longer fails when the jump's own snapshot pushes it out.
+- **Delete** stays on each node and is also in the panel, both with Undo.
 ## Feature 50: Library shelves — what's on this device and what's in your account (v3.3.0)
 
 ### User Story
@@ -871,3 +889,5 @@ The public page (`index.html`) follows Field Unit too, as `docs/DESIGN-field-uni
 - [x] Patch: Home page in two columns
 - [x] Patch: Deck icon
 - [x] Patch: Top bar grouped by job
+- [x] Feature 50: Library shelves — what's on this device and what's in your account
+- [x] Feature 51: Multiverse panel — Timelines merged into the Multiverse

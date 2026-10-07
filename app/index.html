@@ -507,18 +507,28 @@
         </div>
     </div>
 
-    <!-- Multiverse Tree Modal -->
+    <!-- Multiverse: the tree and its panel. Saving, restoring, renaming and the
+         auto-saves all live here (it absorbed the old Timelines drawer). -->
     <div id="tree-modal" class="absolute inset-0 z-50 hidden flex-col overflow-hidden" role="dialog" aria-modal="true"
         aria-labelledby="tree-modal-title">
         <div class="tree-head">
-            <h2 id="tree-modal-title"><i class="fa-solid fa-network-wired"></i> Multiverse Timelines
-                <span class="hint hidden sm:block">Drag to pan. Scroll to zoom. Arrow keys to navigate, Enter to
-                    restore.</span>
+            <h2 id="tree-modal-title"><i class="fa-solid fa-code-branch"></i> Multiverse
+                <span class="hint hidden sm:block">Click a node to select it. Double-click or Enter plays from it.
+                    Drag to pan, scroll to zoom.</span>
             </h2>
             <div class="flex items-center gap-2">
-                <button onclick="App.toggleTreeNodeView()" class="close" id="tree-view-toggle"
-                    title="Switch to compact nodes" aria-label="Switch to compact nodes"><i
-                        class="fa-solid fa-list-ul"></i></button>
+                <input type="file" id="import-file" class="hidden"
+                    accept=".json,.gz,application/json,application/gzip" onchange="App.importTimelines(event)">
+                <button class="tree-tool" onclick="document.getElementById('import-file').click()"
+                    title="Import a session file"><i class="fa-solid fa-file-import"></i><span>Import</span></button>
+                <button class="tree-tool" onclick="App.exportTimelines()" title="Export this session as a file"><i
+                        class="fa-solid fa-file-export"></i><span>Export</span></button>
+                <button class="tree-tool" onclick="App.openImportLogModal()"
+                    title="Import a Duels.ink log or replay"><i class="fa-solid fa-file-lines"></i><span>Log</span></button>
+                <div class="divider-v tree-head-rule"></div>
+                <button onclick="App.toggleTreePanelSide()" class="close tree-dock-toggle" id="tree-dock-toggle"
+                    title="Move the panel to the left" aria-label="Move the panel to the left"><i
+                        class="fa-solid fa-table-columns"></i></button>
                 <button onclick="App.resetTreeZoom()" class="close" title="Reset Zoom" aria-label="Reset zoom"><i
                         class="fa-solid fa-compress"></i></button>
                 <button onclick="App.closeTreeModal()" class="close" aria-label="Close multiverse view"><i
@@ -526,15 +536,42 @@
             </div>
         </div>
 
-        <!-- Draggable Canvas Area -->
-        <div id="tree-viewport" class="flex-1 relative cursor-grab overflow-hidden">
-            <div id="tree-canvas"
-                class="absolute inset-0 transform origin-top-left transition-transform duration-75 ease-out">
-                <!-- SVG lines go here -->
-                <svg id="tree-svg" class="absolute inset-0 overflow-visible z-0 pointer-events-none"></svg>
-                <!-- HTML Nodes go here -->
-                <div id="tree-nodes" class="absolute inset-0 z-10"></div>
+        <div id="tree-body" class="tree-body">
+            <!-- Draggable Canvas Area -->
+            <div id="tree-viewport" class="flex-1 relative cursor-grab overflow-hidden">
+                <div id="tree-canvas"
+                    class="absolute inset-0 transform origin-top-left transition-transform duration-75 ease-out">
+                    <!-- SVG lines go here -->
+                    <svg id="tree-svg" class="absolute inset-0 overflow-visible z-0 pointer-events-none"></svg>
+                    <!-- HTML Nodes go here -->
+                    <div id="tree-nodes" class="absolute inset-0 z-10"></div>
+                </div>
             </div>
+
+            <!-- The panel: save the turn you're in, then the selected node. It docks
+                 on either side (the header toggle; a saved preference). -->
+            <aside id="tree-panel" class="tree-panel custom-scrollbar" aria-label="Multiverse panel">
+                <section class="tp-block tp-save">
+                    <button class="btn btn-block tp-save-open" id="tp-save-open" onclick="App.openSaveTurn()"
+                        title="Save the board as it is now (T)"><i class="fa-solid fa-bookmark"></i> Save current
+                        unfinished turn</button>
+                    <div class="tp-save-form" id="tp-save-form" hidden>
+                        <div class="tp-label">Save current unfinished turn</div>
+                        <label class="tp-field"><span class="tp-label">Name</span>
+                            <input type="text" id="bookmark-name" class="input" maxlength="120"
+                                onkeydown="if(event.key==='Enter'){event.preventDefault();App.saveTimeline()}"></label>
+                        <label class="tp-field"><span class="tp-label">Note · the turn so far, markdown</span>
+                            <textarea id="bookmark-comment" class="input custom-scrollbar" rows="6"></textarea></label>
+                        <div id="tp-save-cards"></div>
+                        <div class="tp-actions">
+                            <button class="btn btn-ghost" onclick="App.closeSaveTurn()">Cancel</button>
+                            <button class="btn tp-strong" onclick="App.saveTimeline()"><i
+                                    class="fa-solid fa-bookmark"></i> Save node</button>
+                        </div>
+                    </div>
+                </section>
+                <section class="tp-block tp-sel" id="tp-sel" aria-live="polite"></section>
+            </aside>
         </div>
     </div>
 
@@ -663,52 +700,14 @@
                     </button>
                 </div>
                 <div class="action-row three">
-                    <button class="icon-btn" onclick="App.toggleTimelines()" title="Timelines &amp; bookmarks (T)"><i
-                            class="fa-solid fa-clock-rotate-left"></i></button>
+                    <button class="icon-btn" onclick="App.openTreeModal()" title="Multiverse (M)"
+                        aria-label="Multiverse"><i class="fa-solid fa-code-branch"></i></button>
                     <button class="icon-btn" onclick="App.undo()" title="Undo last action"><i
                             class="fa-solid fa-rotate-left"></i></button>
                     <button class="btn btn-p1 btn-block" onclick="App.endTurn()">End turn &rarr;</button>
                 </div>
             </div>
 
-            <!-- Timelines Drawer (overlays the sidebar) -->
-            <div id="timeline-drawer" class="drawer-overlay">
-                <div class="drawer-head">
-                    <h2><i class="fa-solid fa-code-branch" style="color:var(--accent-hi)"></i> Timelines</h2>
-                    <button class="icon-btn ghost" onclick="App.toggleTimelines()">&times;</button>
-                </div>
-                <div class="drawer-row">
-                    <input type="file" id="import-file" class="hidden"
-                        accept=".json,.gz,application/json,application/gzip" onchange="App.importTimelines(event)">
-                    <button class="icon-btn" onclick="document.getElementById('import-file').click()"><i
-                            class="fa-solid fa-file-import"></i> Import</button>
-                    <button class="icon-btn" onclick="App.exportTimelines()"><i class="fa-solid fa-file-export"></i>
-                        Export</button>
-                    <button class="icon-btn is-accent" onclick="App.saveSessionAsCopy()" title="Save as copy"><i
-                            class="fa-regular fa-copy"></i> Copy</button>
-                    <button class="icon-btn is-ok" onclick="App.openImportLogModal()"><i
-                            class="fa-solid fa-file-lines"></i> Log</button>
-                </div>
-                <div class="drawer-section">
-                    <button class="btn btn-block" onclick="App.openTreeModal()">
-                        <i class="fa-solid fa-network-wired" style="color:var(--accent-hi)"></i> Explore multiverse
-                        (tree view)
-                    </button>
-                </div>
-                <div class="drawer-section">
-                    <input type="text" id="bookmark-name" class="input" placeholder="Name this timeline (optional)…">
-                    <textarea id="bookmark-comment" class="input" placeholder="Add a comment (markdown supported)…"
-                        rows="2" style="resize:none"></textarea>
-                    <button class="btn btn-primary btn-block" onclick="App.saveTimeline()">+ Save current state</button>
-                </div>
-                <div class="drawer-list">
-                    <div class="drawer-list-head"><span>Auto-saves (time jumps)</span><i
-                            class="fa-solid fa-life-ring"></i></div>
-                    <div id="autosave-list" style="display:flex;flex-direction:column;gap:6px;">
-                        <!-- Auto-saves injected here -->
-                    </div>
-                </div>
-            </div>
         </aside>
 
         <!-- Mobile: dim/click-catch behind the off-canvas sidebar drawer -->
@@ -1044,7 +1043,7 @@
     <script>
         let cardFuse = null;
 
-        const APP_VERSION = "v3.3.0"; // Centralized version string (v3: Field Unit)
+        const APP_VERSION = "v3.4.0"; // Centralized version string (v3: Field Unit)
 
         // Tweaks panel accent presets (hue values for the OKLCH accent ramp)
         // Tweaks → Accent: the approved Field Unit signals only (design.md ·
@@ -1433,8 +1432,7 @@
                 this.sessionDecks = { deck1: clean.deck1, deck2: clean.deck2 };
 
                 this.leaveSetup();
-                document.getElementById('timeline-drawer').classList.remove('is-open');
-                this.renderAutoSaves();
+                this.treeNavActiveId = null;
                 this.renderTree();
                 this.render();
             },
@@ -1996,6 +1994,43 @@
             initTreePan() {
                 const viewport = document.getElementById('tree-viewport');
                 const canvas = document.getElementById('tree-canvas');
+
+                // Nodes: a click selects (the panel shows it), the bin deletes, a
+                // double-click plays from it. One listener each; ids come from data-id.
+                const nodes = document.getElementById('tree-nodes');
+                nodes.addEventListener('click', (e) => {
+                    const el = e.target.closest('.tree-node');
+                    if (!el || !el.dataset.id) return;
+                    const isAuto = el.dataset.kind === 'auto';
+                    if (e.target.closest('[data-act="delete"]')) { this.deleteTimeline(el.dataset.id, isAuto); return; }
+                    this.selectTreeNode(el.dataset.id);
+                });
+                nodes.addEventListener('dblclick', (e) => {
+                    const el = e.target.closest('.tree-node');
+                    if (!el || !el.dataset.id || e.target.closest('[data-act="delete"]')) return;
+                    this.restoreTimeline(el.dataset.id, el.dataset.kind === 'auto');
+                });
+                // The camera is the canvas transform; the viewport itself never scrolls.
+                // (Focus moving to an off-screen node would otherwise scroll it and
+                // throw every centring sum off.)
+                viewport.addEventListener('scroll', () => { viewport.scrollLeft = 0; viewport.scrollTop = 0; });
+                const panel = document.getElementById('tree-panel');
+                panel.addEventListener('click', (e) => this.onTreePanelClick(e));
+                // The note is a div acting as a button: Enter / Space edit it (and must not
+                // reach the global Enter, which plays from the selected node).
+                panel.addEventListener('keydown', (e) => {
+                    if (e.key === 'Escape' && e.target.closest && e.target.closest('#tp-save-form')) {
+                        e.stopPropagation();
+                        this.closeSaveTurn();
+                        return;
+                    }
+                    const note = e.target.closest && e.target.closest('[data-act="edit-note"]');
+                    if (note && (e.key === 'Enter' || e.key === ' ')) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        this.startTreeEdit('note');
+                    }
+                });
 
                 const applyTreeTransform = () => {
                     canvas.style.transform = `translate(${this.treePan.translateX}px, ${this.treePan.translateY}px) scale(${this.treePan.zoom})`;
@@ -2681,7 +2716,7 @@
 
                 let html = '';
                 if (rows === null) {
-                    html += `<div class="home-empty">This browser isn't letting the Dojo keep sessions (private window?). Use Export in the Timelines drawer to keep a match.</div>`;
+                    html += `<div class="home-empty">This browser isn't letting the Dojo keep sessions (private window?). Use Export in the Multiverse to keep a match.</div>`;
                 } else if (!shown.length) {
                     html += `<div class="home-empty">Every match you play is kept here, on this device. Nothing yet.</div>`;
                 }
@@ -4054,6 +4089,7 @@
 
                 this.bookmarks = [];
                 this.autoSaves = [];
+                this.treeNavActiveId = null;
                 this.renderAutoSaves();
 
                 this.leaveSetup();
@@ -4278,17 +4314,7 @@
             },
 
             // --- Timelines & Bookmarks System ---
-
-            toggleTimelines() {
-                const drawer = document.getElementById('timeline-drawer');
-                const opening = !drawer.classList.contains('is-open');
-                drawer.classList.toggle('is-open');
-                // On phones the timeline drawer is nested inside the off-canvas sidebar,
-                // so reveal/hide the sidebar alongside it.
-                if (window.matchMedia && window.matchMedia('(max-width: 760px)').matches) {
-                    this.toggleSidebar(opening);
-                }
-            },
+            // (Saving, restoring and the auto-saves live in the Multiverse view.)
 
             // Mobile: slide the sidebar in/out as an off-canvas drawer (+ scrim).
             toggleSidebar(force) {
@@ -5456,11 +5482,38 @@
                 }
             },
 
+            // --- Save current unfinished turn (the Multiverse panel) ---
+            // One button reveals a name and a note. The note starts as the turn's note
+            // plus a recap of everything done so far this turn, and the node keeps the
+            // same card sections an end-of-turn auto-save would.
+            openSaveTurn() {
+                if (!this.state || !this.state.players) return;
+                if (document.getElementById('tree-modal').classList.contains('hidden')) this.openTreeModal();
+                const ap = this.state.players[this.state.activePlayer];
+                const turnNote = this.state.turnComments[`${this.state.turn}-${this.state.activePlayer}`]
+                    || this.state.turnComments[this.state.turn] || '';
+                const nameInput = document.getElementById('bookmark-name');
+                const noteInput = document.getElementById('bookmark-comment');
+                nameInput.value = `Turn ${this.state.turn} - ${ap.name} (unfinished)`;
+                noteInput.value = (this.splitNodeComment(turnNote).note + this._formatTurnActions()).trim();
+                document.getElementById('tp-save-cards').innerHTML =
+                    this.buildPanelSectionsHtml({ sections: this._buildNodeSections() }, 'This node keeps');
+                document.getElementById('tp-save-open').hidden = true;
+                document.getElementById('tp-save-form').hidden = false;
+                nameInput.focus();
+                nameInput.select();
+            },
+
+            closeSaveTurn() {
+                document.getElementById('tp-save-form').hidden = true;
+                document.getElementById('tp-save-open').hidden = false;
+            },
+
             saveTimeline() {
                 const nameInput = document.getElementById('bookmark-name').value.trim();
                 const commentInput = document.getElementById('bookmark-comment').value.trim();
                 const ap = this.state.players[this.state.activePlayer];
-                const defaultName = `Turn ${this.state.turn} - ${ap.name} Active`;
+                const defaultName = `Turn ${this.state.turn} - ${ap.name} (unfinished)`;
                 const finalName = nameInput || defaultName;
 
                 const p1 = this.state.players[0];
@@ -5490,7 +5543,12 @@
 
                 document.getElementById('bookmark-name').value = '';
                 document.getElementById('bookmark-comment').value = '';
-                this.showToast("Timeline node created.");
+                this.closeSaveTurn();
+                // The new node is the one you're on: select it and bring it into view.
+                this.treeNavActiveId = newId;
+                this.renderTree();
+                this.centerTreeOnNode(newId);
+                this.showToast(`Saved “${finalName}”.`);
                 this.saveToDevice();
             },
 
@@ -5521,12 +5579,13 @@
             },
 
             restoreTimeline(id, isAuto = false) {
-                // Save safety net before jumping
-                this.autoSaveTimeline();
-
+                // Find it first: the safety net below can push the oldest auto-save out.
                 const list = isAuto ? this.autoSaves : this.bookmarks;
                 const bookmark = list.find(b => b.id === id);
                 if (!bookmark) return;
+
+                // Save safety net before jumping
+                this.autoSaveTimeline();
 
                 // Restore State
                 this.state = this.decompressState(JSON.parse(bookmark.state));
@@ -5547,11 +5606,11 @@
                     }
                 }
 
-                // Close Drawer and Modal, Render, and Flash
-                document.getElementById('timeline-drawer').classList.remove('is-open');
+                // Back to the board, with the node you're now on selected for next time.
+                this.treeNavActiveId = this.state.activeBookmarkId || null;
                 this.closeTreeModal();
                 this.render();
-                this.showToast(`Timeline Restored: ${bookmark.name}`);
+                this.showToast(`Timeline Restored: ${isAuto ? 'where you left' : bookmark.name}`);
                 this.triggerTimeFlash();
                 this.saveToDevice();
             },
@@ -5559,18 +5618,21 @@
             deleteTimeline(id, isAuto = false) {
                 // Deletes are guarded by an Undo toast: snapshot the list, delete
                 // immediately, and restore the snapshot if the user taps Undo.
+                const wasSelected = this.treeNavActiveId === id;
                 if (isAuto) {
                     const snapshot = [...this.autoSaves];
                     const target = this.autoSaves.find(b => b.id === id);
                     if (!target) return;
                     this.autoSaves = this.autoSaves.filter(b => b.id !== id);
-                    this.renderAutoSaves();
+                    if (wasSelected) this.treeNavActiveId = this.autoSaveInfo(target).parentId || null;
+                    this.renderTree();
                     this.saveToDevice();
-                    this.showToast(`Auto-save deleted`, {
+                    this.showToast(`Snapshot discarded`, {
                         actionLabel: 'Undo',
                         onAction: () => {
                             this.autoSaves = snapshot;
-                            this.renderAutoSaves();
+                            if (wasSelected) this.treeNavActiveId = id;
+                            this.renderTree();
                             this.saveToDevice();
                         }
                     });
@@ -5590,6 +5652,7 @@
                     });
                     this.bookmarks = this.bookmarks.filter(b => b.id !== id);
                     if (wasActive) this.state.activeBookmarkId = nodeToDelete.parentId || null;
+                    if (wasSelected) this.treeNavActiveId = nodeToDelete.parentId || null;
                     this.renderTree(); // Re-draw the canvas
                     this.saveToDevice();
 
@@ -5598,6 +5661,7 @@
                         onAction: () => {
                             this.bookmarks = snapshot;
                             if (wasActive) this.state.activeBookmarkId = id;
+                            if (wasSelected) this.treeNavActiveId = id;
                             this.renderTree();
                             this.saveToDevice();
                         }
@@ -5605,69 +5669,68 @@
                 }
             },
 
+            // A pre-jump auto-save becomes a real node, where it hangs in the tree.
+            keepAutoSave(id) {
+                const a = (this.autoSaves || []).find(x => x.id === id);
+                if (!a) return;
+                const info = this.autoSaveInfo(a);
+                const pl = info.activePlayer === null ? 0 : info.activePlayer;
+                const lore = this.nodeLore(a, true) || [0, 0];
+                const time = new Date(a.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' });
+                const who = (this.state && this.state.players && this.state.players[pl] && this.state.players[pl].name) || `Player ${pl + 1}`;
+                const node = {
+                    id: this.uuid(),
+                    parentId: info.parentId && this.bookmarks.some(b => b.id === info.parentId) ? info.parentId : null,
+                    name: `Turn ${info.turn || '?'} - ${who} (kept ${time})`,
+                    stats: `Turn ${info.turn || '?'} | P1: ${lore[0]} - P2: ${lore[1]}`,
+                    comment: '',
+                    color: this.playerBookmarkColor(pl),
+                    cardsPlayedData: [...(a.cardsPlayedData || [])],
+                    state: a.state,
+                    timestamp: a.timestamp,
+                    isDeckEdit: false
+                };
+                this.autoSaves = this.autoSaves.filter(x => x.id !== id);
+                this.bookmarks.push(node);
+                this.treeNavActiveId = node.id;
+                this.renderTree();
+                this.saveToDevice();
+                this.showToast(`Kept as “${node.name}”.`);
+            },
+
             // --- Multiverse Canvas Drawing (Tree View) ---
 
             openTreeModal() {
-                document.getElementById('timeline-drawer').classList.remove('is-open');
+                // Phones: the sidebar is an off-canvas drawer; the multiverse takes over.
+                if (window.matchMedia && window.matchMedia('(max-width: 760px)').matches) this.toggleSidebar(false);
                 document.getElementById('tree-modal').classList.remove('hidden');
                 document.getElementById('tree-modal').classList.add('flex');
+
+                // Select the node you are on (else the newest), then centre on it.
+                const live = this.state && this.state.activeBookmarkId;
+                const latest = this.bookmarks.length
+                    ? this.bookmarks.reduce((prev, current) => (prev.timestamp > current.timestamp) ? prev : current)
+                    : null;
+                this.treeNavActiveId = (live && this.bookmarks.some(b => b.id === live)) ? live : (latest ? latest.id : null);
 
                 // Render tree first to calculate node positions
                 this.renderTree();
 
-                // Find target node to center on
-                let targetPos = null;
-                if (this.bookmarks && this.bookmarks.length > 0) {
-                    if (this.state && this.state.activeBookmarkId && this.nodePositions[this.state.activeBookmarkId]) {
-                        targetPos = this.nodePositions[this.state.activeBookmarkId];
-                    } else {
-                        // Find the node with the highest timestamp (end of chain)
-                        const latestNode = this.bookmarks.reduce((prev, current) =>
-                            (prev.timestamp > current.timestamp) ? prev : current
-                        );
-                        if (this.nodePositions[latestNode.id]) {
-                            targetPos = this.nodePositions[latestNode.id];
-                        }
-                    }
-                }
-
-                if (targetPos) {
-                    // Initialize keyboard nav state
-                    if (this.state && this.state.activeBookmarkId && this.nodePositions[this.state.activeBookmarkId] === targetPos) {
-                        this.treeNavActiveId = this.state.activeBookmarkId;
-                    } else {
-                        // finding the latest node again (quick find)
-                        const latestNode = this.bookmarks.reduce((prev, current) =>
-                            (prev.timestamp > current.timestamp) ? prev : current
-                        );
-                        this.treeNavActiveId = latestNode.id;
-                    }
-
-                    // Center the camera on the target node
-                    const viewport = document.getElementById('tree-viewport');
-                    const vWidth = viewport.clientWidth;
-                    const vHeight = viewport.clientHeight;
-
-                    // Node box as renderTree just laid it out (height varies with the view mode)
-                    const dims = this.treeNodeDims || { w: 230, h: 250 };
-                    const nodeCenterX = targetPos.x + (dims.w / 2);
-                    const nodeCenterY = targetPos.y + (dims.h / 2);
-
-                    this.treePan.translateX = (vWidth / 2) - (nodeCenterX * this.treePan.zoom);
-                    this.treePan.translateY = (vHeight / 2) - (nodeCenterY * this.treePan.zoom);
+                if (this.treeNavActiveId && this.nodePositions[this.treeNavActiveId]) {
+                    this.centerTreeOnNode(this.treeNavActiveId);
                 } else {
                     // Fallback
                     this.treePan.translateX = 100;
                     this.treePan.translateY = 100;
+                    document.getElementById('tree-canvas').style.transform = `translate(${this.treePan.translateX}px, ${this.treePan.translateY}px) scale(${this.treePan.zoom})`;
                 }
-
-                document.getElementById('tree-canvas').style.transform = `translate(${this.treePan.translateX}px, ${this.treePan.translateY}px) scale(${this.treePan.zoom})`;
             },
 
             closeTreeModal() {
                 document.getElementById('tree-modal').classList.add('hidden');
                 document.getElementById('tree-modal').classList.remove('flex');
-                if (this.state) this.state.editingNodeId = null; // Clear edit state on close
+                this.closeSaveTurn();
+                this._tpEdit = null;
             },
 
             // --- Feature 31: multiverse node card sections ---
@@ -5688,10 +5751,12 @@
                 // visible at once, and it's the one section where the count is unbounded.
                 { key: 'startingHand', label: 'Starting hand', color: 'var(--text-dim)', marksLeft: true, wrap: true }
             ],
-            // 'full' (default) = every section; 'compact' = pre-31 look, Cards Played only.
-            treeNodeView: 'full',
+            // The panel shows the selected node's recap, so nodes are lean by default:
+            // title, note and the Played strip. "Show in nodes" (a saved preference)
+            // puts every section back in every node, as before.
+            treeRecapInNodes: false,
             // full = body + one label row (16px) and one thumb row (46px) per section.
-            TREE_NODE_H: { compact: 250, full: 510 },
+            TREE_NODE_H: { lean: 156, full: 510 },
 
             // A node saved before Feature 31 has no `sections`, so its cardsPlayedData is
             // the Played section. A node that HAS sections is authoritative, even if empty.
@@ -5702,12 +5767,12 @@
             },
 
             buildNodeSectionsHtml(b) {
-                const isFull = this.treeNodeView !== 'compact';
+                const isFull = this.treeRecapInNodes;
                 const secs = isFull ? this.TREE_SECTIONS : this.TREE_SECTIONS.filter(s => s.key === 'played');
                 let inner = '';
                 for (const sec of secs) {
                     const ids = this.nodeSectionIds(b, sec);
-                    // Compact keeps the old behaviour: nothing played, nothing rendered.
+                    // Lean keeps the old compact behaviour: nothing played, nothing rendered.
                     // Full always shows the row so sections sit in the same place on every node.
                     if (!isFull && !ids.length) continue;
                     // An entry is either a bare cardId or `{ id, left }` (Turn Starting Hand).
@@ -5733,25 +5798,98 @@
                 return `<div class="tn-cards ${isFull ? 'is-full' : 'is-compact'}">${inner}</div>`;
             },
 
-            toggleTreeNodeView() {
-                this.treeNodeView = this.treeNodeView === 'compact' ? 'full' : 'compact';
+            // The panel's recap: every section that has cards, as label · thumbnails
+            // (the same thumbnails the nodes use). Empty sections are left out.
+            buildPanelSectionsHtml(b, title) {
+                let rows = '';
+                for (const sec of this.TREE_SECTIONS) {
+                    const entries = this.nodeSectionIds(b, sec).map(e => (e && typeof e === 'object') ? e : { id: e });
+                    if (!entries.length) continue;
+                    const leftCount = entries.filter(e => e.left).length;
+                    const thumbs = entries.map(e => {
+                        const dbCard = this.cardDB[e.id];
+                        return dbCard ? this.cardThumbHtml(dbCard, 'tn-card-thumb tp-thumb' + (e.left ? ' is-left' : '')) : '';
+                    }).join('');
+                    const count = sec.marksLeft && leftCount ? `${entries.length} · −${leftCount}` : entries.length;
+                    const countTitle = sec.marksLeft && leftCount
+                        ? ` title="${leftCount} of ${entries.length} left the hand this turn"` : '';
+                    rows += `
+                        <div class="tp-sec">
+                            <div class="tp-sec-label"><span>${sec.label}</span><span class="tp-sec-n"${countTitle}>${count}</span></div>
+                            <div class="tp-sec-row">${thumbs}</div>
+                        </div>`;
+                }
+                return `${title ? `<div class="tp-label">${title}</div>` : ''}` +
+                    (rows || `<div class="tp-empty">No cards recorded for this turn yet.</div>`);
+            },
+
+            // A node's comment is the player's note, then (auto-saves, saved turns,
+            // imported logs) a "**Turn recap**" markdown block. The panel edits the
+            // note and shows the recap as cards, so the two are split. The auto-save's
+            // stock "Auto-saved at start of turn." counts as no note.
+            splitNodeComment(comment) {
+                const s = String(comment || '');
+                const i = s.indexOf('**Turn recap**');
+                let note = (i === -1 ? s : s.slice(0, i)).trim();
+                const recap = i === -1 ? '' : s.slice(i).trim();
+                if (note === 'Auto-saved at start of turn.') note = '';
+                return { note, recap };
+            },
+
+            // An auto-save is a whole compressed state; read the few things the tree
+            // needs from it once: where it hangs, whose turn, the turn number, the lore.
+            autoSaveInfo(a) {
+                if (!this._autoInfo) this._autoInfo = new Map();
+                let info = this._autoInfo.get(a.id);
+                if (!info) {
+                    let st = null;
+                    try { st = JSON.parse(a.state); } catch (e) { st = null; }
+                    info = {
+                        parentId: (st && st.activeBookmarkId) || null,
+                        turn: (st && st.turn) || null,
+                        activePlayer: st && (st.activePlayer === 0 || st.activePlayer === 1) ? st.activePlayer : null,
+                        lore: st && Array.isArray(st.players) ? st.players.map(p => p.lore || 0) : null
+                    };
+                    this._autoInfo.set(a.id, info);
+                }
+                return info;
+            },
+
+            // [P1 lore, P2 lore] for a node: from its stats line, else its saved state.
+            nodeLore(b, isAuto) {
+                const m = /P1:\s*(\d+)\s*-\s*P2:\s*(\d+)/.exec(b.stats || '');
+                if (m) return [Number(m[1]), Number(m[2])];
+                if (isAuto) return this.autoSaveInfo(b).lore;
+                try { return JSON.parse(b.state).players.map(p => p.lore || 0); } catch (e) { return null; }
+            },
+
+            toggleTreeRecap() {
+                this.treeRecapInNodes = !this.treeRecapInNodes;
                 const t = this.loadTweaks();
-                t.treeNodeView = this.treeNodeView;
+                t.treeRecapInNodes = this.treeRecapInNodes;
                 this.saveTweaks(t);
-                this.syncTreeViewToggle();
                 this.renderTree();
-                // Node heights changed, so every position moved — keep the focused node put.
+                // Node heights changed, so every position moved — keep the selected node put.
                 this.centerTreeOnNode(this.treeNavActiveId || (this.state && this.state.activeBookmarkId));
             },
 
-            syncTreeViewToggle() {
-                const btn = document.getElementById('tree-view-toggle');
+            // The panel docks left or right of the canvas (a saved preference).
+            toggleTreePanelSide() {
+                const t = this.loadTweaks();
+                t.treePanelSide = t.treePanelSide === 'left' ? 'right' : 'left';
+                this.saveTweaks(t);
+                this.applyTreePanelSide(t.treePanelSide);
+            },
+
+            applyTreePanelSide(side) {
+                const left = side === 'left';
+                const body = document.getElementById('tree-body');
+                if (body) body.classList.toggle('is-dock-left', left);
+                const btn = document.getElementById('tree-dock-toggle');
                 if (!btn) return;
-                const isFull = this.treeNodeView !== 'compact';
-                const label = isFull ? 'Switch to compact nodes' : 'Switch to full nodes';
+                const label = left ? 'Move the panel to the right' : 'Move the panel to the left';
                 btn.title = label;
                 btn.setAttribute('aria-label', label);
-                btn.innerHTML = `<i class="fa-solid ${isFull ? 'fa-list-ul' : 'fa-grip-lines'}"></i>`;
             },
 
             // Pan the tree viewport so a node sits in the middle (zoom untouched).
@@ -5771,35 +5909,54 @@
                 const nodesContainer = document.getElementById('tree-nodes');
 
                 // Node height drives both the CSS box and the layout math below.
-                const NODE_H = this.TREE_NODE_H[this.treeNodeView === 'compact' ? 'compact' : 'full'];
+                const NODE_H = this.TREE_NODE_H[this.treeRecapInNodes ? 'full' : 'lean'];
                 this.treeNodeDims = { w: 230, h: NODE_H };
                 nodesContainer.style.setProperty('--tn-h', `${NODE_H}px`);
+                nodesContainer.classList.toggle('is-lean', !this.treeRecapInNodes);
 
-                if (this.bookmarks.length === 0) {
+                // Everything drawn: the saved nodes, and the pre-jump auto-saves hanging
+                // (dashed) off the node they were taken from.
+                const byId = {};
+                this.bookmarks.forEach(b => { byId[b.id] = b; });
+                const items = this.bookmarks.map(b => ({
+                    id: b.id, parentId: b.parentId && byId[b.parentId] ? b.parentId : null, timestamp: b.timestamp, node: b
+                })).concat((this.autoSaves || []).map(a => {
+                    const pid = this.autoSaveInfo(a).parentId;
+                    return { id: a.id, parentId: pid && byId[pid] ? pid : null, timestamp: a.timestamp, auto: a };
+                }));
+
+                this.treeKids = {};
+                this.treeParent = {};
+                this.treeRoots = [];
+                if (items.length === 0) {
                     svgContainer.innerHTML = '';
-                    nodesContainer.innerHTML = `<div class="tree-empty">The Multiverse is empty. Save a state to begin a timeline.</div>`;
+                    nodesContainer.innerHTML = `<div class="tree-empty">The Multiverse is empty. Save the turn you're in to begin a timeline.</div>`;
+                    this.nodePositions = {};
+                    this.renderTreePanel();
                     return;
                 }
 
                 // Build Adjacency List & Roots
                 const childrenMap = {};
                 const roots = [];
-
-                this.bookmarks.forEach(b => {
-                    // Check if parentId exists AND that the parent hasn't been completely wiped from memory
-                    if (b.parentId && this.bookmarks.find(p => p.id === b.parentId)) {
-                        if (!childrenMap[b.parentId]) childrenMap[b.parentId] = [];
-                        childrenMap[b.parentId].push(b);
+                items.forEach(it => {
+                    if (it.parentId) {
+                        if (!childrenMap[it.parentId]) childrenMap[it.parentId] = [];
+                        childrenMap[it.parentId].push(it);
                     } else {
-                        roots.push(b);
+                        roots.push(it);
                     }
                 });
 
-                // Sort children chronologically to ensure predictable layout
+                // Chronological for a predictable layout, with the snapshots after the real branches.
+                const order = (a, b) => ((a.auto ? 1 : 0) - (b.auto ? 1 : 0)) || (a.timestamp - b.timestamp);
                 Object.keys(childrenMap).forEach(key => {
-                    childrenMap[key].sort((a, b) => a.timestamp - b.timestamp);
+                    childrenMap[key].sort(order);
+                    this.treeKids[key] = childrenMap[key].map(c => c.id);
+                    childrenMap[key].forEach(c => { this.treeParent[c.id] = key; });
                 });
-                roots.sort((a, b) => a.timestamp - b.timestamp);
+                roots.sort(order);
+                this.treeRoots = roots.map(r => r.id);
 
                 // Tree Layout Calculation
                 let currentY = 0;
@@ -5830,42 +5987,76 @@
                 // 1. Render SVG Curved Paths. Field Unit: every edge is a quiet
                 // #6A655E hairline except the path from the root to the node you
                 // are on, which is drawn in signal (the branch you are on).
+                // Edges to auto-saves are dashed.
                 const livePath = new Set();
-                const byId = {};
-                this.bookmarks.forEach(b => { byId[b.id] = b; });
                 for (let cur = byId[this.state.activeBookmarkId], guard = 0; cur && guard < 10000; cur = byId[cur.parentId], guard++) {
                     if (livePath.has(cur.id)) break;
                     livePath.add(cur.id);
                 }
                 let svgHtml = '';
                 const liveEdges = [];
-                this.bookmarks.forEach(b => {
-                    if (b.parentId && nodePositions[b.parentId]) {
-                        const pPos = nodePositions[b.parentId];
-                        const cPos = nodePositions[b.id];
+                items.forEach(it => {
+                    if (it.parentId && nodePositions[it.parentId]) {
+                        const pPos = nodePositions[it.parentId];
+                        const cPos = nodePositions[it.id];
 
                         const startX = pPos.x + CARD_W;
                         const startY = pPos.y + (CARD_H / 2);
                         const endX = cPos.x;
                         const endY = cPos.y + (CARD_H / 2);
 
-                        const edge = `<path class="tn-edge" d="M ${startX} ${startY} C ${startX + 40} ${startY}, ${endX - 40} ${endY}, ${endX} ${endY}" />`;
+                        const isLive = !it.auto && livePath.has(it.id);
+                        const cls = it.auto ? 'tn-edge is-ghost' : (isLive ? 'tn-edge is-live' : 'tn-edge');
+                        const edge = `<path class="${cls}" d="M ${startX} ${startY} C ${startX + 40} ${startY}, ${endX - 40} ${endY}, ${endX} ${endY}" />`;
                         // Live edges are drawn last so they sit on top where paths cross.
-                        if (livePath.has(b.id)) liveEdges.push(edge.replace('class="tn-edge"', 'class="tn-edge is-live"'));
+                        if (isLive) liveEdges.push(edge);
                         else svgHtml += edge;
                     }
                 });
                 svgHtml += liveEdges.join('');
                 svgContainer.innerHTML = svgHtml;
 
-                // 2. Render HTML Nodes
+                // 2. Render HTML Nodes. A click selects (the panel shows it); a
+                // double-click, Enter or the panel's Play from here restores.
+                // Node text comes from session files, which can come from anyone (§9.4).
+                const esc = (v) => this.escapeHtml(v);
                 nodesContainer.innerHTML = '';
-                this.bookmarks.forEach(b => {
-                    const pos = nodePositions[b.id];
+                items.forEach(it => {
+                    const pos = nodePositions[it.id];
                     if (!pos) return;
+                    const isNavActive = this.treeNavActiveId === it.id;
+                    const el = document.createElement('div');
+                    el.style.left = `${pos.x}px`;
+                    el.style.top = `${pos.y}px`;
+                    el.dataset.id = it.id;
 
+                    if (it.auto) {
+                        const a = it.auto;
+                        const info = this.autoSaveInfo(a);
+                        const timeStr = new Date(a.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' });
+                        el.className = `tree-node is-ghost ${isNavActive ? 'is-nav' : ''}`;
+                        el.dataset.kind = 'auto';
+                        el.innerHTML = `
+                            ${info.activePlayer === null ? '' : `<span class="deck-icon is-p${info.activePlayer + 1}"></span>`}
+                            <div class="tn-body">
+                                <button class="tn-title" data-act="select" aria-label="Select the board you left at ${esc(timeStr)}">
+                                    <i class="fa-solid fa-clock-rotate-left"></i> <span>Left here · ${esc(timeStr)}</span>
+                                </button>
+                                <div class="tn-stats">${esc(a.stats).replace(/ \| /g, ' · ')}</div>
+                                <div class="tn-comment">Where you jumped from. Not a node until you keep it.</div>
+                                <button data-act="delete" class="tn-icon-btn tn-delete"
+                                    title="Discard this snapshot (Undo available)" aria-label="Discard snapshot">
+                                    <i class="fa-solid fa-trash"></i>
+                                </button>
+                            </div>
+                            ${this.buildNodeSectionsHtml({ cardsPlayedData: a.cardsPlayedData || [] })}
+                        `;
+                        nodesContainer.appendChild(el);
+                        return;
+                    }
+
+                    const b = it.node;
                     const isActive = this.state.activeBookmarkId === b.id;
-                    const isNavActive = this.treeNavActiveId === b.id;
                     const d = new Date(b.timestamp);
                     const timeStr = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' });
 
@@ -5878,10 +6069,8 @@
                     // palette can weave its spine in that deck's two inks.
                     const pIdx = this.bookmarkPlayerIndex(b);
 
-                    const el = document.createElement('div');
                     el.className = `tree-node ${isVictory ? 'is-victory' : ''} ${isActive ? 'is-active' : ''} ${isNavActive ? 'is-nav' : ''} ${pIdx === null ? '' : 'tn-p' + (pIdx + 1)}`;
-                    el.style.left = `${pos.x}px`;
-                    el.style.top = `${pos.y}px`;
+                    el.dataset.kind = 'node';
 
                     // Node identity color: player token (or legacy hex mapped onto it).
                     el.style.setProperty('--node-c', this.resolveBookmarkColor(b.color));
@@ -5890,102 +6079,185 @@
                     // back to --node-c (the winner's single ink color) via the CSS default.
                     if (b.gradient) el.style.setProperty('--node-g', b.gradient);
 
-                    const isEditing = this.state.editingNodeId === b.id;
-                    // Node text comes from session files, which can come from anyone (§9.4).
-                    const esc = (v) => this.escapeHtml(v);
-                    const bid = esc(b.id);
+                    // Lean nodes show the player's note only; the recap is in the panel.
+                    const comment = this.treeRecapInNodes ? (b.comment || '') : this.splitNodeComment(b.comment).note;
 
-                    if (isEditing) {
-                        el.innerHTML = `
-                            <div class="tn-edit-form">
-                                <input type="text" id="edit-node-name-${bid}" class="input" aria-label="Node name" value="${esc(b.name)}">
-                                <textarea id="edit-node-comment-${bid}" class="input custom-scrollbar" aria-label="Node comment">${esc(b.comment || '')}</textarea>
-                                <div class="tn-edit-actions">
-                                    <button onclick="App.toggleEditNode(null)" class="btn btn-ghost">Cancel</button>
-                                    <button onclick="App.saveEditNode('${bid}')" class="btn btn-primary">Save</button>
-                                </div>
-                            </div>
-                        `;
-                    } else {
-                        el.innerHTML = `
-                             <span class="deck-icon${pIdx === null ? '' : ' is-p' + (pIdx + 1)}"></span>
-                             <div class="tn-body">
-                                 <button onclick="App.restoreTimeline('${bid}', false)" class="tn-title"
-                                     title="Restore this timeline" aria-label="Restore timeline: ${esc(b.name)}">
-                                     ${icon} <span>${esc(b.name)}</span>
-                                 </button>
-                                 <div class="tn-stats">${esc(b.stats).replace(/ \| /g, ' · ')}<span class="tn-time"> · ${esc(timeStr)}</span></div>
-                                 <div class="tn-comment custom-scrollbar markdown-comment">${b.comment ? this.renderMarkdown(b.comment) : ''}</div>
+                    el.innerHTML = `
+                         <span class="deck-icon${pIdx === null ? '' : ' is-p' + (pIdx + 1)}"></span>
+                         <div class="tn-body">
+                             <button class="tn-title" data-act="select"
+                                 title="Select (double-click to play from here)" aria-label="Select node: ${esc(b.name)}">
+                                 ${icon} <span>${esc(b.name)}</span>
+                             </button>
+                             <div class="tn-stats">${esc(b.stats).replace(/ \| /g, ' · ')}<span class="tn-time"> · ${esc(timeStr)}</span></div>
+                             <div class="tn-comment custom-scrollbar markdown-comment">${comment ? this.renderMarkdown(comment) : ''}</div>
 
-                                 <button onclick="App.toggleEditNode('${bid}')" class="tn-icon-btn tn-edit"
-                                     title="Edit Node" aria-label="Edit node">
-                                     <i class="fa-solid fa-pen"></i>
-                                 </button>
-                                 <button onclick="App.deleteTimeline('${bid}', false)" class="tn-icon-btn tn-delete"
-                                     title="Delete Node (children reattach to parent; Undo available)" aria-label="Delete node">
-                                     <i class="fa-solid fa-trash"></i>
-                                 </button>
-                             </div>
+                             <button data-act="delete" class="tn-icon-btn tn-delete"
+                                 title="Delete Node (children reattach to parent; Undo available)" aria-label="Delete node">
+                                 <i class="fa-solid fa-trash"></i>
+                             </button>
+                         </div>
 
-                             ${this.buildNodeSectionsHtml(b)}
-                        `;
-                    }
+                         ${this.buildNodeSectionsHtml(b)}
+                    `;
                     nodesContainer.appendChild(el);
                 });
+
+                this.renderTreePanel();
             },
 
+            // Auto-saves are drawn in the tree as dashed nodes; redraw it if it's up.
             renderAutoSaves() {
-                const buildHtml = (list) => {
-                    if (list.length === 0) return `<div class="autosave-empty">No auto-saves available.</div>`;
-                    return list.map(b => {
-                        // Feature 36: an auto-save is a turn node, so it wears the
-                        // same player weave the multiverse node does.
-                        const pIdx = this.bookmarkPlayerIndex(b);
-                        const pCls = pIdx === null ? '' : ` is-p${pIdx + 1}`;
-                        const esc = (v) => this.escapeHtml(v);
-                        const bid = esc(b.id);
-                        return `
-                        <div class="autosave-item${pCls}" role="button" tabindex="0" onclick="App.restoreTimeline('${bid}', true)"
-                            onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();App.restoreTimeline('${bid}', true)}"
-                            aria-label="Restore auto-save: ${esc(b.name)}">
-                            ${pIdx === null ? '' : `<span class="deck-icon is-p${pIdx + 1}"></span>`}
-                            <div class="as-name">${esc(b.name)}</div>
-                            <div class="as-stats">${esc(b.stats)}</div>
-                            ${b.cardsPlayedData && b.cardsPlayedData.length > 0 ? `
-                            <div class="as-cards">
-                                ${b.cardsPlayedData.slice(0, 5).map(cid => {
-                            const dbCard = this.cardDB[cid];
-                            return dbCard ? this.cardThumbHtml(dbCard, 'tn-card-thumb') : '';
-                        }).join('')}
-                                ${b.cardsPlayedData.length > 5 ? `<div class="as-stats" style="margin-top:0">+${b.cardsPlayedData.length - 5}</div>` : ''}
-                            </div>
-                            ` : ''}
-                            <div class="as-restore">Restore Auto-Save</div>
-                        </div>
-                        `;
-                    }).join('');
+                if (!document.getElementById('tree-modal').classList.contains('hidden')) this.renderTree();
+            },
+
+            selectTreeNode(id, center = false) {
+                if (!id) return;
+                this.treeNavActiveId = id;
+                this._tpEdit = null;
+                document.querySelectorAll('#tree-nodes .tree-node').forEach(n => n.classList.toggle('is-nav', n.dataset.id === id));
+                this.renderTreePanel();
+                if (center) this.centerTreeOnNode(id);
+            },
+
+            // The panel's lower half: the selected node (or auto-save). The name and
+            // the note edit in place on click; the recap is the node's cards.
+            renderTreePanel() {
+                const host = document.getElementById('tp-sel');
+                if (!host) return;
+                const esc = (v) => this.escapeHtml(v);
+                const id = this.treeNavActiveId;
+                const node = id ? this.bookmarks.find(b => b.id === id) : null;
+                const auto = node || !id ? null : (this.autoSaves || []).find(a => a.id === id);
+                if (!node && !auto) {
+                    host.innerHTML = `<div class="tp-empty">${this.bookmarks.length
+                        ? 'Click a node to see its turn here.'
+                        : 'Nothing saved yet. Save the turn you’re in, or end a turn with auto-save on, and it shows up here.'}</div>`;
+                    return;
+                }
+                const b = node || auto;
+                const isLive = !!node && this.state && this.state.activeBookmarkId === node.id;
+                const pIdx = node ? this.bookmarkPlayerIndex(node) : this.autoSaveInfo(auto).activePlayer;
+                const time = new Date(b.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' });
+                const editing = this._tpEdit && this._tpEdit.id === b.id ? this._tpEdit.field : null;
+                const parts = this.splitNodeComment(node ? node.comment : '');
+
+                const label = auto ? 'Where you jumped from'
+                    : `Selected${isLive ? ' <span class="tp-here">· you are here</span>' : ''}`;
+                const nameHtml = auto
+                    ? `<div class="tp-name is-static">Left here · ${esc(time)}</div>`
+                    : editing === 'name'
+                        ? `<input type="text" class="input tp-name-input" id="tp-name-input" maxlength="120" value="${esc(node.name)}" aria-label="Node name">`
+                        : `<button class="tp-name" data-act="edit-name" title="Click to rename">${esc(node.name)}</button>`;
+                const noteHtml = auto
+                    ? `<p class="tp-hint">Kept automatically when you jumped to another node, so the board you left is never lost. The last five stay until you keep one as a node.</p>`
+                    : editing === 'note'
+                        ? `<textarea class="input tp-note-input custom-scrollbar" id="tp-note-input" rows="5" aria-label="Note" placeholder="Write a note (markdown)">${esc(parts.note)}</textarea>
+                           <div class="tp-edit-hint">Click away or Ctrl+Enter to save · Esc to cancel</div>`
+                        : `<div class="tp-note markdown-comment${parts.note ? '' : ' is-empty'}" data-act="edit-note" role="button" tabindex="0"
+                               title="Click to edit the note">${parts.note ? this.renderMarkdown(parts.note) : 'Add a note…'}</div>`;
+                const actions = `
+                    <button class="btn btn-primary tp-play" data-act="play" title="Play from here (Enter, or double-click the node)"><i class="fa-solid fa-play"></i> Play from here</button>
+                    ${auto ? `<button class="btn" data-act="keep"><i class="fa-solid fa-bookmark"></i> Keep as node</button>` : ''}
+                    <button class="icon-btn tp-del" data-act="delete"
+                        title="${auto ? 'Discard this snapshot (Undo available)' : 'Delete node (its branches move up; Undo available)'}"
+                        aria-label="${auto ? 'Discard snapshot' : 'Delete node'}"><i class="fa-solid fa-trash"></i></button>`;
+
+                const lore = this.nodeLore(b, !!auto);
+                const meter = (i) => {
+                    const v = lore[i];
+                    return `<div class="tp-meter"><span class="deck-icon is-p${i + 1}"></span><span class="tp-meter-p">P${i + 1}</span>
+                        <div class="tp-track"><span class="tp-mark" style="left:${Math.min(100, Math.max(0, v / 20 * 100))}%"></span></div>
+                        <span class="tp-meter-v">${v}</span></div>`;
                 };
-                document.getElementById('autosave-list').innerHTML = buildHtml(this.autoSaves);
+                const loreHtml = lore ? `<div class="tp-lore"><div class="tp-label">Lore race to 20</div>${meter(0)}${meter(1)}</div>` : '';
+
+                const recapHead = `
+                    <div class="tp-recap-head">
+                        <span class="tp-label">Turn recap</span>
+                        <button class="tp-switch-row" data-act="toggle-recap" role="switch" aria-checked="${this.treeRecapInNodes}"
+                            title="Show the full recap inside every node">Show in nodes<span class="tp-switch${this.treeRecapInNodes ? ' is-on' : ''}"></span></button>
+                    </div>`;
+                const recapCards = this.buildPanelSectionsHtml(auto ? { cardsPlayedData: auto.cardsPlayedData || [] } : node, '');
+                // Nodes saved before the card sections existed only have the text recap.
+                const textRecap = node && !node.sections && parts.recap
+                    ? `<div class="tp-recap-text markdown-comment">${this.renderMarkdown(parts.recap)}</div>` : '';
+
+                host.innerHTML = `
+                    <div class="tp-label">${label}</div>
+                    <div class="tp-title">${pIdx === null ? '' : `<span class="deck-icon is-p${pIdx + 1}"></span>`}${nameHtml}</div>
+                    <div class="tp-sub">${esc(b.stats).replace(/ \| /g, ' · ')} · ${esc(time)}</div>
+                    <div class="tp-actions">${actions}</div>
+                    ${noteHtml}
+                    ${loreHtml}
+                    <div class="tp-recap">${recapHead}${recapCards}${textRecap}</div>`;
+
+                if (editing) this.bindTreeEdit(b.id, editing);
             },
 
-            toggleEditNode(id) {
-                this.state.editingNodeId = id;
-                this.renderTree();
+            startTreeEdit(field) {
+                if (!this.treeNavActiveId) return;
+                this._tpEdit = { id: this.treeNavActiveId, field };
+                this.renderTreePanel();
             },
 
-            saveEditNode(id) {
+            // Wires the in-place editor renderTreePanel just drew. Enter (name) or
+            // Ctrl+Enter (note) and clicking away save; Escape cancels.
+            bindTreeEdit(id, field) {
+                const el = document.getElementById(field === 'name' ? 'tp-name-input' : 'tp-note-input');
+                if (!el) return;
+                el.focus();
+                if (field === 'name') el.select();
+                else el.setSelectionRange(el.value.length, el.value.length);
+                let done = false;
+                const finish = (commit) => {
+                    if (done) return;
+                    done = true;
+                    this._tpEdit = null;
+                    if (commit) this.commitTreeEdit(id, field, el.value);
+                    this.renderTreePanel();
+                };
+                el.addEventListener('keydown', (e) => {
+                    // Keep these keys from the global hotkeys (Escape closes the tree, Enter restores).
+                    if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); finish(false); }
+                    else if (e.key === 'Enter' && (field === 'name' || e.ctrlKey || e.metaKey)) {
+                        e.preventDefault(); e.stopPropagation(); finish(true);
+                    }
+                });
+                el.addEventListener('blur', () => finish(true));
+            },
+
+            commitTreeEdit(id, field, value) {
                 const node = this.bookmarks.find(b => b.id === id);
                 if (!node) return;
-
-                const newName = document.getElementById(`edit-node-name-${id}`).value.trim();
-                const newComment = document.getElementById(`edit-node-comment-${id}`).value.trim();
-
-                if (newName) node.name = newName;
-                node.comment = newComment; // Allow clearing the comment
-
-                this.state.editingNodeId = null;
+                if (field === 'name') {
+                    const name = value.trim();
+                    if (!name || name === node.name) return;
+                    node.name = name;
+                } else {
+                    const parts = this.splitNodeComment(node.comment);
+                    const note = value.trim();
+                    if (note === parts.note) return;
+                    node.comment = [note, parts.recap].filter(Boolean).join('\n\n');
+                }
                 this.renderTree();
-                this.showToast("Timeline node updated.");
+                this.saveToDevice();
+            },
+
+            onTreePanelClick(e) {
+                const btn = e.target.closest('[data-act]');
+                if (!btn || !btn.closest('#tp-sel')) return;
+                const id = this.treeNavActiveId;
+                const isAuto = !this.bookmarks.some(b => b.id === id);
+                switch (btn.dataset.act) {
+                    case 'play': this.restoreTimeline(id, isAuto); break;
+                    case 'delete': this.deleteTimeline(id, isAuto); break;
+                    case 'keep': this.keepAutoSave(id); break;
+                    case 'edit-name': this.startTreeEdit('name'); break;
+                    // A link inside the rendered note still opens; anywhere else edits.
+                    case 'edit-note': if (!e.target.closest('a')) this.startTreeEdit('note'); break;
+                    case 'toggle-recap': this.toggleTreeRecap(); break;
+                }
             },
 
             triggerTimeFlash() {
@@ -10261,9 +10533,10 @@
                 const pal = this.$('tweak-palette');
                 if (pal) pal.querySelectorAll('button').forEach(b => b.classList.toggle('is-active', b.dataset.val === (t.palette || 'competition')));
 
-                // Multiverse node density (Feature 31) — toggled from the tree modal header.
-                this.treeNodeView = t.treeNodeView === 'compact' ? 'compact' : 'full';
-                this.syncTreeViewToggle();
+                // Multiverse: the recap inside every node (else only in the panel), and
+                // which side the panel docks on. Both are set from the Multiverse view.
+                this.treeRecapInNodes = t.treeRecapInNodes === true;
+                this.applyTreePanelSide(t.treePanelSide === 'left' ? 'left' : 'right');
 
                 // Feature 32: ONE text mode for the whole app — board, grids and the
                 // preview pane. Cached (read on every card paint) and mirrored onto
@@ -10297,7 +10570,6 @@
                 }
                 if (!t.palette) t.palette = 'competition';
                 if (!t.cardMode) t.cardMode = 'art';
-                if (!t.treeNodeView) t.treeNodeView = 'full';
                 const row = this.$('tweak-accent-row');
                 if (row && !row.children.length) {
                     Object.entries(ACCENT_PRESETS).forEach(([key, def]) => {
@@ -10337,7 +10609,7 @@
                     this.applyTweaks(t);
                     // Card faces are built in render(); rebuild the board and the tree.
                     if (this.state && this.state.players) this.render();
-                    if (this.bookmarks) { this.renderTree(); this.renderAutoSaves(); }
+                    if (this.bookmarks) this.renderTree();
                 }));
                 const cf = this.$('tweak-chal-forecast');
                 if (cf) cf.querySelectorAll('button').forEach(b => b.addEventListener('click', () => {
@@ -10654,7 +10926,8 @@
                 return;
             }
             if (keyStr === 't') {
-                App.toggleTimelines();
+                e.preventDefault(); // the form takes focus; don't type the "t" into it
+                App.openSaveTurn();
                 return;
             }
             if (keyStr === 'q') {
@@ -10675,60 +10948,31 @@
 
             if (e.key === 'ArrowUp' || e.key === 'ArrowDown' || e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
                 e.preventDefault();
-                if (!App.treeNavActiveId || !App.nodePositions || !App.nodePositions[App.treeNavActiveId]) return;
+                const cur = App.treeNavActiveId;
+                if (!cur || !App.nodePositions || !App.nodePositions[cur]) return;
 
-                const currentPos = App.nodePositions[App.treeNavActiveId];
+                // renderTree() keeps the drawn tree's links: parent, children, roots.
+                const parentOf = App.treeParent || {};
+                const kidsOf = App.treeKids || {};
                 let nextId = null;
-
                 if (e.key === 'ArrowLeft') {
-                    // Go to parent
-                    const activeNode = App.bookmarks.find(b => b.id === App.treeNavActiveId);
-                    if (activeNode && activeNode.parentId) {
-                        nextId = activeNode.parentId;
-                    }
+                    nextId = parentOf[cur] || null; // parent
                 } else if (e.key === 'ArrowRight') {
-                    // Go to earliest child
-                    const children = App.bookmarks.filter(b => b.parentId === App.treeNavActiveId).sort((a, b) => a.timestamp - b.timestamp);
-                    if (children.length > 0) {
-                        nextId = children[0].id;
-                    }
-                } else if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
-                    // Find sibling (nodes with same parent)
-                    const activeNode = App.bookmarks.find(b => b.id === App.treeNavActiveId);
-                    if (activeNode) {
-                        const siblings = App.bookmarks.filter(b => b.parentId === activeNode.parentId).sort((a, b) => App.nodePositions[a.id].y - App.nodePositions[b.id].y);
-                        const currentIndex = siblings.findIndex(s => s.id === App.treeNavActiveId);
-                        if (e.key === 'ArrowUp' && currentIndex > 0) {
-                            nextId = siblings[currentIndex - 1].id;
-                        } else if (e.key === 'ArrowDown' && currentIndex < siblings.length - 1) {
-                            nextId = siblings[currentIndex + 1].id;
-                        }
-                    }
+                    nextId = (kidsOf[cur] || [])[0] || null; // earliest child
+                } else {
+                    // Siblings (same parent, or the roots), in the order they're drawn
+                    const siblings = (parentOf[cur] ? kidsOf[parentOf[cur]] : App.treeRoots) || [];
+                    const sorted = siblings.slice().sort((a, b) => App.nodePositions[a].y - App.nodePositions[b].y);
+                    const i = sorted.indexOf(cur);
+                    nextId = sorted[i + (e.key === 'ArrowUp' ? -1 : 1)] || null;
                 }
-
-                if (nextId) {
-                    App.treeNavActiveId = nextId;
-                    App.renderTree();
-
-                    // Center viewport on new target
-                    const targetPos = App.nodePositions[nextId];
-                    const viewport = document.getElementById('tree-viewport');
-                    const vWidth = viewport.clientWidth;
-                    const vHeight = viewport.clientHeight;
-                    const dims = App.treeNodeDims || { w: 230, h: 250 };
-                    const nodeCenterX = targetPos.x + (dims.w / 2);
-                    const nodeCenterY = targetPos.y + (dims.h / 2);
-                    App.treePan.translateX = (vWidth / 2) - (nodeCenterX * App.treePan.zoom);
-                    App.treePan.translateY = (vHeight / 2) - (nodeCenterY * App.treePan.zoom);
-                    document.getElementById('tree-canvas').style.transform = `translate(${App.treePan.translateX}px, ${App.treePan.translateY}px) scale(${App.treePan.zoom})`;
-                }
+                if (nextId) App.selectTreeNode(nextId, true);
             } else if (e.key === 'Enter') {
-                // A focused node button handles its own Enter — don't double-restore.
+                // A focused button handles its own Enter — don't double-restore.
                 if (document.activeElement.tagName === 'BUTTON') return;
                 e.preventDefault();
-                if (App.treeNavActiveId) {
-                    App.restoreTimeline(App.treeNavActiveId, false);
-                }
+                const id = App.treeNavActiveId;
+                if (id) App.restoreTimeline(id, !App.bookmarks.some(b => b.id === id));
             }
         });
 

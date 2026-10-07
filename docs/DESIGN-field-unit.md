@@ -192,7 +192,7 @@ The match board is a fixed instrument, not a scrolling marketing page.
 - Columns: players/log 292px, board fluid, draw odds 286px. Minimum board width 720px before the odds column collapses under the board.
 - Playfield: 8px margin from the columns, 16px radius, split in half by a 1px `#242424` rule. Opponent on top, you on bottom. Phones frame it the same way, like the multiverse canvas: 8px of chassis all round (plus the bottom safe area) and 16px corners. The phone hand tray sits on the well's bottom edge and its peeking cards are clipped by the well's corners.
 - Each half: discard column 168px, field fluid, deck 92px, gap 8px.
-- Multiverse: chassis frame, glass canvas with 16px radius, nodes absolutely placed, edges 1.2px `#6A655E`, live edge 1.6px signal.
+- Multiverse: chassis frame, glass canvas with 16px radius, nodes absolutely placed, edges 1.2px `#6A655E`, live edge 1.6px signal. A 340px paper panel docks beside the canvas, right by default or left by preference, 8px from it; phones stack it under the canvas.
 
 Marketing grid is 12 columns, 48px page margin, modules at 22px radius. The app does not use that grid.
 
@@ -283,11 +283,17 @@ Paper module. Header `label/sm`: `Draw odds · 24` and `1 · 2 · 4`. Columns: c
 
 Paper, 10px radius, 230px wide, padding 8px 9px, 1px `#E0DBD1`. Title 12px weight 620. Subline 10px mute: lore pair, timestamp, "auto-saved". Body is a 2-column grid, 10px: label `label/sm`, value ink. Bottom bar 2px. Live node: 1px signal border plus signal bar. Inactive bar is `#E0DBD1`.
 
-Node body must be able to show played, inked, drawn, discarded, banished, quested, hand size, and the note. Do not reduce a node to a title.
+Node body must be able to show played, inked, drawn, discarded, banished, quested, hand size, and the note. Do not reduce a node to a title. With the recap in the panel (the default) a node is lean: title, subline, the note and the Played strip; "Show in nodes" brings every section back.
+
+A pre-jump auto-save is a ghost of a node: glass raised, 1px dashed `#6A655E` border, no bar, mute text, a dashed edge to the node it was taken from. It is not a node until kept.
 
 ### Multiverse edge
 
 On the glass canvas. Inactive `#6A655E` at 1.2px. The path to the node you are on is signal at 1.6px. No purple, no gold, no glow except the signal stroke. Canvas hint is `label/sm` mute: pan, zoom, click a node, arrow keys.
+
+### Multiverse panel
+
+Paper module, 12px radius, 12px padding, beside the canvas. Top: one emphasised paper tool, **Save current unfinished turn**, that opens a name, a note and the cards the node will keep. Then the selected node: `label/sm` "Selected" (signal "· you are here" on the live node), the node's name as `title/md` that edits in place on click, the subline in mono mute, **Play from here** (the view's one signal key) and a paper bin, the note (click to edit; dashed when empty), the lore race (two meters to 20), and the turn recap as label · card thumbnails with the "Show in nodes" switch (ink when on, never signal).
 
 ### Marketing chassis
 
@@ -318,6 +324,6 @@ The app's front door, on the chassis. Two columns: the brand on the left (the ma
 - Don't invent a signal outside Ember, Radio, Coral, Olive, and Trace.
 - Don't replace card faces with generated illustration. Name, subtitle, and the three figures are enough.
 - Don't hide zero-copy odds rows.
-- Don't make a second filled button on the board or the shell. Challenge, Undo, Timelines, and Save a copy stay paper tools. The card drawer is the exception: it is a panel of function keys (see Function keys).
+- Don't make a second filled button on the board or the shell. Challenge, Undo, Multiverse, and Save a copy stay paper tools. The card drawer is the exception: it is a panel of function keys (see Function keys).
 - Don't put an ink colour on a function key, and don't invent a key colour outside Coral, Olive, Trace, Graphite and Bone.
 - Don't colour a place (this device, your account, public links) with anything but its key colour, and don't wash a row or panel in it.
