@@ -1060,7 +1060,7 @@
     <script>
         let cardFuse = null;
 
-        const APP_VERSION = "v3.4.9"; // Centralized version string (v3: Field Unit)
+        const APP_VERSION = "v3.4.10"; // Centralized version string (v3: Field Unit)
 
         // Tweaks panel accent presets (hue values for the OKLCH accent ramp)
         // Tweaks → Accent: the approved Field Unit signals only (design.md ·
@@ -4622,14 +4622,25 @@
                 for (const t of turns) for (const e of t.events) {
                     if ((e.t === 'draw' || e.t === 'reveal') && e.p >= 0 && e.p <= 1) allDraws[e.p].push(e.name);
                 }
-                const drawn = [0, 0];
-
                 // Zones hold card names; null = a card the log never named.
-                const hands = [players[0].finalHand.slice(), players[1].finalHand.slice()];
-                const fields = [[], []]; // { name, exerted, damage, under }
-                const inkwells = [[], []];
-                const discards = [[], []];
-                const lore = [0, 0];
+                let drawn, hands, fields, inkwells, discards, lore;
+                const reset = () => {
+                    drawn = [0, 0];
+                    hands = [players[0].finalHand.slice(), players[1].finalHand.slice()];
+                    fields = [[], []]; // { name, exerted, damage, under }
+                    inkwells = [[], []];
+                    discards = [[], []];
+                    lore = [0, 0];
+                };
+                reset();
+
+                // A hidden hand's cards are named only when they leave it (played,
+                // inked, discarded). A first pass collects those names in order, so a
+                // snapshot can show the cards still to come in the hand and deck, as
+                // the replay import does: soonest first in the hand, the rest in the deck.
+                const hiddenReveals = [[], []];
+                const revealsUsed = [0, 0];
+                let dryRun = false;
 
                 // Deck lists: the most copies of each card ever seen at once.
                 const seen = [new Map(), new Map()];
@@ -4656,10 +4667,15 @@
                     const iNamed = name ? hands[p].indexOf(name) : -1;
                     if (iNamed !== -1) { hands[p].splice(iNamed, 1); return 'hand'; }
                     const iUnknown = hands[p].indexOf(null);
-                    if (hidden && iUnknown !== -1) { hands[p].splice(iUnknown, 1); return 'hand'; }
+                    const takeUnknown = () => {
+                        hands[p].splice(iUnknown, 1);
+                        if (name) { if (dryRun) hiddenReveals[p].push(name); else revealsUsed[p]++; }
+                        return 'hand';
+                    };
+                    if (hidden && iUnknown !== -1) return takeUnknown();
                     const iDisc = name ? discards[p].indexOf(name) : -1;
                     if (iDisc !== -1) { discards[p].splice(iDisc, 1); return 'discard'; }
-                    if (iUnknown !== -1) { hands[p].splice(iUnknown, 1); return 'hand'; }
+                    if (iUnknown !== -1) return takeUnknown();
                     return null;
                 };
                 const fieldCard = (p, name, pred) => fields[p].find(f => f.name === name && (!pred || pred(f)));
@@ -4792,35 +4808,58 @@
                     }
                 };
 
+                // First pass: run the whole game once to learn the hidden cards.
+                dryRun = true;
+                {
+                    let last = 0;
+                    for (const t of turns) {
+                        const p = t.activePlayerIndex >= 0 ? t.activePlayerIndex : 1 - last;
+                        last = p;
+                        for (const e of t.events) if (e.step) apply(e, p);
+                        for (const e of t.events) if (!e.step) apply(e, p);
+                    }
+                }
+                dryRun = false;
+                reset();
+
                 const cardOf = (name) => (name ? this.makeCardInstance(idOf(name)) : this.makeUnknownCardInstance());
-                const buildDeck = (p) => {
+                // The hand and deck as names, with unknown slots filled from the
+                // hidden cards still to be revealed.
+                const knownZones = (p) => {
                     const underCount = fields[p].reduce((s, f) => s + (f.under || 0), 0);
                     const used = hands[p].length + fields[p].length + underCount + inkwells[p].length + discards[p].length;
                     const size = Math.max(0, 60 - used);
                     const future = allDraws[p].slice(drawn[p]);
                     const deck = [];
-                    for (let i = 0; i < size; i++) deck.push(cardOf(i < future.length ? future[i] : null));
-                    return deck;
+                    for (let i = 0; i < size; i++) deck.push(i < future.length ? future[i] : null);
+                    const pending = hiddenReveals[p].slice(revealsUsed[p]);
+                    let k = 0;
+                    const fill = (n) => (n != null ? n : (k < pending.length ? pending[k++] : null));
+                    const hand = hands[p].map(fill);
+                    return { hand, deck: deck.map(fill) };
                 };
-                const buildPlayerState = (p) => ({
-                    id: p,
-                    name: `Player ${p + 1}`,
-                    lore: lore[p],
-                    inkTotal: inkwells[p].length,
-                    inkReady: inkwells[p].length,
-                    hasMulliganed: true,
-                    deck: buildDeck(p),
-                    hand: hands[p].map(cardOf),
-                    field: fields[p].map(fc => {
-                        const card = cardOf(fc.name);
-                        card.exerted = !!fc.exerted;
-                        card.damage = fc.damage || 0;
-                        for (let k = 0; k < (fc.under || 0); k++) card.stackedCards.push(this.makeUnknownCardInstance());
-                        return card;
-                    }),
-                    inkwell: inkwells[p].map(cardOf),
-                    discard: discards[p].map(cardOf)
-                });
+                const buildPlayerState = (p) => {
+                    const zones = knownZones(p);
+                    return {
+                        id: p,
+                        name: `Player ${p + 1}`,
+                        lore: lore[p],
+                        inkTotal: inkwells[p].length,
+                        inkReady: inkwells[p].length,
+                        hasMulliganed: true,
+                        deck: zones.deck.map(cardOf),
+                        hand: zones.hand.map(cardOf),
+                        field: fields[p].map(fc => {
+                            const card = cardOf(fc.name);
+                            card.exerted = !!fc.exerted;
+                            card.damage = fc.damage || 0;
+                            for (let k = 0; k < (fc.under || 0); k++) card.stackedCards.push(this.makeUnknownCardInstance());
+                            return card;
+                        }),
+                        inkwell: inkwells[p].map(cardOf),
+                        discard: discards[p].map(cardOf)
+                    };
+                };
 
                 const SKIP_PATTERNS = [
                     /^---\s*Turn \d+\s*---$/,
@@ -4886,7 +4925,7 @@
                         startingHand: (() => {
                             const gone = {};
                             ids(played.concat(inked, discarded)).forEach(id => { gone[id] = (gone[id] || 0) + 1; });
-                            return ids(hands[p]).map(id => {
+                            return ids(knownZones(p).hand).map(id => {
                                 if (gone[id]) { gone[id]--; return { id, left: true }; }
                                 return { id, left: false };
                             });

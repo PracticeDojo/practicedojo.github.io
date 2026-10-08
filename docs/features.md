@@ -700,6 +700,13 @@ Implements version 2 of `docs/DESIGN-field-unit.md` (Kiln dark mode, signal fami
 - **Signal family.** By day the signal is Ember `#E4572E`; on Kiln it is Radio `#E86B2A` with dark text on the key. Tweaks → Accent offers only the approved swaps: **Signal** (the theme's own), **Coral**, **Olive** (its lore numeral lifts to `#C6C45A` on the well) and **Trace**. Each carries the text colour that sits on it. The old Amber / Rose / Emerald / Violet / Azure accents were ink colours, so a saved pick of one falls back to Signal.
 - **CSS file.** The Field Unit tokens, themes, palettes and component styles moved from the inline `<style>` to `app/css/field-unit.css`, loaded right after it (pixel-identical move). The older inline rules stay put.
 
+## Patch: Opponent's hidden cards named in log imports (v3.4.10)
+
+### Details
+A Duels.ink text log hides the opponent's hand and draws, but names every card when they play, ink or discard it. The import now reads the whole game first and fills the opponent's unknown hand and deck in each node with the cards they reveal later: soonest first in the hand, the rest in the deck. A replay import already did this.
+- Checked against the replay of the same game: the opponent's hand is the same in every node. The deck shows 2 fewer known cards than the replay. The replay file names two more Donald Ducks that the log never names, so the log cannot place them.
+- Cards the opponent never reveals stay unknown. Old-format logs, which show both hands, are unchanged.
+
 ## Patch: Share links on practicedojo.win (v3.4.8)
 
 ### Details
