@@ -526,6 +526,8 @@
                 <button class="tree-tool" onclick="App.openImportLogModal()"
                     title="Import a Duels.ink log or replay"><i class="fa-solid fa-file-lines"></i><span>Log</span></button>
                 <div class="divider-v tree-head-rule"></div>
+                <button class="tree-tool" id="tree-view-toggle" onclick="App.toggleTreeView()" aria-pressed="false"
+                    title="Show the tree as a plot: every saved turn a dot"><i class="fa-solid fa-braille"></i><span>Plot</span></button>
                 <button onclick="App.toggleTreePanelSide()" class="close tree-dock-toggle" id="tree-dock-toggle"
                     title="Move the panel to the left" aria-label="Move the panel to the left"><i
                         class="fa-solid fa-table-columns"></i></button>
@@ -546,6 +548,8 @@
                     <!-- HTML Nodes go here -->
                     <div id="tree-nodes" class="absolute inset-0 z-10"></div>
                 </div>
+                <!-- The plot's key (plot view only) -->
+                <div id="tree-legend" class="tree-legend" hidden></div>
             </div>
 
             <!-- The panel: save the turn you're in, then the selected node. It docks
@@ -1029,7 +1033,7 @@
     <script>
         let cardFuse = null;
 
-        const APP_VERSION = "v3.4.3"; // Centralized version string (v3: Field Unit)
+        const APP_VERSION = "v3.4.4"; // Centralized version string (v3: Field Unit)
 
         // Tweaks panel accent presets (hue values for the OKLCH accent ramp)
         // Tweaks → Accent: the approved Field Unit signals only (design.md ·
@@ -1985,7 +1989,7 @@
                 // double-click plays from it. One listener each; ids come from data-id.
                 const nodes = document.getElementById('tree-nodes');
                 nodes.addEventListener('click', (e) => {
-                    const el = e.target.closest('.tree-node');
+                    const el = e.target.closest('.tree-node, .tp-dot');
                     if (!el || !el.dataset.id) return;
                     const isAuto = el.dataset.kind === 'auto';
                     if (e.target.closest('[data-act="delete"]')) { this.deleteTimeline(el.dataset.id, isAuto); return; }
@@ -1995,7 +1999,7 @@
                     if (e.target.closest('[data-act="edit-note"]') && !e.target.closest('a')) this.startTreeEdit('note');
                 });
                 nodes.addEventListener('dblclick', (e) => {
-                    const el = e.target.closest('.tree-node');
+                    const el = e.target.closest('.tree-node, .tp-dot');
                     if (!el || !el.dataset.id || e.target.closest('[data-act="delete"], [data-act="edit-note"]')) return;
                     this.restoreTimeline(el.dataset.id, el.dataset.kind === 'auto');
                 });
@@ -2039,7 +2043,7 @@
                 };
 
                 viewport.addEventListener('mousedown', (e) => {
-                    if (e.target.closest('.tree-node')) return; // Do not pan if clicking a node card
+                    if (e.target.closest('.tree-node, .tp-dot')) return; // Do not pan if clicking a node
                     this.treePan.isDragging = true;
                     this.treePan.startX = e.clientX - this.treePan.translateX;
                     this.treePan.startY = e.clientY - this.treePan.translateY;
@@ -2094,7 +2098,7 @@
 
                 viewport.addEventListener('touchstart', (e) => {
                     if (e.touches.length === 1) {
-                        if (e.target.closest('.tree-node')) return; // tapping a node shouldn't pan
+                        if (e.target.closest('.tree-node, .tp-dot')) return; // tapping a node shouldn't pan
                         this.treePan.isDragging = true;
                         this.treePan.startX = e.touches[0].clientX - this.treePan.translateX;
                         this.treePan.startY = e.touches[0].clientY - this.treePan.translateY;
@@ -2139,6 +2143,7 @@
             },
 
             resetTreeZoom() {
+                if (this.treeView === 'plot') { this.fitTree(); return; }
                 this.treePan.zoom = 1;
                 this.treePan.translateX = 100;
                 this.treePan.translateY = 100;
@@ -5705,7 +5710,9 @@
                 // Render tree first to calculate node positions
                 this.renderTree();
 
-                if (this.treeNavActiveId && this.nodePositions[this.treeNavActiveId]) {
+                if (this.treeView === 'plot' && this.bookmarks.length) {
+                    this.fitTree();
+                } else if (this.treeNavActiveId && this.nodePositions[this.treeNavActiveId]) {
                     this.centerTreeOnNode(this.treeNavActiveId);
                 } else {
                     // Fallback
@@ -5745,6 +5752,8 @@
             // strip. "Show in nodes" (a saved preference) puts every card section back
             // in every node, as before.
             treeRecapInNodes: false,
+            // The tree as cards (the default) or as the plot: one dot per saved turn.
+            treeView: 'cards',
             // lean = the pre-panel compact node (its comment box scrolls);
             // full = body + one label row (16px) and one thumb row (46px) per section.
             TREE_NODE_H: { lean: 250, full: 510 },
@@ -5912,6 +5921,258 @@
                 canvas.style.transform = `translate(${this.treePan.translateX}px, ${this.treePan.translateY}px) scale(${this.treePan.zoom})`;
             },
 
+            // A won branch's final node: the explicit flag on new saves; the
+            // gradient covers sessions saved before it.
+            isVictoryNode(b) {
+                return !!(b && (b.isVictory || b.gradient));
+            },
+
+            // Who won a victory node: its stored playerIdx, else whoever has 20.
+            victoryWinner(b) {
+                const p = this.bookmarkPlayerIndex(b);
+                if (p !== null) return p;
+                const { lore } = this.treeTurnInfo(b);
+                if (!lore) return null;
+                return lore[0] >= 20 ? 0 : lore[1] >= 20 ? 1 : null;
+            },
+
+            // The turn and the lore pair from a node's stats line ("Turn 16 | P1: 10 - P2: 11").
+            treeTurnInfo(b) {
+                const stats = (b && b.stats) || '';
+                const t = /Turn (\d+)/.exec(stats);
+                const l = /P1: (\d+) - P2: (\d+)/.exec(stats);
+                return { turn: t ? +t[1] : null, lore: l ? [+l[1], +l[2]] : null };
+            },
+
+            // The plate on a won branch's final node: the winner's lore as a numeral,
+            // who won and the score.
+            treeWinPlateHtml(b, p) {
+                const { lore } = this.treeTurnInfo(b);
+                const n = lore && p !== null ? lore[p] : 20;
+                const who = p === null ? 'Branch won' : `P${p + 1} wins`;
+                const score = lore ? ` · ${lore[0]}–${lore[1]}` : '';
+                return `<div class="tn-win"><span class="tn-win-n">${n}</span><span class="tn-win-t"><b>${who}${score}</b><br>Branch closed</span></div>`;
+            },
+
+            // The arrow-key cursor around the selected card: signal corner marks on
+            // their own layer (a node clips its children). The plot draws its own.
+            placeTreeCursor() {
+                const host = document.getElementById('tree-nodes');
+                let c = document.getElementById('tn-cursor');
+                const id = this.treeNavActiveId;
+                const pos = id && this.nodePositions ? this.nodePositions[id] : null;
+                if (this.treeView === 'plot' || !pos || !host) {
+                    if (c) c.remove();
+                    return;
+                }
+                if (!c || c.parentNode !== host) {
+                    c = document.createElement('div');
+                    c.id = 'tn-cursor';
+                    c.className = 'tn-cursor';
+                    c.innerHTML = '<i></i><i></i><i></i><i></i>';
+                    host.appendChild(c);
+                }
+                const d = this.treeNodeDims || { w: 230, h: 250 }, o = 9;
+                c.style.left = `${pos.x - o}px`;
+                c.style.top = `${pos.y - o}px`;
+                c.style.width = `${d.w + o * 2}px`;
+                c.style.height = `${d.h + o * 2}px`;
+            },
+
+            // --- The plot: the tree as a track sheet. ---
+            // Cards (the default) or the plot, a saved preference set from the header.
+            toggleTreeView() {
+                this.treeView = this.treeView === 'plot' ? 'cards' : 'plot';
+                const t = this.loadTweaks();
+                t.treeView = this.treeView;
+                this.saveTweaks(t);
+                this.updateTreeViewToggle();
+                this.renderTree();
+                if (this.treeView === 'plot') {
+                    this.fitTree();
+                } else {
+                    this.treePan.zoom = 1;
+                    this.centerTreeOnNode(this.treeNavActiveId || (this.state && this.state.activeBookmarkId));
+                }
+            },
+
+            updateTreeViewToggle() {
+                const btn = document.getElementById('tree-view-toggle');
+                if (!btn) return;
+                const on = this.treeView === 'plot';
+                btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+                btn.title = on ? 'Back to the cards' : 'Show the tree as a plot: every saved turn a dot';
+            },
+
+            // Scale the whole plot into the viewport, leaving room for the ruler above,
+            // the win labels to the right and the key below.
+            fitTree() {
+                const viewport = document.getElementById('tree-viewport');
+                const ps = Object.values(this.nodePositions || {});
+                if (!viewport || !ps.length) return;
+                const minX = Math.min(...ps.map(p => p.x)) - 30, maxX = Math.max(...ps.map(p => p.x)) + 170;
+                const minY = Math.min(...ps.map(p => p.y)) - 70, maxY = Math.max(...ps.map(p => p.y)) + 30;
+                const vw = viewport.clientWidth, vh = viewport.clientHeight - 36;
+                const z = Math.max(0.1, Math.min(2, (vw - 32) / (maxX - minX), (vh - 32) / (maxY - minY)));
+                this.treePan.zoom = z;
+                this.treePan.translateX = (vw - (maxX - minX) * z) / 2 - minX * z;
+                this.treePan.translateY = (vh - (maxY - minY) * z) / 2 - minY * z;
+                document.getElementById('tree-canvas').style.transform = `translate(${this.treePan.translateX}px, ${this.treePan.translateY}px) scale(${z})`;
+            },
+
+            // One dot in the deck's two inks: P1 solid, P2 hatched (as its deck icon).
+            // A win is the same, square. Paints only with the <defs> renderTreePlot
+            // writes (the clip halves and the two hatches).
+            plotDotSvg(p, r, square) {
+                const shape = (rr, attrs) => square
+                    ? `<rect x="${-rr}" y="${-rr}" width="${rr * 2}" height="${rr * 2}" rx="1.5" ${attrs}/>`
+                    : `<circle r="${rr}" ${attrs}/>`;
+                if (p !== 0 && p !== 1) return shape(r, 'style="fill:var(--fu-edge)"');
+                const halves = (l, rgt) => `<g clip-path="url(#tp-l)">${shape(r, l)}</g><g clip-path="url(#tp-r)">${shape(r, rgt)}</g>`;
+                if (p === 0) return halves('style="fill:var(--p1)"', 'style="fill:var(--p1-2)"');
+                return shape(r, 'class="tp-base"')
+                    + halves('fill="url(#tp-h-a)"', 'fill="url(#tp-h-b)"')
+                    + halves('style="fill:none;stroke:var(--p2);stroke-width:1.4"', 'style="fill:none;stroke:var(--p2-2);stroke-width:1.4"');
+            },
+
+            // The arrow-key cursor on a dot: a signal crosshair (open at the centre, so
+            // it never reads as the live ring) and a readout tag of what's under it.
+            plotCursorSvg(r, label) {
+                const g = r + 6, L = 7;
+                let s = `<g class="tp-cursor"><line x1="0" y1="${-g - L}" x2="0" y2="${-g}"/><line x1="0" y1="${g}" x2="0" y2="${g + L}"/>`
+                    + `<line x1="${-g - L}" y1="0" x2="${-g}" y2="0"/><line x1="${g}" y1="0" x2="${g + L}" y2="0"/></g>`;
+                if (label) {
+                    const w = Math.round(label.length * 6.2 + 16);
+                    s += `<g class="tp-tag" transform="translate(${g + L + 6} ${-g - L - 18})"><rect width="${w}" height="20" rx="5"/><text x="8" y="13.5">${this.escapeHtml(label)}</text></g>`;
+                }
+                return s;
+            },
+
+            // Draws the tree renderTree() laid out as a plot: the card layout's columns
+            // become grid columns and its half-rows grid rows, so the shape is the same,
+            // small enough to see the whole game. Clicks, arrows and centring all work
+            // off this.nodePositions, which here are dot centres.
+            renderTreePlot(items, childrenMap, cardPos, livePath, xStep, yStep) {
+                const CELL = 28, R = 9, h = CELL / 2;
+                const esc = (v) => this.escapeHtml(v);
+                const pos = {};
+                let maxC = 0, maxR = 0;
+                items.forEach(it => {
+                    const p = cardPos[it.id];
+                    if (!p) return;
+                    const c = Math.round(p.x / xStep), r = p.y / (yStep / 2);
+                    pos[it.id] = { x: c * CELL, y: r * CELL };
+                    maxC = Math.max(maxC, c);
+                    maxR = Math.max(maxR, r);
+                });
+                this.nodePositions = pos;
+                this.treeNodeDims = { w: 0, h: 0 };
+                document.getElementById('tree-svg').innerHTML = '';
+
+                const info = {};
+                items.forEach(it => {
+                    if (it.auto) return;
+                    const b = it.node, win = this.isVictoryNode(b);
+                    info[it.id] = { ...this.treeTurnInfo(b), win, name: b.name,
+                        p: win ? this.victoryWinner(b) : this.bookmarkPlayerIndex(b) };
+                });
+
+                const rows = Math.ceil(maxR), W = maxC * CELL, H = rows * CELL;
+                // The ruled sheet.
+                let grid = '';
+                for (let c = 0; c <= maxC; c++) grid += `<line class="tp-grid" x1="${c * CELL}" y1="${-h}" x2="${c * CELL}" y2="${H + h}"/>`;
+                for (let r = 0; r <= rows; r++) grid += `<line class="tp-grid" x1="${-h}" y1="${r * CELL}" x2="${W + h}" y2="${r * CELL}"/>`;
+
+                // The turn ruler: the turn over the column it starts in, whose step under each.
+                const colFirst = {};
+                items.forEach(it => {
+                    const c = Math.round(pos[it.id].x / CELL);
+                    if (info[it.id] && !colFirst[c]) colFirst[c] = info[it.id];
+                });
+                let ruler = `<text class="tp-ruler-head" x="${-h}" y="${-h - 44}">TURN</text>`, lastTurn = null;
+                for (let c = 0; c <= maxC; c++) {
+                    const f = colFirst[c];
+                    if (!f) continue;
+                    const x = c * CELL;
+                    if (f.turn !== null && f.turn !== lastTurn) {
+                        ruler += `<text class="tp-ruler-turn" x="${x}" y="${-h - 26}" text-anchor="middle">${String(f.turn).padStart(2, '0')}</text>`
+                            + `<line class="tp-ruler-tick" x1="${x}" y1="${-h - 20}" x2="${x}" y2="${-h - 14}"/>`;
+                        lastTurn = f.turn;
+                    }
+                    if (f.p === 0 || f.p === 1) ruler += `<text class="tp-ruler-p" x="${x}" y="${-h - 4}" text-anchor="middle">P${f.p + 1}</text>`;
+                }
+
+                // Edges: run out of the parent, drop on the half-column, run into the child.
+                let edges = '', liveEdges = '';
+                items.forEach(it => {
+                    if (!it.parentId || !pos[it.parentId] || !pos[it.id]) return;
+                    const a = pos[it.parentId], b = pos[it.id];
+                    const mx = a.x + h, k = Math.sign(b.y - a.y), q = Math.min(4, Math.abs(b.y - a.y) / 2);
+                    const d = k === 0 ? `M ${a.x} ${a.y} H ${b.x}`
+                        : `M ${a.x} ${a.y} H ${mx - q} Q ${mx} ${a.y} ${mx} ${a.y + k * q} V ${b.y - k * q} Q ${mx} ${b.y} ${mx + q} ${b.y} H ${b.x}`;
+                    const isLive = !it.auto && livePath.has(it.id);
+                    const e = `<path class="tn-edge${it.auto ? ' is-ghost' : isLive ? ' is-live' : ''}" d="${d}"/>`;
+                    if (isLive) liveEdges += e;
+                    else edges += e;
+                });
+
+                // Dots, the selected one last so its tag sits on top.
+                const navId = this.treeNavActiveId, activeId = this.state.activeBookmarkId;
+                const ordered = items.filter(it => pos[it.id]).sort((a, b) => (a.id === navId) - (b.id === navId));
+                let dots = '';
+                ordered.forEach(it => {
+                    const { x, y } = pos[it.id];
+                    const nav = it.id === navId ? ' is-nav' : '';
+                    if (it.auto) {
+                        dots += `<g class="tp-dot${nav}" data-id="${esc(it.id)}" data-kind="auto" transform="translate(${x} ${y})">`
+                            + `<title>Where you jumped from</title><circle class="tp-hit" r="${R + 3}"/><circle class="tp-ghost" r="${R - 2}"/>${this.plotCursorSvg(R - 2, null)}</g>`;
+                        return;
+                    }
+                    const f = info[it.id];
+                    const who = f.p === 0 || f.p === 1 ? ` · P${f.p + 1}` : '';
+                    const score = f.lore ? ` · ${f.lore[0]}–${f.lore[1]}` : '';
+                    const label = `T${f.turn === null ? '?' : f.turn}${who}${score}`;
+                    let mark, r = R;
+                    if (f.win) {
+                        r = R + 2;
+                        const n = f.lore && f.p !== null ? f.lore[f.p] : 20;
+                        const text = (f.p === null ? 'BRANCH WON' : `P${f.p + 1} WINS`) + (f.lore ? ` · ${f.lore[0]}–${f.lore[1]}` : '');
+                        mark = this.plotDotSvg(f.p, r, true)
+                            + `<line class="tp-end" x1="${r + 6}" y1="${-r}" x2="${r + 6}" y2="${r}"/>`
+                            + `<text class="tp-win-n" x="${r + 13}" y="5">${n}</text><text class="tp-win-t" x="${r + 36}" y="3.5">${text}</text>`;
+                    } else {
+                        mark = this.plotDotSvg(f.p, r)
+                            + (it.id === activeId ? `<circle class="tp-here" r="${r + 3.5}"/>` : '')
+                            + (f.turn === null ? '' : `<text class="tp-n" x="${r + 2}" y="${r + 9}">${f.turn}</text>`);
+                    }
+                    dots += `<g class="tp-dot${nav}" data-id="${esc(it.id)}" data-kind="node" transform="translate(${x} ${y})">`
+                        + `<title>${esc(f.name)}</title><circle class="tp-hit" r="${r + 3}"/>${mark}${this.plotCursorSvg(r, label)}</g>`;
+                });
+
+                const defs = `<defs><clipPath id="tp-l"><rect x="-40" y="-40" width="40" height="80"/></clipPath>`
+                    + `<clipPath id="tp-r"><rect x="0" y="-40" width="40" height="80"/></clipPath>`
+                    + ['a', 'b'].map((k, i) => `<pattern id="tp-h-${k}" width="3" height="3" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">`
+                        + `<rect width="3" height="3" class="tp-base"/><rect width="1.7" height="3" style="fill:var(${i ? '--p2-2' : '--p2'})"/></pattern>`).join('')
+                    + `</defs>`;
+                document.getElementById('tree-nodes').innerHTML =
+                    `<svg class="tp-plot" width="${W}" height="${H}" aria-hidden="true">${defs}${grid}${ruler}${edges}${liveEdges}${dots}</svg>`;
+
+                // The key.
+                const names = (this.state.players || []).map(pl => esc(pl.name));
+                const mini = (inner) => `<svg width="14" height="14" viewBox="-7 -7 14 14" aria-hidden="true">${inner}</svg>`;
+                const legend = document.getElementById('tree-legend');
+                legend.innerHTML =
+                    `<span>${mini(this.plotDotSvg(0, 6))}P1 · ${names[0] || 'Player 1'}</span>`
+                    + `<span>${mini(this.plotDotSvg(1, 6))}P2 · ${names[1] || 'Player 2'}</span>`
+                    + `<span>${mini('<circle class="tp-here" r="5.5"/>')}You are here</span>`
+                    + `<span>${mini('<g class="tp-cursor" style="display:inline"><line x1="0" y1="-7" x2="0" y2="-3"/><line x1="0" y1="3" x2="0" y2="7"/><line x1="-7" y1="0" x2="-3" y2="0"/><line x1="3" y1="0" x2="7" y2="0"/></g>')}Cursor</span>`
+                    + `<span>${mini('<rect x="-6" y="-5" width="9" height="10" rx="1.5" style="fill:var(--fu-light)"/><line class="tp-end" x1="6" y1="-5" x2="6" y2="5"/>')}20 lore · branch closed</span>`
+                    + `<span>${mini('<circle class="tp-ghost" r="5"/>')}Left here</span>`;
+                legend.hidden = false;
+
+                this.renderTreePanel();
+            },
+
             renderTree() {
                 const svgContainer = document.getElementById('tree-svg');
                 const nodesContainer = document.getElementById('tree-nodes');
@@ -5936,6 +6197,7 @@
                 this.treeKids = {};
                 this.treeParent = {};
                 this.treeRoots = [];
+                document.getElementById('tree-legend').hidden = this.treeView !== 'plot' || items.length === 0;
                 if (items.length === 0) {
                     svgContainer.innerHTML = '';
                     nodesContainer.innerHTML = `<div class="tree-empty">The Multiverse is empty. Save the turn you're in to begin a timeline.</div>`;
@@ -5992,15 +6254,22 @@
                 roots.forEach(root => assignCoords(root, 0));
                 this.nodePositions = nodePositions; // Save for viewport centering in openTreeModal
 
-                // 1. Render SVG Curved Paths. Field Unit: every edge is a quiet
-                // #6A655E hairline except the path from the root to the node you
-                // are on, which is drawn in signal (the branch you are on).
-                // Edges to auto-saves are dashed.
+                // The path from the root to the node you are on (the branch you are on).
                 const livePath = new Set();
                 for (let cur = byId[this.state.activeBookmarkId], guard = 0; cur && guard < 10000; cur = byId[cur.parentId], guard++) {
                     if (livePath.has(cur.id)) break;
                     livePath.add(cur.id);
                 }
+
+                // The plot draws the same tree, one dot per node, on its own grid.
+                if (this.treeView === 'plot') {
+                    this.renderTreePlot(items, childrenMap, nodePositions, livePath, X_SPACING, Y_SPACING);
+                    return;
+                }
+
+                // 1. Render SVG Curved Paths. Field Unit: every edge is a quiet
+                // #6A655E hairline except the path from the root to the node you
+                // are on, which is drawn in signal. Edges to auto-saves are dashed.
                 let svgHtml = '';
                 const liveEdges = [];
                 items.forEach(it => {
@@ -6020,6 +6289,13 @@
                         if (isLive) liveEdges.push(edge);
                         else svgHtml += edge;
                     }
+                });
+                // A won branch ends in a stop: a short run out of the final node, then a bar.
+                items.forEach(it => {
+                    if (!it.node || !this.isVictoryNode(it.node) || childrenMap[it.id]) return;
+                    const p = nodePositions[it.id];
+                    const x = p.x + CARD_W, y = p.y + CARD_H / 2;
+                    svgHtml += `<path class="tn-edge" d="M ${x} ${y} H ${x + 18}" /><line class="tn-end" x1="${x + 20}" y1="${y - 22}" x2="${x + 20}" y2="${y + 22}" />`;
                 });
                 svgHtml += liveEdges.join('');
                 svgContainer.innerHTML = svgHtml;
@@ -6068,14 +6344,13 @@
                     const d = new Date(b.timestamp);
                     const timeStr = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' });
 
-                    // Victory nodes: explicit flag on new saves; gradient presence covers old sessions.
-                    const isVictory = !!(b.isVictory || b.gradient);
+                    const isVictory = this.isVictoryNode(b);
                     const icon = isVictory ? '<i class="fa-solid fa-trophy"></i>'
                         : b.isDeckEdit ? '<i class="fa-solid fa-layer-group"></i>' : '<i class="fa-solid fa-bookmark"></i>';
 
                     // Feature 36: which player owns the node, so the Competition
                     // palette can weave its spine in that deck's two inks.
-                    const pIdx = this.bookmarkPlayerIndex(b);
+                    const pIdx = isVictory ? this.victoryWinner(b) : this.bookmarkPlayerIndex(b);
 
                     el.className = `tree-node ${isVictory ? 'is-victory' : ''} ${isActive ? 'is-active' : ''} ${isNavActive ? 'is-nav' : ''} ${pIdx === null ? '' : 'tn-p' + (pIdx + 1)}`;
                     el.dataset.kind = 'node';
@@ -6104,6 +6379,7 @@
                                  <div class="tn-note-head"><span>Note</span><i class="fa-solid fa-pen" aria-hidden="true"></i></div>
                                  <div class="tn-comment custom-scrollbar markdown-comment">${this.renderMarkdown(comment)}</div>
                              </div>` : ''}
+                             ${isVictory ? this.treeWinPlateHtml(b, pIdx) : ''}
 
                              <button data-act="delete" class="tn-icon-btn tn-delete"
                                  title="Delete Node (children reattach to parent; Undo available)" aria-label="Delete node">
@@ -6116,6 +6392,7 @@
                     nodesContainer.appendChild(el);
                 });
 
+                this.placeTreeCursor();
                 this.renderTreePanel();
             },
 
@@ -6128,7 +6405,11 @@
                 if (!id) return;
                 this.treeNavActiveId = id;
                 this._tpEdit = null;
-                document.querySelectorAll('#tree-nodes .tree-node').forEach(n => n.classList.toggle('is-nav', n.dataset.id === id));
+                document.querySelectorAll('#tree-nodes [data-id]').forEach(n => n.classList.toggle('is-nav', n.dataset.id === id));
+                // A dot's readout tag sits on top of its neighbours.
+                const dot = this.treeView === 'plot' && document.querySelector('#tree-nodes .tp-dot.is-nav');
+                if (dot) dot.parentNode.appendChild(dot);
+                this.placeTreeCursor();
                 this.renderTreePanel();
                 if (center) this.centerTreeOnNode(id);
             },
@@ -10514,6 +10795,8 @@
                 // Multiverse: the recap inside every node (else only in the panel), and
                 // which side the panel docks on. Both are set from the Multiverse view.
                 this.treeRecapInNodes = t.treeRecapInNodes === true;
+                this.treeView = t.treeView === 'plot' ? 'plot' : 'cards';
+                this.updateTreeViewToggle();
                 this.applyTreePanelSide(t.treePanelSide === 'left' ? 'left' : 'right');
 
                 // Feature 32: ONE text mode for the whole app — board, grids and the

@@ -360,6 +360,17 @@ window.MV = (function () {
     function mark() {
       el.querySelectorAll('.mv-node.is-sel').forEach(x => x.classList.remove('is-sel'));
       const ne = t.nodeEl(sel); if (ne) ne.classList.add('is-sel');
+      // Corner marks around the selected node, as in the app.
+      const L = t.layout, p = L.pos[sel];
+      let c = t.canvas.querySelector('.mv-cursor');
+      if (!p) { if (c) c.remove(); return; }
+      if (!c) {
+        c = document.createElement('div');
+        c.className = 'mv-cursor';
+        c.innerHTML = '<i></i><i></i><i></i><i></i>';
+        t.canvas.appendChild(c);
+      }
+      c.style.cssText = `left:${p.x - 9}px;top:${p.y - 9}px;width:${L.W + 18}px;height:${L.H + 18}px`;
     }
     function select(id, pan) {
       sel = id; mark(); renderSide();

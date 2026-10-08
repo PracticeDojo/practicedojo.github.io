@@ -3108,14 +3108,17 @@ body.palette-competition .tree-node.is-victory.tn-p2 {
     box-shadow: 0 16px 30px -14px oklch(0 0 0 / 0.9);
 }
 
+/* The foot: a bar painted along the bottom of a layer that fills the node,
+   cut by the node's own inner radius, so it follows the rounded corners
+   instead of running square across them. 4px; the live node's is signal;
+   a win's is 6px in the winner's two inks. */
 .tree-node::after {
+    --tn-bar: var(--fu-line-soft);
     content: '';
     position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    height: 2px;
-    background: var(--fu-line-soft);
+    inset: 0;
+    border-radius: calc(var(--radius-inset) - 1px);
+    background: linear-gradient(var(--tn-bar), var(--tn-bar)) bottom / 100% 4px no-repeat;
     z-index: 3;
     pointer-events: none;
 }
@@ -3128,12 +3131,156 @@ body.palette-competition .tree-node.is-active.tn-p2 {
 }
 
 .tree-node.is-active::after {
-    background: var(--accent);
+    --tn-bar: var(--accent);
 }
 
+.tree-node.is-victory::after {
+    background: linear-gradient(90deg, var(--tn-ink-a) 50%, var(--tn-ink-b) 50%) bottom / 100% 6px no-repeat;
+}
+
+/* Whose turn it is: P1 nodes are paper, P2 nodes are graphite (the Banish
+   key's colour). Light against dark parts the players at a glance whatever
+   their inks, mirror matches included. The node re-scopes the paper tokens,
+   so everything inside it follows. Ghosts keep their own glass. */
+.tree-node {
+    --tn-ink-a: var(--node-c, var(--accent));
+    --tn-ink-b: var(--tn-ink-a);
+}
+
+.tree-node.tn-p1 {
+    --tn-ink-a: var(--p1);
+    --tn-ink-b: var(--p1-2);
+}
+
+.tree-node.tn-p2 {
+    --tn-ink-a: var(--p2);
+    --tn-ink-b: var(--p2-2);
+}
+
+.tree-node.tn-p2:not(.is-ghost) {
+    --fu-paper: #2B2925;
+    --fu-paper-sunk: #34302A;
+    --fu-ink: #F4F0E8;
+    --fu-body: #C9C3B8;
+    --fu-mute: #9A948A;
+    --fu-zero: #6B655C;
+    --fu-line: #3E3933;
+    --fu-line-soft: #3E3933;
+    --fu-row-rule: #3A3631;
+}
+
+/* Kiln's paper is already dark: P1 lifts to the night bone key, P2 drops
+   nearly to the well, with a hairline to hold its edge. */
+:root[data-theme="night"] .tree-node.tn-p1:not(.is-ghost) {
+    --fu-paper: #34302A;
+    --fu-paper-sunk: #2B2723;
+    --fu-line: #423D35;
+    --fu-line-soft: #423D35;
+    --fu-row-rule: #3C3731;
+}
+
+:root[data-theme="night"] .tree-node.tn-p2:not(.is-ghost) {
+    --fu-paper: #141210;
+    --fu-paper-sunk: #1A1815;
+    --fu-line: #38332C;
+    --fu-line-soft: #38332C;
+    --fu-row-rule: #2A2622;
+}
+
+:root[data-theme="night"] .tree-node.tn-p2:not(.is-ghost) .tn-note {
+    background: var(--fu-glass);
+    border-color: var(--fu-line);
+}
+
+/* The arrow-key cursor: signal corner marks around the node, a different
+   shape from the live node's solid signal border, so "looking at" and
+   "you are here" never read as one. Drawn as its own layer (the node clips
+   its children). */
 .tree-node.is-nav {
-    outline: 2px solid var(--fu-light);
-    outline-offset: 3px;
+    outline: none;
+    z-index: 30;
+}
+
+.tn-cursor {
+    position: absolute;
+    z-index: 40;
+    pointer-events: none;
+}
+
+.tn-cursor i {
+    position: absolute;
+    width: 14px;
+    height: 14px;
+    border: 0 solid var(--accent);
+}
+
+.tn-cursor i:nth-child(1) {
+    left: 0;
+    top: 0;
+    border-width: 2px 0 0 2px;
+}
+
+.tn-cursor i:nth-child(2) {
+    right: 0;
+    top: 0;
+    border-width: 2px 2px 0 0;
+}
+
+.tn-cursor i:nth-child(3) {
+    left: 0;
+    bottom: 0;
+    border-width: 0 0 2px 2px;
+}
+
+.tn-cursor i:nth-child(4) {
+    right: 0;
+    bottom: 0;
+    border-width: 0 2px 2px 0;
+}
+
+/* A won branch: the final node carries a plate (the 20 as a lore numeral,
+   who won and the score), and its edge ends in a stop. */
+.tn-win {
+    flex-shrink: 0;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: center;
+    column-gap: 10px;
+    margin-top: 6px;
+    padding: 6px 9px;
+    border: 1px solid var(--fu-glass-line);
+    border-radius: var(--radius-sm);
+    background: var(--fu-glass-raised);
+}
+
+.tn-win-n {
+    font-family: var(--font-display);
+    font-size: 28px;
+    font-weight: 520;
+    line-height: 1;
+    letter-spacing: -0.04em;
+    font-variant-numeric: tabular-nums;
+    color: var(--fu-light);
+}
+
+.tn-win-t {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    line-height: 1.5;
+    letter-spacing: var(--label-track);
+    text-transform: uppercase;
+    color: var(--fu-glass-2);
+}
+
+.tn-win-t b {
+    font-weight: 500;
+    color: var(--fu-light);
+}
+
+.tn-end {
+    stroke: var(--fu-light);
+    stroke-width: 3;
+    stroke-linecap: round;
 }
 
 /* Identity: the owner's deck icon beside the title (P2 hatched). */
@@ -3379,6 +3526,161 @@ body.palette-competition .tree-node.tn-p2::before {
 
 .tree-head-rule {
     height: 20px;
+}
+
+/* The open view tool (Plot) inverts to glass, like the top bar's open tools. */
+.tree-tool[aria-pressed="true"] {
+    background: var(--fu-glass);
+    border-color: var(--fu-glass);
+    color: var(--fu-light);
+}
+
+.tree-tool[aria-pressed="true"] i {
+    color: var(--fu-light);
+}
+
+/* ----- Multiverse plot: the whole game as a track sheet. One column per
+       step, one dot per saved turn on a ruled grid, the deck's two inks in
+       each dot (P1 solid, P2 hatched like its deck icon). The live path and
+       ring are signal; the cursor is a signal crosshair; a win is a square
+       with a stop. ----- */
+.tp-plot {
+    position: absolute;
+    left: 0;
+    top: 0;
+    overflow: visible;
+    pointer-events: none;
+    font-family: var(--font-mono);
+}
+
+.tp-grid {
+    stroke: var(--fu-glass-rule);
+    stroke-width: 1;
+    stroke-opacity: 0.8;
+}
+
+.tp-ruler-turn {
+    fill: var(--fu-glass-2);
+    font-size: 10px;
+}
+
+.tp-ruler-p,
+.tp-ruler-head,
+.tp-n {
+    fill: var(--fu-glass-mute);
+    font-size: 7.5px;
+    letter-spacing: 0.06em;
+}
+
+.tp-ruler-head {
+    font-size: 9px;
+    letter-spacing: var(--label-track);
+}
+
+.tp-ruler-tick {
+    stroke: var(--fu-glass-mute);
+}
+
+.tp-dot {
+    pointer-events: auto;
+    cursor: pointer;
+}
+
+.tp-hit {
+    fill: transparent;
+}
+
+.tp-base {
+    fill: var(--fu-glass-raised);
+}
+
+.tp-ghost {
+    fill: var(--fu-glass-raised);
+    stroke: var(--fu-edge);
+    stroke-dasharray: 2.5 2.5;
+}
+
+.tp-here {
+    fill: none;
+    stroke: var(--accent);
+    stroke-width: 2;
+}
+
+.tp-cursor,
+.tp-tag {
+    display: none;
+    pointer-events: none;
+}
+
+.tp-dot.is-nav .tp-cursor,
+.tp-dot.is-nav .tp-tag {
+    display: inline;
+}
+
+.tp-cursor line {
+    stroke: var(--accent);
+    stroke-width: 2;
+    stroke-linecap: square;
+}
+
+.tp-tag rect {
+    fill: var(--fu-glass-raised);
+    stroke: var(--fu-glass-line);
+}
+
+.tp-tag text {
+    fill: var(--fu-light);
+    font-size: 10px;
+}
+
+.tp-end {
+    stroke: var(--fu-light);
+    stroke-width: 2;
+}
+
+.tp-win-n {
+    fill: var(--fu-light);
+    font-family: var(--font-display);
+    font-size: 15px;
+    font-weight: 560;
+}
+
+.tp-win-t {
+    fill: var(--fu-glass-2);
+    font-size: 8.5px;
+    letter-spacing: 0.12em;
+}
+
+/* The plot's key, engraved in the well's corner. */
+.tree-legend {
+    position: absolute;
+    left: 16px;
+    bottom: 12px;
+    z-index: 20;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 18px;
+    pointer-events: none;
+    font-family: var(--font-mono);
+    font-size: 9px;
+    letter-spacing: var(--label-track);
+    text-transform: uppercase;
+    color: var(--fu-glass-mute);
+}
+
+.tree-legend[hidden] {
+    display: none;
+}
+
+.tree-legend span {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+}
+
+.tree-legend svg {
+    overflow: visible;
 }
 
 /* ----- Multiverse panel: save the turn you're in, then the selected node.

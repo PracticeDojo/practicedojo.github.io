@@ -1718,7 +1718,7 @@ button {
 
 /* Node: paper, 10px radius, 230 wide; the owner's deck icon, title,
    subline, the note as glass, then the Played strip (or, in full, a
-   label · value grid of the turn's cards); a 2px bar at the foot. */
+   label · value grid of the turn's cards); a 4px bar at the foot. */
 .mv-node {
     position: absolute;
     width: 230px;
@@ -1743,14 +1743,14 @@ button {
 }
 
 .mv-node::after {
+    --tn-bar: var(--fu-line-soft);
     content: '';
     position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    height: 2px;
-    background: var(--fu-line-soft);
+    inset: 0;
+    border-radius: calc(var(--r-inset) - 1px);
+    background: linear-gradient(var(--tn-bar), var(--tn-bar)) bottom / 100% 4px no-repeat;
     z-index: 3;
+    pointer-events: none;
 }
 
 .mv-node.is-active {
@@ -1758,13 +1758,84 @@ button {
 }
 
 .mv-node.is-active::after {
-    background: var(--signal);
+    --tn-bar: var(--signal);
 }
 
+/* Whose turn it is, as in the app: P1 nodes paper, P2 nodes graphite. */
+.mv-node.tn-p2 {
+    --fu-paper: #2B2925;
+    --fu-paper-sunk: #34302A;
+    --fu-ink: #F4F0E8;
+    --fu-body: #C9C3B8;
+    --fu-mute: #9A948A;
+    --fu-zero: #6B655C;
+    --fu-line: #3E3933;
+    --fu-line-soft: #3E3933;
+    --fu-row-rule: #3A3631;
+}
+
+:root[data-theme="night"] .mv-node.tn-p1 {
+    --fu-paper: #34302A;
+    --fu-paper-sunk: #2B2723;
+    --fu-line: #423D35;
+    --fu-line-soft: #423D35;
+    --fu-row-rule: #3C3731;
+}
+
+:root[data-theme="night"] .mv-node.tn-p2 {
+    --fu-paper: #141210;
+    --fu-paper-sunk: #1A1815;
+    --fu-line: #38332C;
+    --fu-line-soft: #38332C;
+    --fu-row-rule: #2A2622;
+}
+
+:root[data-theme="night"] .mv-node.tn-p2 .mv-note {
+    background: var(--fu-glass);
+    border-color: var(--fu-line);
+}
+
+/* The selected node: signal corner marks on their own layer (the node
+   clips its children). */
 .mv-node.is-sel {
-    outline: 2px solid var(--fu-light);
-    outline-offset: 3px;
     z-index: 30;
+}
+
+.mv-cursor {
+    position: absolute;
+    z-index: 40;
+    pointer-events: none;
+}
+
+.mv-cursor i {
+    position: absolute;
+    width: 14px;
+    height: 14px;
+    border: 0 solid var(--signal);
+}
+
+.mv-cursor i:nth-child(1) {
+    left: 0;
+    top: 0;
+    border-width: 2px 0 0 2px;
+}
+
+.mv-cursor i:nth-child(2) {
+    right: 0;
+    top: 0;
+    border-width: 2px 2px 0 0;
+}
+
+.mv-cursor i:nth-child(3) {
+    left: 0;
+    bottom: 0;
+    border-width: 0 0 2px 2px;
+}
+
+.mv-cursor i:nth-child(4) {
+    right: 0;
+    bottom: 0;
+    border-width: 0 2px 2px 0;
 }
 
 .is-interactive .mv-node {
