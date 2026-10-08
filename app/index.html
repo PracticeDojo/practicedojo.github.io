@@ -794,6 +794,17 @@
                             <button class="pile-inspect" title="Deck actions (inspect / shuffle)"
                                 onclick="event.stopPropagation(); App.showDeckContextMenu(event, App.state.inactivePlayer)"><i
                                     class="fa-solid fa-ellipsis-vertical"></i></button>
+                            <span class="deck-hint" aria-hidden="true">Draw</span>
+                            <div class="deck-tools is-top">
+                                <button class="deck-tool" title="Inspect deck" aria-label="Inspect deck"
+                                    onclick="event.stopPropagation(); App.inspectDeck(App.state.inactivePlayer)"><i
+                                        class="fa-solid fa-magnifying-glass"></i></button>
+                            </div>
+                            <div class="deck-tools">
+                                <button class="deck-tool" title="Shuffle deck" aria-label="Shuffle deck"
+                                    onclick="event.stopPropagation(); App.shuffleDeck(App.state.inactivePlayer)"><i
+                                        class="fa-solid fa-shuffle"></i></button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -883,6 +894,17 @@
                             <button class="pile-inspect" title="Deck actions (inspect / shuffle)"
                                 onclick="event.stopPropagation(); App.showDeckContextMenu(event, App.state.activePlayer)"><i
                                     class="fa-solid fa-ellipsis-vertical"></i></button>
+                            <span class="deck-hint" aria-hidden="true">Draw</span>
+                            <div class="deck-tools is-top">
+                                <button class="deck-tool" title="Inspect deck" aria-label="Inspect deck"
+                                    onclick="event.stopPropagation(); App.inspectDeck(App.state.activePlayer)"><i
+                                        class="fa-solid fa-magnifying-glass"></i></button>
+                            </div>
+                            <div class="deck-tools">
+                                <button class="deck-tool" title="Shuffle deck" aria-label="Shuffle deck"
+                                    onclick="event.stopPropagation(); App.shuffleDeck(App.state.activePlayer)"><i
+                                        class="fa-solid fa-shuffle"></i></button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1033,7 +1055,7 @@
     <script>
         let cardFuse = null;
 
-        const APP_VERSION = "v3.4.4"; // Centralized version string (v3: Field Unit)
+        const APP_VERSION = "v3.4.5"; // Centralized version string (v3: Field Unit)
 
         // Tweaks panel accent presets (hue values for the OKLCH accent ramp)
         // Tweaks → Accent: the approved Field Unit signals only (design.md ·
