@@ -1060,7 +1060,7 @@
     <script>
         let cardFuse = null;
 
-        const APP_VERSION = "v3.4.10"; // Centralized version string (v3: Field Unit)
+        const APP_VERSION = "v3.4.11"; // Centralized version string (v3: Field Unit)
 
         // Tweaks panel accent presets (hue values for the OKLCH accent ramp)
         // Tweaks → Accent: the approved Field Unit signals only (design.md ·
@@ -1091,6 +1091,12 @@
             window.addEventListener('online', () => {
                 try { App.onBackOnline(); } catch (e) { console.warn('Image re-warm failed', e); }
             });
+            // The top bar's play tools sit centred over the board, wherever the docks leave it.
+            if (window.ResizeObserver) {
+                const ro = new ResizeObserver(() => App.centerTopbarTools());
+                ['topbar', 'play'].forEach(id => ro.observe(document.getElementById(id)));
+                document.querySelectorAll('.topbar-left, .topbar-center, .topbar-right').forEach(el => ro.observe(el));
+            }
             // Restore draw-odds pane collapsed state (Feature 24)
             if (localStorage.getItem('lorcana_dojo_prob_pane') === 'collapsed') {
                 document.getElementById('prob-pane').classList.add('is-collapsed');
@@ -2332,6 +2338,25 @@
             // The match on the board is already in the library, so leaving it loses nothing.
             confirmShowSetup() {
                 this.showSetup();
+            },
+
+            // The turn control, Multiverse and the tools after it are one cluster, centred
+            // over the play area (on phones that is the screen; ☰ stays on the left). It
+            // never slides left of where it would sit anyway, nor off the right edge.
+            centerTopbarTools() {
+                const tb = document.getElementById('topbar');
+                const play = document.getElementById('play');
+                const center = tb && tb.querySelector('.topbar-center');
+                const right = tb && tb.querySelector('.topbar-right');
+                if (!center || !right || !play) return;
+                center.style.marginLeft = '';
+                const p = play.getBoundingClientRect();
+                if (!p.width || !tb.offsetWidth) return;
+                const start = center.getBoundingClientRect().left;
+                const width = right.getBoundingClientRect().right - start;
+                const max = tb.getBoundingClientRect().right - parseFloat(getComputedStyle(tb).paddingRight) - width;
+                const want = Math.min(p.left + (p.width - width) / 2, max);
+                if (want > start) center.style.marginLeft = `${Math.round(want - start)}px`;
             },
 
             // Phones: the top bar's ⋯ menu (session tools, Tweaks, the way home).
