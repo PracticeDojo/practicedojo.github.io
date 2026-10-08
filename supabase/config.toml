@@ -5,7 +5,7 @@
 project_id = "practicedojo"
 
 [auth]
-site_url = "https://practicedojo.github.io"
-additional_redirect_urls = ["https://practicedojo.github.io/**", "http://localhost:*/**"]
+site_url = "https://practicedojo.win"
+additional_redirect_urls = ["https://practicedojo.win/**", "https://practicedojo.heavenideasdesign.workers.dev/**", "https://*-practicedojo.heavenideasdesign.workers.dev/**", "https://practicedojo.github.io/**", "http://localhost:*/**"]
 enable_anonymous_sign_ins = true
 enable_manual_linking = true

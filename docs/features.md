@@ -700,6 +700,15 @@ Implements version 2 of `docs/DESIGN-field-unit.md` (Kiln dark mode, signal fami
 - **Signal family.** By day the signal is Ember `#E4572E`; on Kiln it is Radio `#E86B2A` with dark text on the key. Tweaks → Accent offers only the approved swaps: **Signal** (the theme's own), **Coral**, **Olive** (its lore numeral lifts to `#C6C45A` on the well) and **Trace**. Each carries the text colour that sits on it. The old Amber / Rose / Emerald / Violet / Azure accents were ink colours, so a saved pick of one falls back to Signal.
 - **CSS file.** The Field Unit tokens, themes, palettes and component styles moved from the inline `<style>` to `app/css/field-unit.css`, loaded right after it (pixel-identical move). The older inline rules stay put.
 
+## Patch: Share links on practicedojo.win (v3.4.8)
+
+### Details
+The site moved to `practicedojo.win`, served by Cloudflare from this repo (ARCH D20).
+- **Links use the new domain.** A share link made on the live site (`practicedojo.win`, its workers.dev address, or the old `github.io`) is always `https://practicedojo.win/app/?s=…`. Cloudflare previews and localhost keep their own address, so a test link opens the code under test.
+- **Old links keep working.** `practicedojo.github.io` sends every visitor to the same path on `practicedojo.win`, `?s=` and `#` included, before the page loads. Opening a link never depended on the domain: it's one Supabase lookup.
+- **Sign-in** needs the domain in Supabase's redirect list (done: `.win`, workers.dev and its previews, `github.io`, localhost). `supabase/config.toml` matches.
+- **Not carried over:** the browser keeps storage per domain, so a device library, an anonymous share identity and a sign-in on `github.io` don't appear on `.win`. Signed-in users get their account items back by signing in again.
+
 ## Landing page: up to date with v3.4 (v3.4.3)
 
 ### Details
@@ -922,3 +931,4 @@ The public page (`index.html`) follows Field Unit too, as `docs/DESIGN-field-uni
 - [x] Patch: Turn recap text back in the Multiverse
 - [x] Patch: Notes are glass in the Multiverse
 - [x] Landing page: up to date with v3.4
+- [x] Patch: Share links on practicedojo.win

@@ -55,7 +55,7 @@ Setup:
 - [x] Migration `supabase/migrations/20261004120000_shares.sql` applied: `shares` table, `get_share()`, guard trigger, `shares` bucket, storage policies. *Verified over the API, 2026-10-04*
 - [x] **(you)** Anonymous sign-ins and manual linking on. *Verified: `anonymous_users: true`*
 - [x] **(you)** Repo variables `SUPABASE_URL` and `SUPABASE_PUBLISHABLE_KEY`
-- [ ] **(you)** Authentication → URL Configuration: Site URL `https://practicedojo.github.io`, redirects `https://practicedojo.github.io/**` and `http://localhost:*/**`. *Not confirmed. Needed before Phase 3 sign-in*
+- [x] **(you)** Authentication → URL Configuration: Site URL `https://practicedojo.win`, redirects for `practicedojo.win`, the workers.dev host and its `*-` previews, `practicedojo.github.io` and localhost. *Set by you, 2026-10-08 (D20)*
 
 App:
 - [x] `app/js/cloud.js`: reads with plain fetch, loads supabase-js 2.117.2 (SRI) only to create links (§11)

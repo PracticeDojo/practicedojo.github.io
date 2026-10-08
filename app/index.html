@@ -6,6 +6,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lorcana Practice Dojo</title>
     <link rel="icon" type="image/svg+xml" href="../img/deck_icon.svg">
+    <!-- The site moved to practicedojo.win. GitHub Pages still serves this repo, so
+         send its visitors there, keeping the path, ?s= share code and #hash. -->
+    <script>
+        if (location.hostname === 'practicedojo.github.io') location.replace('https://practicedojo.win' + location.pathname + location.search + location.hash);
+    </script>
     <!-- Field Unit theme before first paint, so a night (Kiln) user never sees the day shell flash -->
     <script>
         try {
@@ -1055,7 +1060,7 @@
     <script>
         let cardFuse = null;
 
-        const APP_VERSION = "v3.4.7"; // Centralized version string (v3: Field Unit)
+        const APP_VERSION = "v3.4.8"; // Centralized version string (v3: Field Unit)
 
         // Tweaks panel accent presets (hue values for the OKLCH accent ramp)
         // Tweaks → Accent: the approved Field Unit signals only (design.md ·

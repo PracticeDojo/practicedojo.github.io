@@ -17,6 +17,10 @@ const DojoCloud = (() => {
     const AUTH_KEY = 'practicedojo-auth';
     const SLUG_RE = /^[A-Za-z0-9]{10}$/;
     const MAX_BLOB = 10 * 1024 * 1024;
+    // Links made on the live site always point at its own domain. Previews and
+    // localhost keep their own origin, so a test link opens the code under test.
+    const SITE = 'https://practicedojo.win';
+    const SITE_HOSTS = ['practicedojo.win', 'www.practicedojo.win', 'practicedojo.heavenideasdesign.workers.dev', 'practicedojo.github.io'];
 
     // Errors carry a `code` the app turns into plain language.
     function fail(code, message, cause) {
@@ -133,7 +137,8 @@ const DojoCloud = (() => {
     }
 
     function shareUrl(slug) {
-        return `${location.origin}${location.pathname}?s=${slug}`;
+        const origin = SITE_HOSTS.includes(location.hostname) ? SITE : location.origin;
+        return `${origin}${location.pathname}?s=${slug}`;
     }
 
     // --- Creating ----------------------------------------------------------------
