@@ -90,11 +90,11 @@
     --ink-sapphire: #3C7DFF;
     --ink-steel: #8E8C88;
 
-    /* The demo match: P1 Amber/Amethyst, P2 Amethyst/Ruby. */
+    /* The demo match: P1 Amber/Amethyst, P2 Amber/Emerald. */
     --p1: var(--ink-amber);
     --p1-2: var(--ink-amethyst);
-    --p2: var(--ink-amethyst);
-    --p2-2: var(--ink-ruby);
+    --p2: var(--ink-amber);
+    --p2-2: var(--ink-emerald);
     --tick-p1: linear-gradient(90deg, var(--p1) 0 3px, transparent 3px 5px, var(--p1-2) 5px 8px);
     --tick-p2: repeating-linear-gradient(135deg, var(--p2) 0 2px, var(--p2-2) 2px 4px);
     --tick-mask: linear-gradient(90deg, #000 0 3px, transparent 3px 5px, #000 5px 8px);

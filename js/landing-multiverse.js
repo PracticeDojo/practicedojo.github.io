@@ -408,7 +408,7 @@ window.MV = (function () {
         </div>
         <div class="side-open">
           <a href="app/" class="tool strong"><i class="fa-solid fa-play" aria-hidden="true"></i> Play it in the Dojo</a>
-          <p>The Set 13 demo is under “Pick up again”.</p>
+          <p>This match is under “Pick up again”, as “Set 13 example: PY vs GY”.</p>
         </div>
         <div class="side-note${c ? '' : ' is-empty'}"><div class="side-note-head">Turn ${n.turn} note · Player ${n.player}</div>
           <div class="side-note-body">${c ? md(c) : 'No note on this node.'}</div></div>
