@@ -1060,7 +1060,7 @@
     <script>
         let cardFuse = null;
 
-        const APP_VERSION = "v3.4.8"; // Centralized version string (v3: Field Unit)
+        const APP_VERSION = "v3.4.9"; // Centralized version string (v3: Field Unit)
 
         // Tweaks panel accent presets (hue values for the OKLCH accent ramp)
         // Tweaks → Accent: the approved Field Unit signals only (design.md ·
@@ -6181,8 +6181,10 @@
                     + ['a', 'b'].map((k, i) => `<pattern id="tp-h-${k}" width="3" height="3" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">`
                         + `<rect width="3" height="3" class="tp-base"/><rect width="1.7" height="3" style="fill:var(${i ? '--p2-2' : '--p2'})"/></pattern>`).join('')
                     + `</defs>`;
+                // At least 1px each way: an SVG with a zero width or height (one row, a
+                // game with no branches) isn't drawn at all. It overflows visibly anyway.
                 document.getElementById('tree-nodes').innerHTML =
-                    `<svg class="tp-plot" width="${W}" height="${H}" aria-hidden="true">${defs}${grid}${ruler}${edges}${liveEdges}${dots}</svg>`;
+                    `<svg class="tp-plot" width="${Math.max(1, W)}" height="${Math.max(1, H)}" aria-hidden="true">${defs}${grid}${ruler}${edges}${liveEdges}${dots}</svg>`;
 
                 // The key.
                 const names = (this.state.players || []).map(pl => esc(pl.name));
