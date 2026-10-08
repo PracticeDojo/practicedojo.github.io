@@ -60,7 +60,7 @@
       <a class="brand" href="#top" aria-label="Practice Dojo, back to top">
         <img src="img/practice_dojo.svg" class="brand-mark" alt="" />
         <span class="name">Practice Dojo</span>
-        <span class="ver" data-app-version>v3.4.6</span>
+        <span class="ver" data-app-version>v3.4.7</span>
       </a>
       <nav class="nav-links" aria-label="Sections">
         <a href="#screenshot">See it</a>
@@ -129,13 +129,14 @@
             </div>
           </div>
           <div class="stamp-row">
-            <span class="label">Every saved node · the line you're on in signal</span>
+            <span class="line-pick"><span class="label" data-mv="line-label">The line played · in signal</span>
+              <span class="line-pips" id="hero-pips" role="group" aria-label="Show a line"></span></span>
             <span class="turn-stamp"><span class="label">Turn</span><b data-mv="turn"></b><span
                 aria-hidden="true">→</span>
               <span data-mv="player"></span></span>
           </div>
           <div class="map-wrap" id="hero-map"></div>
-          <div class="label map-label">Lore along the line played</div>
+          <div class="label map-label" data-mv="lore-label">Lore along the line played</div>
           <div class="map-wrap" id="hero-lore"></div>
           <ol class="branch-notes" id="hero-notes" aria-label="Branch points, in the order they were tried"></ol>
         </div>
@@ -157,7 +158,7 @@
 
         <figure class="shot module">
           <div class="shot-bar">
-            <span class="label">app · <span data-app-version>v3.4.6</span> · Set 13 example · turn 16</span>
+            <span class="label">app · <span data-app-version>v3.4.7</span> · Set 13 example · turn 16</span>
             <div class="seg" role="group" aria-label="Theme">
               <button type="button" data-theme-pick="auto" aria-pressed="false" title="Follow this device">Auto</button>
               <button type="button" data-theme-pick="day" aria-pressed="false" title="Mineral">Day</button>
@@ -615,7 +616,7 @@
         <p class="lede">A companion to your favorite Lorcana simulator. Open the Dojo. Load two decks. Play. Rewind.
           Branch. Repeat.</p>
         <a href="app/" class="key lg">Open Practice Dojo <span aria-hidden="true">→</span></a>
-        <div class="label foot"><span data-app-version>v3.4.6</span> · your sessions stay on this device</div>
+        <div class="label foot"><span data-app-version>v3.4.7</span> · your sessions stay on this device</div>
       </div>
     </section>
 

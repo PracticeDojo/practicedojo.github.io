@@ -246,7 +246,7 @@ window.MV = (function () {
   roots.forEach(r => place(r, 0));
   const lanes = Object.values(lane), minL = Math.min(...lanes), maxL = Math.max(...lanes);
   const maxD = Math.max(...Object.values(depth));
-  const G = { cx: 17, ry: 24, padL: 18, padR: 70, padT: 40 };
+  const G = { cx: 17, ry: 24, padL: 18, padR: 96, padT: 40 };
   const W = G.padL + maxD * G.cx + G.padR;
   const X = (id) => G.padL + depth[id] * G.cx;
   const Y = (id) => G.padT + (lane[id] - minL) * G.ry;
@@ -261,61 +261,182 @@ window.MV = (function () {
     return words.length ? words.join(' / ') : 'turn replayed';
   };
 
-  // Every saved node. Off the line you're on: #6A655E hairlines and hollow dots.
-  // The line you're on: signal. The node you're on: a filled signal dot.
+  // ---------- Hero lines: every leaf, the line played first ----------
+  // The hero shows one line at a time in signal and steps through them all,
+  // so the lore readouts, the turn stamp and the lore race change with it.
+  const pathOf = (leaf) => { const p = []; for (let n = leaf; n; n = byId[n.parent]) p.unshift(n); return p; };
+  // Where a line left the one it came from: the last node before its lane changes.
+  const forkOf = (path) => {
+    for (let i = path.length - 2; i >= 0; i--) if (lane[path[i + 1].id] !== lane[path[i].id]) return path[i];
+    return null;
+  };
+  const LINES = leaves.map(leaf => {
+    const path = pathOf(leaf), fork = forkOf(path);
+    return { leaf, path, ids: new Set(path.map(n => n.id)), fork, no: fork ? branchNo[fork.id] : 0 };
+  }).sort((a, b) => (a.leaf.active ? -1 : b.leaf.active ? 1 : a.no - b.no));
+
+  // Every saved node. Off the line shown: #6A655E hairlines and hollow dots.
+  // The line shown: signal. Its last node: a filled signal dot with a ring.
   function mapSvg() {
-    let edges = '', live = '', dots = '', marks = '';
+    let edges = '', dots = '', marks = '';
     D.nodes.forEach(n => {
       if (!n.parent) return;
       const px = X(n.parent), py = Y(n.parent), x = X(n.id), y = Y(n.id);
       const d = py === y ? `M ${px} ${py} L ${x} ${y}` : `M ${px} ${py} C ${px + G.cx * 0.7} ${py}, ${x - G.cx * 0.7} ${y}, ${x} ${y}`;
-      if (onMain.has(n.id)) live += `<path class="m-edge is-live" d="${d}"/>`;
-      else edges += `<path class="m-edge" d="${d}"/>`;
+      edges += `<path class="m-edge" data-id="${n.id}" d="${d}"/>`;
     });
     D.nodes.forEach(n => {
       const x = X(n.id), y = Y(n.id);
       const label = `${n.name}, ${n.stats.replace(/\|/g, '·')}${note(n) && TURN_RE.test(n.name) ? ', note: ' + note(n) : ''}`;
-      const cls = n.active ? 'm-dot is-here' : onMain.has(n.id) ? 'm-dot is-live' : 'm-dot';
-      dots += `<g><title>${esc(label)}</title>` +
-        (n.active ? `<circle class="m-ring" cx="${x}" cy="${y}" r="9"/>` : '') +
-        `<circle class="${cls}" cx="${x}" cy="${y}" r="${n.active ? 5 : onMain.has(n.id) ? 2.4 : 3}"/></g>`;
+      dots += `<g><title>${esc(label)}</title><circle class="m-dot" data-id="${n.id}" cx="${x}" cy="${y}" r="3"/></g>`;
       if (branchNo[n.id]) {
         marks += `<text class="m-bn" x="${x}" y="${y - 10}" text-anchor="middle" aria-hidden="true">${two(branchNo[n.id])}</text>`;
       }
     });
-    const ax = X(active.id), ay = Y(active.id);
-    marks += `<text class="m-here" x="${ax + 14}" y="${ay + 3.5}">YOU ARE HERE</text>`;
-    return `<svg viewBox="0 0 ${W} ${MAP_H}" role="img" aria-label="Map of all ${D.nodes.length} saved nodes in ${leaves.length} lines">${edges}${live}${dots}${marks}</svg>`;
+    const you = `<g class="m-you"><circle class="m-ring" r="9"/><text class="m-here" x="14" y="3.5"></text></g>`;
+    return `<svg viewBox="0 0 ${W} ${MAP_H}" role="img" aria-label="Map of all ${D.nodes.length} saved nodes in ${leaves.length} lines"><g class="m-edges">${edges}</g>${dots}${marks}${you}</svg>`;
   }
 
-  // Lore race along the line you're on, on the same x scale as the map.
+  // Lore race along the line shown, on the same x scale as the map.
   // P1 solid, P2 dashed (the shape carries identity, as P2's ticks are striped);
-  // the lore numerals at the end are signal.
+  // the lore numerals at the end are signal. Built once; showLine() moves it.
+  const LH = 112, LTOP = 12, LBOT = 24;
+  const vMax = Math.max(20, ...D.nodes.map(n => Math.max(...n.lore)));
+  const yv = (v) => LTOP + (1 - v / vMax) * (LH - LTOP - LBOT);
   function loreSvg() {
-    const H = 112, top = 12, bot = 24, yv = (v) => top + (1 - v / 20) * (H - top - bot);
-    const step = (i) => mainLine.map((n, k) => `${k ? 'L' : 'M'} ${X(n.id)} ${yv(n.lore[i])}`).join(' ');
-    let ticks = '', seen = new Set();
-    mainLine.forEach(n => {
+    const grid = [0, 10, 20].map(v => `<line class="m-grid${v === 20 ? ' is-win' : ''}" x1="${G.padL}" x2="${W - 20}" y1="${yv(v)}" y2="${yv(v)}"/>`).join('');
+    return `<svg viewBox="0 0 ${W} ${LH}" role="img">
+      ${grid}<text class="m-tick" x="${G.padL}" y="${yv(20) - 4}">20 WINS</text>
+      <path class="m-p1"/><path class="m-p2"/>
+      <circle class="m-end" r="3"/><circle class="m-end" r="3"/>
+      <text class="m-who">P2 <tspan class="m-num"></tspan></text>
+      <text class="m-who">P1 <tspan class="m-num"></tspan></text>
+      <g class="m-ticks"></g></svg>`;
+  }
+  // Turn ticks along a line: T1, then every third turn.
+  function ticksOf(line) {
+    let out = '', seen = new Set();
+    line.path.forEach(n => {
       if (seen.has(n.turn)) return; seen.add(n.turn);
-      if (n.turn === 1 || n.turn % 3 === 1) ticks += `<text class="m-tick" x="${X(n.id)}" y="${H - 6}" text-anchor="middle">T${n.turn}</text>`;
+      if (n.turn === 1 || n.turn % 3 === 1) out += `<text class="m-tick" x="${X(n.id)}" y="${LH - 6}" text-anchor="middle">T${n.turn}</text>`;
     });
-    const end = mainLine[mainLine.length - 1], ex = X(end.id) + 10;
-    const grid = [0, 10, 20].map(v => `<line class="m-grid${v === 20 ? ' is-win' : ''}" x1="${G.padL}" x2="${W - G.padR + 40}" y1="${yv(v)}" y2="${yv(v)}"/>`).join('');
-    const hi = end.lore[1] >= end.lore[0];
-    return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Lore by turn on the line played: Player 1 reaches ${end.lore[0]}, Player 2 reaches ${end.lore[1]}, 20 wins">
-      ${grid}<text class="m-tick" x="${W - G.padR + 40}" y="${yv(20) - 4}" text-anchor="end">20 WINS</text>
-      <path class="m-p1" d="${step(0)}"/><path class="m-p2" d="${step(1)}"/>
-      <circle class="m-end" cx="${X(end.id)}" cy="${yv(end.lore[0])}" r="3"/><circle class="m-end" cx="${X(end.id)}" cy="${yv(end.lore[1])}" r="3"/>
-      <text class="m-who" x="${ex}" y="${yv(end.lore[1]) + (hi ? -2 : 12)}">P2 <tspan class="m-num">${end.lore[1]}</tspan></text>
-      <text class="m-who" x="${ex}" y="${yv(end.lore[0]) + (hi ? 12 : -2)}">P1 <tspan class="m-num">${end.lore[0]}</tspan></text>
-      ${ticks}</svg>`;
+    return out;
   }
 
   // ---------- Hero: map + lore race + numbered branch points ----------
-  $('hero-map').innerHTML = mapSvg();
-  $('hero-lore').innerHTML = loreSvg();
-  $('hero-notes').innerHTML = branchPts.map(n =>
-    `<li><span class="bn">${two(branchNo[n.id])}</span><span class="bt">T${n.turn}</span><span class="bx" title="${esc(branchText(n))}">${esc(branchText(n))}</span></li>`).join('');
+  const heroMap = $('hero-map'), heroLore = $('hero-lore'), heroNotes = $('hero-notes');
+  heroMap.innerHTML = mapSvg();
+  heroLore.innerHTML = loreSvg();
+  heroNotes.innerHTML = branchPts.map(n =>
+    `<li data-fork="${n.id}"><span class="bn">${two(branchNo[n.id])}</span><span class="bt">T${n.turn}</span><span class="bx" title="${esc(branchText(n))}">${esc(branchText(n))}</span></li>`).join('');
+  const pips = $('hero-pips');
+  pips.innerHTML = LINES.map((l, i) =>
+    `<button type="button" class="pip" data-i="${i}" aria-label="${l.fork ? `Branch ${two(l.no)}, from turn ${l.fork.turn}` : 'The line played'}: ${esc(l.leaf.name)}, ${l.leaf.lore[0]}–${l.leaf.lore[1]}"></button>`).join('');
+
+  const mapEdges = heroMap.querySelector('.m-edges');
+  const edgeEls = [...heroMap.querySelectorAll('.m-edge')], dotEls = [...heroMap.querySelectorAll('.m-dot')];
+  const you = heroMap.querySelector('.m-you'), youText = you.querySelector('.m-here');
+  const [p1Path, p2Path] = heroLore.querySelectorAll('.m-p1, .m-p2');
+  const [p1End, p2End] = heroLore.querySelectorAll('.m-end');
+  const [p2Who, p1Who] = heroLore.querySelectorAll('.m-who');
+  const loreSvgEl = heroLore.querySelector('svg'), loreTicks = heroLore.querySelector('.m-ticks');
+  const calm = matchMedia('(prefers-reduced-motion: reduce)');
+
+  // A line as points at every depth; a short line holds its last point, so
+  // any two lines tween point for point (the shared stretch stays put).
+  const ptsOf = (line, p) => {
+    const out = [];
+    for (let d = 0; d <= maxD; d++) { const n = line.path[Math.min(d, line.path.length - 1)]; out.push([X(n.id), n.lore[p]]); }
+    return out;
+  };
+  let cur = null, tween = 0;
+  function drawLore(a, b) {
+    const dOf = (pts) => pts.map(([x, v], k) => `${k ? 'L' : 'M'} ${x.toFixed(1)} ${yv(v).toFixed(1)}`).join(' ');
+    p1Path.setAttribute('d', dOf(a)); p2Path.setAttribute('d', dOf(b));
+    const [ex, e1] = a[maxD], e2 = b[maxD][1], hi = e2 >= e1;
+    p1End.setAttribute('cx', ex); p1End.setAttribute('cy', yv(e1));
+    p2End.setAttribute('cx', ex); p2End.setAttribute('cy', yv(e2));
+    // The higher end's label sits above its dot, the lower one's below, at least 13px apart.
+    const yHi = Math.min(yv(e1), yv(e2)) - 2, yLo = Math.max(Math.max(yv(e1), yv(e2)) + 12, yHi + 13);
+    p2Who.setAttribute('x', ex + 10); p2Who.setAttribute('y', hi ? yHi : yLo);
+    p1Who.setAttribute('x', ex + 10); p1Who.setAttribute('y', hi ? yLo : yHi);
+    p2Who.lastChild.textContent = Math.round(e2); p1Who.lastChild.textContent = Math.round(e1);
+    fill('lore1', Math.round(e1)); fill('lore2', Math.round(e2));
+  }
+
+  function showLine(i) {
+    const line = LINES[i], end = line.leaf;
+    edgeEls.forEach(el => {
+      const on = line.ids.has(el.dataset.id);
+      el.classList.toggle('is-live', on);
+      if (on) mapEdges.appendChild(el); // the line shown draws over the hairlines
+    });
+    dotEls.forEach(el => {
+      const id = el.dataset.id, isEnd = id === end.id, on = line.ids.has(id);
+      el.setAttribute('class', isEnd ? 'm-dot is-here' : on ? 'm-dot is-live' : 'm-dot');
+      el.setAttribute('r', isEnd ? 5 : on ? 2.4 : 3);
+    });
+    you.style.transform = `translate(${X(end.id)}px, ${Y(end.id)}px)`;
+    // On a narrow screen the map scrolls: bring the line's end into view.
+    if (heroMap.scrollWidth > heroMap.clientWidth) {
+      const sx = heroMap.scrollWidth / W, left = X(end.id) * sx - heroMap.clientWidth * 0.6;
+      const to = { left: Math.max(0, left), behavior: cur && !calm.matches ? 'smooth' : 'auto' };
+      heroMap.scrollTo(to); heroLore.scrollTo(to); // same x scale, so they scroll together
+    }
+    youText.textContent = line.fork ? `WHAT IF · ${two(line.no)}` : 'YOU ARE HERE';
+    heroNotes.querySelectorAll('li').forEach(li => li.classList.toggle('is-on', !!line.fork && li.dataset.fork === line.fork.id));
+    pips.querySelectorAll('.pip').forEach((b, k) => { b.classList.toggle('is-on', k === i); b.setAttribute('aria-pressed', k === i); });
+    fill('turn', end.turn);
+    fill('player', 'Player ' + end.player);
+    fill('line-label', line.fork ? `What if · branch ${two(line.no)}, from turn ${line.fork.turn}` : 'The line played · in signal');
+    fill('lore-label', line.fork ? `Lore along branch ${two(line.no)}` : 'Lore along the line played');
+    loreTicks.innerHTML = ticksOf(line);
+    loreSvgEl.setAttribute('aria-label', `Lore by turn on ${line.fork ? 'branch ' + two(line.no) : 'the line played'}: Player 1 reaches ${end.lore[0]}, Player 2 reaches ${end.lore[1]}, 20 wins`);
+
+    const to = [ptsOf(line, 0), ptsOf(line, 1)];
+    const from = cur ? [ptsOf(LINES[cur.i], 0), ptsOf(LINES[cur.i], 1)] : to;
+    cur = { i };
+    cancelAnimationFrame(tween);
+    if (from === to || calm.matches) { drawLore(to[0], to[1]); return; }
+    const t0 = performance.now(), MS = 700;
+    const mix = (A, B, t) => A.map(([x, v], k) => [x + (B[k][0] - x) * t, v + (B[k][1] - v) * t]);
+    (function frame(now) {
+      const p = Math.min(1, (now - t0) / MS), e = 1 - Math.pow(1 - p, 3);
+      drawLore(mix(from[0], to[0], e), mix(from[1], to[1], e));
+      if (p < 1) tween = requestAnimationFrame(frame);
+    })(t0);
+  }
+
+  // Step through the lines every few seconds while the inset is on screen;
+  // hover, focus or a click on a pip holds it. Reduced motion: no stepping.
+  (function () {
+    const inset = heroMap.closest('.inset'), STEP = 4500;
+    let timer = 0, seen = false, held = false;
+    inset.style.setProperty('--line-step', STEP + 'ms');
+    const run = () => !calm.matches && seen && !held && !document.hidden;
+    function arm() {
+      clearTimeout(timer);
+      inset.classList.toggle('is-cycling', run());
+      if (run()) timer = setTimeout(() => { showLine((cur.i + 1) % LINES.length); restartPip(); arm(); }, STEP);
+    }
+    // Restart the pip's fill so it runs in step with the timer.
+    function restartPip() { const b = pips.querySelector('.pip.is-on'); if (b) { b.classList.remove('is-on'); void b.offsetWidth; b.classList.add('is-on'); } }
+    pips.addEventListener('click', (e) => {
+      const b = e.target.closest('.pip'); if (!b) return;
+      showLine(+b.dataset.i); restartPip(); arm();
+    });
+    inset.addEventListener('mouseenter', () => { held = true; arm(); });
+    inset.addEventListener('mouseleave', () => { held = false; restartPip(); arm(); });
+    inset.addEventListener('focusin', () => { held = true; arm(); });
+    inset.addEventListener('focusout', (e) => { if (!inset.contains(e.relatedTarget)) { held = false; arm(); } });
+    document.addEventListener('visibilitychange', arm);
+    calm.addEventListener('change', arm);
+    if ('IntersectionObserver' in window) {
+      new IntersectionObserver(([en]) => { seen = en.isIntersecting; if (seen) restartPip(); arm(); }, { threshold: 0.35 }).observe(inset);
+    } else { seen = true; }
+    showLine(0);
+    arm();
+  })();
 
   // ---------- Import: the start of the log, as Duels.ink writes it ----------
   (function () {
