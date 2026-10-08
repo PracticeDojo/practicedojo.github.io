@@ -120,16 +120,18 @@
     --text-dim: var(--fu-mute);
     --text-faint: var(--fu-zero);
 
-    /* Players: Modern = Amber / Sapphire. Competition and Classic write
-       their own values onto <html> from JS. Ticks only, never a wash. */
-    --p1: oklch(0.754 0.137 76.3);
-    --p1-hi: oklch(0.70 0.137 76.3);
-    --p1-soft: oklch(0.754 0.137 76.3 / 0.18);
-    --p1-faint: oklch(0.754 0.137 76.3 / 0.07);
-    --p2: oklch(0.62 0.205 262.2);
-    --p2-hi: oklch(0.58 0.205 262.2);
-    --p2-soft: oklch(0.62 0.205 262.2 / 0.20);
-    --p2-faint: oklch(0.62 0.205 262.2 / 0.08);
+    /* Players: Modern = two signals, Olive P1 / Trace P2 (design.md · Signal
+       family) — never an ink, which would read as a card's colour.
+       Competition writes its own values onto <html> from JS. Ticks only,
+       never a wash. */
+    --p1: oklch(0.617 0.113 108.1);
+    --p1-hi: oklch(0.56 0.113 108.1);
+    --p1-soft: oklch(0.617 0.113 108.1 / 0.20);
+    --p1-faint: oklch(0.617 0.113 108.1 / 0.08);
+    --p2: oklch(0.636 0.098 188.0);
+    --p2-hi: oklch(0.58 0.098 188.0);
+    --p2-soft: oklch(0.636 0.098 188.0 / 0.20);
+    --p2-faint: oklch(0.636 0.098 188.0 / 0.08);
 
     /* Zone figures are engraved, not colour-coded (CTL · BCR · RDS · LVI). */
     --bcr: var(--text);
@@ -358,8 +360,8 @@ body {
       chassis, the signal, the ink hexes JS writes inline (card ink strips,
       deck pips, victory gradients) and the card artwork itself.
 
-   2. Token overrides for what desaturating alone would lose. Amber P1 and
-      Sapphire P2 land on nearly the same grey, so mono separates the players
+   2. Token overrides for what desaturating alone would lose. Modern's Olive P1
+      and Trace P2 land on nearly the same grey, so mono separates the players
       by LIGHTNESS — P1 light, P2 heavy — at values that still read as ticks
       on paper and on glass. The signal becomes a near-black key on the
       shell and a near-white numeral in the well.
@@ -5253,33 +5255,8 @@ body.palette-competition .tree-node.tn-p2::before {
     color: var(--fu-mute);
 }
 
-/* ----- Floating panel layout (Tweaks → Panel layout): the rail floats as
-       a chassis card on the left; the well and the odds keep their
-       columns beside it (this layout used to squash the board). ----- */
+/* ----- The board's columns as explicit cells: rail, well, odds. ----- */
 @media (min-width: 761px) {
-    .app.layout-floating {
-        grid-template-columns: minmax(0, 1fr) auto;
-    }
-
-    .app.layout-floating .sidebar {
-        top: 8px;
-        left: 8px;
-        bottom: 8px;
-        width: 300px;
-        background: var(--bg);
-        border: 1px solid var(--border);
-        border-radius: var(--radius);
-        box-shadow: var(--shadow-3);
-    }
-
-    .app.layout-floating .play {
-        padding-left: 0;
-        margin-left: 316px;
-    }
-
-    /* Explicit cells, so Hide (sidebar display:none) and Floating (sidebar
-       out of flow) can't drop the well into the rail's 0px column — both
-       used to lose the board. */
     .app {
         position: relative;
     }
@@ -5292,14 +5269,6 @@ body.palette-competition .tree-node.tn-p2::before {
     .app>.prob-pane {
         grid-column: 3;
         grid-row: 1;
-    }
-
-    .app.layout-floating>.play {
-        grid-column: 1;
-    }
-
-    .app.layout-floating>.prob-pane {
-        grid-column: 2;
     }
 }
 

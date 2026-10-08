@@ -286,8 +286,8 @@ So we kept the **entire `App` engine intact** and changed only the presentation 
 - Context menu builders emit `.ctx-item`/`.ctx-divider`. `toggleTimelines()` toggles `.is-open`.
   `showSetup()` hides the top bar.
 - New: `$`, `el`, `loadTweaks/saveTweaks/applyTweaks/bindTweaks` + `ACCENT_PRESETS`. Tweaks persist in
-  `localStorage['lorcana_dojo_tweaks']` (accent / card-size `--card-scale` / panel layout / player palette;
-  `classic` palette restores the original `#a86b32`/`#3f2e70`). `bindTweaks()` runs on `DOMContentLoaded`.
+  `localStorage['lorcana_dojo_tweaks']` (accent / card-size `--card-scale` / player palette; panel layout and the
+  `classic` palette were removed in v3.4.12). `bindTweaks()` runs on `DOMContentLoaded`.
 - `showPreview`, `updateMetrics`, `updateLog`, `setHandReveal` were left **verbatim** — their IDs and
   Tailwind opacity/scale toggles are preserved in the new markup.
 
@@ -1037,7 +1037,8 @@ move. **Putting this filter on a smaller element means re-checking all 12.**
 
 ### 18.3 Cascade note
 
-`applyTweaks` writes Classic's `--p1`/`--p2` inline on `<html>`. Mono's tokens live on
+`applyTweaks` used to write Classic's `--p1`/`--p2` inline on `<html>` (Classic was removed in
+v3.4.12; Competition still writes its tokens there). Mono's tokens live on
 `body.palette-mono`, which redefines them one level lower — so for everything inside `<body>` (i.e.
 the entire UI) mono wins regardless of what's inline on the root. Mono still calls
 `removeProperty` on those four, same as Modern, so switching back is clean.

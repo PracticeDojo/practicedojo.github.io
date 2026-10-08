@@ -4004,12 +4004,6 @@ button.ctx-item:focus-visible {
     color: var(--text);
 }
 
-/* Four palettes don't fit one 280px row; 2×2 keeps every label whole
-   down to a 360px phone. */
-#tweak-palette {
-    grid-template-columns: repeat(2, 1fr);
-}
-
 .tweak-inks {
     display: flex;
     align-items: center;
@@ -4076,28 +4070,6 @@ input[type="range"]::-moz-range-thumb {
     border-radius: 50%;
     border: 2px solid var(--bg);
     cursor: grab;
-}
-
-/* ALT PANEL LAYOUT (tweak option) */
-.app.layout-floating {
-    grid-template-columns: 1fr;
-}
-
-.app.layout-floating .sidebar {
-    position: absolute;
-    top: 12px;
-    left: 12px;
-    bottom: 12px;
-    width: 304px;
-    border-radius: 12px;
-    border: 1px solid var(--border);
-    box-shadow: var(--shadow-2);
-    overflow: hidden;
-    z-index: 20;
-}
-
-.app.layout-floating .play {
-    padding-left: 332px;
 }
 
 @media (max-width: 1100px) {

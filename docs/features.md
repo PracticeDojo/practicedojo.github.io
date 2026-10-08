@@ -700,6 +700,14 @@ Implements version 2 of `docs/DESIGN-field-unit.md` (Kiln dark mode, signal fami
 - **Signal family.** By day the signal is Ember `#E4572E`; on Kiln it is Radio `#E86B2A` with dark text on the key. Tweaks → Accent offers only the approved swaps: **Signal** (the theme's own), **Coral**, **Olive** (its lore numeral lifts to `#C6C45A` on the well) and **Trace**. Each carries the text colour that sits on it. The old Amber / Rose / Emerald / Violet / Azure accents were ink colours, so a saved pick of one falls back to Signal.
 - **CSS file.** The Field Unit tokens, themes, palettes and component styles moved from the inline `<style>` to `app/css/field-unit.css`, loaded right after it (pixel-identical move). The older inline rules stay put.
 
+## Patch: Tweaks panel cleaned up (v3.4.12)
+
+### Details
+Tweaks keeps only what is still in use: Theme, Accent, Card size, Card display, Challenge forecast and Player palette.
+- **Panel layout removed.** Docked / Floating / Hide is gone with its code and CSS; the rail is always docked. A saved Floating or Hide choice is dropped on load.
+- **Player palette: Competition · Modern · Mono**, on one row. Classic is gone (a saved Classic becomes Modern).
+- **Modern uses two signals**, Olive P1 / Trace P2, instead of the Amber / Sapphire inks, so a fixed pair never reads as a card's ink.
+
 ## Patch: Opponent's hidden cards named in log imports (v3.4.10)
 
 ### Details
@@ -939,3 +947,4 @@ The public page (`index.html`) follows Field Unit too, as `docs/DESIGN-field-uni
 - [x] Patch: Notes are glass in the Multiverse
 - [x] Landing page: up to date with v3.4
 - [x] Patch: Share links on practicedojo.win
+- [x] Patch: Tweaks panel cleaned up

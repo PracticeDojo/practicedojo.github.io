@@ -1013,14 +1013,6 @@
                 <input type="range" id="tweak-card-size" min="0.7" max="1.4" step="0.05" value="1">
             </div>
             <div class="tweak">
-                <div class="tweak-label"><span>Panel layout</span></div>
-                <div class="tweak-radio" id="tweak-layout">
-                    <button data-val="docked" class="is-active">Docked</button>
-                    <button data-val="floating">Floating</button>
-                    <button data-val="hidden">Hide</button>
-                </div>
-            </div>
-            <div class="tweak">
                 <div class="tweak-label"><span>Card display</span></div>
                 <div class="tweak-radio" id="tweak-card-mode">
                     <button data-val="art" class="is-active"
@@ -1047,8 +1039,7 @@
                 <div class="tweak-radio" id="tweak-palette">
                     <button data-val="competition" class="is-active"
                         title="Each side is shaded in its own deck's two inks. P1's node spine is split in two, P2's is a barber pole, so a mirror match still reads">Competition</button>
-                    <button data-val="modern" title="Amber P1 / blue P2">Modern</button>
-                    <button data-val="classic" title="The original orange P1 / purple P2">Classic</button>
+                    <button data-val="modern" title="Two fixed signal colours: Olive P1 / Trace P2">Modern</button>
                     <button data-val="mono"
                         title="Grayscale: no colour anywhere. Players are told apart by lightness — P1 bright, P2 heavy">Mono</button>
                 </div>
@@ -1060,7 +1051,7 @@
     <script>
         let cardFuse = null;
 
-        const APP_VERSION = "v3.4.11"; // Centralized version string (v3: Field Unit)
+        const APP_VERSION = "v3.4.12"; // Centralized version string (v3: Field Unit)
 
         // Tweaks panel accent presets (hue values for the OKLCH accent ramp)
         // Tweaks → Accent: the approved Field Unit signals only (design.md ·
@@ -10800,7 +10791,7 @@
                 return e;
             },
 
-            // --- Tweaks panel (theme / accent / card size / layout / palette) ---
+            // --- Tweaks panel (theme / accent / card size / card display / forecast / palette) ---
             // Field Unit day (Mineral) / night (Kiln) on <html data-theme>. "auto"
             // follows prefers-color-scheme and keeps following it while open.
             applyTheme(pref) {
@@ -10845,37 +10836,11 @@
                     const sv = this.$('tweak-size-val'); if (sv) sv.textContent = `${parseFloat(t.cardSize).toFixed(2)}×`;
                     const cs = this.$('tweak-card-size'); if (cs) cs.value = t.cardSize;
                 }
-                if (t.layout) {
-                    const app = this.$('app');
-                    app.classList.remove('layout-docked', 'layout-floating', 'layout-hidden');
-                    app.classList.add('layout-' + t.layout);
-                    const lay = this.$('tweak-layout');
-                    if (lay) lay.querySelectorAll('button').forEach(b => b.classList.toggle('is-active', b.dataset.val === t.layout));
-                    const sidebar = app.querySelector('.sidebar');
-                    const isMobile = window.matchMedia && window.matchMedia('(max-width: 760px)').matches;
-                    if (t.layout === 'hidden') {
-                        root.style.setProperty('--sidebar-w', '0px');
-                        // On phones the sidebar is an off-canvas drawer (transform-driven), so never
-                        // hard-hide it with display:none or the hamburger drawer would be unusable.
-                        if (sidebar) sidebar.style.display = isMobile ? '' : 'none';
-                    } else {
-                        root.style.setProperty('--sidebar-w', '292px');
-                        if (sidebar) sidebar.style.display = '';
-                    }
-                }
-                if (t.palette === 'classic') {
-                    this._clearPlayerInkTokens(root);
-                    root.style.setProperty('--p1', '#a86b32');
-                    root.style.setProperty('--p1-hi', '#d18a45');
-                    root.style.setProperty('--p2', '#3f2e70');
-                    root.style.setProperty('--p2-hi', '#6047a8');
-                } else {
-                    // modern + mono both use the stylesheet's values. Mono's live on
-                    // `body.palette-mono`, which outranks anything inline on <html>
-                    // for everything inside <body> — i.e. the entire UI.
-                    // Competition writes its own tokens back on, just below.
-                    this._clearPlayerInkTokens(root);
-                }
+                // Modern and Mono both use the stylesheet's values. Mono's live on
+                // `body.palette-mono`, which outranks anything inline on <html>
+                // for everything inside <body> — i.e. the entire UI.
+                // Competition writes its own tokens back on, just below.
+                this._clearPlayerInkTokens(root);
                 document.body.classList.toggle('palette-mono', t.palette === 'mono');
                 // Feature 36: derived from the live decks, so it has to be
                 // recomputed here AND on every render (decks change mid-session).
@@ -10913,7 +10878,8 @@
                 if (!['auto', 'day', 'night'].includes(t.theme)) t.theme = 'auto';
                 // Smaller default cards on touch devices so the board fits a phone screen.
                 if (!t.cardSize) t.cardSize = (window.matchMedia && window.matchMedia('(pointer: coarse)').matches) ? 0.8 : 1;
-                if (!t.layout) t.layout = 'docked';
+                // Panel layout (Docked / Floating / Hide) is gone; the rail is always docked.
+                delete t.layout;
                 // Feature 36 made Competition the default palette. A browser that has
                 // played before already has `palette: 'modern'` written to localStorage,
                 // which would silently defeat that — so move existing installs across
@@ -10922,7 +10888,9 @@
                     t.palette = 'competition';
                     t.paletteV = 36;
                 }
-                if (!t.palette) t.palette = 'competition';
+                // Classic was dropped; Modern is the other fixed pair.
+                if (t.palette === 'classic') t.palette = 'modern';
+                if (!['competition', 'modern', 'mono'].includes(t.palette)) t.palette = 'competition';
                 if (!t.cardMode) t.cardMode = 'art';
                 const row = this.$('tweak-accent-row');
                 if (row && !row.children.length) {
@@ -10947,8 +10915,6 @@
                     this.applyTweaks(t);
                     if (this.state && this.state.players) this.render();
                 });
-                const lay = this.$('tweak-layout');
-                if (lay) lay.querySelectorAll('button').forEach(b => b.addEventListener('click', () => { t.layout = b.dataset.val; this.saveTweaks(t); this.applyTweaks(t); }));
                 const thm = this.$('tweak-theme');
                 if (thm) thm.querySelectorAll('button').forEach(b => b.addEventListener('click', () => { t.theme = b.dataset.val; this.saveTweaks(t); this.applyTweaks(t); }));
                 // The home screen's Auto / Day / Night switch is the same choice.
