@@ -4,6 +4,11 @@
       "id": "s13-amber-amethyst-vs-amethyst-ruby",
       "title": "Set 13 example: Amber/Amethyst vs Amethyst/Ruby",
       "file": "set13_example.dojo.json.gz"
+    },
+    {
+      "id": "s13-amber-amethyst-vs-amber-emerald",
+      "title": "Set 13 example: PY vs GY",
+      "file": "set13_example2.dojo.json.gz"
     }
   ]
 }
