@@ -14,8 +14,8 @@ This file provides system instructions and context for AI agents working in this
 
 | Path | What it is |
 |---|---|
-| `index.html` | Landing page (`https://practicedojo.github.io/`) |
-| `app/index.html` | The Practice Dojo (`https://practicedojo.github.io/app/`) |
+| `index.html` | Landing page (`https://practicedojo.win/`) |
+| `app/index.html` | The Practice Dojo (`https://practicedojo.win/app/`) |
 | `css/` | Landing page styles. `landing.css` = Field Unit's marketing chassis (its palette mirrors `app/css/field-unit.css`) |
 | `js/` | Landing page scripts. `landing-multiverse.js` + `-data.js` = the multiverse sections, built from the Set 13 demo |
 | `app/js/` | Small modules split out of the app (see "Splitting rule"). `library.js` = device library |

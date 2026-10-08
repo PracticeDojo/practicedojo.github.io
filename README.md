@@ -2,10 +2,10 @@
 
 A sandbox for theorycrafting Disney Lorcana: play out lines by hand, branch them into a multiverse of timelines, and import Duels.ink logs and replays to study real games.
 
-- **Play:** https://practicedojo.github.io/app/
-- **About:** https://practicedojo.github.io/
+- **Play:** https://practicedojo.win/app/
+- **About:** https://practicedojo.win/
 
-Everything runs in the browser and is served by GitHub Pages. There's no build step: open `app/index.html` through any static server.
+Everything runs in the browser and is served by Cloudflare from this repo. GitHub Pages still serves it at `practicedojo.github.io`, which sends visitors on to `practicedojo.win`. There's no build step: open `app/index.html` through any static server.
 
 ## Layout
 

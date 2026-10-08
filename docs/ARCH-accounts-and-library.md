@@ -331,8 +331,10 @@ A `before insert` trigger caps each account at **200 decks** and **50 sessions**
 Every share link is short and has the same shape:
 
 ```
-https://practicedojo.github.io/app/?s=k3J9xQ2mPa
+https://practicedojo.win/app/?s=k3J9xQ2mPa
 ```
+
+*Since v3.4.8 (D20):* links made on the live site always use `practicedojo.win`. Old `practicedojo.github.io/app/?s=…` links still work: GitHub Pages sends the visitor on to the same path on `practicedojo.win`.
 
 `k3J9xQ2mPa` is a random 10-character code (a *slug*). The link carries nothing else. The Dojo looks the code up in Supabase and loads what it points to.
 
@@ -569,7 +571,7 @@ Phases 2 and 3 can swap order if you'd rather have accounts first.
 2. Connect the GitHub integration to `PracticeDojo/practicedojo.github.io`: working directory `.` (the repo root, which holds `supabase/`), production branch `main`, **Deploy to production** on. New files in `supabase/migrations/` are then applied when they reach `main`. Without the integration, paste the migration into the SQL editor instead; it's safe to run twice.
 3. The migration creates the `shares` bucket (public, 10 MB, `application/gzip`). The private `sessions` bucket comes with Phase 3.
 4. In *Authentication → Sign In / Providers*, enable **Allow anonymous sign-ins** and **Allow manual linking** (and **Discord** and **Google** at Phase 3). The integration does not apply auth settings to production.
-5. In *Authentication → URL Configuration*, set the Site URL to `https://practicedojo.github.io`, with redirects `https://practicedojo.github.io/**` and `http://localhost:*/**`.
+5. In *Authentication → URL Configuration*, set the Site URL to `https://practicedojo.win`, with redirects `https://practicedojo.win/**`, `https://practicedojo.heavenideasdesign.workers.dev/**`, `https://*-practicedojo.heavenideasdesign.workers.dev/**` (Cloudflare previews), `https://practicedojo.github.io/**` and `http://localhost:*/**`. *(Was `practicedojo.github.io` until D20.)*
 6. Put the project URL and the **publishable** key (or the legacy `anon` key) into `cloud.js`, and into the repo variables `SUPABASE_URL` and `SUPABASE_PUBLISHABLE_KEY` for the keep-alive. **Never commit the secret / `service_role` key.**
 
 ---
@@ -624,3 +626,4 @@ Phases 2 and 3 can swap order if you'd rather have accounts first.
 | D17 | The new repo keeps the Dojo's git history (`git filter-repo --subdirectory-filter practice_dojo`) | 2026-10-04 |
 | D18 | On the old site, only the two entry pages become "we moved" pages. The rest of `practice_dojo/` is left as it is. | 2026-10-04 |
 | D19 | The old site is not changed at all. Supersedes D18. | 2026-10-04 |
+| D20 | The live site is `practicedojo.win` (Cloudflare, from this repo). Share links always use it; `practicedojo.github.io` redirects there, keeping the path and `?s=`. Browser storage is per domain, so device libraries and anonymous share ownership don't carry over (no real users yet). | 2026-10-08 |
