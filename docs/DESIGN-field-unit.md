@@ -109,7 +109,7 @@ Name by role. Do not invent new accents.
 - **Mute**: `#8A847A` — labels, timestamps, empty odds, inactive tree edges.
 - **Line**: `#D5CFC4` — borders on the chassis, top bar rule.
 - **Line soft**: `#E0DBD1` — row rules, meter tracks, node bars that are not live.
-- **Signal**: `#E4572E` Ember — day default. End turn, live lore numerals, the branch you are on, auto-save when on, a single "new" pip. Nowhere else.
+- **Signal**: `#E4572E` Ember — day default. End turn, live lore numerals, the branch you are on, the multiverse cursor, auto-save when on, a single "new" pip. Nowhere else.
 - **Signal ink**: `#FFF8F4` — text on an Ember, Coral, or Vermillion fill. Radio, Olive, and Trace use dark ink `#1A0A05` or `#141311`.
 
 ### Signal family
@@ -283,11 +283,36 @@ Paper module. Header `label/sm`: `Draw odds · 24` and `1 · 2 · 4`. Columns: c
 
 ### Multiverse node
 
-Paper, 10px radius, 230px wide, padding 8px 9px, 1px `#E0DBD1`. Title 12px weight 620. Subline 10px mute: lore pair, timestamp, "auto-saved". Body is a 2-column grid, 10px: label `label/sm`, value ink. Bottom bar 2px. Live node: 1px signal border plus signal bar. Inactive bar is `#E0DBD1`.
+10px radius, 230px wide, padding 8px 9px, 1px border. Title 12px weight 620. Subline 10px mute: lore pair, timestamp, "auto-saved". Body is a 2-column grid, 10px: label `label/sm`, value ink.
+
+The node's tone says whose turn it is, so the players part at a glance whatever their inks (mirror matches included):
+
+- **P1** is paper: `#F4F0E8` with a `#E0DBD1` hairline. On Kiln it lifts to `#34302A` (line `#423D35`).
+- **P2** is graphite, the Banish key's colour: `#2B2925` with a `#3E3933` hairline and paper text. On Kiln it drops to `#141210` (line `#38332C`), and its note to the well's `#0C0C0C`.
+
+The node re-scopes the paper tokens, so everything inside follows its tone. The tone is identity, never state.
+
+The foot is a bar along the node's bottom edge, cut by the node's own rounded corners so it follows them: 4px, in the node's hairline colour. Live node: 1px signal border plus a signal foot.
+
+The arrow-key cursor (the node the panel shows) is four signal corner marks 9px outside the node: a different shape from the live node's solid border, so "looking at" and "you are here" never read as one.
+
+A won branch's final node carries a plate under its note: glass raised with a hairline, the winner's lore as a 28px display numeral in paper, then `P2 wins · 11–20` / `Branch closed` in mono. Its foot is 6px, split in the winner's two inks. Its edge runs on 18px and ends in a 3px paper stop.
 
 Node body must be able to show played, inked, drawn, discarded, banished, quested, hand size, and the note. Do not reduce a node to a title. With the card sections in the panel (the default) a node is lean: title, subline, its comment (the note and the turn recap text) as a glass Note, and the Played strip; "Show in nodes" brings every section back.
 
 A pre-jump auto-save is a ghost of a node: glass raised, 1px dashed `#6A655E` border, no bar, mute text, a dashed edge to the node it was taken from. It is not a node until kept.
+
+### Multiverse plot
+
+The header's **Plot** tool (a saved preference; open, it inverts to glass) draws the same tree as a track sheet, to see a whole game at once. The card layout's columns become grid columns and its half-rows grid rows, 28px apart, ruled in `#242424`. A turn ruler runs along the top: the turn number in mono where it starts, whose step under each column.
+
+- Each saved turn is a 9px dot in its deck's two inks, split down the middle: **P1 solid, P2 hatched** (as its deck icon, with a hairline ring in its inks). Dots are ink ticks, so they stay small.
+- The turn number sits under each dot in mono mute.
+- Edges run out of the parent, drop on the half-column and run in: `#6A655E` 1.2px, the live path signal 1.6px, auto-saves dashed.
+- The node you are on has a 2px signal ring. The cursor is a signal crosshair, open at the centre, with a glass-raised readout tag (`T12 · P1 · 7–6`).
+- A win is the winner's dot drawn square, a 2px paper stop, the lore as a 15px display numeral and `P1 WINS · 20–13` in mono.
+- An auto-save is a dashed ring.
+- A key in the well's corner (`label/sm`, glass mute) names all of it. Reset zoom fits the whole plot.
 
 ### Multiverse edge
 
@@ -312,7 +337,7 @@ The app's front door, on the chassis. Two columns: the brand on the left (the ma
 ## Do's and don'ts
 
 - Do keep the live readings. A Field Unit board that drops the discard, the log, the odds, or the node recap is wrong.
-- Do use the approved signal only for End turn / Launch, live lore, the active branch, auto-save on, and a new-card pip.
+- Do use the approved signal only for End turn / Launch, live lore, the active branch, the multiverse cursor, auto-save on, and a new-card pip.
 - Do use Ember `#E4572E` by day and Radio `#E86B2A` on Kiln, unless a theme explicitly picks Coral, Olive, or Trace.
 - Do keep Kiln paper at `#221F1B` and the well at `#0C0C0C`. Do not grey the night chassis.
 - Do use ink colors only as player ticks and cost pips.
