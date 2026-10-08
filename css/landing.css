@@ -1113,6 +1113,102 @@ button {
     margin: 18px 0 6px;
 }
 
+/* Hero lines: the inset steps through every line. Pips pick one; the one
+   shown fills over the step while it cycles. */
+.line-pick {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px 12px;
+    min-width: 0;
+}
+
+.line-pips {
+    display: inline-flex;
+    gap: 4px;
+}
+
+.line-pips .pip {
+    position: relative;
+    width: 18px;
+    height: 4px;
+    padding: 0;
+    border: 0;
+    border-radius: 2px;
+    background: var(--fu-glass-rule);
+    overflow: hidden;
+    cursor: pointer;
+}
+
+/* A bigger hit area than the 4px bar. */
+.line-pips .pip::before {
+    content: "";
+    position: absolute;
+    inset: -8px -2px;
+}
+
+.line-pips .pip::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: var(--signal);
+    transform: scaleX(0);
+    transform-origin: left;
+}
+
+.line-pips .pip.is-on::after {
+    transform: scaleX(1);
+}
+
+.inset.is-cycling .line-pips .pip.is-on::after {
+    animation: pip-fill var(--line-step, 4500ms) linear;
+}
+
+.line-pips .pip:focus-visible {
+    outline: 2px solid var(--signal);
+    outline-offset: 3px;
+}
+
+@keyframes pip-fill {
+    from { transform: scaleX(0); }
+    to { transform: scaleX(1); }
+}
+
+.m-edge,
+.m-dot {
+    transition: stroke 0.35s ease, fill 0.35s ease, r 0.35s ease, stroke-width 0.35s ease;
+}
+
+.m-you .m-here {
+    /* A halo in the inset's black, so the label reads over any line it crosses. */
+    paint-order: stroke;
+    stroke: var(--fu-glass);
+    stroke-width: 4px;
+    stroke-linejoin: round;
+}
+
+.m-you {
+    transition: transform 0.6s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+.branch-notes li {
+    transition: color 0.35s ease;
+}
+
+.branch-notes li.is-on,
+.branch-notes li.is-on .bn {
+    color: var(--signal-text);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .m-edge,
+    .m-dot,
+    .m-you,
+    .branch-notes li {
+        transition: none;
+    }
+}
+
 /* Branch points, in the order they were tried. */
 .branch-notes {
     list-style: none;

@@ -129,13 +129,14 @@
             </div>
           </div>
           <div class="stamp-row">
-            <span class="label">Every saved node · the line you're on in signal</span>
+            <span class="line-pick"><span class="label" data-mv="line-label">The line played · in signal</span>
+              <span class="line-pips" id="hero-pips" role="group" aria-label="Show a line"></span></span>
             <span class="turn-stamp"><span class="label">Turn</span><b data-mv="turn"></b><span
                 aria-hidden="true">→</span>
               <span data-mv="player"></span></span>
           </div>
           <div class="map-wrap" id="hero-map"></div>
-          <div class="label map-label">Lore along the line played</div>
+          <div class="label map-label" data-mv="lore-label">Lore along the line played</div>
           <div class="map-wrap" id="hero-lore"></div>
           <ol class="branch-notes" id="hero-notes" aria-label="Branch points, in the order they were tried"></ol>
         </div>
