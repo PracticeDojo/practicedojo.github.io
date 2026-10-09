@@ -53,6 +53,8 @@ interface GameState {
   activePlayer: number; // 0 or 1  
   inactivePlayer: number; // 0 or 1  
   opponentHandRevealed: boolean;  
+  mulliganPending?: boolean; // Feature 54: the active player is choosing their opening hand  
+  drawPending?: boolean;     // Feature 54: their draw step (and the turn's auto-save) waits for that choice  
   players: \[Player, Player\];  
   history: string\[\]; // Array of JSON.stringified GameStates for the Undo stack  
   log: Array\<{ text: string, isSystem: boolean, player: number }\>;  
@@ -1083,9 +1085,12 @@ Captured by `_captureTurnStartHand(playerIndex)` at every moment a turn's openin
 | Where | Why |
 |---|---|
 | `startGame()`, after the opening 7 | turn 1 has no `endTurn` to capture it |
-| `confirmMulligan()` | the post-mulligan hand is the real opener |
-| `confirmCraftHand()` | same, for a crafted hand |
-| `endTurn()`, after the draw step | every subsequent turn |
+| `_finishMulligan()` (keep, mulligan or craft) | the settled hand is the real opener |
+| `_drawStepAndAutoSave()`, after the draw step | every subsequent turn, and Player 2's first turn once they've chosen |
+
+Feature 54 split `endTurn()`: when the new player hasn't had their mulligan yet, it stops after the
+ready step with `mulliganPending` and `drawPending` set, and `_finishMulligan()` runs the rest
+(`_drawStepAndAutoSave()`) once they choose.
 
 **The trap:** `endTurn()` writes the node for the turn that just *ended*, but it has already flipped
 players and drawn for the *new* one. So the new capture is held in a local (`turnStartHandSnap`) and

@@ -700,6 +700,20 @@ Implements version 2 of `docs/DESIGN-field-unit.md` (Kiln dark mode, signal fami
 - **Signal family.** By day the signal is Ember `#E4572E`; on Kiln it is Radio `#E86B2A` with dark text on the key. Tweaks → Accent offers only the approved swaps: **Signal** (the theme's own), **Coral**, **Olive** (its lore numeral lifts to `#C6C45A` on the well) and **Trace**. Each carries the text colour that sits on it. The old Amber / Rose / Emerald / Violet / Azure accents were ink colours, so a saved pick of one falls back to Signal.
 - **CSS file.** The Field Unit tokens, themes, palettes and component styles moved from the inline `<style>` to `app/css/field-unit.css`, loaded right after it (pixel-identical move). The older inline rules stay put.
 
+## Feature 54: Mulligan mode — each player's first turn opens on their mulligan (v3.7.0)
+
+### User Story
+- As a player, I want each player's first turn to start with the mulligan, so I never have to remember a button, and the second player chooses from the seven they were dealt, not from eight after an early draw.
+
+### Details
+- **Before:** the first player had to press **Mulligan** on turn 1. When they passed, the second player drew for the turn straight away, and only then could press Mulligan, with that extra card in hand.
+- **Mulligan mode.** A new game opens on Player 1's mulligan. When Player 1 ends their first turn, Player 2's turn opens on theirs, after the ready step and **before the draw step**. The dialog stays up until the hand is settled; Esc, Space and the other hotkeys do nothing behind it, and no turn can end.
+- **Keep or send back.** Tap cards to mark them, as before. One button settles it: **Keep hand** with nothing marked, **Mulligan N cards** otherwise (redraw from the top, then the marked cards go back and the deck is shuffled). **Craft hand** is the dialog's other way out (Feature 23); its **Back** returns to the mulligan.
+- **Then the draw.** Once Player 2 has chosen, they draw for the turn (logged as the turn's draw), their Turn Starting Hand is captured, and the auto-save of Player 1's first turn is written. So the *Turn 1 - Player 2 Active* node holds the board Player 2 plays from, and stepping through the Multiverse never lands in the dialog.
+- **Undo** after the decision comes back to the dialog. A board waiting on its mulligan keeps that through a reload, a save or a share link, and the dialog comes back when you return to it from the home screen.
+- **The sidebar's Mulligan and Craft buttons are gone**; the dialog replaces them. Boards saved before this version don't open the dialog.
+- State: `mulliganPending` (the active player is choosing) and `drawPending` (their draw step and the auto-save wait for it), saved only while set.
+
 ## Feature 53: Mini Multiverse in the sidebar, in place of Win Probability (v3.6.0)
 
 ### User Story
@@ -976,3 +990,4 @@ The public page (`index.html`) follows Field Unit too, as `docs/DESIGN-field-uni
 - [x] Patch: Tweaks panel cleaned up
 - [x] Feature 52: Long press the board to write the turn's note on a phone
 - [x] Feature 53: Mini Multiverse in the sidebar, in place of Win Probability
+- [x] Feature 54: Mulligan mode — each player's first turn opens on their mulligan
