@@ -3764,6 +3764,74 @@ input[type="range"]::-moz-range-thumb {
     box-shadow: inset 0 0 0 1px var(--fu-line);
 }
 
+/* A small picture of the card beside its name and type line, in the same
+   grid row so it never covers the text. Sideways when the card is exerted
+   (or a Location), as on the board. With no art: a blank card with the
+   dojo mark, like the deck, in the glass's own tone. */
+.cs-top {
+    --thumb-w: 44px;
+    --thumb-h: 61px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: start;
+    gap: 10px;
+}
+
+.cs-top-lines {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    min-width: 0;
+}
+
+.cs-thumb {
+    position: relative;
+    width: var(--thumb-w);
+    height: var(--thumb-h);
+}
+
+.cs-thumb.is-turned {
+    width: var(--thumb-h);
+    height: var(--thumb-w);
+}
+
+.cs-thumb-card {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: var(--thumb-w);
+    height: var(--thumb-h);
+    transform: translate(-50%, -50%);
+    border-radius: 4px;
+    overflow: hidden;
+    background: var(--fu-glass-raised);
+    box-shadow: 0 0 0 1px var(--fu-glass-rule), 0 4px 10px -4px oklch(0 0 0 / 0.6);
+}
+
+.cs-thumb.is-turned .cs-thumb-card {
+    transform: translate(-50%, -50%) rotate(90deg);
+}
+
+.cs-thumb-card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    margin: auto;
+    width: 60%;
+    aspect-ratio: 1;
+    background: url("../../img/practice_dojo.svg") center / contain no-repeat;
+    filter: brightness(0) invert(0.94);
+    opacity: 0.12;
+}
+
+.cs-thumb-card img {
+    position: relative;
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
 /* The drawer's head: whose card it is (ink ticks) and its state on the
    board. The text card under it carries the name, type and stats. */
 .cs-state {
