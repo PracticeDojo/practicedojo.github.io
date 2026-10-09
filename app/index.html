@@ -1062,7 +1062,7 @@
     <script>
         let cardFuse = null;
 
-        const APP_VERSION = "v3.8.0"; // Centralized version string (v3: Field Unit)
+        const APP_VERSION = "v3.8.1"; // Centralized version string (v3: Field Unit)
 
         // Tweaks panel accent presets (hue values for the OKLCH accent ramp)
         // Tweaks → Accent: the approved Field Unit signals only (design.md ·
@@ -9142,7 +9142,7 @@
                 // rules are right there while picking an action.
                 const text = document.createElement('div');
                 text.className = 'cs-text' + (dir && !this.reducedMotion() ? (dir > 0 ? ' cs-from-right' : ' cs-from-left') : '');
-                text.appendChild(this.buildCardTextView(db));
+                text.appendChild(this.buildSheetTextView(db, f.card.exerted || db.type === 'Location'));
                 sh.appendChild(text);
                 if (n > 1) this.bindSwipeStep(text, (step) => this.cycleCardSheet(step));
                 if (wp > 0) {
@@ -9452,6 +9452,37 @@
                 player.field.filter(isLoc).forEach(loc => order.push(...player.field.filter(c => c.locationId === loc.instanceId), loc));
                 return order;
             },
+            // The drawer's card text with a small picture of the card beside the name
+            // and type line. They share a grid row, so the picture never covers text.
+            // `turned` lays it sideways, as the board shows an exerted card or a
+            // Location. If the art can't load, a blank card with the dojo mark shows.
+            buildSheetTextView(db, turned) {
+                const view = this.buildCardTextView(db);
+                const head = view.querySelector('.ctv-head');
+                if (!head) return view;
+                const top = this.el('div', 'cs-top');
+                const lines = this.el('div', 'cs-top-lines');
+                view.insertBefore(top, head);
+                lines.appendChild(head);
+                const type = view.querySelector('.ctv-type');
+                if (type) lines.appendChild(type);
+                const thumb = this.el('div', 'cs-thumb' + (turned ? ' is-turned' : ''));
+                thumb.setAttribute('aria-hidden', 'true');
+                const face = this.el('div', 'cs-thumb-card');
+                if (db && (db.images && (db.images.thumbnail || db.images.full))) {
+                    const img = document.createElement('img');
+                    img.alt = '';
+                    img.decoding = 'async';
+                    img.draggable = false;
+                    img.onerror = () => img.remove();
+                    img.src = this.getCardImage(db);
+                    face.appendChild(img);
+                }
+                thumb.appendChild(face);
+                top.append(lines, thumb);
+                return view;
+            },
+
             // A card in the phone hand, in the same drawer as a card on the board:
             // whose card and where it sits in the hand, its full text, then Play /
             // Ink / Discard and the rest as keys. ‹ ›, ← / → and a sideways swipe on
@@ -9477,7 +9508,7 @@
                     <button class="cs-icon" data-act="close" aria-label="Close"><i class="fa-solid fa-xmark"></i></button></div>`);
                 const text = document.createElement('div');
                 text.className = 'cs-text' + (dir && !this.reducedMotion() ? (dir > 0 ? ' cs-from-right' : ' cs-from-left') : '');
-                text.appendChild(this.buildCardTextView(db));
+                text.appendChild(this.buildSheetTextView(db, false));
                 sh.appendChild(text);
                 if (n > 1) this.bindSwipeStep(text, (step) => this.cycleCardSheet(step));
                 add(`<div class="cs-label"><span>Cost ${cost} · ${db.inkwell ? 'inkable' : 'not inkable'}</span><b class="${short ? 'is-short' : ''}">${ready} ink ready</b></div>

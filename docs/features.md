@@ -700,6 +700,13 @@ Implements version 2 of `docs/DESIGN-field-unit.md` (Kiln dark mode, signal fami
 - **Signal family.** By day the signal is Ember `#E4572E`; on Kiln it is Radio `#E86B2A` with dark text on the key. Tweaks → Accent offers only the approved swaps: **Signal** (the theme's own), **Coral**, **Olive** (its lore numeral lifts to `#C6C45A` on the well) and **Trace**. Each carries the text colour that sits on it. The old Amber / Rose / Emerald / Violet / Azure accents were ink colours, so a saved pick of one falls back to Signal.
 - **CSS file.** The Field Unit tokens, themes, palettes and component styles moved from the inline `<style>` to `app/css/field-unit.css`, loaded right after it (pixel-identical move). The older inline rules stay put.
 
+## Patch: Card picture in the card drawer (v3.8.1)
+
+### Details
+- **The card drawer shows a small picture of the card** at the top right of its text, beside the name and type line, for a card in hand and a card in play. It shares a grid row with the name and type, so it never covers the card's text.
+- **It mirrors the board:** an exerted card (and a Location) lies sideways, turned 90° the way the board turns it; Ready stands it back up.
+- **No art?** If the image can't load, a blank card with the dojo mark shows instead, like the deck on the board.
+
 ## Feature 55: Step through the cards in play in the card drawer (v3.8.0)
 
 ### User Story
