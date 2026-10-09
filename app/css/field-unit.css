@@ -487,7 +487,6 @@ body {
 /* label/sm: mono, uppercase, 0.14em. Every label, index and column head. */
 .fu-label,
 .sidebar-section .section-head h3,
-.metric-label,
 .toggle-row .toggle-label,
 .prob-head h3,
 .prob-cols,
@@ -500,7 +499,6 @@ body {
 .ctx-section,
 .notes-panel .notes-head,
 .preview-placeholder,
-.pm-label,
 .tn-sec-label,
 .tp-label,
 .tp-sec-label,
@@ -972,14 +970,256 @@ body:has(#tweaks-panel.is-open) #btn-tweaks i {
     color: var(--text-dim);
 }
 
-/* Win probability is a paper module: the head and both meters inside. */
+/* The mini multiverse is a paper module: the head, the glass well, the keys. */
 .sidebar-section.is-module {
     margin: 0 8px 0 10px;
-    padding: 8px 10px 9px;
+    padding: 7px 10px 8px;
     background: var(--surface);
     border: 1px solid var(--border-soft);
     border-radius: var(--radius);
     gap: 8px;
+}
+
+/* ----- Mini multiverse (Feature 53): the tree as lines on glass ----- */
+/* A line keeps its row. Off the line you're on: #6A655E hairlines and hollow
+   dots. The line you're on: signal; ahead of you, the line you stepped back
+   along, dashed signal. The node you're on: a signal ring, dashed once the
+   board has changed since it. Auto-saves ("Left here"): dashed hollow dots. */
+.mini-mv {
+    gap: 5px;
+}
+
+.mini-mv .section-head {
+    gap: 8px;
+}
+
+.mini-mv .section-head h3 {
+    flex: 0 0 auto;
+}
+
+.mmv-read {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-align: right;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.04em;
+    font-variant-numeric: tabular-nums;
+    color: var(--text-dim);
+}
+
+.mmv-open {
+    flex: 0 0 auto;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    padding: 0;
+    border-radius: 6px;
+}
+
+.mmv-open i {
+    font-size: 10px;
+}
+
+.mmv-view {
+    position: relative;
+    height: 84px;
+    overflow: hidden;
+    background: var(--fu-glass);
+    border-radius: var(--radius-inset);
+    cursor: grab;
+    touch-action: none;
+    user-select: none;
+}
+
+.mmv-view:focus-visible {
+    outline: 2px solid var(--text);
+    outline-offset: 2px;
+}
+
+.mmv-view.is-dragging {
+    cursor: grabbing;
+}
+
+.mmv-svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+    font-family: var(--font-mono);
+}
+
+.mmv-view.is-gliding .mmv-map,
+.mmv-view.is-gliding .mmv-ruler {
+    transition: transform 0.18s var(--ease);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .mmv-view.is-gliding .mmv-map,
+    .mmv-view.is-gliding .mmv-ruler {
+        transition: none;
+    }
+}
+
+.mmv-turn {
+    font-size: 9px;
+    letter-spacing: 0.06em;
+    fill: var(--fu-glass-mute);
+}
+
+.mmv-edge {
+    fill: none;
+    stroke: var(--fu-edge);
+    stroke-width: 1.2;
+    stroke-linecap: round;
+}
+
+.mmv-edge.is-live {
+    stroke: var(--accent);
+    stroke-width: 1.8;
+}
+
+.mmv-edge.is-ahead {
+    stroke: var(--accent);
+    stroke-width: 1.3;
+    stroke-dasharray: 3 3;
+}
+
+.mmv-edge.is-ghost {
+    stroke-dasharray: 2.5 2.5;
+}
+
+.mmv-stop {
+    stroke: var(--fu-light);
+    stroke-width: 2;
+}
+
+.mmv-dot {
+    cursor: pointer;
+}
+
+.mmv-hit {
+    fill: transparent;
+}
+
+.mmv-mark {
+    fill: var(--fu-glass);
+    stroke: var(--fu-edge);
+    stroke-width: 1.2;
+    transition: stroke var(--dur) var(--ease);
+}
+
+.mmv-dot:hover .mmv-mark {
+    stroke: var(--fu-light);
+}
+
+.mmv-dot.is-live .mmv-mark {
+    fill: var(--accent);
+    stroke: none;
+}
+
+.mmv-dot.is-ahead .mmv-mark {
+    stroke: var(--accent);
+}
+
+.mmv-dot.is-ghost .mmv-mark {
+    stroke-dasharray: 2 2;
+}
+
+.mmv-ring {
+    fill: none;
+    stroke: var(--accent);
+    stroke-width: 1.6;
+    pointer-events: none;
+}
+
+.mmv-ring.is-edited {
+    stroke-dasharray: 3 2.5;
+}
+
+/* The caption along the foot: the counts, "Edited", or the dot under the
+   pointer's name. */
+.mmv-cap {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: 8px 10px 4px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    background: linear-gradient(to bottom, transparent, var(--fu-glass) 55%);
+    pointer-events: none;
+    font-family: var(--font-mono);
+    font-size: 9.5px;
+    letter-spacing: var(--label-track);
+    text-transform: uppercase;
+    color: var(--fu-glass-mute);
+}
+
+.mmv-cap.is-edited {
+    color: var(--fu-light);
+}
+
+.mmv-cap.is-name {
+    font-family: var(--font-sans);
+    font-size: 11px;
+    letter-spacing: 0;
+    text-transform: none;
+    color: var(--fu-light);
+}
+
+.mmv-empty {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 18px;
+    text-align: center;
+    font-size: 11px;
+    line-height: 1.4;
+    color: var(--fu-glass-mute);
+}
+
+.mmv-empty[hidden] {
+    display: none;
+}
+
+.mmv-ctl {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.mmv-ctl .icon-btn {
+    flex: 1 1 0;
+    justify-content: center;
+    min-width: 0;
+    height: 24px;
+    padding: 0;
+}
+
+.mmv-ctl .icon-btn i {
+    font-size: 11px;
+}
+
+.mmv-rule {
+    flex: 0 0 1px;
+    height: 18px;
+    margin: 0 2px;
+    background: var(--border-soft);
+}
+
+/* Phones get their own multiverse navigation later: not in the drawer. */
+@media (max-width: 760px) {
+    .mini-mv {
+        display: none;
+    }
 }
 
 /* Player row: two ink ticks, the name, then `24 deck · 2 hand`. */
@@ -1039,85 +1279,8 @@ body.palette-competition .player-row::before {
     border-color: var(--text);
 }
 
-/* Meter: a 3px track, a 7px ink marker at P1's share, figures at both
-   ends. No coloured fill, no gradient. */
-.metric {
-    gap: 5px;
-}
-
-.metric-label {
-    color: var(--text-dim);
-    font-weight: 500;
-}
-
-.metric-label .metric-icon {
-    display: none;
-}
-
-.bar {
-    position: relative;
-    height: 3px;
-    margin: 3px 4px;
-    background: var(--fu-line-soft);
-    border-radius: 999px;
-    overflow: visible;
-}
-
-.bar-p1,
-.bar-p2 {
-    background: transparent;
-    transition: width .2s var(--ease);
-}
-
-.bar-p1 {
-    position: relative;
-}
-
-.bar-p1::after {
-    content: '';
-    position: absolute;
-    right: -3.5px;
-    top: 50%;
-    width: 7px;
-    height: 7px;
-    margin-top: -3.5px;
-    border-radius: 50%;
-    background: var(--text);
-}
-
-.metric-values {
-    font-size: 11px;
-    color: var(--text-dim);
-    font-variant-numeric: tabular-nums;
-}
-
-.metric-values .val-p1,
-.metric-values .val-p2 {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    color: var(--text-2);
-}
-
-.metric-values .val-p1::before,
-.metric-values .val-p2::after {
-    content: '';
-    width: 8px;
-    height: 10px;
-}
-
-.metric-values .val-p1::before {
-    background: var(--tick-p1);
-}
-
-.metric-values .val-p2::after {
-    background: var(--tick-p2);
-    -webkit-mask-image: var(--tick-mask);
-    mask-image: var(--tick-mask);
-}
-
 /* Hover details: a paper module holding a glass inset (the card sits on
-   glass) and the card's CTL · BCR · RDS · LVI. */
+   glass). */
 .hover-module {
     flex: 0 0 auto;
     margin: 0 8px 0 10px;
@@ -1143,31 +1306,6 @@ body.palette-competition .player-row::before {
 
 .preview-placeholder {
     color: var(--fu-glass-mute);
-}
-
-.preview-metrics {
-    padding: 0 6px 2px;
-    background: transparent;
-    border: 0;
-}
-
-.preview-metrics .pm-cell {
-    align-items: flex-start;
-    gap: 1px;
-}
-
-.preview-metrics .pm-label {
-    color: var(--text-dim);
-}
-
-.preview-metrics .pm-val,
-.preview-metrics .pm-cell.is-bcr .pm-val,
-.preview-metrics .pm-cell.is-lvi .pm-val,
-.preview-metrics .pm-cell.is-rds .pm-val {
-    color: var(--text);
-    font-weight: 400;
-    font-size: 12px;
-    font-variant-numeric: tabular-nums;
 }
 
 /* The log scrolls inside the rail. Steps are mute; banishes, challenges
@@ -5398,19 +5536,6 @@ body.palette-competition .tree-node.tn-p2::before {
     margin-right: 6px;
     vertical-align: -1px;
     background: var(--name-ink);
-}
-
-/* Meter marker sits on the boundary between the two shares; when the
-   active player is P2 updateMetrics() reverses the track. Ticks stay on
-   the outer ends. */
-.bar[style*="row-reverse"] .bar-p1::after {
-    right: auto;
-    left: -3.5px;
-}
-
-.metric-values[style*="row-reverse"] .val-p1,
-.metric-values[style*="row-reverse"] .val-p2 {
-    flex-direction: row-reverse;
 }
 
 /* Discard header: label · count · inspect, then the rows. */

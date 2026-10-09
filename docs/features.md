@@ -700,6 +700,20 @@ Implements version 2 of `docs/DESIGN-field-unit.md` (Kiln dark mode, signal fami
 - **Signal family.** By day the signal is Ember `#E4572E`; on Kiln it is Radio `#E86B2A` with dark text on the key. Tweaks → Accent offers only the approved swaps: **Signal** (the theme's own), **Coral**, **Olive** (its lore numeral lifts to `#C6C45A` on the well) and **Trace**. Each carries the text colour that sits on it. The old Amber / Rose / Emerald / Violet / Azure accents were ink colours, so a saved pick of one falls back to Signal.
 - **CSS file.** The Field Unit tokens, themes, palettes and component styles moved from the inline `<style>` to `app/css/field-unit.css`, loaded right after it (pixel-identical move). The older inline rules stay put.
 
+## Feature 53: Mini Multiverse in the sidebar, in place of Win Probability (v3.6.0)
+
+### User Story
+- As a player, I want a small map of the multiverse beside the board, so I can jump to any turn with one click and step through a line turn by turn without opening the full Multiverse.
+
+### Details
+- **Win Probability is gone.** The sidebar's BCR / LVI meters, the CTL · BCR · RDS · LVI figures under the hovered card, and the external win-probability script that computed them (loaded from a third-party GitHub repo at `@main`) are removed. The hover card's freed height goes to the log.
+- **The map.** The Win Probability slot now holds a paper module with the tree drawn as lines on a glass well, in the style of the landing page's hero map: a line keeps its row and a branch takes the nearest free row, so a whole game fits in a few rows. A row carries on into the child with the longest line (usually the game as played), so the map holds still while you move. The line you're on is signal; ahead of you, the line you stepped back along is dashed signal; the node you're on has a signal ring, dashed once the board has changed since it. "Left here" snapshots are dashed hollow dots. Every other turn is numbered along the top; the foot shows the counts, "Edited · kept if you jump", or the name of the dot under the pointer. The head reads `T14 · P2 · 8–8` for the node you're on (or the dot under the pointer), with a button that opens the full Multiverse.
+- **Moving.** Click a dot to load it. Drag or scroll to pan; the map follows the node you're on. The keys: **⏮** the last branch point behind you (or the start), **◀** previous turn, **▶** next turn on the line, **⏭** the next branch point ahead (or the line's end), **↑ / ↓** the nearest node on the line above / below. With the map or a key focused, the arrow keys, Home and End do the same. Stepping back keeps the rest of the line ahead of you, so ▶ retraces it. On a board you've changed since its node, ◀ reloads that node and ▶ goes on to the next turn.
+- **Autosave before a jump, only when it's needed.** Every jump (the mini map and the full Multiverse's *Play from here*) still keeps the board you leave as a "Left here" snapshot, but only when that board isn't already saved: unchanged since it was loaded from, or saved as, a node or snapshot that's still in the tree. Stepping through a line no longer fills the five snapshot slots with copies of saved nodes and pushes out the one holding your unsaved work. The mini map's jumps are quiet (no toast or flash) unless a snapshot was kept.
+- **Desktop only.** Phones hide the module; the phone's multiverse navigation will be its own feature.
+- **Code.** The layout, drawing, panning and step targets live in `app/js/mini-multiverse.js` (the `MiniVerse` global); App feeds it the nodes and loads what it picks. Styles in `app/css/field-unit.css`.
+- **Landing page.** "How it works" step 2 shows the mini multiverse under the board in place of the BCR meter.
+
 ## Feature 52: Long press the board to write the turn's note on a phone (v3.5.0)
 
 ### User Story
@@ -961,3 +975,4 @@ The public page (`index.html`) follows Field Unit too, as `docs/DESIGN-field-uni
 - [x] Patch: Share links on practicedojo.win
 - [x] Patch: Tweaks panel cleaned up
 - [x] Feature 52: Long press the board to write the turn's note on a phone
+- [x] Feature 53: Mini Multiverse in the sidebar, in place of Win Probability

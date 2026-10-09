@@ -86,7 +86,7 @@ The shell is warm mineral by day and warm black at night. Data lives in a recess
 
 Day signal is Ember. Night signal is Radio. Coral, Olive, and Trace are the only approved swaps. Do not invent a fifth accent.
 
-The app is information-dense. A restyle must keep every reading the live board already shows: players, deck and hand counts, BCR and LVI, the action log, both discard piles, ready counts, field cards with cost / strength / lore, hand actions, deck size, draw odds with copies remaining, and multiverse node recaps (played, inked, drawn, banished, quested, lore, note).
+The app is information-dense. A restyle must keep every reading the live board already shows: players, deck and hand counts, the mini multiverse, the action log, both discard piles, ready counts, field cards with cost / strength / lore, hand actions, deck size, draw odds with copies remaining, and multiverse node recaps (played, inked, drawn, banished, quested, lore, note).
 
 ### Principles
 
@@ -229,7 +229,7 @@ The drawer's head is the card's owner (ink ticks) and where it is: on the board 
 
 ### Paper module
 
-Background paper, 1px `#E0DBD1`, radius 10–12px, padding 8px. Used for players, win-probability, hover-details, draw odds. Do not nest a paper module inside a paper module.
+Background paper, 1px `#E0DBD1`, radius 10–12px, padding 8px. Used for players, the mini multiverse, hover-details, draw odds. Do not nest a paper module inside a paper module.
 
 ### Player row
 
@@ -237,7 +237,11 @@ Paper, 8px radius, 6px 8px padding. Two 3×16px ticks for the ink pair, then the
 
 ### Meter
 
-Label is `label/sm`. Track is 3px `#E0DBD1`, radius 999. Marker is a 7px ink circle, not a filled gradient bar. Readouts on both ends are `figure/sm`. BCR and LVI each get their own meter. Do not color the track orange.
+Label is `label/sm`. Track is 3px `#E0DBD1`, radius 999. Marker is a 7px ink circle, not a filled gradient bar. Readouts on both ends are `figure/sm`. Used for the lore race to 20. Do not color the track orange.
+
+### Mini multiverse
+
+A paper module in the rail, under the players (desktop only). Head: `label/sm` "Multiverse", the node you're on (or the dot under the pointer) as `figure/sm` mute (`T14 · P2 · 8–8`), and a small paper tool that opens the full Multiverse. Then a glass well, 84px tall (about three lines; it pans to the rest), with the tree as lines: 15px a turn, 17px a line, 3.2px dots. Off the line you're on: `#6A655E` 1.2px hairlines and hollow dots. The line you're on: signal, 1.8px, filled dots. Ahead of you (the line you stepped back along): dashed signal and signal rings. The node you're on: a 1.6px signal ring, dashed once the board has changed since it. "Left here" snapshots: dashed hollow dots on dashed edges. A won branch: a square dot and a 2px paper stop. Every other turn numbered along the top in mono glass mute. The foot is a caption in `label/sm` glass mute (the counts), paper ("Edited · kept if you jump"), or 11px paper sentence case (the hovered dot's name). Under the well, six paper tools in one row: ⏮ ◀ ▶ ⏭, a hairline, ↑ ↓. No ink colours on the map: identity is in the readout.
 
 ### Log
 

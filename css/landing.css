@@ -2765,29 +2765,79 @@ button {
     font-size: 26px;
 }
 
-.bm-meter {
+/* The app's mini multiverse (Feature 53) under the board: the lines on
+   glass, the node you're on ringed, the line ahead dashed, the step keys. */
+.bm-mmv {
     margin-top: 14px;
 }
 
-.bm-meter .label {
+.bm-mmv .label {
     display: flex;
     justify-content: space-between;
     margin-bottom: 8px;
 }
 
-.bm-meter .ends {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 7px;
-    font-family: var(--font-mono);
-    font-size: 11px;
-    font-variant-numeric: tabular-nums;
+.bm-mmv-map {
+    border-radius: var(--r-inset);
+    overflow: hidden;
 }
 
-.bm-meter .ends span {
-    display: inline-flex;
+.bm-mmv-map svg {
+    display: block;
+    font-family: var(--font-mono);
+}
+
+/* The caption reads over any line it crosses: a halo in the well's black. */
+.bm-mmv .bm-cap {
+    paint-order: stroke;
+    stroke: var(--fu-glass);
+    stroke-width: 5px;
+    stroke-linejoin: round;
+    letter-spacing: 0.14em;
+}
+
+.bm-mmv .m-edge.is-ahead {
+    stroke: var(--signal);
+    stroke-width: 1.4;
+    stroke-dasharray: 3 3;
+}
+
+.bm-mmv .m-dot.is-ahead {
+    fill: var(--fu-glass);
+    stroke: var(--signal);
+}
+
+.bm-mmv .m-ring {
+    stroke-width: 1.6;
+    opacity: 1;
+}
+
+.bm-keys {
+    display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 4px;
+    margin-top: 8px;
+}
+
+.bm-keys span {
+    flex: 1 1 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 26px;
+    border: 1px solid var(--border);
+    border-radius: var(--r-control);
+    background: var(--surface);
+    color: var(--text);
+    font-size: 11px;
+}
+
+.bm-keys .bm-keys-rule {
+    flex: 0 0 1px;
+    height: 18px;
+    border: 0;
+    border-radius: 0;
+    background: var(--border-soft);
 }
 
 /* Step 03: a slice of the real tree */

@@ -65,7 +65,7 @@
       <a class="brand" href="#top" aria-label="Practice Dojo, back to top">
         <img src="img/practice_dojo.svg" class="brand-mark" alt="" />
         <span class="name">Practice Dojo</span>
-        <span class="ver" data-app-version>v3.5.0</span>
+        <span class="ver" data-app-version>v3.6.0</span>
       </a>
       <nav class="nav-links" aria-label="Sections">
         <a href="#screenshot">See it</a>
@@ -163,7 +163,7 @@
 
         <figure class="shot module">
           <div class="shot-bar">
-            <span class="label">app · <span data-app-version>v3.5.0</span> · Set 13 example · turn 16</span>
+            <span class="label">app · <span data-app-version>v3.6.0</span> · Set 13 example · turn 16</span>
             <div class="seg" role="group" aria-label="Theme">
               <button type="button" data-theme-pick="auto" aria-pressed="false" title="Follow this device">Auto</button>
               <button type="button" data-theme-pick="day" aria-pressed="false" title="Mineral">Day</button>
@@ -172,7 +172,7 @@
           </div>
           <div class="shot-frame">
             <img class="is-day" src="img/dojo_board_day.webp" width="2400" height="1500" loading="lazy" decoding="async"
-              alt="The Practice Dojo by day: a Lorcana match at turn 16 with the players, win-probability meters, card details, log and turn note in the left rail, both halves of the board in the black well, and draw odds on the right" />
+              alt="The Practice Dojo by day: a Lorcana match at turn 16 with the players, the mini multiverse, card details, log and turn note in the left rail, both halves of the board in the black well, and draw odds on the right" />
             <img class="is-night" src="img/dojo_board_night.webp" width="2400" height="1500" loading="lazy"
               decoding="async"
               alt="The same match in the Kiln night theme: warm black chassis, the board in the well, lore numerals in orange" />
@@ -547,8 +547,8 @@
           <div class="step">
             <div class="step-n label">Step 02</div>
             <h3>Play turn by turn</h3>
-            <p>Drag cards. Quest. Challenge. Ink. The Dojo logs everything and moves the win-probability meters as the
-              board shifts.</p>
+            <p>Drag cards. Quest. Challenge. Ink. The Dojo logs everything, and every turn lands on the mini multiverse
+              beside the board: click any turn, or step back and forth, to load it.</p>
 
             <div aria-hidden="true">
               <div class="board-mock glass">
@@ -589,11 +589,16 @@
                   </div>
                 </div>
               </div>
-              <div class="bm-meter">
-                <div class="label"><span>Board control · BCR</span><span>tug-of-war</span></div>
-                <div class="track"><span class="mk" style="left:9%"></span></div>
-                <div class="ends"><span><span class="ticks p1 sm"></span>0.3</span><span>2.8<span
-                      class="ticks p2 sm"></span></span></div>
+              <!-- The app's mini multiverse, stepped back a few turns: the line ahead dashed. -->
+              <div class="bm-mmv">
+                <div class="label"><span>Multiverse</span><span data-mv="bm-here"></span></div>
+                <div class="bm-mmv-map glass" id="bm-mmv"></div>
+                <div class="bm-keys">
+                  <span><i class="fa-solid fa-backward-step"></i></span><span><i class="fa-solid fa-chevron-left"></i></span>
+                  <span><i class="fa-solid fa-chevron-right"></i></span><span><i class="fa-solid fa-forward-step"></i></span>
+                  <span class="bm-keys-rule"></span>
+                  <span><i class="fa-solid fa-arrow-up"></i></span><span><i class="fa-solid fa-arrow-down"></i></span>
+                </div>
               </div>
             </div>
           </div>
@@ -621,7 +626,7 @@
         <p class="lede">A companion to your favorite Lorcana simulator. Open the Dojo. Load two decks. Play. Rewind.
           Branch. Repeat.</p>
         <a href="app/" class="key lg">Open Practice Dojo <span aria-hidden="true">→</span></a>
-        <div class="label foot"><span data-app-version>v3.5.0</span> · your sessions stay on this device</div>
+        <div class="label foot"><span data-app-version>v3.6.0</span> · your sessions stay on this device</div>
       </div>
     </section>
 

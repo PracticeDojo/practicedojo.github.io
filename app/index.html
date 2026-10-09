@@ -40,9 +40,9 @@
     <!-- Share links (Supabase, loaded on first share; reading a link needs no SDK) -->
     <script src="js/cloud.js"></script>
 
-    <!-- Unified Win Probability Utilities Library -->
-    <script
-        src="https://cdn.jsdelivr.net/gh/heavenideas/heavenideas.github.io@main/utilities/unified_win_probability_utilities.js"></script>
+    <!-- Mini Multiverse: the tree as lines in the sidebar, and its step moves -->
+    <script src="js/mini-multiverse.js"></script>
+
     <!-- Base styles (the original stylesheet), then the Field Unit design system on top -->
     <link rel="stylesheet" href="css/base.css">
     <link rel="stylesheet" href="css/field-unit.css">
@@ -611,40 +611,45 @@
                 </div>
             </div>
 
-            <!-- Win Probability Meters -->
-            <div class="sidebar-section is-module">
+            <!-- Mini Multiverse (Feature 53): the tree as lines, the node you're on
+                 ringed. A dot or a step key loads that node; the board you leave is
+                 kept as "Left here" unless it's already saved. Hidden on phones. -->
+            <section class="sidebar-section is-module mini-mv" id="mmv" aria-label="Mini multiverse">
                 <div class="section-head">
-                    <h3>Win Probability</h3><span class="hint">field-based</span>
+                    <h3>Multiverse</h3>
+                    <span class="mmv-read" id="mmv-read" aria-live="polite"></span>
+                    <button class="icon-btn mmv-open" onclick="App.openTreeModal()" title="Open the Multiverse (M)"
+                        aria-label="Open the Multiverse"><i
+                            class="fa-solid fa-up-right-and-down-left-from-center"></i></button>
                 </div>
-                <div class="metric"
-                    title="Percentage of total Board Control Rating (BCR) controlled by each player, based ONLY on cards in the field.">
-                    <div class="metric-label"><span>Board Control · BCR</span><span class="metric-icon">&#9670;</span>
-                    </div>
-                    <div class="bar">
-                        <div class="bar-p1" id="bcr-p1" style="width:50%"></div>
-                        <div class="bar-p2" id="bcr-p2" style="width:50%"></div>
-                    </div>
-                    <div class="metric-values">
-                        <span class="val-p1" id="bcr-val-p1">0.0</span>
-                        <span class="val-p2" id="bcr-val-p2">0.0</span>
-                    </div>
+                <div class="mmv-view" id="mmv-view" tabindex="0" role="group"
+                    aria-label="Multiverse map. Click a dot to load it; arrow keys step through turns and lines.">
+                    <div class="mmv-empty" id="mmv-empty" hidden>Nothing saved yet. End a turn with auto-save on, or
+                        save the turn you're in (T).</div>
+                    <div class="mmv-cap" id="mmv-cap"></div>
                 </div>
-                <div class="metric is-lvi"
-                    title="Percentage of total Lore Velocity Index (LVI) controlled by each player, based ONLY on cards in the field.">
-                    <div class="metric-label"><span>Lore Velocity · LVI</span><span class="metric-icon">&#9670;</span>
-                    </div>
-                    <div class="bar">
-                        <div class="bar-p1" id="lvi-p1" style="width:50%"></div>
-                        <div class="bar-p2" id="lvi-p2" style="width:50%"></div>
-                    </div>
-                    <div class="metric-values">
-                        <span class="val-p1" id="lvi-val-p1">0.0</span>
-                        <span class="val-p2" id="lvi-val-p2">0.0</span>
-                    </div>
+                <div class="mmv-ctl" role="group" aria-label="Step through the multiverse">
+                    <button class="icon-btn" data-mmv="forkBack" onclick="App.mmvStep('forkBack')"
+                        title="Back to the last branch point, or the start (Home)"
+                        aria-label="Back to the last branch point or the start"><i
+                            class="fa-solid fa-backward-step"></i></button>
+                    <button class="icon-btn" data-mmv="back" onclick="App.mmvStep('back')"
+                        title="Previous turn (←)" aria-label="Previous turn"><i class="fa-solid fa-chevron-left"></i></button>
+                    <button class="icon-btn" data-mmv="fwd" onclick="App.mmvStep('fwd')"
+                        title="Next turn on this line (→)" aria-label="Next turn"><i
+                            class="fa-solid fa-chevron-right"></i></button>
+                    <button class="icon-btn" data-mmv="forkFwd" onclick="App.mmvStep('forkFwd')"
+                        title="On to the next branch point, or the line's end (End)"
+                        aria-label="Next branch point or end of line"><i class="fa-solid fa-forward-step"></i></button>
+                    <span class="mmv-rule" aria-hidden="true"></span>
+                    <button class="icon-btn" data-mmv="up" onclick="App.mmvStep('up')" title="Line above (↑)"
+                        aria-label="Line above"><i class="fa-solid fa-arrow-up"></i></button>
+                    <button class="icon-btn" data-mmv="down" onclick="App.mmvStep('down')" title="Line below (↓)"
+                        aria-label="Line below"><i class="fa-solid fa-arrow-down"></i></button>
                 </div>
-            </div>
+            </section>
 
-            <!-- Hover details: the card on a glass inset, its figures underneath -->
+            <!-- Hover details: the card on a glass inset -->
             <div class="hover-module">
                 <!-- Card Preview Panel -->
                 <div class="preview-pane">
@@ -666,19 +671,6 @@
                         <span id="preview-ink-cost"
                             style="position:relative;z-index:1;font-weight:700;font-size:18px"></span>
                     </div>
-                </div>
-
-                <!-- Card Metrics Bar -->
-                <div id="preview-metrics-bar" class="preview-metrics opacity-0">
-                    <div class="pm-cell"><span class="pm-label">CTL</span><span class="pm-val"
-                            id="metric-ctl">0.00</span>
-                    </div>
-                    <div class="pm-cell is-bcr"><span class="pm-label">BCR</span><span class="pm-val"
-                            id="metric-bcr">0.00</span></div>
-                    <div class="pm-cell is-rds"><span class="pm-label">RDS</span><span class="pm-val"
-                            id="metric-rds">0.00</span></div>
-                    <div class="pm-cell is-lvi"><span class="pm-label">LVI</span><span class="pm-val"
-                            id="metric-lvi">0.00</span></div>
                 </div>
             </div>
 
@@ -1051,7 +1043,7 @@
     <script>
         let cardFuse = null;
 
-        const APP_VERSION = "v3.5.0"; // Centralized version string (v3: Field Unit)
+        const APP_VERSION = "v3.6.0"; // Centralized version string (v3: Field Unit)
 
         // Tweaks panel accent presets (hue values for the OKLCH accent ramp)
         // Tweaks → Accent: the approved Field Unit signals only (design.md ·
@@ -1114,7 +1106,6 @@
             cardDB: {},
             setNumberIndex: {}, // Maps duels.ink "setCode-number" ids (e.g. "10-57") -> cardDB entry
             allCards: [],
-            abilitiesConfigLoaded: false,
             mulliganSelection: [],
             craftSelection: {},
             craftPoolCounts: {},
@@ -1444,6 +1435,7 @@
                 this.autoSaves = clean.autoSaves;
                 this.history = clean.history;
                 this.sessionDecks = { deck1: clean.deck1, deck2: clean.deck2 };
+                this.markBoardKeptIfOnNode();
 
                 this.leaveSetup();
                 this.treeNavActiveId = null;
@@ -1735,6 +1727,7 @@
                     });
 
                     this.state.activeBookmarkId = newId;
+                    this.markBoardKept(newId);
                     this.saveToDevice();
 
                     // Celebrate the win in the design system, then offer the multiverse
@@ -2022,15 +2015,8 @@
 
                     cardFuse = new Fuse(this.allCards, { keys: ['name', 'simpleName'], threshold: 0.3 });
 
-                    // 2. Fetch Abilities Config (for Win Probability Library)
-                    try {
-                        await UnifiedWinProbabiliyCalculation.loadAbilitiesConfig();
-                        this.abilitiesConfigLoaded = true;
-                    } catch (err) {
-                        console.warn("Could not load win probability config:", err);
-                    }
-
                     this.initTreePan();
+                    this.bindMiniVerse();
                     this.bindBoardLongPress();
 
                     // Let the intro animation play out before revealing the app.
@@ -4182,6 +4168,8 @@
                 this.bookmarks = [];
                 this.autoSaves = [];
                 this.treeNavActiveId = null;
+                this.markBoardKept(null);
+                this._mmvTrail = [];
                 this.renderAutoSaves();
 
                 this.leaveSetup();
@@ -4330,6 +4318,7 @@
                     });
 
                     this.state.activeBookmarkId = newId;
+                    this._turnNodeId = newId;
                     this.showToast("Auto-Saved Timeline");
                 }
 
@@ -4342,6 +4331,9 @@
                 // Swap in the new turn's starting hand only now — the node above still
                 // needed the previous turn's capture to compute what left that hand.
                 this.state.turnStartHand = turnStartHandSnap;
+                // The board is the auto-saved node now (Feature 53's "already saved").
+                if (this._turnNodeId) this.markBoardKept(this._turnNodeId);
+                this._turnNodeId = null;
 
                 this.render();
             },
@@ -5671,6 +5663,7 @@
 
                 // Update active pointer to the new node we just created
                 this.state.activeBookmarkId = newId;
+                this.markBoardKept(newId);
 
                 document.getElementById('bookmark-name').value = '';
                 document.getElementById('bookmark-comment').value = '';
@@ -5709,14 +5702,19 @@
                 this.saveToDevice();
             },
 
-            restoreTimeline(id, isAuto = false) {
+            // opts.quiet: the mini multiverse's steps (no toast or flash unless the
+            // board you left was kept); opts.trail: the line ahead of you there.
+            restoreTimeline(id, isAuto = false, opts = {}) {
                 // Find it first: the safety net below can push the oldest auto-save out.
                 const list = isAuto ? this.autoSaves : this.bookmarks;
                 const bookmark = list.find(b => b.id === id);
                 if (!bookmark) return;
 
-                // Save safety net before jumping
-                this.autoSaveTimeline();
+                // Safety net: keep the board you're leaving as a "Left here" snapshot,
+                // unless it's already saved (unchanged since it was loaded from or saved
+                // as a node or snapshot that's still in the tree).
+                const keepLeft = !this.boardSource();
+                if (keepLeft) this.autoSaveTimeline();
 
                 // Restore State
                 this.state = this.decompressState(JSON.parse(bookmark.state));
@@ -5737,12 +5735,20 @@
                     }
                 }
 
+                // The board now is that node (or snapshot), until something changes it.
+                this.markBoardKept(id);
+                this._mmvTrail = opts.trail || [];
+
                 // Back to the board, with the node you're now on selected for next time.
                 this.treeNavActiveId = this.state.activeBookmarkId || null;
                 this.closeTreeModal();
                 this.render();
-                this.showToast(`Timeline Restored: ${isAuto ? 'where you left' : bookmark.name}`);
-                this.triggerTimeFlash();
+                if (!opts.quiet) {
+                    this.showToast(`Timeline Restored: ${isAuto ? 'where you left' : bookmark.name}`);
+                    this.triggerTimeFlash();
+                } else if (keepLeft) {
+                    this.showToast('The board you left is kept as “Left here” in the multiverse.');
+                }
                 this.saveToDevice();
             },
 
@@ -5823,10 +5829,172 @@
                 };
                 this.autoSaves = this.autoSaves.filter(x => x.id !== id);
                 this.bookmarks.push(node);
+                if (this._boardSrc && this._boardSrc.id === id) this._boardSrc.id = node.id;
                 this.treeNavActiveId = node.id;
                 this.renderTree();
                 this.saveToDevice();
                 this.showToast(`Kept as “${node.name}”.`);
+            },
+
+            // --- Feature 53: the Mini Multiverse (sidebar) ---
+            // The tree as lines (app/js/mini-multiverse.js). A dot or a step key
+            // loads that node through restoreTimeline, quietly. Phones don't show it.
+            _mmv: null,        // the drawn model
+            _mmvKey: '',       // what it was drawn from
+            _mmvEdited: false, // the board has changed since its node (or was never saved)
+            _mmvTrail: [],     // the line you stepped back along, ahead of you
+            _mmvHover: null,
+
+            // What the board on screen was loaded from or saved as: { id, sig }.
+            // Taken when the board is final, so a jump can tell an unsaved board.
+            _boardSrc: null,
+
+            // The board as saved, minus where it sits in the tree.
+            boardSig(state) {
+                const c = this.compressState(state, true);
+                delete c.activeBookmarkId;
+                delete c.activeTimelineColor;
+                return JSON.stringify(c);
+            },
+
+            markBoardKept(id) {
+                this._boardSrc = id && this.state && this.state.players ? { id, sig: this.boardSig(this.state) } : null;
+            },
+
+            // A session opened on a node it hasn't moved from counts as saved.
+            markBoardKeptIfOnNode() {
+                const node = this.bookmarks.find(b => b.id === this.state.activeBookmarkId);
+                let same = false;
+                try {
+                    same = !!node && this.boardSig(this.decompressState(JSON.parse(node.state))) === this.boardSig(this.state);
+                } catch (e) { same = false; }
+                this.markBoardKept(same ? node.id : null);
+                this._mmvTrail = [];
+            },
+
+            // The node or "Left here" snapshot holding the board exactly as it is,
+            // or null when the board has changed since (or its node is gone).
+            boardSource() {
+                const src = this._boardSrc;
+                if (!src || !this.state || !this.state.players) return null;
+                const held = this.bookmarks.some(b => b.id === src.id) || (this.autoSaves || []).some(a => a.id === src.id);
+                return held && this.boardSig(this.state) === src.sig ? src.id : null;
+            },
+
+            bindMiniVerse() {
+                const host = document.getElementById('mmv');
+                if (!host || !window.MiniVerse) return;
+                MiniVerse.mount(document.getElementById('mmv-view'), {
+                    onPick: (id) => this.mmvGo(id),
+                    onHover: (id) => { this._mmvHover = id; this.updateMiniVerseChrome(); }
+                });
+                // Arrow keys (and Home / End) step while the map or its keys have
+                // focus, instead of the board's own arrow keys.
+                const keys = { ArrowLeft: 'back', ArrowRight: 'fwd', ArrowUp: 'up', ArrowDown: 'down', Home: 'forkBack', End: 'forkFwd' };
+                host.addEventListener('keydown', (e) => {
+                    const kind = keys[e.key];
+                    if (!kind || e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
+                    e.preventDefault();
+                    e.stopPropagation();
+                    this.mmvStep(kind);
+                });
+                window.addEventListener('resize', () => this.renderMiniVerse());
+            },
+
+            // The items the map draws: saved nodes and the "Left here" snapshots.
+            mmvItems() {
+                const items = this.bookmarks.map(b => {
+                    const win = this.isVictoryNode(b);
+                    const t = this.treeTurnInfo(b);
+                    return {
+                        id: b.id, parentId: b.parentId || null, ts: b.timestamp, name: b.name, win,
+                        turn: t.turn, lore: t.lore, p: win ? this.victoryWinner(b) : this.bookmarkPlayerIndex(b)
+                    };
+                });
+                (this.autoSaves || []).forEach(a => {
+                    const i = this.autoSaveInfo(a);
+                    items.push({ id: a.id, parentId: i.parentId, ts: a.timestamp, auto: true, turn: i.turn, lore: i.lore, p: i.activePlayer });
+                });
+                return items;
+            },
+
+            renderMiniVerse() {
+                if (!window.MiniVerse || !document.getElementById('mmv') || !this.state || !this.state.players) return;
+                if (this.isPhoneUI()) return;
+                const src = this.boardSource();
+                const here = src || this.state.activeBookmarkId || null;
+                this._mmvEdited = !src;
+                // The well's width too: a map first drawn while the rail was hidden
+                // (or before a resize) has to be framed again.
+                const key = [document.getElementById('mmv-view').clientWidth, here, this._mmvEdited, this._mmvTrail.join(','),
+                    this.bookmarks.map(b => `${b.id}<${b.parentId || ''}:${b.name}`).join(','),
+                    (this.autoSaves || []).map(a => a.id).join(',')].join('|');
+                if (key !== this._mmvKey) {
+                    this._mmvKey = key;
+                    this._mmv = MiniVerse.build(this.mmvItems(), here, this._mmvTrail);
+                    if (this._mmvHover && !this._mmv.byId[this._mmvHover]) this._mmvHover = null;
+                    MiniVerse.show(this._mmv, { edited: this._mmvEdited });
+                }
+                this.updateMiniVerseChrome();
+            },
+
+            // "T12 · P2 · 10–11" for a node on the map.
+            mmvInfo(id) {
+                const it = this._mmv && this._mmv.byId[id];
+                if (!it) return '';
+                return [`T${it.turn == null ? '?' : it.turn}`,
+                    it.p === 0 || it.p === 1 ? `P${it.p + 1}` : null,
+                    it.lore ? `${it.lore[0]}–${it.lore[1]}` : null].filter(Boolean).join(' · ');
+            },
+
+            // The readout (the node you're on, or the dot under the pointer), the
+            // caption along the well's foot, and which step keys can go anywhere.
+            updateMiniVerseChrome() {
+                const M = this._mmv;
+                if (!M) return;
+                const hov = this._mmvHover && M.byId[this._mmvHover] ? M.byId[this._mmvHover] : null;
+                const read = document.getElementById('mmv-read');
+                const cap = document.getElementById('mmv-cap');
+                const empty = !M.items.length;
+                read.textContent = this.mmvInfo(hov ? hov.id : M.here);
+                document.getElementById('mmv-empty').hidden = !empty;
+                let text = '', cls = '';
+                if (hov) {
+                    const time = new Date(hov.ts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' });
+                    text = hov.auto ? `Left here · ${time}` : hov.name;
+                    cls = 'is-name';
+                } else if (!empty && this._mmvEdited && M.here) {
+                    text = 'Edited · kept if you jump';
+                    cls = 'is-edited';
+                } else if (!empty) {
+                    text = `${M.nodeCount} node${M.nodeCount === 1 ? '' : 's'} · ${M.lineCount} line${M.lineCount === 1 ? '' : 's'}`;
+                }
+                cap.textContent = text;
+                cap.className = `mmv-cap${cls ? ' ' + cls : ''}`;
+                document.querySelectorAll('#mmv [data-mmv]').forEach(btn => {
+                    const to = MiniVerse.move(M, btn.dataset.mmv, this._mmvEdited);
+                    btn.disabled = !to || (to === M.here && !this._mmvEdited);
+                });
+            },
+
+            mmvStep(kind) {
+                const M = this._mmv;
+                if (!M) return;
+                const id = MiniVerse.move(M, kind, this._mmvEdited);
+                if (id) this.mmvGo(id);
+            },
+
+            // Load a node from the map. Back along the line you're on keeps the
+            // rest of it ahead of you (so forward retraces it); forward along it
+            // uses it up; anywhere else starts a fresh line.
+            mmvGo(id) {
+                const M = this._mmv;
+                const it = M && M.byId[id];
+                if (!it || (id === M.here && !this._mmvEdited)) return;
+                const back = M.path.indexOf(id), fwd = M.ahead.indexOf(id);
+                const trail = back !== -1 ? M.path.slice(back + 1).concat(M.ahead)
+                    : fwd !== -1 ? M.ahead.slice(fwd + 1) : [];
+                this.restoreTimeline(id, !!it.auto, { quiet: true, trail });
             },
 
             // --- Multiverse Canvas Drawing (Tree View) ---
@@ -6313,6 +6481,8 @@
             },
 
             renderTree() {
+                // The sidebar's mini map draws the same tree.
+                this.renderMiniVerse();
                 const svgContainer = document.getElementById('tree-svg');
                 const nodesContainer = document.getElementById('tree-nodes');
 
@@ -6538,6 +6708,7 @@
             // Auto-saves are drawn in the tree as dashed nodes; redraw it if it's up.
             renderAutoSaves() {
                 if (!document.getElementById('tree-modal').classList.contains('hidden')) this.renderTree();
+                else this.renderMiniVerse();
             },
 
             selectTreeNode(id, center = false) {
@@ -9470,29 +9641,6 @@
                     badge.classList.remove('opacity-100');
                     badge.classList.add('opacity-0');
                 }
-
-                // Show Metrics
-                const metricsBar = document.getElementById('preview-metrics-bar');
-                if (this.abilitiesConfigLoaded) {
-                    try {
-                        const m = UnifiedWinProbabiliyCalculation.calculateCardMetrics(dbCard);
-                        const bcr = m.bcr || 0;
-                        const rds = m.rds || 0;
-                        const lvi = m.lvi || 0;
-                        const ctl = m.ctl !== undefined ? m.ctl : (bcr + rds + lvi);
-
-                        document.getElementById('metric-ctl').innerText = ctl.toFixed(2);
-                        document.getElementById('metric-bcr').innerText = bcr.toFixed(2);
-                        document.getElementById('metric-rds').innerText = rds.toFixed(2);
-                        document.getElementById('metric-lvi').innerText = lvi.toFixed(2);
-
-                        metricsBar.classList.remove('opacity-0');
-                        metricsBar.classList.add('opacity-100');
-                    } catch (e) {
-                        metricsBar.classList.remove('opacity-100');
-                        metricsBar.classList.add('opacity-0');
-                    }
-                }
             },
 
             showContextMenu(e, instanceId, focusFirst = false) {
@@ -10017,6 +10165,7 @@
                 });
 
                 this.state.activeBookmarkId = newId;
+                this.markBoardKept(newId);
 
                 this.closeInspectDeck();
                 this.render();
@@ -10093,90 +10242,6 @@
                 }
 
                 logEl.scrollTop = logEl.scrollHeight;
-            },
-
-            updateMetrics() {
-                if (!this.abilitiesConfigLoaded) return;
-
-                let p1Bcr = 0, p1Lvi = 0;
-                let p2Bcr = 0, p2Lvi = 0;
-
-                // Calculate BCR and LVI for both players based on field
-                this.state.players[0].field.forEach(c => {
-                    const dbCard = this.cardDB[c.cardId];
-                    if (dbCard && dbCard.fullTextSections) {
-                        try {
-                            const m = UnifiedWinProbabiliyCalculation.calculateCardMetrics(dbCard);
-                            p1Bcr += m.bcr || 0;
-                            p1Lvi += m.lvi || 0;
-                        } catch (e) { }
-                    }
-                });
-
-                this.state.players[1].field.forEach(c => {
-                    const dbCard = this.cardDB[c.cardId];
-                    if (dbCard && dbCard.fullTextSections) {
-                        try {
-                            const m = UnifiedWinProbabiliyCalculation.calculateCardMetrics(dbCard);
-                            p2Bcr += m.bcr || 0;
-                            p2Lvi += m.lvi || 0;
-                        } catch (e) { }
-                    }
-                });
-
-                document.getElementById('bcr-val-p1').innerText = p1Bcr.toFixed(1);
-                document.getElementById('bcr-val-p2').innerText = p2Bcr.toFixed(1);
-                document.getElementById('lvi-val-p1').innerText = p1Lvi.toFixed(1);
-                document.getElementById('lvi-val-p2').innerText = p2Lvi.toFixed(1);
-
-                const totalBcr = p1Bcr + p2Bcr;
-                const p1BcrPct = totalBcr > 0 ? (p1Bcr / totalBcr) * 100 : 50;
-                const p2BcrPct = 100 - p1BcrPct;
-
-                const totalLvi = p1Lvi + p2Lvi;
-                const p1LviPct = totalLvi > 0 ? (p1Lvi / totalLvi) * 100 : 50;
-                const p2LviPct = 100 - p1LviPct;
-
-                const bcrP0 = document.getElementById('bcr-p1'); // Technically maps to Player 1 (id=0)
-                const bcrP1 = document.getElementById('bcr-p2'); // Technically maps to Player 2 (id=1)
-
-                // If P2 is active (bottom), flip the order of the flex items so P2 is on the left
-                const bcrContainer = bcrP0.parentElement;
-                if (this.state.activePlayer === 1) {
-                    bcrContainer.style.flexDirection = 'row-reverse';
-                } else {
-                    bcrContainer.style.flexDirection = 'row';
-                }
-
-                bcrP0.style.width = p1BcrPct + '%';
-                bcrP1.style.width = p2BcrPct + '%';
-
-                const lviP0 = document.getElementById('lvi-p1');
-                const lviP1 = document.getElementById('lvi-p2');
-
-                const lviContainer = lviP0.parentElement;
-                if (this.state.activePlayer === 1) {
-                    lviContainer.style.flexDirection = 'row-reverse';
-                } else {
-                    lviContainer.style.flexDirection = 'row';
-                }
-
-                lviP0.style.width = p1LviPct + '%';
-                lviP1.style.width = p2LviPct + '%';
-
-                // We also need to flip the text labels underneath
-                const bcrValP1 = document.getElementById('bcr-val-p1');
-                const bcrValP2 = document.getElementById('bcr-val-p2');
-                const lviValP1 = document.getElementById('lvi-val-p1');
-                const lviValP2 = document.getElementById('lvi-val-p2');
-
-                if (this.state.activePlayer === 1) {
-                    bcrValP1.parentElement.style.flexDirection = 'row-reverse';
-                    lviValP1.parentElement.style.flexDirection = 'row-reverse';
-                } else {
-                    bcrValP1.parentElement.style.flexDirection = 'row';
-                    lviValP1.parentElement.style.flexDirection = 'row';
-                }
             },
 
             // Helper to get active user base card scale from tweaks (0.7 to 1.4)
@@ -10721,8 +10786,8 @@
                 this.applyCompetitionPalette();
 
                 this.updateLog();
-                this.updateMetrics();
                 this.updateProbPane();
+                this.renderMiniVerse();
 
                 // Pull every card image in both decks into (and keep it in) the
                 // browser cache, so the session survives losing the connection.
