@@ -1043,7 +1043,7 @@
     <script>
         let cardFuse = null;
 
-        const APP_VERSION = "v3.6.0"; // Centralized version string (v3: Field Unit)
+        const APP_VERSION = "v3.8.0"; // Centralized version string (v3: Field Unit)
 
         // Tweaks panel accent presets (hue values for the OKLCH accent ramp)
         // Tweaks → Accent: the approved Field Unit signals only (design.md ·
@@ -8768,8 +8768,9 @@
             },
 
             // --- Card drawer (touch devices) --------------------------------------
-            // `dir` (+1 / −1) is the hand step, so the next card slides in from the
-            // matching side. The drawer closes if its card leaves where it was.
+            // `dir` (+1 / −1) is the step through the hand or the cards in play, so the
+            // next card slides in from that side. The drawer closes if its card leaves
+            // where it was.
             openCardSheet(instanceId, dir) {
                 document.getElementById('context-menu').style.display = 'none';
                 this.closeInkPanel();
@@ -8809,18 +8810,25 @@
                 if (f.card.drying) state.push('drying');
                 if (f.card.stackedCards && f.card.stackedCards.length) state.push(`${f.card.stackedCards.length} under`);
                 const pNo = this.state.players.indexOf(f.player) + 1;
+                const inPlay = this.fieldOrder(f.player), n = inPlay.length;
+                const idx = inPlay.findIndex(c => c.instanceId === id);
+                const dir = this._sheetDir || 0;
+                this._sheetDir = 0;
                 sh.setAttribute('aria-label', `${db.name || 'Card'}: card actions`);
                 sh.innerHTML = '';
                 const add = (html) => { const d = document.createElement('div'); d.innerHTML = html; while (d.firstChild) sh.appendChild(d.firstChild); };
+                const nav = (step, icon, label) => `<button class="cs-icon" data-step="${step}" aria-label="${label}" ${n < 2 ? 'disabled' : ''}><i class="fa-solid ${icon}"></i></button>`;
                 add(`<span class="cs-grab"></span>
-                    <div class="cs-head"><span class="cs-state"><span class="deck-icon is-p${pNo}"></span>P${pNo} · ${esc(state.join(' · ') || 'in play')}</span>
+                    <div class="cs-head"><span class="cs-state"><span class="deck-icon is-p${pNo}"></span>P${pNo} · ${esc(state.join(' · ') || 'in play')} · ${idx + 1} / ${n}</span>
+                    ${nav(-1, 'fa-chevron-left', 'Previous card in play')}${nav(1, 'fa-chevron-right', 'Next card in play')}
                     <button class="cs-icon" data-act="close" aria-label="Close"><i class="fa-solid fa-xmark"></i></button></div>`);
                 // The full card text, as the preview shows it in text mode, so the
                 // rules are right there while picking an action.
                 const text = document.createElement('div');
-                text.className = 'cs-text';
+                text.className = 'cs-text' + (dir && !this.reducedMotion() ? (dir > 0 ? ' cs-from-right' : ' cs-from-left') : '');
                 text.appendChild(this.buildCardTextView(db));
                 sh.appendChild(text);
+                if (n > 1) this.bindSwipeStep(text, (step) => this.cycleCardSheet(step));
                 if (wp > 0) {
                     let segs = '';
                     for (let i = 1; i <= wp; i++) {
@@ -8851,6 +8859,7 @@
                     e.stopPropagation();
                     const b = e.target.closest('button');
                     if (!b || b.disabled) return;
+                    if (b.dataset.step) { this.cycleCardSheet(Number(b.dataset.step)); return; }
                     if (b.dataset.set !== undefined) { this.setDamage(id, Number(b.dataset.set)); return; }
                     const act = b.dataset.act;
                     const close = (fn) => { this.closeCardSheet(); fn(); };
@@ -9109,14 +9118,23 @@
                 el.addEventListener('pointerup', end);
                 el.addEventListener('pointercancel', end);
             },
-            // Step through the hand from the card in the drawer, wrapping at either end.
-            cycleHandSheet(step) {
+            // Step through the hand, or that side's cards in play, from the card in
+            // the drawer, wrapping at either end.
+            cycleCardSheet(step) {
                 const f = this._sheetIid ? this.findCard(this._sheetIid) : null;
-                if (!f || f.loc !== 'hand') return;
-                const hand = f.player.hand, n = hand.length;
+                if (!f || (f.loc !== 'hand' && f.loc !== 'field')) return;
+                const cards = f.loc === 'hand' ? f.player.hand : this.fieldOrder(f.player), n = cards.length;
                 if (n < 2) return;
-                const i = hand.findIndex(c => c.instanceId === this._sheetIid);
-                this.openCardSheet(hand[(i + step + n) % n].instanceId, step);
+                const i = cards.findIndex(c => c.instanceId === this._sheetIid);
+                this.openCardSheet(cards[(i + step + n) % n].instanceId, step);
+            },
+            // The cards in play in the order buildField lays them out: the cards on
+            // their own, then each location after the characters at it.
+            fieldOrder(player) {
+                const isLoc = (c) => this.cardDB[c.cardId] && this.cardDB[c.cardId].type === 'Location';
+                const order = player.field.filter(c => !c.locationId && !isLoc(c));
+                player.field.filter(isLoc).forEach(loc => order.push(...player.field.filter(c => c.locationId === loc.instanceId), loc));
+                return order;
             },
             // A card in the phone hand, in the same drawer as a card on the board:
             // whose card and where it sits in the hand, its full text, then Play /
@@ -9145,7 +9163,7 @@
                 text.className = 'cs-text' + (dir && !this.reducedMotion() ? (dir > 0 ? ' cs-from-right' : ' cs-from-left') : '');
                 text.appendChild(this.buildCardTextView(db));
                 sh.appendChild(text);
-                if (n > 1) this.bindSwipeStep(text, (step) => this.cycleHandSheet(step));
+                if (n > 1) this.bindSwipeStep(text, (step) => this.cycleCardSheet(step));
                 add(`<div class="cs-label"><span>Cost ${cost} · ${db.inkwell ? 'inkable' : 'not inkable'}</span><b class="${short ? 'is-short' : ''}">${ready} ink ready</b></div>
                     <div class="cs-acts">
                         <button class="cs-btn key ${short ? 'key-signal-hollow' : 'key-signal'} is-wide" data-act="play">${short ? `Play anyway · ${cost - ready} short` : `Play · −${cost} ink`}</button>
@@ -9161,7 +9179,7 @@
                     e.stopPropagation();
                     const b = e.target.closest('button');
                     if (!b || b.disabled) return;
-                    if (b.dataset.step) { this.cycleHandSheet(Number(b.dataset.step)); return; }
+                    if (b.dataset.step) { this.cycleCardSheet(Number(b.dataset.step)); return; }
                     const act = b.dataset.act;
                     this.closeCardSheet();
                     if (act === 'play') this.playCard(id);
@@ -11356,9 +11374,9 @@
             // Game hotkeys never act on the board hidden behind the home screen.
             if (!document.getElementById('setup-modal').classList.contains('hidden')) return;
 
-            // A hand card in the drawer: ← / → step through the hand.
-            if (App._sheetIid && App._sheetLoc === 'hand' && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) {
-                App.cycleHandSheet(e.key === 'ArrowRight' ? 1 : -1);
+            // A card in the drawer: ← / → step through the hand or the cards in play.
+            if (App._sheetIid && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) {
+                App.cycleCardSheet(e.key === 'ArrowRight' ? 1 : -1);
                 e.preventDefault();
                 return;
             }

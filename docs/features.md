@@ -700,6 +700,15 @@ Implements version 2 of `docs/DESIGN-field-unit.md` (Kiln dark mode, signal fami
 - **Signal family.** By day the signal is Ember `#E4572E`; on Kiln it is Radio `#E86B2A` with dark text on the key. Tweaks → Accent offers only the approved swaps: **Signal** (the theme's own), **Coral**, **Olive** (its lore numeral lifts to `#C6C45A` on the well) and **Trace**. Each carries the text colour that sits on it. The old Amber / Rose / Emerald / Violet / Azure accents were ink colours, so a saved pick of one falls back to Signal.
 - **CSS file.** The Field Unit tokens, themes, palettes and component styles moved from the inline `<style>` to `app/css/field-unit.css`, loaded right after it (pixel-identical move). The older inline rules stay put.
 
+## Feature 55: Step through the cards in play in the card drawer (v3.8.0)
+
+### User Story
+- As a player on a phone or tablet, I want to step from one card in play to the next in the card drawer, the way I step through my hand, so I can read the board or act on several cards without closing and reopening the drawer.
+
+### Details
+- **The board's card drawer steps like the hand's** (Feature 49), with the same code: ‹ › in the head, ← / →, or a sideways swipe on the card text; the next card slides in from that side, and it wraps at either end.
+- It steps through the cards in play **on that card's side**, in the order the board lays them out: the cards on their own, then each location after the characters at it. The head shows where you are: `P1 · exerted · 2 / 5`.
+
 ## Feature 53: Mini Multiverse in the sidebar, in place of Win Probability (v3.6.0)
 
 ### User Story
@@ -976,3 +985,4 @@ The public page (`index.html`) follows Field Unit too, as `docs/DESIGN-field-uni
 - [x] Patch: Tweaks panel cleaned up
 - [x] Feature 52: Long press the board to write the turn's note on a phone
 - [x] Feature 53: Mini Multiverse in the sidebar, in place of Win Probability
+- [x] Feature 55: Step through the cards in play in the card drawer
