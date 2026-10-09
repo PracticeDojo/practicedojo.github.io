@@ -2867,6 +2867,9 @@ button.ctx-item:focus-visible {
 
 .mull-slot {
     position: relative;
+}
+
+.mull-pick {
     display: block;
     width: 100%;
     padding: 0;
@@ -2941,15 +2944,46 @@ button.ctx-item:focus-visible {
     opacity: 1;
 }
 
-.mull-slot:focus-visible {
+.mull-pick:focus-visible {
     outline: none;
 }
 
-.mull-slot:focus-visible .mull-card {
+.mull-pick:focus-visible .mull-card {
     box-shadow: 0 0 0 2px var(--fu-light);
 }
 
-/* With a mouse, resting on a card brings it up large enough to read. */
+/* The magnifier: a 22px glass control in the card's top-right corner that
+   shows the card large. Mouse only; touch holds the card instead. */
+.mull-look {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    z-index: 2;
+    display: none;
+    place-items: center;
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    border: 1px solid var(--fu-glass-line);
+    border-radius: 6px;
+    background: oklch(0.14 0.005 80 / 0.78);
+    color: var(--fu-glass-2);
+    font-size: 10.5px;
+    cursor: zoom-in;
+    transition: transform 160ms var(--ease), color var(--dur) var(--ease), border-color var(--dur) var(--ease);
+}
+
+.mull-look:hover,
+.mull-look:focus-visible {
+    outline: none;
+    border-color: var(--fu-glass-2);
+    color: var(--fu-light);
+}
+
+.mull-slot.is-marked .mull-look {
+    transform: translateY(16px);
+}
+
 @media (hover: hover) and (pointer: fine) {
     .mull-on-hover {
         display: inline;
@@ -2959,20 +2993,8 @@ button.ctx-item:focus-visible {
         display: none;
     }
 
-    .mull-slot:hover {
-        z-index: 4;
-    }
-
-    .mull-slot:hover .mull-card {
-        transform: scale(1.9);
-        opacity: 1;
-        filter: none;
-        box-shadow: 0 16px 32px -12px oklch(0 0 0 / 0.6), 0 0 0 1px var(--fu-glass-line);
-        transition-delay: 220ms;
-    }
-
-    .mull-slot.is-marked:hover .mull-card {
-        transform: translateY(16px) scale(1.9);
+    .mull-look {
+        display: grid;
     }
 }
 
@@ -3169,18 +3191,20 @@ button.ctx-item:focus-visible {
     padding: 0 22px;
 }
 
-/* Press and hold (touch): the card large over the dialog while the finger is
-   down. It never takes the touch, so lifting the finger ends it. */
+/* A card shown large over the whole window. Touch: while the finger holds it;
+   it never takes the touch, so lifting the finger ends it. Mouse (pinned,
+   from the magnifier): until a click anywhere or Esc. The card is as large as
+   the window allows, from the container's width and height. */
 .mull-peek {
-    position: absolute;
+    position: fixed;
     inset: 0;
     z-index: 10;
+    container-type: size;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     padding: 18px;
-    border-radius: inherit;
     background: oklch(0.12 0.005 80 / 0.92);
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
@@ -3192,12 +3216,32 @@ button.ctx-item:focus-visible {
     display: none;
 }
 
+.mull-peek.is-pinned {
+    pointer-events: auto;
+    cursor: zoom-out;
+}
+
+.mull-peek-x {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    border: 1px solid var(--fu-glass-line);
+    border-radius: 999px;
+    background: var(--fu-glass-raised);
+    color: var(--fu-light);
+    font-size: 13px;
+}
+
 .mull-peek .mull-lbl {
     color: var(--fu-glass-mute);
 }
 
 .mull-peek-card {
-    width: min(78%, 360px);
+    width: min(78cqw, 400px, calc((100cqh - 170px) * 5 / 7));
     margin: 14px 0;
     aspect-ratio: 5 / 7;
     border-radius: 12px;
@@ -3441,6 +3485,7 @@ button.ctx-item:focus-visible {
 @media (prefers-reduced-motion: reduce) {
     .mull-card,
     .mull-tag,
+    .mull-look,
     .mull-slot::after {
         transition: none;
     }

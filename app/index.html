@@ -398,16 +398,17 @@
                 <div class="mull-lbl mull-hint mull-short">Tap to mark · hold to look closer</div>
             </div>
             <div class="mull-foot">
-                <div class="mull-lbl mull-hint mull-long"><span class="mull-on-hover">Click a card to mark it · hover to
-                        look closer</span><span class="mull-on-touch">Tap a card to mark it · hold it to look
+                <div class="mull-lbl mull-hint mull-long"><span class="mull-on-hover">Click a card to mark it · <i
+                            class="fa-solid fa-magnifying-glass" aria-hidden="true"></i> to look closer</span><span class="mull-on-touch">Tap a card to mark it · hold it to look
                         closer</span></div>
                 <button class="btn btn-ghost" onclick="App.openCraftHand()"
                     title="Pick your seven from the whole deck instead"><i class="fa-solid fa-wand-magic-sparkles"></i>
                     <span class="mull-long">Craft hand</span><span class="mull-short">Craft</span></button>
                 <button class="btn btn-primary" id="mulligan-confirm" onclick="App.confirmMulligan()">Keep hand</button>
             </div>
-            <!-- Press and hold a card (touch): it shows large while the finger is down. -->
-            <div class="mull-peek" id="mulligan-peek" hidden aria-hidden="true"></div>
+            <!-- A card shown large: from its magnifier (mouse) until a click or Esc, or while
+                 a finger holds it (touch). -->
+            <div class="mull-peek" id="mulligan-peek" hidden aria-hidden="true" onclick="App.hideMulliganPeek()"></div>
         </div>
     </div>
 
@@ -7218,21 +7219,33 @@
 
                 displayHand.forEach((c, i) => {
                     const dbCard = this.cardDB[c.cardId];
-                    const slot = document.createElement('button');
-                    slot.type = 'button';
+                    const name = (dbCard && (dbCard.fullName || dbCard.name)) || 'Unknown card';
+                    const slot = document.createElement('div');
                     slot.className = 'mull-slot';
                     slot._iid = c.instanceId;
-                    slot.setAttribute('aria-label', (dbCard && (dbCard.fullName || dbCard.name)) || 'Unknown card');
+                    // The card marks it; the magnifier in its corner (mouse) shows it large.
+                    const pick = document.createElement('button');
+                    pick.type = 'button';
+                    pick.className = 'mull-pick';
+                    pick.setAttribute('aria-label', name);
                     const face = document.createElement('div');
                     face.className = 'mull-card';
                     this.paintCardFace(face, dbCard, { lazy: false });
-                    slot.appendChild(face);
-                    slot.insertAdjacentHTML('beforeend', '<span class="mull-tag" aria-hidden="true">↓ Bottom</span>');
-                    slot.onclick = () => {
+                    pick.appendChild(face);
+                    pick.onclick = () => {
                         if (this._mullPeeked) { this._mullPeeked = false; return; } // that press was a look, not a tap
                         this.toggleMulliganMark(c.instanceId);
                     };
-                    this._bindMulliganPeek(slot, c, i, displayHand.length);
+                    this._bindMulliganPeek(pick, c, i, displayHand.length);
+                    const look = document.createElement('button');
+                    look.type = 'button';
+                    look.className = 'mull-look';
+                    look.title = 'Look closer';
+                    look.setAttribute('aria-label', `Look at ${name}`);
+                    look.innerHTML = '<i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>';
+                    look.onclick = () => this.showMulliganPeek(c, i, displayHand.length, true);
+                    slot.append(pick, look);
+                    slot.insertAdjacentHTML('beforeend', '<span class="mull-tag" aria-hidden="true">↓ Bottom</span>');
                     container.appendChild(slot);
                 });
 
@@ -7254,7 +7267,7 @@
                 document.querySelectorAll('#mulligan-hand .mull-slot').forEach(slot => {
                     const marked = this.mulliganSelection.includes(slot._iid);
                     slot.classList.toggle('is-marked', marked);
-                    slot.setAttribute('aria-pressed', marked ? 'true' : 'false');
+                    slot.querySelector('.mull-pick').setAttribute('aria-pressed', marked ? 'true' : 'false');
                 });
 
                 // One button settles the hand: keep it as dealt, or send back the marked cards.
@@ -7317,14 +7330,14 @@
 
             // Press and hold a card (touch / pen) to look at it: it shows large while
             // the finger is down and goes when it lifts. The press doesn't mark it.
-            _bindMulliganPeek(slot, c, index, count) {
+            _bindMulliganPeek(pick, c, index, count) {
                 const HOLD_MS = 320, SLOP = 10;
                 let hold = null;
                 const end = () => {
                     if (hold) { clearTimeout(hold.t); hold = null; }
                     this.hideMulliganPeek();
                 };
-                slot.addEventListener('pointerdown', (e) => {
+                pick.addEventListener('pointerdown', (e) => {
                     this._mullPeeked = false;
                     if (e.pointerType !== 'touch' && e.pointerType !== 'pen') return;
                     hold = { id: e.pointerId, x: e.clientX, y: e.clientY, shown: false };
@@ -7336,23 +7349,26 @@
                     }, HOLD_MS);
                 });
                 // Moving before the card shows means a scroll, not a look.
-                slot.addEventListener('pointermove', (e) => {
+                pick.addEventListener('pointermove', (e) => {
                     if (hold && !hold.shown && e.pointerId === hold.id && Math.hypot(e.clientX - hold.x, e.clientY - hold.y) > SLOP) {
                         clearTimeout(hold.t);
                         hold = null;
                     }
                 });
-                ['pointerup', 'pointercancel', 'pointerleave'].forEach(t => slot.addEventListener(t, end));
+                ['pointerup', 'pointercancel', 'pointerleave'].forEach(t => pick.addEventListener(t, end));
                 // The browser's own long-press menu would fight the look.
-                slot.addEventListener('contextmenu', (e) => { if (e.pointerType !== 'mouse') e.preventDefault(); });
+                pick.addEventListener('contextmenu', (e) => { if (e.pointerType !== 'mouse') e.preventDefault(); });
             },
 
-            showMulliganPeek(c, index, count) {
+            // `pinned`: opened from the magnifier (mouse). It stays until a click or Esc;
+            // the touch look goes when the finger lifts.
+            showMulliganPeek(c, index, count, pinned = false) {
                 const box = document.getElementById('mulligan-peek');
                 const db = this.cardDB[c.cardId];
                 const esc = (v) => this._esc(v);
                 const marked = this.mulliganSelection.includes(c.instanceId);
-                box.innerHTML = `<div class="mull-lbl">Opening hand · ${index + 1} / ${count}${marked ? ' · to the bottom' : ''}</div>`;
+                box.innerHTML = `<div class="mull-lbl">Opening hand · ${index + 1} / ${count}${marked ? ' · to the bottom' : ''}</div>`
+                    + (pinned ? '<span class="mull-peek-x" aria-hidden="true"><i class="fa-solid fa-xmark"></i></span>' : '');
                 const face = document.createElement('div');
                 face.className = 'mull-peek-card';
                 this.paintCardFace(face, db, { lazy: false });
@@ -7361,7 +7377,9 @@
                     ? `<div class="mull-peek-name">${esc(db.name)}${db.version ? ` <span>· ${esc(db.version)}</span>` : ''}</div>
                        <div class="mull-peek-meta">Cost ${esc(db.cost)} · ${db.inkwell ? 'inkable' : 'not inkable'}${db.type ? ` · ${esc(db.type)}` : ''}</div>`
                     : `<div class="mull-peek-name">Unknown card</div>`);
-                box.insertAdjacentHTML('beforeend', '<div class="mull-lbl mull-peek-hint">Let go to close</div>');
+                box.insertAdjacentHTML('beforeend', `<div class="mull-lbl mull-peek-hint">${pinned ? 'Click anywhere or press Esc to close' : 'Let go to close'}</div>`);
+                box.classList.toggle('is-pinned', pinned);
+                box.setAttribute('aria-hidden', pinned ? 'false' : 'true');
                 box.hidden = false;
             },
 
@@ -7369,7 +7387,14 @@
                 const box = document.getElementById('mulligan-peek');
                 if (!box || box.hidden) return;
                 box.hidden = true;
+                box.classList.remove('is-pinned');
+                box.setAttribute('aria-hidden', 'true');
                 box.innerHTML = '';
+            },
+
+            isMulliganPeekOpen() {
+                const box = document.getElementById('mulligan-peek');
+                return !!box && !box.hidden;
             },
 
             // Keep (nothing marked) or mulligan the marked cards. Either way the decision
@@ -11561,6 +11586,8 @@
                     if (back && !back.classList.contains('hidden')) App.closeSetup();
                     return;
                 }
+                // A mulligan card shown large closes; the mulligan itself stays (it gates the game).
+                if (App.isMulliganPeekOpen()) { App.hideMulliganPeek(); return; }
                 // Dismissible overlay modals (mulligan/craft stay open — they gate game state)
                 const escapable = [
                     ['inspect-deck-modal', () => App.closeInspectDeck()],
