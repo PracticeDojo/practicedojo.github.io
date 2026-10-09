@@ -562,7 +562,7 @@
                 <button onclick="App.toggleTreePanelSide()" class="close tree-dock-toggle" id="tree-dock-toggle"
                     title="Move the panel to the left" aria-label="Move the panel to the left"><i
                         class="fa-solid fa-table-columns"></i></button>
-                <button onclick="App.resetTreeZoom()" class="close" title="Reset Zoom" aria-label="Reset zoom"><i
+                <button onclick="App.resetTreeZoom()" class="close tree-zoom-reset" title="Reset Zoom" aria-label="Reset zoom"><i
                         class="fa-solid fa-compress"></i></button>
                 <button onclick="App.closeTreeModal()" class="close" aria-label="Close multiverse view"><i
                         class="fa-solid fa-times"></i></button>
@@ -581,6 +581,25 @@
                 </div>
                 <!-- The plot's key (plot view only) -->
                 <div id="tree-legend" class="tree-legend" hidden></div>
+                <!-- Phones (Feature 56): thumb keys at the well's foot. The arrows move
+                     the cursor (the panel shows it), ◎ goes back to the node you're on,
+                     ⤢ shows the whole game. Hold an arrow to keep stepping. -->
+                <div id="tree-keys" class="tree-keys" role="group" aria-label="Move through the multiverse" hidden>
+                    <button class="tree-key tk-overview" data-tk="overview" aria-pressed="false"
+                        title="See the whole game" aria-label="See the whole game"><i
+                            class="fa-solid fa-expand"></i></button>
+                    <button class="tree-key tk-here" data-tk="here" title="Back to where you are"
+                        aria-label="Back to where you are"><svg viewBox="-8 -8 16 16" aria-hidden="true"><circle
+                                r="5.5" /></svg></button>
+                    <button class="tree-key tk-up" data-tk="up" title="Line above" aria-label="Line above"><i
+                            class="fa-solid fa-caret-up"></i></button>
+                    <button class="tree-key tk-back" data-tk="back" title="Turn before" aria-label="Turn before"><i
+                            class="fa-solid fa-caret-left"></i></button>
+                    <button class="tree-key tk-down" data-tk="down" title="Line below" aria-label="Line below"><i
+                            class="fa-solid fa-caret-down"></i></button>
+                    <button class="tree-key tk-fwd" data-tk="fwd" title="Turn after" aria-label="Turn after"><i
+                            class="fa-solid fa-caret-right"></i></button>
+                </div>
             </div>
 
             <!-- The panel: save the turn you're in, then the selected node. It docks
@@ -1062,7 +1081,7 @@
     <script>
         let cardFuse = null;
 
-        const APP_VERSION = "v3.8.1"; // Centralized version string (v3: Field Unit)
+        const APP_VERSION = "v3.9.0"; // Centralized version string (v3: Field Unit)
 
         // Tweaks panel accent presets (hue values for the OKLCH accent ramp)
         // Tweaks → Accent: the approved Field Unit signals only (design.md ·
@@ -2135,7 +2154,7 @@
                 };
 
                 viewport.addEventListener('mousedown', (e) => {
-                    if (e.target.closest('.tree-node, .tp-dot')) return; // Do not pan if clicking a node
+                    if (e.target.closest('.tree-node, .tp-dot, .tree-keys')) return; // Do not pan if clicking a node
                     this.treePan.isDragging = true;
                     this.treePan.startX = e.clientX - this.treePan.translateX;
                     this.treePan.startY = e.clientY - this.treePan.translateY;
@@ -2190,7 +2209,7 @@
 
                 viewport.addEventListener('touchstart', (e) => {
                     if (e.touches.length === 1) {
-                        if (e.target.closest('.tree-node, .tp-dot')) return; // tapping a node shouldn't pan
+                        if (e.target.closest('.tree-node, .tp-dot, .tree-keys')) return; // tapping a node shouldn't pan
                         this.treePan.isDragging = true;
                         this.treePan.startX = e.touches[0].clientX - this.treePan.translateX;
                         this.treePan.startY = e.touches[0].clientY - this.treePan.translateY;
@@ -2232,6 +2251,41 @@
                 };
                 viewport.addEventListener('touchend', endTreeTouch);
                 viewport.addEventListener('touchcancel', endTreeTouch);
+
+                // Phones' thumb keys (Feature 56). A tap steps once; holding an arrow
+                // keeps stepping, like a keyboard's, and the tap that ends a hold is
+                // swallowed.
+                const keys = document.getElementById('tree-keys');
+                let hold = null, held = false;
+                const letGo = () => {
+                    if (!hold) return;
+                    clearTimeout(hold.wait);
+                    clearInterval(hold.beat);
+                    hold = null;
+                };
+                keys.addEventListener('pointerdown', (e) => {
+                    const b = e.target.closest('[data-tk]');
+                    letGo();
+                    held = false;
+                    if (!b || b.disabled || !['back', 'fwd', 'up', 'down'].includes(b.dataset.tk)) return;
+                    const h = hold = { wait: setTimeout(() => {
+                        h.beat = setInterval(() => {
+                            held = true;
+                            this.treeKey(b.dataset.tk);
+                            if (b.disabled) letGo();
+                        }, 110);
+                    }, 400) };
+                });
+                ['pointerup', 'pointercancel', 'pointerleave'].forEach(ev => keys.addEventListener(ev, letGo));
+                keys.addEventListener('contextmenu', (e) => e.preventDefault());
+                keys.addEventListener('click', (e) => {
+                    const b = e.target.closest('[data-tk]');
+                    if (!b) return;
+                    const afterHold = held;
+                    held = false;
+                    if (afterHold && e.detail !== 0) return; // Enter / Space always step
+                    this.treeKey(b.dataset.tk);
+                });
             },
 
             resetTreeZoom() {
@@ -6063,11 +6117,17 @@
                     ? this.bookmarks.reduce((prev, current) => (prev.timestamp > current.timestamp) ? prev : current)
                     : null;
                 this.treeNavActiveId = (live && this.bookmarks.some(b => b.id === live)) ? live : (latest ? latest.id : null);
+                this._treeTrail = {};
+                this._treeOverview = null;
 
                 // Render tree first to calculate node positions
                 this.renderTree();
 
-                if (this.treeView === 'plot' && this.bookmarks.length) {
+                // Phones open the plot up close, on the cursor, so a dot is big enough
+                // to read and tap; the ⤢ key shows the whole game (Feature 56).
+                const phonePlot = this.treeView === 'plot' && this.isPhoneUI();
+                if (phonePlot) this.treePan.zoom = 1;
+                if (this.treeView === 'plot' && this.bookmarks.length && !phonePlot) {
                     this.fitTree();
                 } else if (this.treeNavActiveId && this.nodePositions[this.treeNavActiveId]) {
                     this.centerTreeOnNode(this.treeNavActiveId);
@@ -6273,9 +6333,119 @@
                 const canvas = document.getElementById('tree-canvas');
                 if (!pos || !viewport || !canvas) return;
                 const dims = this.treeNodeDims || { w: 230, h: 250 };
+                const ins = this.treeInsets() || { top: 0, bottom: 0 };
+                const band = viewport.clientHeight - ins.top - ins.bottom;
                 this.treePan.translateX = (viewport.clientWidth / 2) - ((pos.x + dims.w / 2) * this.treePan.zoom);
-                this.treePan.translateY = (viewport.clientHeight / 2) - ((pos.y + dims.h / 2) * this.treePan.zoom);
+                this.treePan.translateY = ins.top + (band / 2) - ((pos.y + dims.h / 2) * this.treePan.zoom);
                 canvas.style.transform = `translate(${this.treePan.translateX}px, ${this.treePan.translateY}px) scale(${this.treePan.zoom})`;
+            },
+
+            // Phones: the plot's key along the well's top and the thumb keys at its
+            // foot cover its edges, so centring and fitting use the band between
+            // them. Null elsewhere.
+            treeInsets() {
+                if (!this.isPhoneUI()) return null;
+                const viewport = document.getElementById('tree-viewport');
+                const legend = document.getElementById('tree-legend');
+                const keys = document.getElementById('tree-keys');
+                return {
+                    top: legend && !legend.hidden ? legend.offsetHeight : 0,
+                    bottom: keys && !keys.hidden ? Math.max(0, viewport.clientHeight - keys.offsetTop) : 0
+                };
+            },
+
+            // --- Feature 56: the phone's thumb keys ---
+            // Where a key moves the cursor. ◀ the turn before. ▶ the turn after: back
+            // the way you came (◀ remembers it), else along the branch you're on,
+            // else the oldest. ▲ ▼ the nearest node above / below on another line
+            // (not one the cursor's own line runs through: a line zigzags across
+            // rows here); rows weigh more than columns, so it lands near the same
+            // point in the game. ◎ the node you're on.
+            treeStepTarget(kind) {
+                const pos = this.nodePositions || {};
+                const cur = this.treeNavActiveId;
+                if (kind === 'here') {
+                    const id = this.state && this.state.activeBookmarkId;
+                    return id && pos[id] && id !== cur ? id : null;
+                }
+                if (!cur || !pos[cur]) return null;
+                if (kind === 'back') return (this.treeParent || {})[cur] || null;
+                if (kind === 'fwd') {
+                    const kids = (this.treeKids || {})[cur] || [];
+                    const came = (this._treeTrail || {})[cur];
+                    if (came && kids.includes(came)) return came;
+                    const live = this.treeLivePath && kids.find(k => this.treeLivePath.has(k));
+                    return live || kids[0] || null;
+                }
+                if (kind !== 'up' && kind !== 'down') return null;
+                const own = new Set([cur]);
+                for (let p = (this.treeParent || {})[cur]; p && !own.has(p); p = this.treeParent[p]) own.add(p);
+                const down = ((this.treeKids || {})[cur] || []).slice();
+                while (down.length) {
+                    const k = down.pop();
+                    if (own.has(k)) continue;
+                    own.add(k);
+                    down.push(...(this.treeKids[k] || []));
+                }
+                const g = this.treeGrid || { x: 1, y: 1 };
+                const c0 = pos[cur].x / g.x, r0 = pos[cur].y / g.y;
+                let best = null, bestScore = Infinity;
+                Object.keys(pos).forEach(id => {
+                    if (own.has(id)) return;
+                    const dr = pos[id].y / g.y - r0;
+                    if (kind === 'up' ? dr >= -0.01 : dr <= 0.01) return;
+                    const score = Math.abs(pos[id].x / g.x - c0) + 3 * Math.abs(dr);
+                    if (score < bestScore) { bestScore = score; best = id; }
+                });
+                return best;
+            },
+
+            treeKey(kind) {
+                if (kind === 'overview') { this.toggleTreeOverview(); return; }
+                const id = this.treeStepTarget(kind);
+                if (!id) return;
+                if (kind === 'back') (this._treeTrail || (this._treeTrail = {}))[id] = this.treeNavActiveId;
+                // Stepping comes back in close from the whole-game view.
+                if (this._treeOverview) {
+                    this.treePan.zoom = this._treeOverview.zoom;
+                    this._treeOverview = null;
+                }
+                this.selectTreeNode(id, true);
+            },
+
+            // ⤢ fits the whole game in the well; again (or any step) goes back to
+            // the zoom you had, on the cursor.
+            toggleTreeOverview() {
+                if (this._treeOverview) {
+                    this.treePan.zoom = this._treeOverview.zoom;
+                    this._treeOverview = null;
+                    this.centerTreeOnNode(this.treeNavActiveId);
+                } else {
+                    this._treeOverview = { zoom: this.treePan.zoom };
+                    this.fitTree();
+                }
+                this.updateTreeKeys();
+            },
+
+            // Which keys can go anywhere from the cursor. The keys are phones-only
+            // (CSS); with nothing drawn they hide.
+            updateTreeKeys() {
+                const host = document.getElementById('tree-keys');
+                if (!host) return;
+                host.hidden = !this.nodePositions || !Object.keys(this.nodePositions).length;
+                host.querySelectorAll('[data-tk]').forEach(b => {
+                    if (b.dataset.tk === 'overview') {
+                        // The card layout is far too wide to fit a phone; the plot is the overview.
+                        b.hidden = this.treeView !== 'plot';
+                        const on = !!this._treeOverview;
+                        b.setAttribute('aria-pressed', on ? 'true' : 'false');
+                        const label = on ? 'Back in close, on the cursor' : 'See the whole game';
+                        b.title = label;
+                        b.setAttribute('aria-label', label);
+                        return;
+                    }
+                    b.disabled = !this.treeStepTarget(b.dataset.tk);
+                });
             },
 
             // A won branch's final node: the explicit flag on new saves; the
@@ -6344,8 +6514,9 @@
                 t.treeView = this.treeView;
                 this.saveTweaks(t);
                 this.updateTreeViewToggle();
+                this._treeOverview = null;
                 this.renderTree();
-                if (this.treeView === 'plot') {
+                if (this.treeView === 'plot' && !this.isPhoneUI()) {
                     this.fitTree();
                 } else {
                     this.treePan.zoom = 1;
@@ -6362,18 +6533,20 @@
             },
 
             // Scale the whole plot into the viewport, leaving room for the ruler above,
-            // the win labels to the right and the key below.
+            // the win labels to the right and the key below (on phones, the key
+            // above and the thumb keys below).
             fitTree() {
                 const viewport = document.getElementById('tree-viewport');
                 const ps = Object.values(this.nodePositions || {});
                 if (!viewport || !ps.length) return;
                 const minX = Math.min(...ps.map(p => p.x)) - 30, maxX = Math.max(...ps.map(p => p.x)) + 170;
                 const minY = Math.min(...ps.map(p => p.y)) - 70, maxY = Math.max(...ps.map(p => p.y)) + 30;
-                const vw = viewport.clientWidth, vh = viewport.clientHeight - 36;
+                const ins = this.treeInsets() || { top: 0, bottom: 36 };
+                const vw = viewport.clientWidth, vh = viewport.clientHeight - ins.top - ins.bottom;
                 const z = Math.max(0.1, Math.min(2, (vw - 32) / (maxX - minX), (vh - 32) / (maxY - minY)));
                 this.treePan.zoom = z;
                 this.treePan.translateX = (vw - (maxX - minX) * z) / 2 - minX * z;
-                this.treePan.translateY = (vh - (maxY - minY) * z) / 2 - minY * z;
+                this.treePan.translateY = ins.top + (vh - (maxY - minY) * z) / 2 - minY * z;
                 document.getElementById('tree-canvas').style.transform = `translate(${this.treePan.translateX}px, ${this.treePan.translateY}px) scale(${z})`;
             },
 
@@ -6424,6 +6597,7 @@
                 });
                 this.nodePositions = pos;
                 this.treeNodeDims = { w: 0, h: 0 };
+                this.treeGrid = { x: CELL, y: CELL };
                 document.getElementById('tree-svg').innerHTML = '';
 
                 const info = {};
@@ -6564,6 +6738,7 @@
                     nodesContainer.innerHTML = `<div class="tree-empty">The Multiverse is empty. Save the turn you're in to begin a timeline.</div>`;
                     this.nodePositions = {};
                     this.renderTreePanel();
+                    this.updateTreeKeys();
                     return;
                 }
 
@@ -6621,10 +6796,14 @@
                     if (livePath.has(cur.id)) break;
                     livePath.add(cur.id);
                 }
+                // The phone's keys step along it, and measure ▲ ▼ in grid steps.
+                this.treeLivePath = livePath;
+                this.treeGrid = { x: X_SPACING, y: Y_SPACING / 2 };
 
                 // The plot draws the same tree, one dot per node, on its own grid.
                 if (this.treeView === 'plot') {
                     this.renderTreePlot(items, childrenMap, nodePositions, livePath, X_SPACING, Y_SPACING);
+                    this.updateTreeKeys();
                     return;
                 }
 
@@ -6755,6 +6934,7 @@
 
                 this.placeTreeCursor();
                 this.renderTreePanel();
+                this.updateTreeKeys();
             },
 
             // Auto-saves are drawn in the tree as dashed nodes; redraw it if it's up.
@@ -6773,6 +6953,7 @@
                 if (dot) dot.parentNode.appendChild(dot);
                 this.placeTreeCursor();
                 this.renderTreePanel();
+                this.updateTreeKeys();
                 if (center) this.centerTreeOnNode(id);
             },
 
@@ -11351,7 +11532,8 @@
                 // Multiverse: the recap inside every node (else only in the panel), and
                 // which side the panel docks on. Both are set from the Multiverse view.
                 this.treeRecapInNodes = t.treeRecapInNodes === true;
-                this.treeView = t.treeView === 'plot' ? 'plot' : 'cards';
+                // Phones start on the plot until a view is picked (Feature 56).
+                this.treeView = t.treeView === 'plot' || (!t.treeView && this.isPhoneUI()) ? 'plot' : 'cards';
                 this.updateTreeViewToggle();
                 this.applyTreePanelSide(t.treePanelSide === 'left' ? 'left' : 'right');
 

@@ -317,6 +317,7 @@ The header's **Plot** tool (a saved preference; open, it inverts to glass) draws
 - A win is the winner's dot drawn square, a 2px paper stop, the lore as a 15px display numeral and `P1 WINS · 20–13` in mono.
 - An auto-save is a dashed ring.
 - A key in the well's corner (`label/sm`, glass mute) names all of it. Reset zoom fits the whole plot.
+- **Phones** are the plot by default and open it at zoom 1 on the cursor. The key runs along the well's top as a glass strip over a `#242424` rule. Thumb keys sit at the foot, clustered right: ▲ over ◀ ▼ ▶ as on a keyboard (they move the cursor), and beside them ⤢ (the whole game) over ◎ (back to where you are). Each is 44px, 10px radius, the neutral function key as it sits on dark in both themes (`#312D28`, paper glyph, a 3px darker foot that drops when pressed). ◎ carries the "you are here" ring in signal. A key that can't go anywhere is hollow on the well's glass; ⤢ held down inverts to paper.
 
 ### Multiverse edge
 
