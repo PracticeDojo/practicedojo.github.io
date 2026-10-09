@@ -3934,7 +3934,7 @@ input[type="range"]::-moz-range-thumb {
     color: var(--danger);
 }
 
-/* Stepping through the hand: the next card's text slides in from that side. */
+/* Stepping through the hand or the cards in play: the next card's text slides in from that side. */
 .cs-text.cs-from-right {
     animation: csFromRight .22s cubic-bezier(.2, 1, .4, 1);
 }
