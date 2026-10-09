@@ -709,6 +709,27 @@ Implements version 2 of `docs/DESIGN-field-unit.md` (Kiln dark mode, signal fami
 - **The board's card drawer steps like the hand's** (Feature 49), with the same code: ‹ › in the head, ← / →, or a sideways swipe on the card text; the next card slides in from that side, and it wraps at either end.
 - It steps through the cards in play **on that card's side**, in the order the board lays them out: the cards on their own, then each location after the characters at it. The head shows where you are: `P1 · exerted · 2 / 5`.
 
+## Feature 54: Mulligan mode — each player's first turn opens on their mulligan (v3.7.0)
+
+### User Story
+- As a player, I want each player's first turn to start with the mulligan, so I never have to remember a button, and the second player chooses from the seven they were dealt, not from eight after an early draw.
+
+### Details
+- **Before:** the first player had to press **Mulligan** on turn 1. When they passed, the second player drew for the turn straight away, and only then could press Mulligan, with that extra card in hand.
+- **Mulligan mode.** A new game opens on Player 1's mulligan. When Player 1 ends their first turn, Player 2's turn opens on theirs, after the ready step and **before the draw step**. The dialog stays up until the hand is settled; Esc, Space and the other hotkeys do nothing behind it, and no turn can end.
+- **Keep or send back.** Tap cards to mark them, as before. One button settles it: **Keep hand** with nothing marked, **Mulligan N cards** otherwise. **Craft hand** is the dialog's other way out (Feature 23); its **Back** returns to the mulligan.
+- **The rule.** A mulligan puts the marked cards on the bottom of the deck, draws as many from the top, then shuffles the deck, so a card you send back can't be redrawn (the official Lorcana order; Feature 25's odds model it). **Keeping your hand doesn't touch the deck: no shuffle.**
+- **After a mulligan** the dialog stays open on the new hand: `Turn 1 · after the mulligan`, the cards it drew carry the board's signal **NEW** pip, the readout shows the new hand (*7 in hand · 2 new*, with *2 to the bottom, 2 drawn, deck shuffled*), and the odds are the shuffled deck's (the redraw column goes). Cards can't be marked again. **Start turn** (Player 1) or **Draw and start turn** (Player 2) goes on. Keeping or crafting goes straight to the turn. Undo after the turn has started comes back to the choice.
+- **The look.** A paper dialog. The head reads `Opening hand · Turn 1 · on the draw` (or *on the play*), the player's deck icon and name, *Then you draw +1* (or *No draw turn 1*) and the deck size. The hand sits on glass in one row of seven, cheapest first; tablets and phones put it in 4 + 3. A marked card sinks and dims behind a dashed outline with a `↓ Bottom` tag, instead of the old red ring and X.
+- **The readout** under the hand, live as you mark: the **curve** of the cards you'd keep (cost 1–6 and 7+, the cards going back as dashed bars on top), **inkable** (a pip per kept card, filled when it can be inked, and `4 / 5`), and the plan (*5 kept + 2 redraw*, *Keeping all 7*; phones show the redraw count).
+- **Draw odds** (Feature 25) sit beside the well on desktop, as tall as it and scrolling, titled *Draw odds · if you send 2*. Phones show the top three rows under the well, and **All** opens the rest.
+- **Looking at a card.** With a mouse, each card has a **magnifier** in its top-right corner (a 22px glass control): click it and the card grows in place to about twice its size, big enough to read, over its neighbours. Any click or Esc puts it back, and that click does nothing else. Clicking the card itself marks it. On a touch screen there's no magnifier: **press and hold** a card and it shows large over the screen with its name, cost, inkable and type while your finger is down, and goes when you let go. The hold doesn't mark the card; a tap still does.
+- **Phones.** The dialog fills the framed screen: small cards in 4 + 3, the readout, the odds, then a fixed foot with **Craft** and the confirm key.
+- **Then the draw.** Once Player 2 has chosen, they draw for the turn (logged as the turn's draw), their Turn Starting Hand is captured, and the auto-save of Player 1's first turn is written. So the *Turn 1 - Player 2 Active* node holds the board Player 2 plays from, and stepping through the Multiverse never lands in the dialog.
+- **Undo** after the decision comes back to the dialog. A board waiting on its mulligan keeps that through a reload, a save or a share link, and the dialog comes back when you return to it from the home screen.
+- **The sidebar's Mulligan and Craft buttons are gone**; the dialog replaces them. Boards saved before this version don't open the dialog.
+- State: `mulliganPending` (the active player is choosing, or looking at their new hand), `drawPending` (their draw step and the auto-save wait for it) and `mulliganDrawn` (the cards a mulligan drew, while the new hand is on show), saved only while set.
+
 ## Feature 53: Mini Multiverse in the sidebar, in place of Win Probability (v3.6.0)
 
 ### User Story
@@ -985,4 +1006,5 @@ The public page (`index.html`) follows Field Unit too, as `docs/DESIGN-field-uni
 - [x] Patch: Tweaks panel cleaned up
 - [x] Feature 52: Long press the board to write the turn's note on a phone
 - [x] Feature 53: Mini Multiverse in the sidebar, in place of Win Probability
+- [x] Feature 54: Mulligan mode — each player's first turn opens on their mulligan
 - [x] Feature 55: Step through the cards in play in the card drawer

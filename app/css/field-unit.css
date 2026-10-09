@@ -2593,10 +2593,6 @@ body.challenge-mode .board-half {
     color: var(--text-dim);
 }
 
-.mull-odds {
-    border-left-color: var(--fu-row-rule);
-}
-
 /* ----- Context menu: a paper module ----- */
 #context-menu {
     background: var(--surface);
@@ -2696,8 +2692,7 @@ button.ctx-item:focus-visible {
 }
 
 /* Cards in a modal sit on glass. */
-.modal-body .card-grid,
-#mulligan-hand {
+.modal-body .card-grid {
     padding: 12px;
     background: var(--fu-glass);
     border-radius: var(--radius-inset);
@@ -2765,6 +2760,769 @@ button.ctx-item:focus-visible {
     background: var(--surface-2) !important;
     border-color: var(--border) !important;
     color: var(--text) !important;
+}
+
+/* ----- Mulligan mode (Feature 54): a paper dialog with the hand on glass,
+       a readout of the hand under it (curve, inkable, redraw) and the draw
+       odds beside it. Marked cards sink behind a dashed outline. Desktop:
+       hover a card to look closer. Phones: 4 + 3 small cards, the odds
+       folded to three rows, press and hold a card to look at it. ----- */
+.mull-modal {
+    padding: 24px;
+}
+
+.mull-dlg {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    width: min(1320px, 100%);
+    max-height: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-3);
+    color: var(--text);
+}
+
+.mull-lbl {
+    font: 500 10px/1.3 var(--font-mono);
+    letter-spacing: var(--label-track);
+    text-transform: uppercase;
+    color: var(--text-dim);
+}
+
+.mull-short,
+.mull-on-hover {
+    display: none;
+}
+
+.mull-head {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 16px 20px 14px;
+    border-bottom: 1px solid var(--fu-row-rule);
+}
+
+.mull-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 5px;
+    font: 560 20px/1.1 var(--font-display);
+    letter-spacing: -0.03em;
+}
+
+.mull-title .deck-icon {
+    height: 22px;
+    vertical-align: 0;
+}
+
+.mull-title em {
+    margin-left: -4px;
+    font-style: normal;
+    font-weight: 450;
+    color: var(--text-dim);
+}
+
+.mull-head-figs {
+    display: flex;
+    align-items: flex-end;
+    gap: 18px;
+    text-align: right;
+}
+
+.mull-fig {
+    margin-top: 4px;
+    font: 400 20px/1 var(--font-display);
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+}
+
+.mull-body {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 292px;
+    gap: 16px;
+    min-height: 0;
+    padding: 16px 20px;
+}
+
+.mull-well {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    padding: 22px 20px 0;
+    background: var(--fu-glass);
+    border-radius: var(--radius-well);
+}
+
+.mull-hand {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 44px 12px;
+    align-items: start;
+    padding-bottom: 46px;
+}
+
+.mull-slot {
+    position: relative;
+}
+
+.mull-pick {
+    display: block;
+    width: 100%;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: inherit;
+    font: inherit;
+    text-align: inherit;
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.mull-card {
+    aspect-ratio: 5 / 7;
+    border-radius: var(--radius-sm);
+    background: var(--fu-glass-raised);
+    box-shadow: 0 0 0 1px var(--fu-glass-line);
+    transform-origin: 50% 8%;
+    transition: transform 160ms var(--ease), opacity 160ms var(--ease), filter 160ms var(--ease), box-shadow 160ms var(--ease);
+}
+
+/* Marked: the card sinks and dims behind a dashed outline, tagged for the bottom. */
+.mull-slot::after {
+    content: '';
+    position: absolute;
+    top: 16px;
+    left: 0;
+    right: 0;
+    aspect-ratio: 5 / 7;
+    border-radius: var(--radius-sm);
+    outline: 1.5px dashed var(--fu-glass-2);
+    outline-offset: 3px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 160ms var(--ease);
+}
+
+.mull-slot.is-marked::after {
+    opacity: 1;
+}
+
+.mull-slot.is-marked .mull-card {
+    transform: translateY(16px);
+    opacity: 0.38;
+    filter: saturate(0.3);
+    box-shadow: none;
+}
+
+.mull-tag {
+    position: absolute;
+    left: 50%;
+    bottom: -42px;
+    transform: translateX(-50%);
+    padding: 4px 8px 4px 7px;
+    white-space: nowrap;
+    font: 500 9.5px/1 var(--font-mono);
+    letter-spacing: var(--label-track);
+    text-transform: uppercase;
+    color: var(--fu-light);
+    background: var(--fu-glass-raised);
+    border: 1px solid var(--fu-glass-line);
+    border-radius: 999px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 160ms var(--ease);
+}
+
+.mull-slot.is-marked .mull-tag {
+    opacity: 1;
+}
+
+.mull-pick:focus-visible {
+    outline: none;
+}
+
+.mull-pick:focus-visible .mull-card {
+    box-shadow: 0 0 0 2px var(--fu-light);
+}
+
+/* The magnifier: a 22px glass control in the card's top-right corner that
+   brings the card up large enough to read. Mouse only; touch holds the card. */
+.mull-look {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    z-index: 2;
+    display: none;
+    place-items: center;
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    border: 1px solid var(--fu-glass-line);
+    border-radius: 6px;
+    background: oklch(0.14 0.005 80 / 0.78);
+    color: var(--fu-glass-2);
+    font-size: 10.5px;
+    cursor: zoom-in;
+    transition: transform 160ms var(--ease), color var(--dur) var(--ease), border-color var(--dur) var(--ease);
+}
+
+.mull-look:hover,
+.mull-look:focus-visible {
+    outline: none;
+    border-color: var(--fu-glass-2);
+    color: var(--fu-light);
+}
+
+.mull-slot.is-marked .mull-look {
+    transform: translateY(16px);
+}
+
+/* Looked at (the magnifier): the card grows in place, big enough to read,
+   over its neighbours and the readout. Any click or Esc puts it back. */
+.mull-slot.is-looking {
+    z-index: 4;
+}
+
+.mull-slot.is-looking .mull-card {
+    transform: scale(1.9);
+    opacity: 1;
+    filter: none;
+    box-shadow: 0 16px 32px -12px oklch(0 0 0 / 0.6), 0 0 0 1px var(--fu-glass-line);
+}
+
+.mull-slot.is-marked.is-looking .mull-card {
+    transform: translateY(16px) scale(1.9);
+}
+
+.mull-slot.is-looking::after,
+.mull-slot.is-looking .mull-tag,
+.mull-slot.is-looking .mull-look {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.mull-dlg.has-look,
+.mull-dlg.has-look * {
+    cursor: zoom-out;
+}
+
+/* After a mulligan: the cards it drew carry the board's "new" pip. */
+.mull-slot.is-new .mull-card::after {
+    content: 'NEW';
+    position: absolute;
+    top: 6px;
+    left: 50%;
+    z-index: 1;
+    transform: translateX(-50%);
+    padding: 3px 5px;
+    border-radius: 999px;
+    background: var(--accent);
+    color: var(--accent-ink);
+    font: 700 8px/1 var(--font-mono);
+    letter-spacing: 0.08em;
+}
+
+.mull-dlg.is-after .mull-pick {
+    cursor: default;
+}
+
+.mull-dlg.is-after .mull-craft,
+.mull-dlg.is-after #mull-rd-head,
+.mull-dlg.is-after .mull-rd {
+    display: none;
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .mull-on-hover {
+        display: inline;
+    }
+
+    .mull-on-touch {
+        display: none;
+    }
+
+    .mull-look {
+        display: grid;
+    }
+}
+
+/* The readout: the kept hand's curve (going-back cards dashed on top), its
+   inkable cards, and what the mulligan does. */
+.mull-read {
+    display: grid;
+    grid-template-columns: auto auto minmax(0, 1fr);
+    align-items: end;
+    gap: 28px;
+    margin: 0 -20px;
+    padding: 14px 20px 16px;
+    border-top: 1px solid var(--fu-glass-rule);
+    color: var(--fu-glass-2);
+}
+
+.mull-read .mull-lbl {
+    margin-bottom: 8px;
+    white-space: nowrap;
+    color: var(--fu-glass-mute);
+}
+
+.mull-curve {
+    display: flex;
+    align-items: flex-end;
+    gap: 6px;
+}
+
+.mull-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    width: 16px;
+}
+
+.mull-col b {
+    font: 400 10px/1 var(--font-mono);
+    color: var(--fu-light);
+}
+
+.mull-col b.is-zero {
+    color: var(--fu-edge);
+}
+
+.mull-col em {
+    font: 400 9px/1 var(--font-mono);
+    font-style: normal;
+    color: var(--fu-glass-mute);
+}
+
+.mull-bars {
+    display: flex;
+    flex-direction: column-reverse;
+    align-items: center;
+    gap: 1px;
+    width: 100%;
+    height: 30px;
+    box-shadow: inset 0 -1px 0 var(--fu-glass-line);
+}
+
+.mull-bars i {
+    display: block;
+    width: 10px;
+    border-radius: 2px;
+    background: var(--fu-glass-2);
+}
+
+.mull-bars i.is-ghost,
+.mull-pips i.is-ghost {
+    background: none;
+    outline: 1px dashed var(--fu-glass-mute);
+    outline-offset: -1px;
+}
+
+.mull-pips {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    min-height: 42px;
+}
+
+.mull-pips i {
+    display: block;
+    width: 11px;
+    height: 15px;
+    border-radius: 2.5px;
+    background: var(--fu-glass-2);
+}
+
+.mull-pips i.is-off {
+    background: none;
+    box-shadow: inset 0 0 0 1.25px var(--fu-glass-mute);
+}
+
+.mull-pips span {
+    margin-left: 8px;
+    white-space: nowrap;
+    font: 400 20px/1 var(--font-display);
+    color: var(--fu-light);
+    font-variant-numeric: tabular-nums;
+}
+
+.mull-pips small {
+    margin-left: 3px;
+    font: 400 11px var(--font-mono);
+    color: var(--fu-glass-mute);
+}
+
+.mull-plan {
+    justify-self: end;
+    text-align: right;
+}
+
+.mull-plan-fig {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    min-height: 42px;
+    white-space: nowrap;
+    font: 400 20px/1 var(--font-display);
+    letter-spacing: -0.02em;
+    color: var(--fu-light);
+}
+
+.mull-plan-fig b {
+    font-weight: 450;
+}
+
+.mull-plan-fig i {
+    font-size: 15px;
+    font-style: normal;
+    color: var(--fu-glass-mute);
+}
+
+/* The odds column: a hairline off the well, not a second paper module. It
+   takes the well's height and scrolls. */
+.mull-odds-col {
+    position: relative;
+    min-height: 0;
+}
+
+.mull-odds {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    padding-left: 4px;
+    border-left: 1px solid var(--fu-row-rule);
+}
+
+.mull-odds-head {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    padding: 2px 12px 8px;
+}
+
+.mull-odds-head .mull-lbl {
+    flex: 1;
+}
+
+.mull-odds-n {
+    font: 400 11px var(--font-mono);
+    color: var(--text);
+    font-variant-numeric: tabular-nums;
+}
+
+.mull-odds-more {
+    display: none;
+}
+
+.mull-odds .prob-list {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+}
+
+.mull-foot {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 20px;
+    border-top: 1px solid var(--fu-row-rule);
+}
+
+.mull-foot .mull-hint {
+    flex: 1;
+    min-width: 0;
+}
+
+.mull-foot .btn-primary {
+    min-height: 38px;
+    padding: 0 22px;
+}
+
+/* Press and hold (touch): the card large over the whole window while the
+   finger is down. It never takes the touch, so lifting the finger ends it.
+   The card is as large as the window allows, from its width and height. */
+.mull-peek {
+    position: fixed;
+    inset: 0;
+    z-index: 10;
+    container-type: size;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 18px;
+    background: oklch(0.12 0.005 80 / 0.92);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    color: var(--fu-light);
+    pointer-events: none;
+}
+
+.mull-peek[hidden] {
+    display: none;
+}
+
+.mull-peek .mull-lbl {
+    color: var(--fu-glass-mute);
+}
+
+.mull-peek-card {
+    width: min(78cqw, 400px, calc((100cqh - 170px) * 5 / 7));
+    margin: 14px 0;
+    aspect-ratio: 5 / 7;
+    border-radius: 12px;
+    box-shadow: 0 30px 60px -24px #000, 0 0 0 1px var(--fu-glass-line);
+}
+
+.mull-peek-name {
+    font: 560 19px/1.15 var(--font-display);
+    letter-spacing: -0.02em;
+    text-align: center;
+}
+
+.mull-peek-name span {
+    font-weight: 450;
+    color: var(--fu-glass-mute);
+}
+
+.mull-peek-meta {
+    margin-top: 6px;
+    font: 500 10px/1.3 var(--font-mono);
+    letter-spacing: var(--label-track);
+    text-transform: uppercase;
+    color: var(--fu-glass-2);
+}
+
+.mull-peek .mull-peek-hint {
+    margin-top: 18px;
+}
+
+/* Tablets: the hand in two rows. */
+@media (max-width: 1100px) {
+    .mull-hand {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .mull-body {
+        grid-template-columns: minmax(0, 1fr) 260px;
+        overflow-y: auto;
+    }
+}
+
+/* Phones: the dialog fills the framed screen and scrolls under a fixed foot. */
+@media (max-width: 760px) {
+    #mulligan-modal {
+        align-items: stretch;
+        padding: 8px 8px calc(8px + env(safe-area-inset-bottom));
+    }
+
+    .mull-dlg {
+        height: 100%;
+        overflow: hidden;
+        border-radius: var(--radius-well);
+    }
+
+    .mull-long {
+        display: none;
+    }
+
+    .mull-short {
+        display: revert;
+    }
+
+    .mull-head {
+        padding: 12px 14px 10px;
+    }
+
+    .mull-title {
+        gap: 8px;
+        font-size: 17px;
+    }
+
+    .mull-title .deck-icon {
+        height: 19px;
+    }
+
+    .mull-fig {
+        font-size: 17px;
+    }
+
+    .mull-body {
+        display: flex;
+        flex-direction: column;
+        flex: 1 1 auto;
+        gap: 10px;
+        padding: 10px;
+        overflow-y: auto;
+    }
+
+    .mull-well {
+        flex: none;
+        padding: 14px 12px 0;
+    }
+
+    .mull-hand {
+        gap: 30px 8px;
+        padding-bottom: 30px;
+    }
+
+    .mull-slot::after {
+        top: 8px;
+        outline-offset: 2px;
+    }
+
+    .mull-slot.is-marked .mull-card {
+        transform: translateY(8px);
+    }
+
+    .mull-tag {
+        bottom: -28px;
+        padding: 3px 6px;
+        font-size: 8.5px;
+    }
+
+    .mull-read {
+        gap: 18px;
+        margin: 0 -12px;
+        padding: 12px 14px;
+    }
+
+    .mull-read .mull-lbl {
+        margin-bottom: 6px;
+    }
+
+    .mull-curve {
+        gap: 4px;
+    }
+
+    .mull-col {
+        width: 12px;
+    }
+
+    .mull-col b {
+        font-size: 9px;
+    }
+
+    .mull-col em {
+        font-size: 8px;
+    }
+
+    .mull-bars {
+        height: 24px;
+    }
+
+    .mull-bars i {
+        width: 8px;
+    }
+
+    .mull-pips {
+        gap: 3px;
+        min-height: 36px;
+    }
+
+    .mull-pips i {
+        width: 7px;
+        height: 12px;
+    }
+
+    .mull-pips span {
+        margin-left: 6px;
+        font-size: 16px;
+    }
+
+    .mull-pips small {
+        font-size: 10px;
+    }
+
+    .mull-plan-fig {
+        min-height: 36px;
+        font-size: 16px;
+    }
+
+    .mull-odds-col {
+        position: static;
+        flex: none;
+    }
+
+    .mull-odds {
+        position: static;
+        padding: 0;
+        border-left: 0;
+    }
+
+    .mull-odds-head {
+        align-items: center;
+        padding: 2px 4px 6px 12px;
+    }
+
+    .mull-odds-more {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        height: 28px;
+        padding: 0 10px;
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        background: var(--surface);
+        color: var(--text);
+        font: 500 10px var(--font-mono);
+        letter-spacing: var(--label-track);
+        text-transform: uppercase;
+    }
+
+    .mull-odds-more i {
+        font-size: 9px;
+        color: var(--text-dim);
+        transition: transform var(--dur) var(--ease);
+    }
+
+    .mull-odds:not(.is-collapsed) .mull-odds-more i {
+        transform: rotate(180deg);
+    }
+
+    .mull-odds.is-collapsed .prob-row:nth-child(n + 4) {
+        display: none;
+    }
+
+    .mull-odds .prob-list {
+        overflow: visible;
+    }
+
+    .mull-body > .mull-hint {
+        padding: 2px 0 4px;
+        text-align: center;
+    }
+
+    .mull-foot {
+        gap: 8px;
+        padding: 10px 12px;
+    }
+
+    .mull-foot .btn {
+        min-height: 42px;
+    }
+
+    .mull-foot .btn-primary {
+        flex: 1;
+        justify-content: center;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .mull-card,
+    .mull-tag,
+    .mull-look,
+    .mull-slot::after {
+        transition: none;
+    }
 }
 
 /* ----- Toasts: a glass pill, paper text ----- */
