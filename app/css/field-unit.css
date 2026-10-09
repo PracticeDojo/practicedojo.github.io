@@ -5617,3 +5617,13 @@ body.palette-competition .tree-node.tn-p2::before {
 :root[data-theme="night"] .sheet-scrim {
     background: oklch(0 0 0 / 0.6);
 }
+
+/* Multiline prompt in a styled dialog (the phone turn note). */
+.dlg-body textarea.input {
+    display: block;
+    min-height: 120px;
+    max-height: 50vh;
+    resize: vertical;
+    font: inherit;
+    line-height: 1.45;
+}

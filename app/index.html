@@ -1051,7 +1051,7 @@
     <script>
         let cardFuse = null;
 
-        const APP_VERSION = "v3.4.12"; // Centralized version string (v3: Field Unit)
+        const APP_VERSION = "v3.5.0"; // Centralized version string (v3: Field Unit)
 
         // Tweaks panel accent presets (hue values for the OKLCH accent ramp)
         // Tweaks → Accent: the approved Field Unit signals only (design.md ·
@@ -1478,6 +1478,60 @@
                 this.saveState();
                 this.state.turnComments[key] = text;
                 this.render();
+            },
+
+            // The notes panel is hidden on phones, so a long press on the empty
+            // battlefield opens this instead: the active player's note for this turn.
+            async editTurnNote() {
+                if (document.querySelector('.dlg-backdrop')) return;
+                const { turn, activePlayer } = this.state;
+                let current = this.state.turnComments[`${turn}-${activePlayer}`];
+                if (current === undefined) current = this.state.turnComments[turn];
+                const text = await this.dialog({
+                    title: `Turn ${turn} notes`,
+                    icon: 'fa-book-open',
+                    message: `${this.state.players[activePlayer].name}'s note for this turn.`,
+                    prompt: true, multiline: true, allowEmpty: true,
+                    value: current || '',
+                    placeholder: 'Add notes for this turn…',
+                    confirmText: 'Save'
+                });
+                if (text === null) return;
+                this.updateTurnComment(turn, activePlayer, text);
+            },
+
+            // Long press (touch / pen) on bare board opens the turn note. Anything
+            // with its own touch behaviour (cards, piles, buttons, the hand) is left alone.
+            bindBoardLongPress() {
+                const play = document.getElementById('play');
+                if (!play || play._longPressBound) return;
+                play._longPressBound = true;
+                const HOLD_MS = 550, SLOP = 10;
+                const BUSY = 'button, a, input, textarea, [draggable="true"], .card-wrap, .card, .pile, .ink-cluster, '
+                    + '.hand-wrap, .hand, .lore-chip, .lore-badge, .notes-panel, .mobile-quick-actions, [onclick], [role="button"]';
+                let hold = null;
+                const cancel = () => { if (hold) { clearTimeout(hold.t); hold = null; } };
+                play.addEventListener('pointerdown', (e) => {
+                    cancel();
+                    if (e.pointerType !== 'touch' && e.pointerType !== 'pen') return;
+                    if (!this.state || !this.state.players || !this.state.players.length) return;
+                    if (e.target.closest(BUSY)) return;
+                    hold = { id: e.pointerId, x: e.clientX, y: e.clientY };
+                    hold.t = setTimeout(() => {
+                        hold = null;
+                        if (navigator.vibrate) { try { navigator.vibrate(12); } catch (_) { /* not allowed */ } }
+                        this.editTurnNote();
+                    }, HOLD_MS);
+                });
+                play.addEventListener('pointermove', (e) => {
+                    if (hold && e.pointerId === hold.id && Math.hypot(e.clientX - hold.x, e.clientY - hold.y) > SLOP) cancel();
+                });
+                ['pointerup', 'pointercancel', 'pointerleave'].forEach(t => play.addEventListener(t, cancel));
+                // The browser's own long-press menu (and text selection) would fight the dialog.
+                play.addEventListener('contextmenu', (e) => {
+                    if (e.pointerType === 'mouse' || e.target.closest(BUSY)) return;
+                    if (this.isTouchUI()) e.preventDefault();
+                });
             },
 
             changeLore(playerId, amount) {
@@ -1977,6 +2031,7 @@
                     }
 
                     this.initTreePan();
+                    this.bindBoardLongPress();
 
                     // Let the intro animation play out before revealing the app.
                     const elapsed = performance.now() - loadStart;
@@ -6680,7 +6735,9 @@
 
             // --- Styled dialogs (replace native confirm/prompt/alert) ---
             // dialog({title, message, stat, icon, confirmText, cancelText, danger,
-            //         celebrate, prompt, placeholder}) -> Promise<boolean|string|null>
+            //         celebrate, prompt, placeholder, multiline, allowEmpty}) -> Promise<boolean|string|null>
+            // multiline: the prompt is a textarea (Enter adds a line, Ctrl/Cmd+Enter confirms).
+            // allowEmpty: OK accepts an empty value (clearing a note); Cancel still gives null.
             dialog(opts = {}) {
                 return new Promise((resolve) => {
                     const backdrop = document.createElement('div');
@@ -6716,9 +6773,9 @@
                     }
                     let inputEl = null;
                     if (opts.prompt) {
-                        inputEl = document.createElement('input');
-                        inputEl.type = 'text';
-                        inputEl.className = 'input';
+                        inputEl = document.createElement(opts.multiline ? 'textarea' : 'input');
+                        if (opts.multiline) { inputEl.rows = 6; inputEl.classList.add('custom-scrollbar'); } else inputEl.type = 'text';
+                        inputEl.classList.add('input');
                         inputEl.placeholder = opts.placeholder || '';
                         if (opts.value) inputEl.value = opts.value;
                         if (opts.maxLength) inputEl.maxLength = opts.maxLength;
@@ -6768,7 +6825,7 @@
                         ok.addEventListener('click', () => {
                             if (opts.prompt) {
                                 const v = inputEl.value.trim();
-                                if (!v) { inputEl.focus(); return; }
+                                if (!v && !opts.allowEmpty) { inputEl.focus(); return; }
                                 done(v);
                             } else {
                                 done(true);
@@ -6784,6 +6841,7 @@
                             e.preventDefault();
                             done(opts.choices ? null : opts.prompt ? null : (opts.cancelText !== undefined ? false : true));
                         } else if (e.key === 'Enter') {
+                            if (opts.multiline && !(e.ctrlKey || e.metaKey)) { e.stopPropagation(); return; }
                             e.stopPropagation();
                             e.preventDefault();
                             ok.click();
@@ -6805,7 +6863,10 @@
                     backdrop.appendChild(card);
                     document.body.appendChild(backdrop);
                     (inputEl || ok).focus();
-                    if (inputEl && opts.value) inputEl.select();
+                    if (inputEl && opts.value) {
+                        if (opts.multiline) inputEl.setSelectionRange(inputEl.value.length, inputEl.value.length);
+                        else inputEl.select();
+                    }
                 });
             },
 
