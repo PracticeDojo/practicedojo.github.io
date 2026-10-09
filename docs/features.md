@@ -700,6 +700,18 @@ Implements version 2 of `docs/DESIGN-field-unit.md` (Kiln dark mode, signal fami
 - **Signal family.** By day the signal is Ember `#E4572E`; on Kiln it is Radio `#E86B2A` with dark text on the key. Tweaks → Accent offers only the approved swaps: **Signal** (the theme's own), **Coral**, **Olive** (its lore numeral lifts to `#C6C45A` on the well) and **Trace**. Each carries the text colour that sits on it. The old Amber / Rose / Emerald / Violet / Azure accents were ink colours, so a saved pick of one falls back to Signal.
 - **CSS file.** The Field Unit tokens, themes, palettes and component styles moved from the inline `<style>` to `app/css/field-unit.css`, loaded right after it (pixel-identical move). The older inline rules stay put.
 
+## Feature 52: Long press the board to write the turn's note on a phone (v3.5.0)
+
+### User Story
+- As a player on a phone, I want to add a note to the turn I'm in without waiting for the turn to end, so I can write down what happened while I play.
+
+### Details
+- The notes panel is hidden on phones, so a turn's note could only be changed afterwards, from its Multiverse node.
+- **Long press** (about half a second) on the empty battlefield opens a **Turn N notes** dialog with the active player's note for this turn. **Save** stores it (saving empty clears it), **Cancel** or Esc leaves it as it was. Enter adds a line; Ctrl/Cmd+Enter saves.
+- Cards, piles, the hand, buttons and the lore controls keep their own touch behaviour and don't start a long press. Moving the finger or scrolling cancels it. It's the same note the desktop panel edits, so the next auto-save and the Multiverse pick it up.
+- **Look.** The dialog is a paper module that follows day / night. The writing area is the Field Unit Note: glass fill, paper text, a `TURN 16 NOTE · PLAYER 2` label row with a pen, and a hairline that lights while you type.
+- The styled dialog gained a `multiline` option (a glass note around a textarea), `noteLabel` and `allowEmpty`.
+
 ## Patch: Tweaks panel cleaned up (v3.4.12)
 
 ### Details
@@ -948,3 +960,4 @@ The public page (`index.html`) follows Field Unit too, as `docs/DESIGN-field-uni
 - [x] Landing page: up to date with v3.4
 - [x] Patch: Share links on practicedojo.win
 - [x] Patch: Tweaks panel cleaned up
+- [x] Feature 52: Long press the board to write the turn's note on a phone
