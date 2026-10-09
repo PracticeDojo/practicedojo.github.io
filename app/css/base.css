@@ -1707,62 +1707,6 @@ body {
     background: color-mix(in oklch, currentColor 10%, var(--surface-2));
 }
 
-.metric {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-}
-
-.metric-label {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    font-size: 10.5px;
-    font-weight: 600;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    color: var(--text-dim);
-}
-
-.metric-label .metric-icon {
-    color: var(--bcr);
-}
-
-.metric.is-lvi .metric-label .metric-icon {
-    color: var(--lvi);
-}
-
-.bar {
-    height: 5px;
-    background: var(--surface);
-    border-radius: 999px;
-    overflow: hidden;
-    display: flex;
-}
-
-.bar-p1 {
-    background: var(--p1);
-}
-
-.bar-p2 {
-    background: var(--p2);
-}
-
-.metric-values {
-    display: flex;
-    justify-content: space-between;
-    font-family: var(--font-mono);
-    font-size: 11px;
-}
-
-.metric-values .val-p1 {
-    color: var(--p1-hi);
-}
-
-.metric-values .val-p2 {
-    color: var(--p2-hi);
-}
-
 .preview-pane {
     flex: 0 0 auto;
     height: 192px;
@@ -1968,46 +1912,6 @@ body {
 
 .ctv-stat .lsym {
     opacity: 0.72;
-}
-
-.preview-metrics {
-    display: flex;
-    justify-content: space-between;
-    padding: 8px 14px;
-    background: oklch(0.105 0.008 60);
-    border-bottom: 1px solid var(--border-soft);
-    transition: opacity .15s ease;
-}
-
-.preview-metrics .pm-cell {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    font-family: var(--font-mono);
-    font-size: 11px;
-}
-
-.preview-metrics .pm-label {
-    font-size: 9px;
-    color: var(--text-faint);
-    letter-spacing: 0.08em;
-}
-
-.preview-metrics .pm-val {
-    font-weight: 600;
-    color: var(--text);
-}
-
-.preview-metrics .pm-cell.is-bcr .pm-val {
-    color: var(--bcr);
-}
-
-.preview-metrics .pm-cell.is-lvi .pm-val {
-    color: var(--lvi);
-}
-
-.preview-metrics .pm-cell.is-rds .pm-val {
-    color: var(--rds);
 }
 
 .log-pane {

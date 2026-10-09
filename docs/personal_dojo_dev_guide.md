@@ -15,7 +15,6 @@ The application lives in `app/index.html`, which contains the HTML, CSS, and Jav
 * **Device library:** `app/js/library.js` (`DojoLibrary`, IndexedDB) for decks and sessions; default decks and demos are static files in `app/defaults/` (§20). No backend is used at startup.  
 * **Sanitising:** DOMPurify (cdnjs, pinned) cleans `marked` output for node comments.  
 * **Search:** Fuse.js (via CDN) for fuzzy card search.  
-* **External Logic:** Custom UnifiedWinProbabiliyCalculation library (via CDN) for BCR, LVI, RDS, and CTL metrics.  
 * **Card Data:** LorcanaJSON (allCards.json fetched on init). Excludes 'Enchanted', 'Promo', and 'Special' rarities.
 
 ## **3\. Global State Management**
@@ -76,7 +75,7 @@ Any function that alters App.state MUST follow this exact sequence:
 * **Architecture:** We use **O(1) Full State Snapshots**, NOT Event Sourcing/Delta Logs.  
 * **Why:** Lorcana involves complex shuffling and sandbox drag-and-drop actions that are too messy to serialize into discrete delta events.  
 * **Implementation:** Bookmarks store a JSON.stringify of the entire App.state. Restoring a bookmark completely replaces App.state with JSON.parse of the bookmark.  
-* **Safety Net:** The restoreTimeline() function automatically calls autoSaveTimeline() *before* jumping, storing the user's abandoned timeline in an autoSaves array (capped at 5\) to prevent lost data.
+* **Safety Net:** The restoreTimeline() function calls autoSaveTimeline() *before* jumping, storing the user's abandoned timeline in an autoSaves array (capped at 5\) to prevent lost data. Since v3.6.0 it does so only when the board isn't already saved (`boardSource()`, §25.3).
 
 ### **4.3 Drag and Drop API**
 
@@ -94,11 +93,9 @@ The app uses the native HTML5 Drag and Drop API.
 * **Sticky Previews:** Hovering a card triggers showPreview(). There is NO mouseleave event; the preview locks in place so the user can read it.  
 * **Context Menus:** Right-clicking (or left-clicking) a card opens a dynamic Context Menu populated based on the card's current loc (hand, field, inkwell).
 
-### **4.5 Win Probability Metrics Engine**
+### **4.5 Win Probability Metrics Engine (removed)**
 
-* **Calculation:** Occurs during render() inside updateMetrics().  
-* **Field Metrics (Tug-of-War):** Iterates through state.players\[X\].field, queries UnifiedWinProbabiliyCalculation, sums the BCR/LVI values, and adjusts the widths of the HTML progress bars.  
-* **Hand Potential:** Removed in v3.4.1. It summed CTL, BCR, RDS and LVI over each hand and showed them in the lore boxes; the lore boxes now show only the lore count.
+* **Removed in v3.6.0** (Feature 53), with the third-party UnifiedWinProbabiliyCalculation script that computed it. The sidebar's BCR / LVI meters became the Mini Multiverse (§25); the CTL · BCR · RDS · LVI figures under the hovered card went too. The `--bcr` / `--lvi` / `--rds` / `--ctl` colour tokens stay: other parts of the UI use them.
 
 ## **5\. Guidelines for Future AI Development**
 
@@ -1359,6 +1356,8 @@ in place of the hand-drawn trees it used to have.
       *Selected*, the deck icon and name, the note as glass, the lore race, and *Turn recap* with a
       **Show in nodes** switch that is the same compact/full toggle. It adds the line so far and the
       branches from that node as chips, to walk the tree.
+    * **How it works, step 2:** the app's Mini Multiverse (§25) under the board mock, drawn 1:1 on the hero
+      map's lanes and stepped back three turns, with the line ahead dashed and the six step keys.
     * **How it works, step 3:** the last branch point on the line you're on, its parent and its children,
       fitted into a small canvas.
 * **Styles** live in `css/landing.css`: the Field Unit marketing chassis (`docs/DESIGN-field-unit.md`), with
@@ -1377,3 +1376,44 @@ in place of the hand-drawn trees it used to have.
   writing anything. The tree is still a port, so a change to the app's node or panel is ported by hand; sharing
   one renderer would mean splitting `renderTree()` out of `app/index.html`, which waits for a feature that has
   to change it anyway.
+
+## **25\. Feature 53: Mini Multiverse (v3.6.0)**
+
+The sidebar module that replaced Win Probability: the tree as lines, a click or a step key loads a node.
+Desktop only (hidden at ≤760px; phones will get their own multiverse navigation).
+
+### 25.1 Two halves
+* **`app/js/mini-multiverse.js` (`MiniVerse`)** knows nothing about game state. `build(items, hereId, trail)`
+  lays out plain items (`{ id, parentId, ts, auto, turn, p, lore, win, name }`) and returns the model;
+  `move(model, kind, edited)` returns the id a step key goes to; `mount(el, hooks)` wires the glass well
+  (drag, wheel, click, hover); `show(model, opts)` draws and frames it.
+* **App** (`app/index.html`, "Feature 53" block): `mmvItems()` turns bookmarks and auto-saves into items,
+  `renderMiniVerse()` rebuilds only when a key changes (the well's width, the node you're on, the edited
+  flag, the trail, every node's id / parent / name, the auto-save ids), `mmvGo(id)` loads through
+  `restoreTimeline(id, isAuto, { quiet: true, trail })`. It runs from `render()`, `renderTree()` and
+  `renderAutoSaves()`.
+
+### 25.2 Layout and moves
+* Depth across (15px a column), lanes down (17px a row), as the landing hero map. A chain carries on into
+  the child with the longest line under it (oldest on a tie), so the game as played stays straight and
+  the layout never depends on where you are: the map holds still while you jump. Other children, and
+  "Left here" ghosts, take the nearest row that's free over their span.
+* The line you're on is root → here, then ahead: the trail (ids you stepped back along, kept while each is a
+  child of the one before) and on into the longest-line child. Stepping back to an ancestor sets the trail to
+  the rest of the old line, so ▶ retraces it; stepping onto the trail uses it up; anything else clears it.
+* `move`: back = parent; fwd = the first id ahead; forkBack / forkFwd = the nearest node with two or more
+  real children behind / ahead (else the line's start / end); up / down = the node minimising
+  |Δcol| + 3·|Δrow| on a lower / higher row. On an edited board, back reloads `here` itself.
+
+### 25.3 "Already saved"
+* `markBoardKept(id)` stores `{ id, sig }`, where `sig = boardSig(state)` is the compressed state minus
+  `activeBookmarkId` and `activeTimelineColor`. It is called once the board is final: after a restore (after
+  the turn-comment seeding), a manual save, the end-of-turn auto-save (after the turn's buffers and starting
+  hand are reset), a victory node, a deck-order node; `keepAutoSave` re-points it. `_applySessionData`
+  calls `markBoardKeptIfOnNode()`, which compares the live board with the active node's stored state.
+* `boardSource()` returns that id while the node or snapshot still exists and the sig still matches.
+  `restoreTimeline` takes the "Left here" snapshot only when it returns null, for the full Multiverse too.
+  The sig is computed eagerly, never lazily: the module is hidden on phones, and a lazy sig taken at jump
+  time would call any board saved.
+* Cost: one `JSON.stringify` of the state per `render()`. A step (restore + render) measured 25–48ms on the
+  Set 13 demo.

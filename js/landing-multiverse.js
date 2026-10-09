@@ -438,6 +438,54 @@ window.MV = (function () {
     arm();
   })();
 
+  // ---------- Step 02: the app's mini multiverse, stepped back three turns ----------
+  // App.renderMiniVerse() (app/js/mini-multiverse.js) at its sizes, 1:1: 15px a
+  // turn, 17px a line, the node you're on a little right of centre, the lines
+  // centred when they fit. On the map's lanes.
+  (function () {
+    const el = $('bm-mmv');
+    if (!el) return;
+    const hi = Math.max(0, mainLine.length - 4), here = mainLine[hi];
+    const live = new Set(mainLine.slice(0, hi + 1).map(n => n.id));
+    const ahead = new Set(mainLine.slice(hi + 1).map(n => n.id));
+    const CX = 15, RY = 17, VH = 112, TOP = 24, FOOT = 22;
+    const x = (id) => depth[id] * CX, y = (id) => lane[id] * RY;
+    const ys = D.nodes.map(n => y(n.id)), y0 = Math.min(...ys), y1 = Math.max(...ys);
+    let edges = '', lines = '', dots = '', ruler = '', last = null;
+    D.nodes.forEach(n => {
+      if (!n.parent || !byId[n.parent]) return;
+      const px = x(n.parent), py = y(n.parent), nx = x(n.id), ny = y(n.id);
+      const d = py === ny ? `M ${px} ${py} L ${nx} ${ny}` : `M ${px} ${py} C ${px + CX * 0.7} ${py}, ${nx - CX * 0.7} ${ny}, ${nx} ${ny}`;
+      const cls = live.has(n.id) ? ' is-live' : ahead.has(n.id) ? ' is-ahead' : '';
+      if (cls) lines += `<path class="m-edge${cls}" d="${d}"/>`;
+      else edges += `<path class="m-edge" d="${d}"/>`;
+    });
+    D.nodes.forEach(n => {
+      const cls = live.has(n.id) ? ' is-live' : ahead.has(n.id) ? ' is-ahead' : '';
+      dots += `<circle class="m-dot${cls}" cx="${x(n.id)}" cy="${y(n.id)}" r="3.2"/>`;
+    });
+    mainLine.forEach(n => {
+      if (n.turn === last) return;
+      last = n.turn;
+      if (n.turn % 2 === 1) ruler += `<text class="m-tick" x="${x(n.id)}" y="13" text-anchor="middle">${two(n.turn)}</text>`;
+    });
+    const map = `${edges}${lines}${dots}<circle class="m-ring" cx="${x(here.id)}" cy="${y(here.id)}" r="7.2"/>`;
+    function draw() {
+      const VW = Math.round(el.clientWidth) || 300, band = VH - TOP - FOOT;
+      const ox = VW * 0.58 - x(here.id);
+      const oy = y1 - y0 <= band - 12 ? TOP + (band - (y1 - y0)) / 2 - y0
+        : Math.min(TOP + 6 - y0, Math.max(VH - FOOT - 6 - y1, TOP + band / 2 - y(here.id)));
+      el.innerHTML = `<svg viewBox="0 0 ${VW} ${VH}" width="${VW}" height="${VH}" aria-hidden="true">` +
+        `<g transform="translate(${ox} ${oy})">${map}</g><g transform="translate(${ox} 0)">${ruler}</g>` +
+        `<text class="m-tick bm-cap" x="10" y="${VH - 8}">${D.nodes.length} NODES · ${leaves.length} LINES</text></svg>`;
+    }
+    draw();
+    let t = 0;
+    addEventListener('resize', () => { clearTimeout(t); t = setTimeout(draw, 120); });
+    // The board above is a mock with its own lore, so the readout says only where you are.
+    fill('bm-here', `T${here.turn} · P${here.player}`);
+  })();
+
   // ---------- Import: the start of the log, as Duels.ink writes it ----------
   (function () {
     const lines = [`<span class="t">Game started!</span>`];
