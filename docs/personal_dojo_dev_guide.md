@@ -1092,6 +1092,12 @@ Feature 54 split `endTurn()`: when the new player hasn't had their mulligan yet,
 ready step with `mulliganPending` and `drawPending` set, and `_finishMulligan()` runs the rest
 (`_drawStepAndAutoSave()`) once they choose.
 
+The dialog paints the hand once when it opens (`renderMulliganCards`); marking a card only toggles
+classes and redraws the readout and odds (`updateMulliganMarks`), so a card never repaints under the
+pointer. `syncMulliganMode()` runs on every `render()`: it opens the dialog when the board waits on a
+mulligan, redraws it when the hand on the board isn't the one it shows (`_mulliganHandKey`), and
+closes it when the board no longer waits.
+
 **The trap:** `endTurn()` writes the node for the turn that just *ended*, but it has already flipped
 players and drawn for the *new* one. So the new capture is held in a local (`turnStartHandSnap`) and
 only assigned to `state.turnStartHand` **after** the node is pushed — alongside the buffer reset.
