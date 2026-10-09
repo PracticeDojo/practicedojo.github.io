@@ -5251,6 +5251,149 @@ body.palette-competition .tree-node.tn-p2::before {
     }
 }
 
+/* ----- Multiverse on phones (Feature 56): the plot's key runs along the
+       well's top, and thumb keys sit at its foot, clustered right in two
+       rows of three: zoom out (the whole game, plot only), ▲, ◎ back to
+       where you are; then ◀ ▼ ▶. The arrows move the cursor. The well is
+       dark in both themes, so the keys are the neutral function key as it
+       sits on dark (Kiln's bone): a warm graphite key, paper glyph, a
+       darker foot that drops when pressed. A key that can't go anywhere
+       is hollow. ----- */
+.tree-keys {
+    display: none;
+}
+
+@media (max-width: 760px) {
+    /* .tree-head .close outranks the plain .tree-dock-toggle rule above, so
+       the dock toggle showed on phones. Reset zoom moved under the thumb. */
+    .tree-head .tree-dock-toggle,
+    .tree-head .tree-zoom-reset {
+        display: none;
+    }
+
+    .tree-legend {
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: auto;
+        padding: 10px 14px 9px;
+        gap: 6px 14px;
+        background: var(--fu-glass);
+        border-bottom: 1px solid var(--fu-glass-rule);
+    }
+
+    .tree-keys {
+        --tk-fill: #312D28;
+        --tk-ink: #F4F0E8;
+        --tk-edge: oklch(0 0 0 / 0.5);
+        --tk-off-line: #2C2924;
+        --tk-off-ink: #6B655C;
+        position: absolute;
+        right: 12px;
+        bottom: 12px;
+        z-index: 21;
+        display: grid;
+        grid-template-columns: repeat(3, 44px);
+        grid-template-rows: repeat(2, 44px);
+        grid-template-areas:
+            "overview up here"
+            "back down fwd";
+        gap: 6px;
+    }
+
+    .tree-keys[hidden],
+    .tree-key[hidden] {
+        display: none;
+    }
+
+    .tree-key {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+        border: 0;
+        border-radius: 10px;
+        background: var(--tk-fill);
+        color: var(--tk-ink);
+        box-shadow: inset 0 -3px 0 var(--tk-edge);
+        font-size: 18px;
+        cursor: pointer;
+        touch-action: manipulation;
+        user-select: none;
+        -webkit-user-select: none;
+        -webkit-touch-callout: none;
+        -webkit-tap-highlight-color: transparent;
+        transition: transform var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
+    }
+
+    .tree-key:active:not(:disabled) {
+        transform: translateY(1px);
+        box-shadow: inset 0 -1px 0 var(--tk-edge);
+    }
+
+    .tree-key:focus-visible {
+        outline: 2px solid var(--fu-light);
+        outline-offset: 2px;
+    }
+
+    /* Hollow, on the well's own glass so the plot doesn't show through. */
+    .tree-key:disabled {
+        background: var(--fu-glass);
+        color: var(--tk-off-ink);
+        box-shadow: inset 0 0 0 1px var(--tk-off-line);
+        cursor: default;
+    }
+
+    .tk-overview {
+        grid-area: overview;
+        font-size: 16px;
+    }
+
+    .tk-here {
+        grid-area: here;
+    }
+
+    .tk-up {
+        grid-area: up;
+    }
+
+    .tk-back {
+        grid-area: back;
+    }
+
+    .tk-down {
+        grid-area: down;
+    }
+
+    .tk-fwd {
+        grid-area: fwd;
+    }
+
+    /* ◎ is the plot's "you are here" ring, in signal. */
+    .tk-here svg {
+        width: 18px;
+        height: 18px;
+        overflow: visible;
+    }
+
+    .tk-here circle {
+        fill: none;
+        stroke: var(--accent);
+        stroke-width: 2;
+    }
+
+    .tk-here:disabled circle {
+        stroke: currentColor;
+    }
+
+    /* The whole game on show: the key stays down, inverted to paper. */
+    .tk-overview[aria-pressed="true"] {
+        background: var(--fu-light);
+        color: var(--fu-dark);
+        box-shadow: inset 0 -1px 0 oklch(0 0 0 / 0.22);
+    }
+}
+
 /* ----- Home: chassis page, paper modules, the intake is a glass well ----- */
 .home-page {
     background: var(--bg);
