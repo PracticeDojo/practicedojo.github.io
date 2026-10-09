@@ -706,16 +706,16 @@ Implements version 2 of `docs/DESIGN-field-unit.md` (Kiln dark mode, signal fami
 - As a player on a phone, I want to move through the Multiverse with my thumb, one turn or one line at a time, without pinching in to hit a dot, so I can find a turn and play from it.
 
 ### Details
-- **Thumb keys at the well's foot**, clustered right where the plot's key used to be. The arrows sit as on a keyboard (**▲** over **◀ ▼ ▶**); beside them **◎** goes back to where you are and **⤢** shows the whole game. They move the cursor: the panel under the well shows the turn the cursor is on, and **Play from here** loads it, as on desktop.
+- **Thumb keys at the well's foot**, clustered right where the plot's key used to be, in two rows of three: **zoom out**, **▲**, **◎** (back to where you are), then **◀ ▼ ▶**. The arrows move the cursor: the panel under the well shows the turn the cursor is on, and **Play from here** loads it, as on desktop.
   - **◀** the turn before. **▶** the turn after: back the way you came (◀ remembers it), else along the branch you're on, else the oldest.
   - **▲ / ▼** the nearest turn above / below on **another line**: never one the cursor's own line runs through (a line zigzags across rows in the plot), and near the same point in the game.
-  - **◎** back to the node you're on (hollow when you're there). **⤢** fits the whole game in the well and stays down; press it again, or step, to come back in close. Plot only: the card layout is far too wide to fit a phone.
+  - **◎** back to the node you're on (hollow when you're there). **Zoom out** fits the whole game in the well and stays down; press it again, or step, to come back in close. Plot only (its place stays empty in cards): the card layout is far too wide to fit a phone.
   - **Hold** an arrow to keep stepping, like a keyboard's. A key that can't go anywhere is hollow.
 - **The key moves to the top** of the well, as a strip over the plot with a hairline under it, where the fitted plot used to leave empty glass.
 - **The plot by default.** A phone opens the Multiverse on the plot until you pick a view with the Plot tool (a saved preference, as before). It opens up close, on the cursor (zoom 1, dots big enough to read and tap), instead of fitting the whole game; centring and fitting leave out the strips the key and the keys cover.
-- **The keys follow the cursor**: each step centres the plot on it. A pinch zoom is kept; ⤢'s fit is undone by the next step.
-- **Header.** Reset zoom moved under the thumb (⤢), and the dock-side toggle, meant to hide on phones but shown by a CSS specificity slip, is gone there: Import, Export, Log, Plot and Close remain.
-- **The look.** The well is dark in both themes, so the keys are the neutral function key as it sits on dark (Kiln's bone `#312D28`, paper glyph, a darker foot that drops when pressed, 44px, 10px radius). ◎ carries the plot's "you are here" ring in signal; ⤢ held down inverts to paper.
+- **The keys follow the cursor**: each step centres the plot on it. A pinch zoom is kept; zoom out's fit is undone by the next step.
+- **Header.** Reset zoom moved under the thumb (zoom out), and the dock-side toggle, meant to hide on phones but shown by a CSS specificity slip, is gone there: Import, Export, Log, Plot and Close remain.
+- **The look.** The well is dark in both themes, so the keys are the neutral function key as it sits on dark (Kiln's bone `#312D28`, paper glyph, a darker foot that drops when pressed, 44px, 10px radius). ◎ carries the plot's "you are here" ring in signal; zoom out held down inverts to paper.
 - **Desktop and tablets are unchanged**: the arrow keys still walk the tree, the key stays at the foot, and the plot opens fitted.
 
 ## Patch: Card picture in the card drawer (v3.8.1)

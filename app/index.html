@@ -581,18 +581,18 @@
                 </div>
                 <!-- The plot's key (plot view only) -->
                 <div id="tree-legend" class="tree-legend" hidden></div>
-                <!-- Phones (Feature 56): thumb keys at the well's foot. The arrows move
-                     the cursor (the panel shows it), ◎ goes back to the node you're on,
-                     ⤢ shows the whole game. Hold an arrow to keep stepping. -->
+                <!-- Phones (Feature 56): thumb keys at the well's foot, two rows of three:
+                     zoom out, ▲, back to you / ◀ ▼ ▶. The arrows move the cursor (the
+                     panel shows it). Hold an arrow to keep stepping. -->
                 <div id="tree-keys" class="tree-keys" role="group" aria-label="Move through the multiverse" hidden>
                     <button class="tree-key tk-overview" data-tk="overview" aria-pressed="false"
                         title="See the whole game" aria-label="See the whole game"><i
-                            class="fa-solid fa-expand"></i></button>
+                            class="fa-solid fa-magnifying-glass-minus"></i></button>
+                    <button class="tree-key tk-up" data-tk="up" title="Line above" aria-label="Line above"><i
+                            class="fa-solid fa-caret-up"></i></button>
                     <button class="tree-key tk-here" data-tk="here" title="Back to where you are"
                         aria-label="Back to where you are"><svg viewBox="-8 -8 16 16" aria-hidden="true"><circle
                                 r="5.5" /></svg></button>
-                    <button class="tree-key tk-up" data-tk="up" title="Line above" aria-label="Line above"><i
-                            class="fa-solid fa-caret-up"></i></button>
                     <button class="tree-key tk-back" data-tk="back" title="Turn before" aria-label="Turn before"><i
                             class="fa-solid fa-caret-left"></i></button>
                     <button class="tree-key tk-down" data-tk="down" title="Line below" aria-label="Line below"><i
@@ -6124,7 +6124,7 @@
                 this.renderTree();
 
                 // Phones open the plot up close, on the cursor, so a dot is big enough
-                // to read and tap; the ⤢ key shows the whole game (Feature 56).
+                // to read and tap; the zoom-out key shows the whole game (Feature 56).
                 const phonePlot = this.treeView === 'plot' && this.isPhoneUI();
                 if (phonePlot) this.treePan.zoom = 1;
                 if (this.treeView === 'plot' && this.bookmarks.length && !phonePlot) {
@@ -6413,7 +6413,7 @@
                 this.selectTreeNode(id, true);
             },
 
-            // ⤢ fits the whole game in the well; again (or any step) goes back to
+            // Zoom out fits the whole game in the well; again (or any step) goes back to
             // the zoom you had, on the cursor.
             toggleTreeOverview() {
                 if (this._treeOverview) {

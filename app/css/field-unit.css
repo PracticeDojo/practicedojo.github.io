@@ -5252,13 +5252,13 @@ body.palette-competition .tree-node.tn-p2::before {
 }
 
 /* ----- Multiverse on phones (Feature 56): the plot's key runs along the
-       well's top, and thumb keys sit at its foot, clustered right. The
-       arrows are laid out as on a keyboard (▲ over ◀ ▼ ▶) and move the
-       cursor; beside them ◎ goes back to where you are and ⤢ shows the
-       whole game (plot only). The well is dark in both themes, so the
-       keys are the neutral function key as it sits on dark (Kiln's bone):
-       a warm graphite key, paper glyph, a darker foot that drops when
-       pressed. A key that can't go anywhere is hollow. ----- */
+       well's top, and thumb keys sit at its foot, clustered right in two
+       rows of three: zoom out (the whole game, plot only), ▲, ◎ back to
+       where you are; then ◀ ▼ ▶. The arrows move the cursor. The well is
+       dark in both themes, so the keys are the neutral function key as it
+       sits on dark (Kiln's bone): a warm graphite key, paper glyph, a
+       darker foot that drops when pressed. A key that can't go anywhere
+       is hollow. ----- */
 .tree-keys {
     display: none;
 }
@@ -5293,11 +5293,11 @@ body.palette-competition .tree-node.tn-p2::before {
         bottom: 12px;
         z-index: 21;
         display: grid;
-        grid-template-columns: 44px 4px repeat(3, 44px);
+        grid-template-columns: repeat(3, 44px);
         grid-template-rows: repeat(2, 44px);
         grid-template-areas:
-            "overview . . up ."
-            "here . back down fwd";
+            "overview up here"
+            "back down fwd";
         gap: 6px;
     }
 
@@ -5346,7 +5346,7 @@ body.palette-competition .tree-node.tn-p2::before {
 
     .tk-overview {
         grid-area: overview;
-        font-size: 15px;
+        font-size: 16px;
     }
 
     .tk-here {
