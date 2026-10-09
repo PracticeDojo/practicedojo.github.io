@@ -4373,33 +4373,6 @@ input[type="range"]::-moz-range-thumb {
     color: var(--text-faint);
 }
 
-/* Mulligan modal odds column (Feature 25) */
-.mull-body-grid {
-    display: flex;
-    gap: 16px;
-    align-items: stretch;
-    min-height: 0;
-}
-
-.mull-hand-col {
-    flex: 1;
-    min-width: 0;
-}
-
-.mull-odds {
-    width: 300px;
-    flex: none;
-    border-left: 1px solid var(--border-soft);
-    padding-left: 12px;
-    display: flex;
-    flex-direction: column;
-    max-height: 62vh;
-}
-
-.mull-odds .prob-list {
-    overflow-y: auto;
-}
-
 /* ===== Phone layout (≤760px): single column, off-canvas sidebar, full-screen modals ===== */
 @media (max-width: 760px) {
 
@@ -4409,8 +4382,7 @@ input[type="range"]::-moz-range-thumb {
     }
 
     /* Draw-odds pane is desktop-only */
-    .prob-pane,
-    .mull-odds {
+    .prob-pane {
         display: none;
     }
 
