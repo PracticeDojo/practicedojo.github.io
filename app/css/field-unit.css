@@ -5618,12 +5618,57 @@ body.palette-competition .tree-node.tn-p2::before {
     background: oklch(0 0 0 / 0.6);
 }
 
-/* Multiline prompt in a styled dialog (the phone turn note). */
-.dlg-body textarea.input {
+/* A note written in a styled dialog (the phone turn note): the Field Unit Note,
+   glass with paper text, inside the dialog's paper, which follows day / night. */
+.dlg-note {
+    margin-top: 10px;
+    padding: 8px 10px 9px;
+    border: 1px solid var(--fu-glass-line);
+    border-radius: var(--radius-sm);
+    background: var(--fu-glass);
+    color: var(--fu-light);
+    transition: border-color var(--dur) var(--ease);
+}
+
+.dlg-note:focus-within {
+    border-color: var(--fu-glass-2);
+}
+
+.dlg-note-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+    margin-bottom: 4px;
+    font-family: var(--font-mono);
+    font-size: 9px;
+    line-height: 1.2;
+    letter-spacing: var(--label-track);
+    text-transform: uppercase;
+    color: var(--fu-glass-mute);
+}
+
+.dlg-note:focus-within .dlg-note-head {
+    color: var(--fu-glass-2);
+}
+
+.dlg-note-input {
     display: block;
+    width: 100%;
     min-height: 120px;
     max-height: 50vh;
-    resize: vertical;
-    font: inherit;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    color: var(--fu-light);
+    font-family: var(--font-sans);
+    font-size: 13px;
     line-height: 1.45;
+    resize: vertical;
+    outline: none;
+}
+
+.dlg-note-input::placeholder {
+    color: var(--fu-glass-mute);
 }

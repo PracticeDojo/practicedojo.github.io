@@ -709,7 +709,8 @@ Implements version 2 of `docs/DESIGN-field-unit.md` (Kiln dark mode, signal fami
 - The notes panel is hidden on phones, so a turn's note could only be changed afterwards, from its Multiverse node.
 - **Long press** (about half a second) on the empty battlefield opens a **Turn N notes** dialog with the active player's note for this turn. **Save** stores it (saving empty clears it), **Cancel** or Esc leaves it as it was. Enter adds a line; Ctrl/Cmd+Enter saves.
 - Cards, piles, the hand, buttons and the lore controls keep their own touch behaviour and don't start a long press. Moving the finger or scrolling cancels it. It's the same note the desktop panel edits, so the next auto-save and the Multiverse pick it up.
-- The styled dialog gained a `multiline` option (a textarea) and `allowEmpty`.
+- **Look.** The dialog is a paper module that follows day / night. The writing area is the Field Unit Note: glass fill, paper text, a `TURN 16 NOTE · PLAYER 2` label row with a pen, and a hairline that lights while you type.
+- The styled dialog gained a `multiline` option (a glass note around a textarea), `noteLabel` and `allowEmpty`.
 
 ## Patch: Tweaks panel cleaned up (v3.4.12)
 

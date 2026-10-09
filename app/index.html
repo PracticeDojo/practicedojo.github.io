@@ -1490,7 +1490,7 @@
                 const text = await this.dialog({
                     title: `Turn ${turn} notes`,
                     icon: 'fa-book-open',
-                    message: `${this.state.players[activePlayer].name}'s note for this turn.`,
+                    noteLabel: `Turn ${turn} note · ${this.state.players[activePlayer].name}`,
                     prompt: true, multiline: true, allowEmpty: true,
                     value: current || '',
                     placeholder: 'Add notes for this turn…',
@@ -6774,8 +6774,7 @@
                     let inputEl = null;
                     if (opts.prompt) {
                         inputEl = document.createElement(opts.multiline ? 'textarea' : 'input');
-                        if (opts.multiline) { inputEl.rows = 6; inputEl.classList.add('custom-scrollbar'); } else inputEl.type = 'text';
-                        inputEl.classList.add('input');
+                        if (opts.multiline) { inputEl.rows = 6; inputEl.classList.add('custom-scrollbar', 'dlg-note-input'); } else { inputEl.type = 'text'; inputEl.classList.add('input'); }
                         inputEl.placeholder = opts.placeholder || '';
                         if (opts.value) inputEl.value = opts.value;
                         if (opts.maxLength) inputEl.maxLength = opts.maxLength;
@@ -6784,7 +6783,20 @@
                             inputEl.addEventListener('focus', () => inputEl.select());
                         }
                         inputEl.setAttribute('aria-label', opts.title || 'Value');
-                        body.appendChild(inputEl);
+                        if (opts.multiline) {
+                            // A note is glass with paper text wherever it is written (Field Unit "Note").
+                            const note = document.createElement('div');
+                            note.className = 'dlg-note';
+                            if (opts.noteLabel) {
+                                const nh = document.createElement('div');
+                                nh.className = 'dlg-note-head';
+                                nh.innerHTML = '<span></span><i class="fa-solid fa-pen" aria-hidden="true"></i>';
+                                nh.firstChild.textContent = opts.noteLabel;
+                                note.appendChild(nh);
+                            }
+                            note.appendChild(inputEl);
+                            body.appendChild(note);
+                        } else body.appendChild(inputEl);
                     }
 
                     const foot = document.createElement('div');
