@@ -349,8 +349,8 @@
                 <div class="mull-head-main">
                     <div class="mull-lbl" id="mulligan-context">Opening hand</div>
                     <h2 class="mull-title"><span class="deck-icon" id="mulligan-deck-icon"></span><span
-                            id="mulligan-title">Player</span><em class="mull-long">· keep it, or send cards
-                            back</em><em class="mull-short">· mulligan</em></h2>
+                            id="mulligan-title">Player</span><em class="mull-long" id="mulligan-title-tail">· keep it, or
+                            send cards back</em><em class="mull-short" id="mulligan-title-tail-short">· mulligan</em></h2>
                 </div>
                 <div class="mull-head-figs">
                     <div class="mull-long">
@@ -395,20 +395,17 @@
                         <div class="prob-list" id="mulligan-prob"></div>
                     </div>
                 </div>
-                <div class="mull-lbl mull-hint mull-short">Tap to mark · hold to look closer</div>
+                <div class="mull-lbl mull-hint mull-short" id="mulligan-hint-short">Tap to mark · hold to look closer</div>
             </div>
             <div class="mull-foot">
-                <div class="mull-lbl mull-hint mull-long"><span class="mull-on-hover">Click a card to mark it · <i
-                            class="fa-solid fa-magnifying-glass" aria-hidden="true"></i> to look closer</span><span class="mull-on-touch">Tap a card to mark it · hold it to look
-                        closer</span></div>
-                <button class="btn btn-ghost" onclick="App.openCraftHand()"
+                <div class="mull-lbl mull-hint mull-long" id="mulligan-hint"></div>
+                <button class="btn btn-ghost mull-craft" onclick="App.openCraftHand()"
                     title="Pick your seven from the whole deck instead"><i class="fa-solid fa-wand-magic-sparkles"></i>
                     <span class="mull-long">Craft hand</span><span class="mull-short">Craft</span></button>
                 <button class="btn btn-primary" id="mulligan-confirm" onclick="App.confirmMulligan()">Keep hand</button>
             </div>
-            <!-- A card shown large: from its magnifier (mouse) until a click or Esc, or while
-                 a finger holds it (touch). -->
-            <div class="mull-peek" id="mulligan-peek" hidden aria-hidden="true" onclick="App.hideMulliganPeek()"></div>
+            <!-- Press and hold a card (touch): it shows large while the finger is down. -->
+            <div class="mull-peek" id="mulligan-peek" hidden aria-hidden="true"></div>
         </div>
     </div>
 
@@ -1190,6 +1187,7 @@
                 // board saves (and compares in boardSig) exactly as before.
                 if (stateObj.mulliganPending) compressed.mulliganPending = true;
                 if (stateObj.drawPending) compressed.drawPending = true;
+                if (stateObj.mulliganDrawn && stateObj.mulliganDrawn.length) compressed.mulliganDrawn = stateObj.mulliganDrawn.slice();
                 if (includeLog) {
                     compressed.log = stateObj.log;
                 } else {
@@ -1210,6 +1208,7 @@
                     turnStartHand: compressed.turnStartHand || null,
                     mulliganPending: !!compressed.mulliganPending,
                     drawPending: !!compressed.drawPending,
+                    mulliganDrawn: Array.isArray(compressed.mulliganDrawn) ? compressed.mulliganDrawn.slice() : null,
                     log: compressed.log !== undefined ? [...compressed.log] : currentLog.slice(0, compressed.logLength || 0),
                     players: compressed.players.map(p => ({
                         id: p.id,
@@ -7168,13 +7167,26 @@
                 return `${ap}:${this.state.players[ap].hand.map(c => c.instanceId).join(',')}`;
             },
 
+            // Two phases. Choosing: mark cards, then keep or mulligan. After a mulligan:
+            // the new hand, its readout and the odds of the shuffled deck, until the
+            // turn starts. (Keeping or crafting goes straight to the turn.)
             openMulligan() {
                 const p = this.state.players[this.state.activePlayer];
                 const draw = !!this.state.drawPending;
+                const after = !!p.hasMulliganed;
+                document.querySelector('#mulligan-modal .mull-dlg').classList.toggle('is-after', after);
                 document.getElementById('mulligan-title').innerText = p.name;
+                document.getElementById('mulligan-title-tail').innerText = after ? '· your new hand' : '· keep it, or send cards back';
+                document.getElementById('mulligan-title-tail-short').innerText = after ? '· new hand' : '· mulligan';
                 document.getElementById('mulligan-deck-icon').className = `deck-icon is-p${p.id + 1}`;
-                document.getElementById('mulligan-context').innerText =
-                    `Opening hand · Turn ${this.state.turn} · ${draw ? 'on the draw' : 'on the play'}`;
+                // Phones drop "Opening hand ·" so the line fits.
+                document.getElementById('mulligan-context').innerHTML = `<span class="mull-long">Opening hand · </span>`
+                    + `Turn ${this.state.turn} · ${after ? 'after the mulligan' : draw ? 'on the draw' : 'on the play'}`;
+                const look = '<i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>';
+                document.getElementById('mulligan-hint').innerHTML = after
+                    ? `<span class="mull-on-hover">Your new hand · ${look} to look closer</span><span class="mull-on-touch">Your new hand · hold a card to look closer</span>`
+                    : `<span class="mull-on-hover">Click a card to mark it · ${look} to look closer</span><span class="mull-on-touch">Tap a card to mark it · hold it to look closer</span>`;
+                document.getElementById('mulligan-hint-short').innerText = after ? 'Your new hand · hold to look closer' : 'Tap to mark · hold to look closer';
                 // The second player draws for the turn once they've chosen; the first has no draw on turn 1.
                 document.getElementById('mulligan-draw-label').innerText = draw ? 'Then you draw' : 'No draw turn 1';
                 document.getElementById('mulligan-draw-fig').innerText = draw ? '+1' : '—';
@@ -7190,14 +7202,18 @@
 
             closeMulligan() {
                 this.hideMulliganPeek();
+                this.closeMulliganLook();
                 document.getElementById('mulligan-modal').classList.add('hidden');
                 this.mulliganSelection = [];
             },
 
             renderMulliganCards() {
+                this.closeMulliganLook();
                 const container = document.getElementById('mulligan-hand');
                 container.innerHTML = '';
                 const p = this.state.players[this.state.activePlayer];
+                const after = !!p.hasMulliganed;
+                const drawn = new Set(this.state.mulliganDrawn || []);
 
                 // Cheapest-first, so the opening curve is readable at a glance. Only the
                 // first 7 are mulliganable, so only those are sorted; anything the sandbox
@@ -7221,7 +7237,7 @@
                     const dbCard = this.cardDB[c.cardId];
                     const name = (dbCard && (dbCard.fullName || dbCard.name)) || 'Unknown card';
                     const slot = document.createElement('div');
-                    slot.className = 'mull-slot';
+                    slot.className = 'mull-slot' + (drawn.has(c.instanceId) ? ' is-new' : '');
                     slot._iid = c.instanceId;
                     // The card marks it; the magnifier in its corner (mouse) shows it large.
                     const pick = document.createElement('button');
@@ -7234,8 +7250,9 @@
                     pick.appendChild(face);
                     pick.onclick = () => {
                         if (this._mullPeeked) { this._mullPeeked = false; return; } // that press was a look, not a tap
-                        this.toggleMulliganMark(c.instanceId);
+                        if (!after) this.toggleMulliganMark(c.instanceId);
                     };
+                    if (after) pick.setAttribute('aria-disabled', 'true');
                     this._bindMulliganPeek(pick, c, i, displayHand.length);
                     const look = document.createElement('button');
                     look.type = 'button';
@@ -7243,7 +7260,7 @@
                     look.title = 'Look closer';
                     look.setAttribute('aria-label', `Look at ${name}`);
                     look.innerHTML = '<i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>';
-                    look.onclick = () => this.showMulliganPeek(c, i, displayHand.length, true);
+                    look.onclick = () => this.toggleMulliganLook(slot);
                     slot.append(pick, look);
                     slot.insertAdjacentHTML('beforeend', '<span class="mull-tag" aria-hidden="true">↓ Bottom</span>');
                     container.appendChild(slot);
@@ -7271,9 +7288,12 @@
                 });
 
                 // One button settles the hand: keep it as dealt, or send back the marked cards.
+                // After a mulligan it starts the turn (the second player draws first).
                 const n = this.mulliganSelection.length;
-                document.getElementById('mulligan-confirm').innerText = n
-                    ? `Mulligan ${n} card${n === 1 ? '' : 's'}` : 'Keep hand';
+                const ap = this.state.players[this.state.activePlayer];
+                document.getElementById('mulligan-confirm').innerText = ap.hasMulliganed
+                    ? (this.state.drawPending ? 'Draw and start turn' : 'Start turn')
+                    : n ? `Mulligan ${n} card${n === 1 ? '' : 's'}` : 'Keep hand';
 
                 this.renderMulliganReadout();
                 this.updateMulliganProb();
@@ -7306,6 +7326,12 @@
                     + sent.map(() => '<i class="is-ghost"></i>').join('');
 
                 const M = sent.length;
+                const drawn = p.hasMulliganed ? (this.state.mulliganDrawn || []).length : 0;
+                const plan = p.hasMulliganed
+                    ? `<div class="mull-lbl"><span class="mull-long">${drawn} to the bottom, ${drawn} drawn, deck shuffled</span><span class="mull-short">New</span></div>
+                       <div class="mull-plan-fig"><span class="mull-long"><b>${hand.length}</b> in hand <i>·</i> <b>${drawn}</b> new</span><span class="mull-short"><b>${drawn}</b></span></div>`
+                    : `<div class="mull-lbl"><span class="mull-long">${M ? `${M} to the bottom, then shuffle` : 'Nothing marked'}</span><span class="mull-short">Redraw</span></div>
+                       <div class="mull-plan-fig"><span class="mull-long">${M ? `<b>${kept.length}</b> kept <i>+</i> <b>${M}</b> redraw` : `Keeping all <b>${hand.length}</b>`}</span><span class="mull-short"><b>${M || '—'}</b></span></div>`;
                 box.innerHTML = `
                     <div class="mull-read-cell">
                         <div class="mull-lbl">Curve<span class="mull-long">${M ? ' · kept' : ''}</span></div>
@@ -7315,10 +7341,39 @@
                         <div class="mull-lbl">Inkable</div>
                         <div class="mull-pips">${pips}<span>${inkable}<small>/ ${kept.length}</small></span></div>
                     </div>
-                    <div class="mull-read-cell mull-plan">
-                        <div class="mull-lbl"><span class="mull-long">${M ? `${M} to the bottom, then shuffle` : 'Nothing marked'}</span><span class="mull-short">Redraw</span></div>
-                        <div class="mull-plan-fig"><span class="mull-long">${M ? `<b>${kept.length}</b> kept <i>+</i> <b>${M}</b> redraw` : `Keeping all <b>${hand.length}</b>`}</span><span class="mull-short"><b>${M || '—'}</b></span></div>
-                    </div>`;
+                    <div class="mull-read-cell mull-plan">${plan}</div>`;
+            },
+
+            // The magnifier (mouse): the card grows in place, big enough to read. Any
+            // click (that isn't another magnifier) or Esc puts it back, and that click
+            // does nothing else.
+            toggleMulliganLook(slot) {
+                const same = this._mullLookSlot === slot;
+                this.closeMulliganLook();
+                if (same) return;
+                slot.classList.add('is-looking');
+                this._mullLookSlot = slot;
+                const dlg = document.querySelector('#mulligan-modal .mull-dlg');
+                dlg.classList.add('has-look');
+                if (!dlg._lookBound) {
+                    dlg._lookBound = true;
+                    dlg.addEventListener('click', (e) => {
+                        if (!this._mullLookSlot) return;
+                        const look = e.target.closest('.mull-look');
+                        if (look) return; // its own button closes it; another opens that card
+                        this.closeMulliganLook();
+                        e.preventDefault();
+                        e.stopPropagation();
+                    }, true);
+                }
+            },
+
+            closeMulliganLook() {
+                if (!this._mullLookSlot) return;
+                this._mullLookSlot.classList.remove('is-looking');
+                this._mullLookSlot = null;
+                const dlg = document.querySelector('#mulligan-modal .mull-dlg');
+                if (dlg) dlg.classList.remove('has-look');
             },
 
             // Phones show the top three odds rows; this opens the rest.
@@ -7360,15 +7415,13 @@
                 pick.addEventListener('contextmenu', (e) => { if (e.pointerType !== 'mouse') e.preventDefault(); });
             },
 
-            // `pinned`: opened from the magnifier (mouse). It stays until a click or Esc;
-            // the touch look goes when the finger lifts.
-            showMulliganPeek(c, index, count, pinned = false) {
+            showMulliganPeek(c, index, count) {
                 const box = document.getElementById('mulligan-peek');
                 const db = this.cardDB[c.cardId];
                 const esc = (v) => this._esc(v);
                 const marked = this.mulliganSelection.includes(c.instanceId);
-                box.innerHTML = `<div class="mull-lbl">Opening hand · ${index + 1} / ${count}${marked ? ' · to the bottom' : ''}</div>`
-                    + (pinned ? '<span class="mull-peek-x" aria-hidden="true"><i class="fa-solid fa-xmark"></i></span>' : '');
+                const isNew = (this.state.mulliganDrawn || []).includes(c.instanceId);
+                box.innerHTML = `<div class="mull-lbl">Opening hand · ${index + 1} / ${count}${marked ? ' · to the bottom' : isNew ? ' · new' : ''}</div>`;
                 const face = document.createElement('div');
                 face.className = 'mull-peek-card';
                 this.paintCardFace(face, db, { lazy: false });
@@ -7377,9 +7430,7 @@
                     ? `<div class="mull-peek-name">${esc(db.name)}${db.version ? ` <span>· ${esc(db.version)}</span>` : ''}</div>
                        <div class="mull-peek-meta">Cost ${esc(db.cost)} · ${db.inkwell ? 'inkable' : 'not inkable'}${db.type ? ` · ${esc(db.type)}` : ''}</div>`
                     : `<div class="mull-peek-name">Unknown card</div>`);
-                box.insertAdjacentHTML('beforeend', `<div class="mull-lbl mull-peek-hint">${pinned ? 'Click anywhere or press Esc to close' : 'Let go to close'}</div>`);
-                box.classList.toggle('is-pinned', pinned);
-                box.setAttribute('aria-hidden', pinned ? 'false' : 'true');
+                box.insertAdjacentHTML('beforeend', '<div class="mull-lbl mull-peek-hint">Let go to close</div>');
                 box.hidden = false;
             },
 
@@ -7387,8 +7438,6 @@
                 const box = document.getElementById('mulligan-peek');
                 if (!box || box.hidden) return;
                 box.hidden = true;
-                box.classList.remove('is-pinned');
-                box.setAttribute('aria-hidden', 'true');
                 box.innerHTML = '';
             },
 
@@ -7397,11 +7446,19 @@
                 return !!box && !box.hidden;
             },
 
-            // Keep (nothing marked) or mulligan the marked cards. Either way the decision
-            // is made: undo comes back to this dialog.
+            // Keep (nothing marked): the deck isn't touched and the turn goes on.
+            // Mulligan: the marked cards go to the bottom, as many are drawn from the
+            // top, then the deck is shuffled, and the dialog shows the new hand. Its
+            // button then starts the turn. Undo comes back to the choice either way.
             confirmMulligan() {
-                this.saveState();
                 const p = this.state.players[this.state.activePlayer];
+                if (p.hasMulliganed) { // the new hand was on show
+                    this.closeMulligan();
+                    this._finishMulligan();
+                    return;
+                }
+
+                this.saveState();
                 const cardsToReplace = [];
 
                 // Extract selected cards from hand
@@ -7413,25 +7470,28 @@
                     }
                 });
 
-                // Draw new cards
-                for (let i = 0; i < cardsToReplace.length; i++) {
-                    this._internalDraw(this.state.activePlayer);
-                }
-
-                if (cardsToReplace.length) {
-                    // Put replaced cards back into deck
-                    p.deck.push(...cardsToReplace);
-
-                    // Shuffle deck
-                    this.shuffle(p.deck);
-                }
-
                 p.hasMulliganed = true; // Mark as mulliganed
                 const n = cardsToReplace.length;
-                this.logAction(n ? `You mulliganed ${n} card${n === 1 ? '' : 's'}.` : `You kept your opening hand.`);
+                if (!n) {
+                    this.logAction(`You kept your opening hand.`);
+                    this.closeMulligan();
+                    this._finishMulligan();
+                    return;
+                }
 
-                this.closeMulligan();
-                this._finishMulligan();
+                // Bottom of the deck, draw the replacements, then shuffle.
+                p.deck.push(...cardsToReplace);
+                const drawn = [];
+                for (let i = 0; i < n; i++) {
+                    const c = this._internalDraw(this.state.activePlayer);
+                    if (c) drawn.push(c.instanceId);
+                }
+                this.shuffle(p.deck);
+                this.logAction(`You mulliganed ${n} card${n === 1 ? '' : 's'}.`);
+
+                this.state.mulliganDrawn = drawn;
+                this.openMulligan(); // the new hand
+                this.render();
             },
 
             // The opening hand is settled (kept, mulliganed or crafted): mulligan mode
@@ -7441,6 +7501,7 @@
                 const drawStep = this.state.drawPending;
                 this.state.mulliganPending = false;
                 this.state.drawPending = false;
+                this.state.mulliganDrawn = null;
                 if (drawStep) {
                     this._drawStepAndAutoSave(); // captures the turn's starting hand after the draw, and renders
                     return;
@@ -10823,7 +10884,7 @@
                     if (r.dbCard && drawable) this.applyInkTint(name, r.dbCard.color);
                     row.appendChild(name);
                     const rd = document.createElement('span');
-                    rd.className = 'prob-val';
+                    rd.className = 'prob-val mull-rd';
                     rd.innerText = M ? pct(r.rd) : '—';
                     row.appendChild(rd);
                     wins.forEach(n => {
@@ -11586,7 +11647,8 @@
                     if (back && !back.classList.contains('hidden')) App.closeSetup();
                     return;
                 }
-                // A mulligan card shown large closes; the mulligan itself stays (it gates the game).
+                // A mulligan card looked at goes back; the mulligan itself stays (it gates the game).
+                if (App._mullLookSlot) { App.closeMulliganLook(); return; }
                 if (App.isMulliganPeekOpen()) { App.hideMulliganPeek(); return; }
                 // Dismissible overlay modals (mulligan/craft stay open — they gate game state)
                 const escapable = [

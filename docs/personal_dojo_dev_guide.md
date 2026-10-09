@@ -55,6 +55,7 @@ interface GameState {
   opponentHandRevealed: boolean;  
   mulliganPending?: boolean; // Feature 54: the active player is choosing their opening hand  
   drawPending?: boolean;     // Feature 54: their draw step (and the turn's auto-save) waits for that choice  
+  mulliganDrawn?: string[];  // Feature 54: instanceIds a mulligan drew, while the new hand is on show  
   players: \[Player, Player\];  
   history: string\[\]; // Array of JSON.stringified GameStates for the Undo stack  
   log: Array\<{ text: string, isSystem: boolean, player: number }\>;  
@@ -1091,6 +1092,11 @@ Captured by `_captureTurnStartHand(playerIndex)` at every moment a turn's openin
 Feature 54 split `endTurn()`: when the new player hasn't had their mulligan yet, it stops after the
 ready step with `mulliganPending` and `drawPending` set, and `_finishMulligan()` runs the rest
 (`_drawStepAndAutoSave()`) once they choose.
+
+The dialog has two phases while `mulliganPending` is set: choosing (`hasMulliganed` false), and after a
+mulligan (`hasMulliganed` true, `mulliganDrawn` set), when it shows the new hand until **Start turn**
+calls `_finishMulligan()`. A keep or a crafted hand skips the second phase. `confirmMulligan()` puts the
+marked cards on the bottom, draws, then shuffles; a keep never shuffles.
 
 The dialog paints the hand once when it opens (`renderMulliganCards`); marking a card only toggles
 classes and redraws the readout and odds (`updateMulliganMarks`), so a card never repaints under the

@@ -2953,7 +2953,7 @@ button.ctx-item:focus-visible {
 }
 
 /* The magnifier: a 22px glass control in the card's top-right corner that
-   shows the card large. Mouse only; touch holds the card instead. */
+   brings the card up large enough to read. Mouse only; touch holds the card. */
 .mull-look {
     position: absolute;
     top: 6px;
@@ -2982,6 +2982,61 @@ button.ctx-item:focus-visible {
 
 .mull-slot.is-marked .mull-look {
     transform: translateY(16px);
+}
+
+/* Looked at (the magnifier): the card grows in place, big enough to read,
+   over its neighbours and the readout. Any click or Esc puts it back. */
+.mull-slot.is-looking {
+    z-index: 4;
+}
+
+.mull-slot.is-looking .mull-card {
+    transform: scale(1.9);
+    opacity: 1;
+    filter: none;
+    box-shadow: 0 16px 32px -12px oklch(0 0 0 / 0.6), 0 0 0 1px var(--fu-glass-line);
+}
+
+.mull-slot.is-marked.is-looking .mull-card {
+    transform: translateY(16px) scale(1.9);
+}
+
+.mull-slot.is-looking::after,
+.mull-slot.is-looking .mull-tag,
+.mull-slot.is-looking .mull-look {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.mull-dlg.has-look,
+.mull-dlg.has-look * {
+    cursor: zoom-out;
+}
+
+/* After a mulligan: the cards it drew carry the board's "new" pip. */
+.mull-slot.is-new .mull-card::after {
+    content: 'NEW';
+    position: absolute;
+    top: 6px;
+    left: 50%;
+    z-index: 1;
+    transform: translateX(-50%);
+    padding: 3px 5px;
+    border-radius: 999px;
+    background: var(--accent);
+    color: var(--accent-ink);
+    font: 700 8px/1 var(--font-mono);
+    letter-spacing: 0.08em;
+}
+
+.mull-dlg.is-after .mull-pick {
+    cursor: default;
+}
+
+.mull-dlg.is-after .mull-craft,
+.mull-dlg.is-after #mull-rd-head,
+.mull-dlg.is-after .mull-rd {
+    display: none;
 }
 
 @media (hover: hover) and (pointer: fine) {
@@ -3191,10 +3246,9 @@ button.ctx-item:focus-visible {
     padding: 0 22px;
 }
 
-/* A card shown large over the whole window. Touch: while the finger holds it;
-   it never takes the touch, so lifting the finger ends it. Mouse (pinned,
-   from the magnifier): until a click anywhere or Esc. The card is as large as
-   the window allows, from the container's width and height. */
+/* Press and hold (touch): the card large over the whole window while the
+   finger is down. It never takes the touch, so lifting the finger ends it.
+   The card is as large as the window allows, from its width and height. */
 .mull-peek {
     position: fixed;
     inset: 0;
@@ -3214,26 +3268,6 @@ button.ctx-item:focus-visible {
 
 .mull-peek[hidden] {
     display: none;
-}
-
-.mull-peek.is-pinned {
-    pointer-events: auto;
-    cursor: zoom-out;
-}
-
-.mull-peek-x {
-    position: absolute;
-    top: 16px;
-    right: 16px;
-    display: grid;
-    place-items: center;
-    width: 32px;
-    height: 32px;
-    border: 1px solid var(--fu-glass-line);
-    border-radius: 999px;
-    background: var(--fu-glass-raised);
-    color: var(--fu-light);
-    font-size: 13px;
 }
 
 .mull-peek .mull-lbl {
