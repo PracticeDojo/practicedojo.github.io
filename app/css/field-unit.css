@@ -6778,6 +6778,698 @@ body.palette-competition .tree-node.tn-p2::before {
    ===================================================================== */
 
 /* ---- M1 · Manual viewer: drawer (desktop), sheet (phone), contents, article ---- */
+/* Desktop: a non-modal drawer docked under the top bar (on the home screen, from the
+   top), the board live behind it. Phones: a full-screen sheet framed like the board.
+   Below the styled dialogs (1100) and toasts (1050). Also the results list and the
+   ? links in context (M1 owns their markup). */
+.help-drawer {
+    position: fixed;
+    z-index: 960;
+    display: flex;
+    background: var(--bg);
+    color: var(--text);
+    animation: help-in var(--dur) var(--ease);
+}
+
+.help-drawer[hidden] {
+    display: none;
+}
+
+@keyframes help-in {
+    from {
+        opacity: 0;
+    }
+}
+
+@media (min-width: 761px) {
+    .help-drawer {
+        top: var(--topbar-h);
+        right: 0;
+        bottom: 0;
+        width: 400px;
+        padding: 8px;
+        border-left: 1px solid var(--border);
+        box-shadow: var(--shadow-3);
+    }
+
+    body:has(#setup-modal:not(.hidden)) .help-drawer {
+        top: 0;
+    }
+}
+
+@media (max-width: 760px) {
+    .help-drawer {
+        inset: 0;
+        padding: calc(8px + env(safe-area-inset-top)) calc(8px + env(safe-area-inset-right)) calc(8px + env(safe-area-inset-bottom)) calc(8px + env(safe-area-inset-left));
+    }
+
+    .help-drawer .help-mod {
+        border-radius: var(--radius-well);
+    }
+
+    .help-search .help-q-input {
+        font-size: 16px;
+    }
+
+    .help-search .help-slash,
+    #btn-help {
+        display: none;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .help-drawer {
+        animation: none;
+    }
+}
+
+.help-mod {
+    flex: 1;
+    min-width: 0;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    background: var(--surface);
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius);
+    overflow: hidden;
+}
+
+.help-mod:focus {
+    outline: none;
+}
+
+.help-hd {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 12px 8px;
+}
+
+.help-hd .help-lbl {
+    flex: 1;
+}
+
+.help-lbl {
+    display: block;
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 500;
+    line-height: 1.3;
+    letter-spacing: var(--label-track);
+    text-transform: uppercase;
+    color: var(--text-dim);
+}
+
+.help-x {
+    width: 28px;
+    height: 28px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: none;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--surface);
+    color: var(--text);
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.help-x:hover {
+    background: var(--surface-2);
+}
+
+/* Search: a paper input with a hairline, the glass and a / keycap on desktop. */
+.help-search {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    height: 34px;
+    margin: 0 12px 6px;
+    padding: 0 8px 0 10px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--surface);
+}
+
+.help-search:focus-within {
+    border-color: var(--text);
+}
+
+.help-search-ico {
+    font-size: 11px;
+    color: var(--text-dim);
+}
+
+.help-q-input {
+    flex: 1;
+    min-width: 0;
+    height: 100%;
+    border: 0;
+    outline: none;
+    background: transparent;
+    color: var(--text);
+    font-family: var(--font-sans);
+    font-size: 13px;
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+.help-q-input::placeholder {
+    color: var(--text-faint);
+}
+
+.help-q-input::-webkit-search-cancel-button {
+    -webkit-appearance: none;
+}
+
+.help-search:focus-within .help-slash {
+    visibility: hidden;
+}
+
+.help-body {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 4px 12px 20px;
+}
+
+/* Contents: label/sm section heads, rows on hairline rules. */
+.help-grp {
+    margin-top: 14px;
+}
+
+.help-grp .help-lbl,
+.help-rel .help-lbl,
+.help-none .help-lbl {
+    margin-bottom: 4px;
+}
+
+.help-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.help-list > li + li {
+    border-top: 1px solid var(--fu-row-rule);
+}
+
+.help-row {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    width: calc(100% + 12px);
+    margin: 0 -6px;
+    padding: 7px 6px;
+    border: 0;
+    border-radius: 6px;
+    background: none;
+    color: var(--text);
+    text-align: left;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.help-row:hover {
+    background: var(--surface-2);
+}
+
+.help-row:disabled {
+    cursor: default;
+    color: var(--text-faint);
+}
+
+.help-tour {
+    flex-direction: row;
+    align-items: baseline;
+    justify-content: space-between;
+}
+
+.help-row-t {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 2px 8px;
+    font-size: 13px;
+    font-weight: 560;
+    line-height: 1.3;
+}
+
+.help-row-m {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 400;
+    color: var(--text-dim);
+}
+
+.help-row-s {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    font-size: 12px;
+    line-height: 1.35;
+    color: var(--text-2);
+}
+
+.help-row.is-todo .help-row-t,
+.help-row.is-todo .help-row-s {
+    color: var(--text-faint);
+}
+
+.help-done {
+    font-size: 12px;
+    color: var(--text-dim);
+}
+
+.help-tag {
+    display: inline-flex;
+    align-items: center;
+    height: 16px;
+    padding: 0 5px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    font-family: var(--font-mono);
+    font-size: 9px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    white-space: nowrap;
+}
+
+.help-note {
+    margin: 12px 0;
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--text-2);
+}
+
+/* Article: ‹ SECTION, the title, prose, Related. */
+.help-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 8px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: var(--label-track);
+    text-transform: uppercase;
+    color: var(--text-dim);
+    text-decoration: none;
+}
+
+.help-back:hover {
+    color: var(--text);
+}
+
+.help-back i {
+    font-size: 9px;
+}
+
+.help-art-t {
+    margin: 8px 0 10px;
+    font-family: var(--font-display);
+    font-size: 20px;
+    font-weight: 560;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    color: var(--text);
+}
+
+.help-art-t:focus {
+    outline: none;
+}
+
+.help-only {
+    margin: -4px 0 10px;
+}
+
+/* Reading prose: Inter 14 / 1.5 in body tone (the one place the app sets it). */
+.help-prose {
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--text-2);
+}
+
+.help-prose > :first-child {
+    margin-top: 0;
+}
+
+.help-prose p,
+.help-prose ul,
+.help-prose ol,
+.help-prose table,
+.help-prose blockquote,
+.help-prose pre {
+    margin: 0 0 10px;
+}
+
+.help-prose h2,
+.help-prose h3 {
+    margin: 20px -6px 6px;
+    padding: 2px 6px;
+    border-radius: 6px;
+    font-size: 16px;
+    font-weight: 560;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+    color: var(--text);
+    transition: background-color 600ms var(--ease);
+}
+
+.help-prose h3 {
+    margin-top: 14px;
+    font-size: 13.5px;
+    font-weight: 600;
+    letter-spacing: 0;
+}
+
+.help-prose .is-lit {
+    background: var(--surface-3);
+    transition: none;
+}
+
+.help-prose strong {
+    font-weight: 600;
+    color: var(--text);
+}
+
+.help-prose ul {
+    padding: 0;
+    list-style: none;
+}
+
+.help-prose ul > li {
+    padding: 5px 0;
+    border-top: 1px solid var(--fu-row-rule);
+}
+
+.help-prose ul > li:last-child {
+    border-bottom: 1px solid var(--fu-row-rule);
+}
+
+.help-prose ol {
+    padding-left: 22px;
+    list-style: decimal;
+}
+
+.help-prose ol > li {
+    padding: 2px 0;
+}
+
+.help-prose ol > li::marker {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-dim);
+}
+
+.help-prose a {
+    color: var(--text);
+    text-decoration: underline;
+    text-decoration-color: var(--border-strong);
+    text-underline-offset: 2px;
+}
+
+.help-prose a:hover {
+    text-decoration-color: var(--text);
+}
+
+.help-prose code {
+    padding: 1px 4px;
+    border-radius: 4px;
+    background: var(--surface-2);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--text);
+}
+
+.help-prose table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+.help-prose th,
+.help-prose td {
+    padding: 6px 8px 6px 0;
+    border-bottom: 1px solid var(--fu-row-rule);
+    text-align: left;
+    vertical-align: top;
+}
+
+.help-prose th {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: var(--label-track);
+    text-transform: uppercase;
+    color: var(--text-dim);
+}
+
+.help-prose blockquote {
+    padding-left: 10px;
+    border-left: 2px solid var(--border);
+    color: var(--text-dim);
+}
+
+.help-prose img {
+    max-width: 100%;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+}
+
+/* Keycaps: the neutral function key (Bone), mono 11px, a 2px darker foot. Never an ink. */
+.help-keys {
+    white-space: nowrap;
+}
+
+.help-key {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 20px;
+    height: 20px;
+    margin: 0 1px;
+    padding: 0 5px 2px;
+    border-radius: 5px;
+    background: var(--key-bone);
+    box-shadow: inset 0 -2px 0 var(--key-edge);
+    color: var(--key-bone-ink);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    line-height: 1;
+    vertical-align: 1px;
+}
+
+.help-gest {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    height: 20px;
+    padding: 0 7px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text);
+    white-space: nowrap;
+    vertical-align: 1px;
+}
+
+.help-gest i {
+    font-size: 9px;
+    color: var(--text-dim);
+}
+
+/* "Show me": a paper tool. */
+.help-show {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 26px;
+    padding: 0 10px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--surface);
+    color: var(--text);
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 1;
+    cursor: pointer;
+    vertical-align: middle;
+}
+
+.help-show:hover {
+    background: var(--surface-2);
+}
+
+.help-show i {
+    font-size: 11px;
+    color: var(--text-2);
+}
+
+.help-other {
+    margin: 0 0 10px;
+    font-size: 12px;
+    color: var(--text-dim);
+}
+
+.help-other-go,
+.help-browse {
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--text);
+    font: inherit;
+    text-decoration: underline;
+    text-decoration-color: var(--border-strong);
+    text-underline-offset: 2px;
+    cursor: pointer;
+}
+
+.help-browse {
+    margin-top: 12px;
+    font-size: 13px;
+}
+
+.help-rel {
+    margin-top: 22px;
+}
+
+/* Search results: path, heading, a snippet with the match in ink weight. */
+.help-results {
+    margin: 8px 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.help-res {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin: 0 -6px;
+    padding: 7px 6px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.help-res + .help-res {
+    border-top: 1px solid var(--fu-row-rule);
+}
+
+.help-res:hover,
+.help-res.is-active {
+    background: var(--surface-2);
+}
+
+.help-res.is-active {
+    box-shadow: inset 2px 0 0 var(--text);
+}
+
+.help-res-path {
+    font-family: var(--font-mono);
+    font-size: 9.5px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+}
+
+.help-res-h {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 560;
+    color: var(--text);
+}
+
+.help-res-s {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    font-size: 12px;
+    line-height: 1.35;
+    color: var(--text-2);
+}
+
+.help-res-s mark {
+    background: none;
+    color: var(--text);
+    font-weight: 650;
+}
+
+.help-drawer :is(a, button):focus-visible {
+    outline: 2px solid var(--text);
+    outline-offset: 1px;
+}
+
+/* The top bar's Help tool inverts to glass while help is open, like Tweaks. */
+body.help-open #btn-help {
+    background: var(--fu-glass);
+    border-color: var(--fu-glass);
+    color: var(--fu-light);
+}
+
+body.help-open #btn-help i {
+    color: var(--fu-light);
+}
+
+:root[data-theme="night"] body.help-open #btn-help {
+    box-shadow: inset 0 0 0 1px var(--fu-line);
+}
+
+/* Help in context: a small mute ? paper tool on a panel's head. Never signal. */
+.help-q {
+    width: 20px;
+    height: 20px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: none;
+    padding: 0;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--surface);
+    color: var(--text-dim);
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 500;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.help-q:hover {
+    color: var(--text);
+    border-color: var(--border-strong);
+}
+
+.help-q:focus-visible {
+    outline: 2px solid var(--text);
+    outline-offset: 1px;
+}
+
+.lib-hd .help-q,
+.tweaks-head .help-q {
+    margin-left: auto;
+    margin-right: 8px;
+}
+
+.mull-head-figs .help-q {
+    align-self: flex-start;
+}
+
+.prob-pane.is-collapsed .prob-head .help-q {
+    display: none;
+}
 
 /* ---- M2 · Search: result rows, highlights, no-results ---- */
 
