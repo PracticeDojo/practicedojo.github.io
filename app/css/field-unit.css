@@ -7474,6 +7474,183 @@ body.help-open #btn-help i {
 /* ---- M2 · Search: result rows, highlights, no-results ---- */
 
 /* ---- M4 · Spotlight: dimmer, ring, callout ---- */
+/* app/js/spotlight.js. Over the help drawer, the Multiverse, modals and toasts;
+   under the styled dialogs (.dlg-backdrop, 1100). The cut-out's huge shadow is
+   the dimmer: the chassis ink at 55% by day, black at 60% on Kiln. Its 2px ring
+   is ink on the chassis and paper on glass, never the signal (§7.2). */
+.spot {
+    --spot-dim: rgb(22 21 19 / 0.55);
+    --spot-ring: var(--fu-dark);
+    position: fixed;
+    inset: 0;
+    z-index: 1080;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity var(--dur) var(--ease);
+}
+
+:root[data-theme="night"] .spot {
+    --spot-dim: oklch(0 0 0 / 0.6);
+    --spot-ring: var(--fu-light);
+}
+
+.spot.is-on-glass {
+    --spot-ring: var(--fu-light);
+}
+
+.spot.is-open {
+    opacity: 1;
+}
+
+.spot[hidden] {
+    display: none;
+}
+
+.spot-hole {
+    position: fixed;
+    box-sizing: border-box;
+    border: 2px solid var(--spot-ring);
+    box-shadow: 0 0 0 200vmax var(--spot-dim);
+    pointer-events: none;
+}
+
+/* The target is gone: dim it all and centre the callout. */
+.spot-dim {
+    position: fixed;
+    inset: 0;
+    display: none;
+    background: var(--spot-dim);
+}
+
+.spot.is-lost .spot-dim {
+    display: block;
+}
+
+.spot.is-lost .spot-hole {
+    display: none;
+}
+
+/* Blockers: everything outside the cut-out (or everything, when clicks end it).
+   A press that starts in the cut-out lifts them until it ends, so drags land. */
+.spot-block {
+    position: fixed;
+    pointer-events: auto;
+}
+
+.spot.is-through .spot-block {
+    pointer-events: none;
+}
+
+.spot-callout {
+    position: fixed;
+    box-sizing: border-box;
+    max-width: calc(100vw - 16px);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 12px;
+    background: var(--surface);
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-3);
+    color: var(--text);
+    font-family: var(--font-sans);
+    pointer-events: auto;
+}
+
+.spot-callout:focus {
+    outline: none;
+}
+
+.spot-step {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    line-height: 1.3;
+    letter-spacing: var(--label-track);
+    color: var(--text-dim);
+    font-variant-numeric: tabular-nums;
+}
+
+.spot-title {
+    font-size: 16px;
+    font-weight: 560;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+}
+
+.spot-text,
+.spot-note {
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.45;
+    color: var(--text-2);
+}
+
+.spot-text strong {
+    color: var(--text);
+    font-weight: 600;
+}
+
+.spot-note {
+    color: var(--text-dim);
+}
+
+.spot-step[hidden],
+.spot-title[hidden],
+.spot-text[hidden],
+.spot-note[hidden] {
+    display: none;
+}
+
+.spot-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 6px;
+}
+
+.spot-actions .btn {
+    min-height: 32px;
+    padding: 0 12px;
+    justify-content: center;
+}
+
+.spot-actions .btn-primary {
+    min-height: 32px;
+    padding: 0 16px;
+}
+
+.spot-actions .btn:focus-visible {
+    outline: 2px solid var(--text);
+    outline-offset: 2px;
+}
+
+/* Phones: docked to the edge away from the target, 16px gutters, over the safe area. */
+.spot.is-phone .spot-callout {
+    left: 16px;
+    max-width: none;
+}
+
+.spot[data-dock="bottom"] .spot-callout {
+    top: auto;
+    bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+}
+
+.spot[data-dock="top"] .spot-callout {
+    top: calc(16px + env(safe-area-inset-top, 0px));
+    bottom: auto;
+}
+
+.spot.is-phone .spot-actions .btn {
+    min-height: 40px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .spot {
+        transition: none;
+    }
+}
 
 /* ---- M5 · Tours: callout steps, practice banner ---- */
 

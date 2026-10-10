@@ -709,6 +709,7 @@ All answered as proposed on 2026-10-10; see D1–D6 in §14.
 | D4 | The public `/help/` page (M10) waits until after Feature 57 ships (Q4) | 2026-10-10 |
 | D5 | No tour offer for people who arrive through a share link (Q5) | 2026-10-10 |
 | D6 | No command palette in the help search for now (Q6) | 2026-10-10 |
+| D7 | Built in one go by the orchestrating session with parallel sub-agents, on one integration branch (`claude/feat-57-help-and-tours`) that the owner tests before anything reaches `main`. Milestone branches are local `wip/*` branches merged into it. The mock-up picks in M1 and M5 are made by the agents within Field Unit; the owner reviews them when testing | 2026-10-10 |
 
 ---
 
