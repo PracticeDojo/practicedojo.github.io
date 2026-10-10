@@ -1116,9 +1116,16 @@
     "desktop",
     "phone"
    ],
-   "aliases": [],
+   "aliases": [
+    "continue",
+    "resume",
+    "my matches",
+    "saved games",
+    "autosave"
+   ],
    "targets": [
     "recent",
+    "all-sessions",
     "session-title"
    ],
    "related": [
@@ -1126,10 +1133,31 @@
     "library",
     "storage"
    ],
-   "verified": "none",
-   "todo": true,
-   "headings": [],
-   "body": "TODO: write this article (M3d). The summary above is its scope. How to write it: docs/ARCH-help-and-tour.md §5.\n"
+   "verified": "v3.9.1",
+   "todo": false,
+   "headings": [
+    {
+     "level": 2,
+     "text": "What makes a session",
+     "slug": "what-makes-a-session"
+    },
+    {
+     "level": 2,
+     "text": "Saving happens by itself",
+     "slug": "saving-happens-by-itself"
+    },
+    {
+     "level": 2,
+     "text": "Pick up again",
+     "slug": "pick-up-again"
+    },
+    {
+     "level": 2,
+     "text": "Good to know",
+     "slug": "good-to-know"
+    }
+   ],
+   "body": "A session is one match with its whole Multiverse. The Dojo keeps every session on this device as you play, so you never lose a match by closing the tab.\n\n## What makes a session\n\nA new session starts when you:\n\n- press **Start match** on the home screen,\n- open a saved session file,\n- study a Duels.ink log or replay,\n- open a demo (it opens as your own copy).\n\nIt gets a name from the decks, like *Amber/Steel vs Ruby/Sapphire*. You can rename it: see [Save, save as copy, rename](help:save-and-rename).\n\n## Saving happens by itself\n\nEvery change you make is saved to this device about a second later, and again when you switch tabs or close the page. You don't have to press **Save**. Leaving to the home screen keeps the match too.\n\n## Pick up again\n\nThe home screen's **Pick up again** box lists your last session first (**Resume**), then your most recent ones, then the demos (**Explore**). The match on the board says **Back to it**. **All sessions** opens the [Library](help:library) with every session you have.\n\n[Show me](show:recent)\n\n## Good to know\n\n- Sessions live in this browser on this device. Clearing the site's data or closing a private window deletes them, and another browser or device doesn't have them. Export a file to keep a backup, or [sign in](help:account) to keep them in an account. See [Where your things are kept](help:storage).\n- **Auto-save every turn** (in the side rail, or the ☰ menu on a phone) is different: it saves a node in the [Multiverse](help:auto-save) at each turn.\n- If the Dojo can't save to this device, it tells you once: \"Couldn't save to this device. Export the session to keep it.\"\n"
   },
   {
    "id": "save-and-rename",
@@ -1140,7 +1168,13 @@
     "desktop",
     "phone"
    ],
-   "aliases": [],
+   "aliases": [
+    "rename session",
+    "session name",
+    "duplicate",
+    "copy session",
+    "save game"
+   ],
    "targets": [
     "session-title",
     "save",
@@ -1148,12 +1182,34 @@
    ],
    "related": [
     "sessions",
-    "account-sync"
+    "account-sync",
+    "library"
    ],
-   "verified": "none",
-   "todo": true,
-   "headings": [],
-   "body": "TODO: write this article (M3d). The summary above is its scope. How to write it: docs/ARCH-help-and-tour.md §5.\n"
+   "verified": "v3.9.1",
+   "todo": false,
+   "headings": [
+    {
+     "level": 2,
+     "text": "Rename the session",
+     "slug": "rename-the-session"
+    },
+    {
+     "level": 2,
+     "text": "Save now",
+     "slug": "save-now"
+    },
+    {
+     "level": 2,
+     "text": "Save as copy",
+     "slug": "save-as-copy"
+    },
+    {
+     "level": 2,
+     "text": "Good to know",
+     "slug": "good-to-know"
+    }
+   ],
+   "body": "Give the match on the board a name, save it on the spot, or split off a copy to try a different idea.\n\n## Rename the session\n\n:::desktop\nClick the session title at the top left of the top bar, type a new name and press {key:Enter}. {key:Esc} puts the old name back.\n\n[Show me](show:session-title)\n:::\n\n:::phone\nThe top bar has no title on a phone. Tap **⋯** › **Leave to the dojo** (the match stays saved), open **Library**, then the session's **⋯** › **Rename**.\n:::\n\nYou can rename any session the same way from the [Library](help:library): **⋯** › **Rename**.\n\n## Save now\n\nThe Dojo already saves as you play (see [Sessions save themselves](help:sessions)). **Save** writes it straight away and tells you so. If you're signed in, it also saves the session to your account: see [What goes to your account](help:account-sync).\n\n:::desktop\nPress the floppy-disk button next to the title.\n\n[Show me](show:save)\n:::\n\n:::phone\nTap **⋯** in the top bar, then **Save**.\n:::\n\n## Save as copy\n\nUse it before trying a risky line: the copy carries on, and the original stays as it was.\n\n:::desktop\nPress the copy button next to **Save**.\n:::\n\n:::phone\nTap **⋯**, then **Save as copy**.\n:::\n\nName the copy and press **Save copy**. The copy becomes the session on the board. The original keeps everything up to that moment.\n\n## Good to know\n\n- A new copy is only on this device. Signed in, press **Save** to put it in your account too.\n- To copy a session without opening it, use **⋯** › **Duplicate** in the Library.\n- Viewing someone's shared link, **Save** saves your own copy of it. See [Open a link someone sent you](help:open-a-shared-link).\n"
   },
   {
    "id": "library",
@@ -1164,23 +1220,53 @@
     "desktop",
     "phone"
    ],
-   "aliases": [],
+   "aliases": [
+    "my sessions",
+    "my decks",
+    "saved sessions",
+    "shelves",
+    "all sessions"
+   ],
    "targets": [
     "library-button",
+    "all-sessions",
     "library",
     "lib-sessions",
     "lib-decks",
-    "lib-links"
+    "lib-links",
+    "lib-import"
    ],
    "related": [
     "sessions",
     "decks",
-    "share-links"
+    "share-links",
+    "account-sync"
    ],
-   "verified": "none",
-   "todo": true,
-   "headings": [],
-   "body": "TODO: write this article (M3d). The summary above is its scope. How to write it: docs/ARCH-help-and-tour.md §5.\n"
+   "verified": "v3.9.1",
+   "todo": false,
+   "headings": [
+    {
+     "level": 2,
+     "text": "Open the Library",
+     "slug": "open-the-library"
+    },
+    {
+     "level": 2,
+     "text": "Three tabs",
+     "slug": "three-tabs"
+    },
+    {
+     "level": 2,
+     "text": "The shelves",
+     "slug": "the-shelves"
+    },
+    {
+     "level": 2,
+     "text": "Good to know",
+     "slug": "good-to-know"
+    }
+   ],
+   "body": "The Library holds every session and deck you keep, sorted onto shelves by where each one lives.\n\n## Open the Library\n\nOn the home screen, press **Library** at the top, or **All sessions** in **Pick up again**. The figures on the button count your sessions on this device and, signed in, in your account. {key:Esc} or **×** closes it.\n\n[Show me](show:library-button)\n\nFrom a match, leave to the home screen first (see [The screen at a glance](help:screen-at-a-glance)).\n\n## Three tabs\n\n- **Sessions**: every match you've kept. **Open** loads one (**Back to it** for the match on the board). Its **⋯** menu has **Rename**, **Share a link**, **Duplicate**, **Export file (.dojo.json.gz)** and **Delete…**. **Import file** adds a session file: see [Export and import session files](help:files).\n- **Decks**: your decks and the **Built in** ones. **You** and **Opponent** seat a deck for the next match. **New deck**, **Import .txt** and **From a replay** add one. See [Your decks](help:decks).\n- **Links**: the share links you made, under **Public links**. See [Share a deck or a session](help:share-links).\n\n## The shelves\n\nSigned out, your sessions and decks sit on **On this device**, with an empty **Your account** shelf that offers **Sign in**. Signed in, they sort into **In your account + this device**, **Only on this device** and **Only in your account**. Each shelf says in one line what that means.\n\nA row only adds a note when it's out of step, like **Changed here since your last Save**. See [What goes to your account](help:account-sync).\n\n:::phone\nEach row's buttons sit at the foot of its card.\n:::\n\n## Good to know\n\n- **Delete…** on a session or deck can't be undone. Export a session first if you might want it back.\n- **On this device** means this browser only: clearing its site data deletes them. See [Where your things are kept](help:storage).\n"
   },
   {
    "id": "files",
@@ -1191,7 +1277,14 @@
     "desktop",
     "phone"
    ],
-   "aliases": [],
+   "aliases": [
+    "backup",
+    "download session",
+    ".dojo.json.gz",
+    "json file",
+    "load file",
+    "upload session"
+   ],
    "targets": [
     "tree-export",
     "tree-import",
@@ -1200,12 +1293,29 @@
    ],
    "related": [
     "library",
-    "share-links"
+    "share-links",
+    "storage"
    ],
-   "verified": "none",
-   "todo": true,
-   "headings": [],
-   "body": "TODO: write this article (M3d). The summary above is its scope. How to write it: docs/ARCH-help-and-tour.md §5.\n"
+   "verified": "v3.9.1",
+   "todo": false,
+   "headings": [
+    {
+     "level": 2,
+     "text": "Export a session",
+     "slug": "export-a-session"
+    },
+    {
+     "level": 2,
+     "text": "Open a session file",
+     "slug": "open-a-session-file"
+    },
+    {
+     "level": 2,
+     "text": "Good to know",
+     "slug": "good-to-know"
+    }
+   ],
+   "body": "A session file holds a whole match: the board, every Multiverse node, the notes and the log. Export one to keep a backup outside this browser, or to send it to someone by hand.\n\n## Export a session\n\n- **The match on the board:** open the **Multiverse** and press **Export** at the top.\n- **Any session:** in the Library, open the session's **⋯** and choose **Export file (.dojo.json.gz)**.\n\n:::phone\nIn the Multiverse the file tools show only their icons: **Export** is the file with an arrow pointing out.\n:::\n\n[Show me](show:tree-export)\n\nThe file is named after the session, like `T8 study.dojo.json.gz` (characters a file name can't hold, such as `/`, are left out). It's compressed, so even a big Multiverse stays small. A browser that can't compress saves a plain `.dojo.json` instead.\n\n## Open a session file\n\nAny of these works:\n\n- On the home screen, press **Choose a file**, or drop the file anywhere on the page. The Dojo reads it and shows **Saved session**. Press **Open it**.\n- In the Library's **Sessions** tab, press **Import file**.\n- In the Multiverse, press **Import**.\n\n[Show me](show:intake-file)\n\nThe Dojo reads `.dojo.json.gz`, `.dojo.json` and older `.json` session files.\n\n## Good to know\n\n- Opening a file always adds a new session to your library and puts it on the board. Opening the same file twice gives you two sessions.\n- Your files never go anywhere unless you send them. To send a match without a file, make a [share link](help:share-links).\n- A file made by a newer Dojo asks you to reload the page to update first.\n"
   },
   {
    "id": "share-links",
@@ -1216,19 +1326,53 @@
     "desktop",
     "phone"
    ],
-   "aliases": [],
+   "aliases": [
+    "share link",
+    "send a deck",
+    "send a session",
+    "copy link",
+    "delete link",
+    "my links"
+   ],
    "targets": [
     "share",
     "lib-links"
    ],
    "related": [
     "open-a-shared-link",
-    "share-limits"
+    "share-limits",
+    "files"
    ],
-   "verified": "none",
-   "todo": true,
-   "headings": [],
-   "body": "TODO: write this article (M3d). The summary above is its scope. How to write it: docs/ARCH-help-and-tour.md §5.\n"
+   "verified": "v3.9.1",
+   "todo": false,
+   "headings": [
+    {
+     "level": 2,
+     "text": "Share the match on the board",
+     "slug": "share-the-match-on-the-board"
+    },
+    {
+     "level": 2,
+     "text": "Share from the Library",
+     "slug": "share-from-the-library"
+    },
+    {
+     "level": 2,
+     "text": "Copy the link",
+     "slug": "copy-the-link"
+    },
+    {
+     "level": 2,
+     "text": "See and delete your links",
+     "slug": "see-and-delete-your-links"
+    },
+    {
+     "level": 2,
+     "text": "Good to know",
+     "slug": "good-to-know"
+    }
+   ],
+   "body": "A share link sends a deck, or a whole match with its Multiverse, to anyone. They open it in their browser; neither of you needs an account.\n\n## Share the match on the board\n\n:::desktop\nPress the share button next to **Save** in the top bar.\n\n[Show me](show:share)\n:::\n\n:::phone\nTap **⋯** in the top bar, then **Share link**.\n:::\n\n## Share from the Library\n\n- **A session:** in **Sessions**, open its **⋯** and choose **Share a link**.\n- **A deck:** in **Decks**, open its **⋯** and choose **Share a link**. Built-in decks can be shared too.\n\n## Copy the link\n\nWhen it's ready, the **Link ready** box shows a short link like `practicedojo.win/app/?s=k3J9xQ2mPa`. Press **Copy link**, then paste it wherever you like.\n\n## See and delete your links\n\nThe Library's **Links** tab lists your links under **Public links**. Press **Copy link** to copy one again. Its **⋯** has **Open in a new tab** and **Delete link**. A deleted link stops working for everyone: it opens as \"This share is no longer available\".\n\n[Show me](show:lib-links)\n\n## Good to know\n\n- A link is a snapshot. Later changes aren't in it, so share again to send a newer version.\n- Anyone who has the link can open it. A session link carries everything in the session, including your notes.\n- Making a link needs a connection. The first time, the Dojo quietly gives this browser its own sharing identity; there's no sign-in screen.\n- Signed out, the **Links** tab lists the links made from this browser, and clearing its site data loses that list (the links keep working). Signed in, links belong to your account, and links this browser made before you signed in come with you (unless that Discord or Google account was already a Dojo account).\n- There are limits: 20 links a day, 100 in all, and sessions up to 10 MB compressed. See [Share link limits](help:share-limits).\n"
   },
   {
    "id": "open-a-shared-link",
@@ -1239,18 +1383,47 @@
     "desktop",
     "phone"
    ],
-   "aliases": [],
+   "aliases": [
+    "shared session",
+    "shared deck",
+    "link from a friend",
+    "save a copy",
+    "share no longer available"
+   ],
    "targets": [
-    "shared-banner"
+    "shared-banner",
+    "intake"
    ],
    "related": [
     "share-links",
-    "sessions"
+    "sessions",
+    "save-and-rename"
    ],
-   "verified": "none",
-   "todo": true,
-   "headings": [],
-   "body": "TODO: write this article (M3d). The summary above is its scope. How to write it: docs/ARCH-help-and-tour.md §5.\n"
+   "verified": "v3.9.1",
+   "todo": false,
+   "headings": [
+    {
+     "level": 2,
+     "text": "A shared session",
+     "slug": "a-shared-session"
+    },
+    {
+     "level": 2,
+     "text": "A shared deck",
+     "slug": "a-shared-deck"
+    },
+    {
+     "level": 2,
+     "text": "If it doesn't open",
+     "slug": "if-it-doesnt-open"
+    },
+    {
+     "level": 2,
+     "text": "Good to know",
+     "slug": "good-to-know"
+    }
+   ],
+   "body": "Open the link in your browser. You don't need an account, and nothing is saved until you choose to keep it.\n\n## A shared session\n\nThe match opens on the board with a bar at the top: **Shared** · its title · **not saved yet** · **Save a copy**.\n\n[Show me](show:shared-banner)\n\nLook around, play on, open the Multiverse. While the bar shows, nothing goes into your library. To keep it, press **Save a copy** (**Save** in the top bar does the same). It becomes your own session on this device, under the same title, and saves itself from then on like any other.\n\nIf you open something else instead, or reload the page, your changes to the shared match are gone. A reload opens the link again from the start.\n\n## A shared deck\n\nThe Dojo opens the home screen with the deck in the paste field, marked **Shared deck** with its name. Press **Play it as you** or **Play against it** to seat it, or **Save to My decks** to keep it.\n\n[Show me](show:intake)\n\n## If it doesn't open\n\n- **Link not recognised:** part of the link is missing. Ask for it again, or check you copied all of it.\n- **This share is no longer available:** the person who shared it deleted it.\n- **Couldn't open the link:** the Dojo couldn't reach the sharing service. Check your connection and try again.\n\n## Good to know\n\n- Your copy is yours. Changing it never changes the link or the sharer's session.\n- A shared link is a snapshot of the moment it was made. If they keep playing, ask for a new link.\n"
   },
   {
    "id": "account",
@@ -1261,18 +1434,44 @@
     "desktop",
     "phone"
    ],
-   "aliases": [],
+   "aliases": [
+    "account",
+    "login",
+    "log in",
+    "register",
+    "sign up",
+    "sync",
+    "cloud",
+    "other devices"
+   ],
    "targets": [
     "account-button"
    ],
    "related": [
     "sign-in",
+    "account-sync",
     "storage"
    ],
-   "verified": "none",
-   "todo": true,
-   "headings": [],
-   "body": "TODO: write this article (M3d). The summary above is its scope. How to write it: docs/ARCH-help-and-tour.md §5.\n"
+   "verified": "v3.9.1",
+   "todo": false,
+   "headings": [
+    {
+     "level": 2,
+     "text": "Signed out, everything works",
+     "slug": "signed-out-everything-works"
+    },
+    {
+     "level": 2,
+     "text": "What signing in adds",
+     "slug": "what-signing-in-adds"
+    },
+    {
+     "level": 2,
+     "text": "Good to know",
+     "slug": "good-to-know"
+    }
+   ],
+   "body": "An account is optional. It keeps your decks and sessions somewhere other than this browser, so they're on your other devices too: every device you sign in on.\n\n## Signed out, everything works\n\nYou can play, use the Multiverse, study Duels.ink games, keep decks and sessions in the Library, export files, and make and open share links, all without an account. Signed out, nothing about accounts loads: the Dojo only goes online to load itself and the cards, and when you make or open a share link.\n\nThe catch: your library lives only in this browser on this device. Clearing the site's data, or closing a private window, deletes it, and another browser or device doesn't have it. Exporting files is the way to keep a backup. See [Where your things are kept](help:storage).\n\n## What signing in adds\n\n- **Decks follow you.** A deck you save goes to your account by itself and shows up on your other devices.\n- **Sessions when you press Save.** **Save** puts the match in your account; play on another device and open it from the Library.\n- **The Library shows where things are.** Its shelves sort everything by place: in your account, only on this device, or only in your account.\n- **Your share links** belong to your account.\n\nThe details are in [What goes to your account](help:account-sync).\n\n## Good to know\n\n- You sign in with Discord or Google. See [Sign in and out](help:sign-in).\n- An account holds up to 50 sessions and 200 decks. Sessions that don't fit can stay on this device.\n- Your Tweaks (theme, card size and the rest) stay with this browser; they don't go to your account.\n- Signing in needs a connection. If the account can't be reached, everything on this device still works.\n"
   },
   {
    "id": "sign-in",
@@ -1283,7 +1482,15 @@
     "desktop",
     "phone"
    ],
-   "aliases": [],
+   "aliases": [
+    "login",
+    "log in",
+    "log out",
+    "logout",
+    "discord",
+    "google",
+    "shared computer"
+   ],
    "targets": [
     "account-button"
    ],
@@ -1291,10 +1498,36 @@
     "account",
     "account-sync"
    ],
-   "verified": "none",
-   "todo": true,
-   "headings": [],
-   "body": "TODO: write this article (M3d). The summary above is its scope. How to write it: docs/ARCH-help-and-tour.md §5.\n"
+   "verified": "v3.9.1",
+   "todo": false,
+   "headings": [
+    {
+     "level": 2,
+     "text": "Sign in",
+     "slug": "sign-in"
+    },
+    {
+     "level": 2,
+     "text": "Bring what's on this device",
+     "slug": "bring-whats-on-this-device"
+    },
+    {
+     "level": 2,
+     "text": "Your account",
+     "slug": "your-account"
+    },
+    {
+     "level": 2,
+     "text": "Sign out",
+     "slug": "sign-out"
+    },
+    {
+     "level": 2,
+     "text": "Good to know",
+     "slug": "good-to-know"
+    }
+   ],
+   "body": "Sign in to keep your decks and sessions in an account. It's optional; see [Why sign in](help:account).\n\n## Sign in\n\n1. On the home screen, press **Sign in** at the top. (The Library's **Your account** shelf has a **Sign in** button too.)\n2. Choose **Continue with Discord** or **Continue with Google**.\n3. Approve the Dojo on Discord's or Google's page. You come back to the Dojo, signed in, and the button shows your name.\n\n[Show me](show:account-button)\n\nThe Dojo gets your name, picture and email from Discord or Google. It never sees your password.\n\n## Bring what's on this device\n\nThe first time you sign in on a device that already has decks or sessions, the Dojo asks whether to save them to your account:\n\n- **All** saves every one.\n- **Choose…** opens the Library, where **Save to account** (in a row's **⋯**) or **Save all N to account** (on the **Only on this device** shelf) saves one row or a whole shelf.\n- **Not now** leaves them on this device only. You can still save them from the Library later.\n\nEither way, they stay on this device too.\n\n## Your account\n\nPress your name on the home screen to see who you're signed in as and how much of your account you use (up to 50 sessions and 200 decks).\n\n## Sign out\n\nPress your name, then **Sign out**. The Dojo asks about the copies of your account's decks and sessions on this device:\n\n- **Keep on this device**: they stay here, for you or anyone using this browser.\n- **Remove from this device**: use this on a shared computer. Your account keeps everything either way.\n\nSessions and decks that were never in an account stay on the device either way.\n\n## Good to know\n\n- Share links you made from this browser before signing in move to your account. If your Discord or Google account was already a Dojo account, the Dojo offers to sign in to it instead, and those links stay with this browser.\n"
   },
   {
    "id": "account-sync",
@@ -1305,19 +1538,56 @@
     "desktop",
     "phone"
    ],
-   "aliases": [],
+   "aliases": [
+    "sync",
+    "other devices",
+    "upload",
+    "download",
+    "conflict",
+    "newer copy",
+    "overwrite",
+    "cloud save"
+   ],
    "targets": [
     "save",
-    "library"
+    "library",
+    "lib-sessions"
    ],
    "related": [
     "sign-in",
-    "save-and-rename"
+    "save-and-rename",
+    "library"
    ],
-   "verified": "none",
-   "todo": true,
-   "headings": [],
-   "body": "TODO: write this article (M3d). The summary above is its scope. How to write it: docs/ARCH-help-and-tour.md §5.\n"
+   "verified": "v3.9.1",
+   "todo": false,
+   "headings": [
+    {
+     "level": 2,
+     "text": "Decks follow you",
+     "slug": "decks-follow-you"
+    },
+    {
+     "level": 2,
+     "text": "Sessions go up when you press Save",
+     "slug": "sessions-go-up-when-you-press-save"
+    },
+    {
+     "level": 2,
+     "text": "Read the Library",
+     "slug": "read-the-library"
+    },
+    {
+     "level": 2,
+     "text": "When two devices disagree",
+     "slug": "when-two-devices-disagree"
+    },
+    {
+     "level": 2,
+     "text": "Good to know",
+     "slug": "good-to-know"
+    }
+   ],
+   "body": "Signed in, decks reach your account by themselves, and sessions reach it when you press **Save**. Nothing merges in the background, so you always know which copy is where.\n\n## Decks follow you\n\nSaving a deck on this device also saves it to your account. Your other devices pick it up when you sign in or open the Library's **Decks** tab. If two devices edit the same deck, the last save wins. Deleting a deck that's in your account deletes it from both.\n\n## Sessions go up when you press Save\n\nWhile you play, the session saves to this device only. **Save** in the top bar (on a phone, **⋯** › **Save**) also saves it to your account. A session that's already in your account is saved there again when you switch tabs or close the page with unsaved changes.\n\n[Show me](show:save)\n\n## Read the Library\n\nIn **Sessions**, a row says when its two copies differ:\n\n- **Changed here since your last Save**: press **Save to account**.\n- **Your account has a newer copy**: press **Get newer copy** to replace this device's copy with it.\n- On the **Only in your account** shelf, **Download & open** brings a session to this device.\n\n## When two devices disagree\n\nIf the session changed in your account since this device last saved it, **Save** asks **This session changed on another device**:\n\n- **Overwrite with mine**: your account keeps this device's version.\n- **Save mine as a copy**: this version goes to your account as a new session, and the other stays.\n- **Cancel**: nothing is saved to your account.\n\n## Good to know\n\n- Deleting a session that's in both places asks **This device**, **Account** or **Both**.\n- If saving to your account fails, the match is still saved on this device.\n- An account holds up to 50 sessions and 200 decks, and a session up to 10 MB compressed.\n"
   },
   {
    "id": "tweaks",
@@ -1328,7 +1598,13 @@
     "desktop",
     "phone"
    ],
-   "aliases": [],
+   "aliases": [
+    "settings",
+    "options",
+    "preferences",
+    "customise",
+    "customize"
+   ],
    "targets": [
     "tweaks",
     "tweaks-panel"
@@ -1339,10 +1615,26 @@
     "palette",
     "forecast"
    ],
-   "verified": "none",
-   "todo": true,
-   "headings": [],
-   "body": "TODO: write this article (M3d). The summary above is its scope. How to write it: docs/ARCH-help-and-tour.md §5.\n"
+   "verified": "v3.9.1",
+   "todo": false,
+   "headings": [
+    {
+     "level": 2,
+     "text": "Open Tweaks",
+     "slug": "open-tweaks"
+    },
+    {
+     "level": 2,
+     "text": "What's in it",
+     "slug": "whats-in-it"
+    },
+    {
+     "level": 2,
+     "text": "Good to know",
+     "slug": "good-to-know"
+    }
+   ],
+   "body": "Tweaks is where the Dojo's settings live: how it looks, how big the cards are, and how much it tells you about a challenge.\n\n## Open Tweaks\n\n:::desktop\nPress the sliders button at the right end of the top bar. Press it again, or **×**, to close.\n\n[Show me](show:tweaks)\n:::\n\n:::phone\nTap **⋯** in the top bar, then **Tweaks**. Tap **×** to close.\n:::\n\nTweaks opens from a match. On the home screen, only the theme can be changed (the **Auto / Day / Night** switch at the top).\n\n## What's in it\n\n- **Theme**: **Auto**, **Day** or **Night**. See [Day, night and accent](help:theme).\n- **Accent**: the colour of the main buttons and highlights. See [Day, night and accent](help:theme).\n- **Card size**: how big cards are. See [Card size and Art / Text](help:card-display).\n- **Card display**: **Art** or **Text** for every card. See [Card size and Art / Text](help:card-display).\n- **Challenge forecast**: **Off**, **Light** or **Full**. See [Challenge forecast](help:forecast).\n- **Player palette**: **Competition**, **Modern** or **Mono**. See [Player palette](help:palette).\n\n## Good to know\n\n- A change shows straight away; there's nothing to save.\n- Tweaks are kept in this browser. They don't go to your account, and clearing the site's data resets them.\n"
   },
   {
    "id": "theme",
@@ -1353,19 +1645,44 @@
     "desktop",
     "phone"
    ],
-   "aliases": [],
+   "aliases": [
+    "dark mode",
+    "light mode",
+    "night mode",
+    "theme",
+    "colour scheme",
+    "color",
+    "accent colour"
+   ],
    "targets": [
     "tweak-theme",
     "tweak-accent",
     "home-theme"
    ],
    "related": [
-    "tweaks"
+    "tweaks",
+    "palette"
    ],
-   "verified": "none",
-   "todo": true,
-   "headings": [],
-   "body": "TODO: write this article (M3d). The summary above is its scope. How to write it: docs/ARCH-help-and-tour.md §5.\n"
+   "verified": "v3.9.1",
+   "todo": false,
+   "headings": [
+    {
+     "level": 2,
+     "text": "Choose the theme",
+     "slug": "choose-the-theme"
+    },
+    {
+     "level": 2,
+     "text": "Choose the accent",
+     "slug": "choose-the-accent"
+    },
+    {
+     "level": 2,
+     "text": "Good to know",
+     "slug": "good-to-know"
+    }
+   ],
+   "body": "The **Theme** setting picks a light or dark Dojo; **Accent** picks the colour that marks the main button and where you are.\n\n## Choose the theme\n\nIn [Tweaks](help:tweaks), **Theme** has three choices:\n\n- **Auto** follows your device's light or dark setting, and changes when it does.\n- **Day** is always the warm light look.\n- **Night** is always the warm dark look.\n\n[Show me](show:tweak-theme)\n\nOn the home screen, the **Auto / Day / Night** switch at the top is the same setting.\n\n[Show me](show:home-theme)\n\n## Choose the accent\n\n**Accent** has four swatches. Its current name shows beside the label.\n\n- **Signal** is the theme's own: orange by day, a brighter orange at night.\n- **Coral**, **Olive** and **Trace** use that colour in both themes.\n\nThe accent colours the main button in each view, like **End turn** and **Start match**, and the marks that show where you are, like the turn number and the line you're on in the Multiverse.\n\n[Show me](show:tweak-accent)\n\n## Good to know\n\n- Your choices are kept in this browser. The Practice Dojo website follows the same theme.\n- The players' colours are a separate setting: [Player palette](help:palette).\n"
   },
   {
    "id": "card-display",
@@ -1376,19 +1693,45 @@
     "desktop",
     "phone"
    ],
-   "aliases": [],
+   "aliases": [
+    "card size",
+    "bigger cards",
+    "smaller cards",
+    "zoom cards",
+    "text mode",
+    "text only",
+    "no images",
+    "card art"
+   ],
    "targets": [
     "tweak-card-size",
     "tweak-card-display"
    ],
    "related": [
     "card-preview",
-    "offline"
+    "offline",
+    "tweaks"
    ],
-   "verified": "none",
-   "todo": true,
-   "headings": [],
-   "body": "TODO: write this article (M3d). The summary above is its scope. How to write it: docs/ARCH-help-and-tour.md §5.\n"
+   "verified": "v3.9.1",
+   "todo": false,
+   "headings": [
+    {
+     "level": 2,
+     "text": "Card size",
+     "slug": "card-size"
+    },
+    {
+     "level": 2,
+     "text": "Art or Text",
+     "slug": "art-or-text"
+    },
+    {
+     "level": 2,
+     "text": "Good to know",
+     "slug": "good-to-know"
+    }
+   ],
+   "body": "Two settings in [Tweaks](help:tweaks) change how cards look: **Card size** and **Card display**.\n\n## Card size\n\nDrag the **Card size** slider. It goes from 0.70× to 1.40×, and the value shows beside the label. It starts at 1.00×, or 0.80× on a touch screen so the board fits a phone.\n\n[Show me](show:tweak-card-size)\n\nWhen the play area fills up, cards in play still shrink to fit, whatever the setting.\n\n## Art or Text\n\n**Card display** has two choices:\n\n- **Art** shows the card pictures. A card whose picture can't be fetched shows as text instead.\n- **Text** shows every card as text: name, version, cost, stats and rules. No card pictures are loaded at all.\n\n[Show me](show:tweak-card-display)\n\nIt applies everywhere at once: the board, your hand, the inkwell, the discard, every card grid and the card preview. On a text card, a gold disc means inkable and a dark hexagon means not inkable.\n\n## Good to know\n\n- **Text** is handy on a slow or no connection, since it needs no pictures. See [Playing offline](help:offline).\n- Both settings are kept in this browser.\n"
   },
   {
    "id": "palette",
@@ -1399,17 +1742,39 @@
     "desktop",
     "phone"
    ],
-   "aliases": [],
+   "aliases": [
+    "player colours",
+    "player colors",
+    "grayscale",
+    "greyscale",
+    "black and white",
+    "colour blind",
+    "competition",
+    "modern",
+    "mono"
+   ],
    "targets": [
     "tweak-palette"
    ],
    "related": [
-    "tweaks"
+    "tweaks",
+    "theme"
    ],
-   "verified": "none",
-   "todo": true,
-   "headings": [],
-   "body": "TODO: write this article (M3d). The summary above is its scope. How to write it: docs/ARCH-help-and-tour.md §5.\n"
+   "verified": "v3.9.1",
+   "todo": false,
+   "headings": [
+    {
+     "level": 2,
+     "text": "Choose a palette",
+     "slug": "choose-a-palette"
+    },
+    {
+     "level": 2,
+     "text": "Good to know",
+     "slug": "good-to-know"
+    }
+   ],
+   "body": "**Player palette** in [Tweaks](help:tweaks) sets how the Dojo tells the two players apart by colour.\n\n## Choose a palette\n\n[Show me](show:tweak-palette)\n\n- **Competition** (the default): each side is shaded in its own deck's two inks, on the board, the player rows, the lore and the Multiverse nodes. Player 1's mark is split in two; Player 2's is striped like a barber pole, so a mirror match still reads. Under the switch, a P1 and a P2 icon show the inks it picked; hover one to see their names. Before both decks are known, it uses Modern's colours.\n- **Modern**: two fixed colours, olive for Player 1 and teal for Player 2, whatever the decks.\n- **Mono**: grey only. There's no colour anywhere, card pictures included. Player 1 is light and Player 2 is heavy.\n\n## Good to know\n\n- The palette only changes the players' colours. The light or dark look is the [Theme](help:theme).\n- It's kept in this browser.\n"
   },
   {
    "id": "forecast",
@@ -1420,18 +1785,36 @@
     "desktop",
     "phone"
    ],
-   "aliases": [],
+   "aliases": [
+    "challenge preview",
+    "outcome",
+    "who dies",
+    "banished preview",
+    "damage preview"
+   ],
    "targets": [
     "tweak-forecast",
     "challenge-banner"
    ],
    "related": [
-    "challenge"
+    "challenge",
+    "tweaks"
    ],
-   "verified": "none",
-   "todo": true,
-   "headings": [],
-   "body": "TODO: write this article (M3d). The summary above is its scope. How to write it: docs/ARCH-help-and-tour.md §5.\n"
+   "verified": "v3.9.1",
+   "todo": false,
+   "headings": [
+    {
+     "level": 2,
+     "text": "Choose how much",
+     "slug": "choose-how-much"
+    },
+    {
+     "level": 2,
+     "text": "Good to know",
+     "slug": "good-to-know"
+    }
+   ],
+   "body": "**Challenge forecast** sets how much the Dojo tells you about a [challenge](help:challenge) before you make it: who would be banished and how much damage each card would have.\n\n## Choose how much\n\nIn [Tweaks](help:tweaks), **Challenge forecast** has three choices: **Off**, **Light** (the default) and **Full**.\n\n[Show me](show:tweak-forecast)\n\n:::mouse\nWhile you drag your character onto an opponent's card, or point at one in challenge mode:\n\n- **Off** shows only the arrow.\n- **Light** shows one line over the target: who gets banished, and the damage after.\n- **Full** shows a forecast card with each card's damage before and after, marked **BANISHED** or **SURVIVES**, and the extra damage on both cards. Once you pick an attacker in challenge mode, every opponent card also gets an outcome badge.\n\nThe challenge mode bar has the same **Off / Light / Full** switch, so you can change it mid-challenge.\n\n[Show me](show:challenge-banner)\n:::\n\n:::touch\nWith no pointer to hover, **Light** and **Full** both work the same way: once you pick your character in challenge mode, every opponent card gets an outcome badge. **Off** shows no badges.\n:::\n\n## Good to know\n\n- The forecast only predicts. The Dojo never stops a challenge: if your character is exerted or drying, it lets you and says so.\n- The setting is kept in this browser.\n"
   },
   {
    "id": "offline",
