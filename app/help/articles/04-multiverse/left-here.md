@@ -18,7 +18,7 @@ Every jump checks the board you're leaving: **Play from here**, and on desktop a
 
 ## Find a snapshot
 
-%%%TODO: Add a screenshot of a snapshot
+![A node, and the dashed "Left here" snapshot hanging off it on a dashed line](img/left-here-{theme}.webp)
 
 A snapshot hangs off the node you were last on, on a dashed line:
 

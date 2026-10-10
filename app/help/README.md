@@ -24,4 +24,12 @@ what's left is in [`docs/TODO-help-and-tour.md`](../../docs/TODO-help-and-tour.m
 5. Add a golden query or two for it in `tools/help-golden.json`.
 6. Run `node tools/help.mjs` and commit `manual.json` with your change. If `manual.json` conflicts with another branch, re-run the tool; don't merge it by hand.
 
+## Pictures
+
+Few, on purpose (ARCH §5.6): prefer `[Show me](show:<target>)`. When a picture helps, write
+`![What it shows](img/<name>-{theme}.webp)`: the viewer shows `<name>-day.webp` or
+`<name>-night.webp` to match the theme. Add the shot to `tools/help-shots.mjs`, run
+`node tools/help.mjs shots` (it retakes every picture from the Set 13 demo) and commit
+`app/help/img/`.
+
 A control without a target: add it to `targets.json` (give the element an `id` in `app/index.html` if it has none).

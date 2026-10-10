@@ -7244,9 +7244,22 @@ body.palette-competition .tree-node.tn-p2::before {
 }
 
 .help-prose img {
+    display: block;
     max-width: 100%;
+    height: auto;
+    margin: 4px 0 12px;
     border: 1px solid var(--border);
     border-radius: var(--radius-sm);
+}
+
+/* img/<name>-{theme}.webp: the viewer adds both; show the one for the theme. */
+.help-prose img.help-img-night,
+:root[data-theme="night"] .help-prose img.help-img-day {
+    display: none;
+}
+
+:root[data-theme="night"] .help-prose img.help-img-night {
+    display: block;
 }
 
 /* Keycaps: the neutral function key (Bone), mono 11px, a 2px darker foot. Never an ink. */

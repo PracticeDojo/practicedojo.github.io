@@ -143,6 +143,8 @@ into the right milestone, or into *Parked* if it's outside the plan.
 
 - [x] Owner: bold the calls to action in tour text, and drop the outline's glide and pulse (distracting, looked broken). *Every step in the three tours bolds its action as one phrase ("**Tap Start turn**"); the spotlight no longer glides, resizes or pulses between steps (only its first fade-in remains)*
 
+- [x] Owner TODOs in the articles: screenshots for *The mini multiverse* and *"Left here" snapshots*. *`node tools/help.mjs shots` now exists (`tools/help-shots.mjs`): it retakes the manual's pictures from the Set 13 demo, day and night, as `app/help/img/<name>-<theme>.webp`; articles write `img/<name>-{theme}.webp` and the viewer shows the one for the theme. Checked in Help at 1440, day and night*
+
 ## Found while building (not fixed; outside this plan)
 App bugs the writers noticed while checking articles. The manual describes today's behaviour.
 - Desktop: clicking or hovering an unknown card in the active hand throws (`showContextMenu` reads `dbCard.cost`, `showPreview` reads `images`), so it can't be swapped there

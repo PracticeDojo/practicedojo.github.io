@@ -458,9 +458,18 @@ window.DojoHelp = (function () {
         // 4. Placeholders to elements; headings get their bundle slugs.
         swap(into, ph, a);
         into.querySelectorAll('img').forEach((img) => {
-            const s = img.getAttribute('src') || '';
-            if (s && !/^(?:[a-z]+:|\/|#)/i.test(s)) img.setAttribute('src', 'help/' + s.replace(/^\.\//, ''));
+            let s = img.getAttribute('src') || '';
+            if (s && !/^(?:[a-z]+:|\/|#)/i.test(s)) s = 'help/' + s.replace(/^\.\//, '');
             img.setAttribute('loading', 'lazy');
+            // img/<name>-{theme}.webp: a day and a night picture; CSS shows the one for the theme.
+            if (/\{theme\}|%7Btheme%7D/i.test(s)) {
+                const night = img.cloneNode();
+                img.setAttribute('src', s.replace(/\{theme\}|%7Btheme%7D/i, 'day'));
+                night.setAttribute('src', s.replace(/\{theme\}|%7Btheme%7D/i, 'night'));
+                img.classList.add('help-img-day');
+                night.classList.add('help-img-night');
+                img.after(night);
+            } else img.setAttribute('src', s);
         });
         into.querySelectorAll('a[href]').forEach((el) => {
             if (/^https?:/i.test(el.getAttribute('href'))) { el.target = '_blank'; el.rel = 'noopener noreferrer'; }

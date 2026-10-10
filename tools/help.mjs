@@ -11,7 +11,7 @@
 //   node tools/help.mjs --live    open the app headless (1440 and 390) and check every target in
 //                                 app/help/targets.json shows on its devices (tools/help-live.mjs)
 //
-// Coming later (§12): shots (the manual's screenshots, M3).
+//   node tools/help.mjs shots     retake the manual's screenshots into app/help/img/ (tools/help-shots.mjs)
 //
 // Sources, all under app/help/:
 //   sections.json             section ids, titles and folders, in order
@@ -45,12 +45,19 @@ if (args.includes('--live')) {
     process.exit(runLive(ROOT));
 }
 
-const later = { shots: 'M3 (content)' };
-for (const [flag, ms] of Object.entries(later)) {
-    if (args.includes(flag)) {
-        console.error(`${flag} isn't built yet: it arrives with ${ms}. See docs/ARCH-help-and-tour.md §10 and §12.`);
-        process.exit(2);
-    }
+// shots (§5.6): retake the manual's screenshots into app/help/img/ with the dojo-screenshots
+// skill (tools/help-shots.mjs). Needs Playwright and the network (the card database).
+if (args[0] === 'shots') {
+    const out = join(ROOT, 'tools', '.cache', 'help-shots');
+    mkdirSync(out, { recursive: true });
+    try {
+        execFileSync(process.execPath, [
+            join(ROOT, '.claude/skills/dojo-screenshots/shoot.mjs'), '--demo', '--widths', '1440',
+            '--themes', 'day,night', '--wait', '2000', '--steps', join(ROOT, 'tools/help-shots.mjs'), '--out', out
+        ], { stdio: 'inherit', cwd: ROOT, env: { ...process.env, NODE_USE_ENV_PROXY: '1', NODE_NO_WARNINGS: '1' } });
+    } catch (e) { process.exit(e.status || 1); }
+    console.log('Screenshots retaken in app/help/img/. Commit them.');
+    process.exit(0);
 }
 
 const errors = [];
