@@ -700,6 +700,11 @@ Implements version 2 of `docs/DESIGN-field-unit.md` (Kiln dark mode, signal fami
 - **Signal family.** By day the signal is Ember `#E4572E`; on Kiln it is Radio `#E86B2A` with dark text on the key. Tweaks → Accent offers only the approved swaps: **Signal** (the theme's own), **Coral**, **Olive** (its lore numeral lifts to `#C6C45A` on the well) and **Trace**. Each carries the text colour that sits on it. The old Amber / Rose / Emerald / Violet / Azure accents were ink colours, so a saved pick of one falls back to Signal.
 - **CSS file.** The Field Unit tokens, themes, palettes and component styles moved from the inline `<style>` to `app/css/field-unit.css`, loaded right after it (pixel-identical move). The older inline rules stay put.
 
+## Patch: Mulligan card stays up after a hold (v3.9.1)
+
+### Details
+- On a touch screen, press and hold a card in the mulligan: it shows large, as before, but now **stays** when you lift your finger. The next tap anywhere closes it and brings you back to the mulligan; that tap marks nothing. Closing as the finger lifted made the card hard to read.
+
 ## Feature 56: Multiverse on phones — thumb keys, the key on top, the plot first (v3.9.0)
 
 ### User Story
@@ -748,7 +753,7 @@ Implements version 2 of `docs/DESIGN-field-unit.md` (Kiln dark mode, signal fami
 - **The look.** A paper dialog. The head reads `Opening hand · Turn 1 · on the draw` (or *on the play*), the player's deck icon and name, *Then you draw +1* (or *No draw turn 1*) and the deck size. The hand sits on glass in one row of seven, cheapest first; tablets and phones put it in 4 + 3. A marked card sinks and dims behind a dashed outline with a `↓ Bottom` tag, instead of the old red ring and X.
 - **The readout** under the hand, live as you mark: the **curve** of the cards you'd keep (cost 1–6 and 7+, the cards going back as dashed bars on top), **inkable** (a pip per kept card, filled when it can be inked, and `4 / 5`), and the plan (*5 kept + 2 redraw*, *Keeping all 7*; phones show the redraw count).
 - **Draw odds** (Feature 25) sit beside the well on desktop, as tall as it and scrolling, titled *Draw odds · if you send 2*. Phones show the top three rows under the well, and **All** opens the rest.
-- **Looking at a card.** With a mouse, each card has a **magnifier** in its top-right corner (a 22px glass control): click it and the card grows in place to about twice its size, big enough to read, over its neighbours. Any click or Esc puts it back, and that click does nothing else. Clicking the card itself marks it. On a touch screen there's no magnifier: **press and hold** a card and it shows large over the screen with its name, cost, inkable and type while your finger is down, and goes when you let go. The hold doesn't mark the card; a tap still does.
+- **Looking at a card.** With a mouse, each card has a **magnifier** in its top-right corner (a 22px glass control): click it and the card grows in place to about twice its size, big enough to read, over its neighbours. Any click or Esc puts it back, and that click does nothing else. Clicking the card itself marks it. On a touch screen there's no magnifier: **press and hold** a card and it shows large over the screen with its name, cost, inkable and type. It stays when you let go; tap anywhere to close it and you're back on the mulligan (since v3.9.1; it used to close as the finger lifted). The hold doesn't mark the card, and nor does the tap that closes it; a tap on a card still marks it.
 - **Phones.** The dialog fills the framed screen: small cards in 4 + 3, the readout, the odds, then a fixed foot with **Craft** and the confirm key.
 - **Then the draw.** Once Player 2 has chosen, they draw for the turn (logged as the turn's draw), their Turn Starting Hand is captured, and the auto-save of Player 1's first turn is written. So the *Turn 1 - Player 2 Active* node holds the board Player 2 plays from, and stepping through the Multiverse never lands in the dialog.
 - **Undo** after the decision comes back to the dialog. A board waiting on its mulligan keeps that through a reload, a save or a share link, and the dialog comes back when you return to it from the home screen.
@@ -1034,3 +1039,4 @@ The public page (`index.html`) follows Field Unit too, as `docs/DESIGN-field-uni
 - [x] Feature 54: Mulligan mode — each player's first turn opens on their mulligan
 - [x] Feature 55: Step through the cards in play in the card drawer
 - [x] Feature 56: Multiverse on phones — thumb keys, the key on top, the plot first
+- [x] Patch: Mulligan card stays up after a hold

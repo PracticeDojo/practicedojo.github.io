@@ -404,7 +404,7 @@
                     <span class="mull-long">Craft hand</span><span class="mull-short">Craft</span></button>
                 <button class="btn btn-primary" id="mulligan-confirm" onclick="App.confirmMulligan()">Keep hand</button>
             </div>
-            <!-- Press and hold a card (touch): it shows large while the finger is down. -->
+            <!-- Press and hold a card (touch): it shows large until the next touch. -->
             <div class="mull-peek" id="mulligan-peek" hidden aria-hidden="true"></div>
         </div>
     </div>
@@ -1081,7 +1081,7 @@
     <script>
         let cardFuse = null;
 
-        const APP_VERSION = "v3.9.0"; // Centralized version string (v3: Field Unit)
+        const APP_VERSION = "v3.9.1"; // Centralized version string (v3: Field Unit)
 
         // Tweaks panel accent presets (hue values for the OKLCH accent ramp)
         // Tweaks → Accent: the approved Field Unit signals only (design.md ·
@@ -7564,14 +7564,18 @@
                 odds.querySelector('.mull-odds-more').setAttribute('aria-expanded', open ? 'true' : 'false');
             },
 
-            // Press and hold a card (touch / pen) to look at it: it shows large while
-            // the finger is down and goes when it lifts. The press doesn't mark it.
+            // Press and hold a card (touch / pen) to look at it: it shows large and
+            // stays after the finger lifts; the next touch anywhere closes it (and
+            // does nothing else). The press doesn't mark the card.
             _bindMulliganPeek(pick, c, index, count) {
                 const HOLD_MS = 320, SLOP = 10;
                 let hold = null;
                 const end = () => {
-                    if (hold) { clearTimeout(hold.t); hold = null; }
-                    this.hideMulliganPeek();
+                    if (!hold) return;
+                    clearTimeout(hold.t);
+                    // Only now can it take a touch, so the lifting finger doesn't close it.
+                    if (hold.shown) document.getElementById('mulligan-peek').classList.add('is-stay');
+                    hold = null;
                 };
                 pick.addEventListener('pointerdown', (e) => {
                     this._mullPeeked = false;
@@ -7611,7 +7615,14 @@
                     ? `<div class="mull-peek-name">${esc(db.name)}${db.version ? ` <span>· ${esc(db.version)}</span>` : ''}</div>
                        <div class="mull-peek-meta">Cost ${esc(db.cost)} · ${db.inkwell ? 'inkable' : 'not inkable'}${db.type ? ` · ${esc(db.type)}` : ''}</div>`
                     : `<div class="mull-peek-name">Unknown card</div>`);
-                box.insertAdjacentHTML('beforeend', '<div class="mull-lbl mull-peek-hint">Let go to close</div>');
+                box.insertAdjacentHTML('beforeend', '<div class="mull-lbl mull-peek-hint">Tap anywhere to close</div>');
+                box.classList.remove('is-stay');
+                if (!box._closeBound) {
+                    box._closeBound = true;
+                    // On the touch down, not the click: the click that follows lands on
+                    // the dialog, not on a card, so it marks nothing.
+                    box.addEventListener('pointerdown', (e) => { e.preventDefault(); this.hideMulliganPeek(); });
+                }
                 box.hidden = false;
             },
 
@@ -7619,6 +7630,7 @@
                 const box = document.getElementById('mulligan-peek');
                 if (!box || box.hidden) return;
                 box.hidden = true;
+                box.classList.remove('is-stay');
                 box.innerHTML = '';
             },
 
