@@ -7,7 +7,7 @@ aliases: [timeline, timelines, tree, save points, what if, replay a turn, go bac
 targets: [multiverse, tree-canvas, tree-panel]
 related: [auto-save, branches, nodes, multiverse-panel]
 order: 10
-verified: v3.9.1
+verified: v3.11.0
 ---
 
 The Multiverse keeps every turn you've saved, so you can go back to any of them and play it another way.

@@ -7,7 +7,7 @@ aliases: [pass, pass turn, next turn, finish turn, ready step, draw step]
 targets: [end-turn, auto-save]
 related: [auto-save, you-play-both-sides, undo]
 order: 120
-verified: v3.9.1
+verified: v3.11.0
 ---
 
 When you're done, end the turn. The other player's turn begins, and the board swaps so they're at the bottom.

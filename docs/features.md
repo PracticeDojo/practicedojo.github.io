@@ -700,20 +700,21 @@ Implements version 2 of `docs/DESIGN-field-unit.md` (Kiln dark mode, signal fami
 - **Signal family.** By day the signal is Ember `#E4572E`; on Kiln it is Radio `#E86B2A` with dark text on the key. Tweaks → Accent offers only the approved swaps: **Signal** (the theme's own), **Coral**, **Olive** (its lore numeral lifts to `#C6C45A` on the well) and **Trace**. Each carries the text colour that sits on it. The old Amber / Rose / Emerald / Violet / Azure accents were ink colours, so a saved pick of one falls back to Signal.
 - **CSS file.** The Field Unit tokens, themes, palettes and component styles moved from the inline `<style>` to `app/css/field-unit.css`, loaded right after it (pixel-identical move). The older inline rules stay put.
 
-## Feature 58: Guided tours for first-time players (planned)
+## Feature 58: Guided tours for first-time players (v3.11.0)
 
 ### User Story
 - As a new player, I want to be offered a short tour that shows me the real controls on a practice board and lets me try each one, so I can play my first turn without reading anything first.
 - As a player who doesn't want a tour, I want to say no once and never be asked again.
 
 ### Details
-Planned in `docs/ARCH-help-and-tour.md` (§8); checklist in `docs/TODO-help-and-tour.md`.
-- **Opt in.** New players see one quiet strip on the home screen (*New here? Take the 3-minute tour · Not now*). No pop-up, no auto-start. The tours are always listed in Help.
-- **Three short tours:** *Your first turn* (mulligan, ink, play, end turn, undo), *The Multiverse* (nodes, play from here, branching, saving a turn, plot) and *Study a Duels.ink game*.
-- **Point and try.** Each step lights the real control and, where it teaches an action, waits for the player to do it. Desktop and phone get their own wording and targets.
-- **Never touches your things.** Tours run on a practice board that isn't saved (like an unsaved shared session); a match in progress is kept as it was.
+Built from `docs/ARCH-help-and-tour.md` §8 (M5–M7). Shipped together with Feature 57 as v3.11.0.
+- **Opt in.** New players (no sessions on the device, not arriving by a share link) see one strip under the home headline: *New here? Take the 3-minute tour.* **Start tour** · **Not now** (hides it for good). Players who already have sessions get a one-time toast saying where Help is. No pop-ups, no auto-start. The tours are always listed at the top of Help, with ✓ on finished ones.
+- **Three tours:** *Your first turn* (a scripted practice board: mulligan, the board, ink, play, read a card, end turn, the other side, Undo, where the Multiverse is), *The Multiverse* (a copy of the Set 13 demo: nodes, Play from here, branching, saving the turn you're in, plot, mini map or thumb keys) and *Study a Duels.ink game* (the example log, the readout, the imported turns).
+- **Point and try.** Each step lights the real control (the spotlight) and, where it teaches an action, waits for the player to do it, with *Skip this step*. Desktop and phone have their own wording and targets. A hint appears after 20 seconds; *Learn more* opens the article and the tour carries on when Help closes. ✕ or Esc ends a tour.
+- **Never touches your things.** Tours run on a practice board, a scratch view like an unsaved shared session (*Practice · not saved*; Save offers Save a copy). The match on the board is saved first and put back afterwards; the device library is unchanged.
+- Code: `app/js/tour.js` (`DojoTour`), tours in `app/help/tours/` (`basics.json` + `basics.dojo.json.gz`, `multiverse.json`, `import.json`), `App.openScratch` / `closeScratch` in `app/index.html`.
 
-## Feature 57: User manual with fuzzy search, for desktop and phone (planned)
+## Feature 57: User manual with fuzzy search, for desktop and phone (v3.11.0)
 
 ### User Story
 - As a player with a question about how the Dojo works, I want to type it in my own words and land on the answer, even if I misspell it or use another game's words ("mana", "attack", "rewind").
@@ -721,12 +722,13 @@ Planned in `docs/ARCH-help-and-tour.md` (§8); checklist in `docs/TODO-help-and-
 - As a player reading about a control, I want the app to show me where it is.
 
 ### Details
-Planned in `docs/ARCH-help-and-tour.md` (§4–§7, §10); checklist in `docs/TODO-help-and-tour.md`.
-- **About 60 short articles** in ten sections (Getting started, Playing a turn, Cards and decks, The Multiverse, Importing games, Library and sharing, Account, Settings, Help and fixes, Reference), written once in Markdown under `app/help/articles/`.
-- **Device-aware.** Articles carry desktop and phone variants; the manual shows the device in use and can switch to the other.
-- **Fuzzy search** (Fuse.js, already loaded) over each article's sections, with player words mapped to Dojo words.
-- **Show me** lights the real control on the board. Small `?` links on panels open the right article. `?` opens help on desktop; phones have it in the ⋯ menu.
-- Works offline and signed out; no tracking.
+Built from `docs/ARCH-help-and-tour.md` §4–§7 and §10 (M0–M4, M7).
+- **Help** opens from the top bar's **?** (desktop), **Help & tours** in the ⋯ menu (phones), **Help** on the home screen, the `?` key, small **?** links on the Multiverse, mulligan, Library, Tweaks, draw odds, Share and Sign-in panels, and links like `…/app/#help/ink-a-card`. On desktop it's a side drawer and the board stays usable; on phones a full-screen sheet.
+- **64 articles** in ten sections (Getting started, Playing a turn, Cards and decks, The Multiverse, Importing games, Library and sharing, Account, Settings, Help and fixes, Reference), each checked against the app on desktop and phone. Sources are Markdown in `app/help/articles/`; `tools/help.mjs` builds `app/help/manual.json`, the one file the app fetches (on first open).
+- **Device-aware.** Articles carry desktop and phone (and mouse / touch) variants; Help shows the device in use, with a *Desktop · Phone* switch.
+- **Fuzzy search** (`app/js/help-search.js`, Fuse.js, already loaded) over each article's sections, with player words mapped to Dojo words (`app/help/synonyms.json`). 128 golden queries (`tools/help-golden.json`) all land in the top three; about half a millisecond a query.
+- **Show me** (`app/js/spotlight.js`) dims the page and rings the real control, named through `app/help/targets.json` (90 targets; `node tools/help.mjs --live` checks them in the running app).
+- Works offline once loaded and signed out; no tracking. `AGENTS.md` · *Keeping the manual current* says how to keep it true.
 
 ## Patch: Mulligan card stays up after a hold (v3.9.1)
 
@@ -1068,5 +1070,5 @@ The public page (`index.html`) follows Field Unit too, as `docs/DESIGN-field-uni
 - [x] Feature 55: Step through the cards in play in the card drawer
 - [x] Feature 56: Multiverse on phones — thumb keys, the key on top, the plot first
 - [x] Patch: Mulligan card stays up after a hold
-- [ ] Feature 57: User manual with fuzzy search, for desktop and phone
-- [ ] Feature 58: Guided tours for first-time players
+- [x] Feature 57: User manual with fuzzy search, for desktop and phone
+- [x] Feature 58: Guided tours for first-time players

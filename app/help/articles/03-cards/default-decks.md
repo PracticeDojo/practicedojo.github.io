@@ -7,7 +7,7 @@ aliases: [default decks, sample deck, example deck, demo, example game, precon, 
 targets: [deck-chips, recent]
 related: [decks, sessions]
 order: 80
-verified: v3.9.1
+verified: v3.11.0
 ---
 
 The Dojo comes with a few decks and example games, so you can start without a list of your own.

@@ -7,7 +7,7 @@ aliases: [branch, alternate line, what if, replay a turn, try again, take back a
 targets: [tree-canvas]
 related: [multiverse, multiverse-panel, left-here, undo]
 order: 60
-verified: v3.9.1
+verified: v3.11.0
 ---
 
 To try another line, go back to an earlier node and play on from it. The new turns grow a new branch, and the line you played before stays exactly as it was.

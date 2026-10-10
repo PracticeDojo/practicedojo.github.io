@@ -7,7 +7,7 @@ aliases: [player colours, player colors, grayscale, greyscale, black and white, 
 targets: [tweak-palette]
 related: [tweaks, theme]
 order: 40
-verified: v3.9.1
+verified: v3.11.0
 ---
 
 **Player palette** in [Tweaks](help:tweaks) sets how the Dojo tells the two players apart by colour.

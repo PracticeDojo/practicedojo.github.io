@@ -7,7 +7,7 @@ aliases: [inspect deck, view deck, search deck, stack the deck, deck order, reor
 targets: [deck]
 related: [swap-cards, draw, draw-odds]
 order: 20
-verified: v3.9.1
+verified: v3.11.0
 ---
 
 Open a deck to see every card left in it, in draw order, and set up the draws you want to practise.

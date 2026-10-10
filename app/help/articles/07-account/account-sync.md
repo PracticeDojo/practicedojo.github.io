@@ -7,7 +7,7 @@ aliases: [sync, other devices, upload, download, conflict, newer copy, overwrite
 targets: [save, library, lib-sessions]
 related: [sign-in, save-and-rename, library]
 order: 30
-verified: v3.9.1
+verified: v3.11.0
 ---
 
 Signed in, decks reach your account by themselves, and sessions reach it when you press **Save**. Nothing merges in the background, so you always know which copy is where.

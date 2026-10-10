@@ -7,7 +7,7 @@ aliases: [zoom card, card details, enlarge card, card text, hover card, read car
 targets: [card-preview, card-drawer]
 related: [card-display, offline]
 order: 10
-verified: v3.9.1
+verified: v3.11.0
 ---
 
 Cards on the board are small. The preview shows one big enough to read, with all its abilities.

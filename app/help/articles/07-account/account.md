@@ -7,7 +7,7 @@ aliases: [account, login, log in, register, sign up, sync, cloud, other devices]
 targets: [account-button]
 related: [sign-in, account-sync, storage]
 order: 10
-verified: v3.9.1
+verified: v3.11.0
 ---
 
 An account is optional. It keeps your decks and sessions somewhere other than this browser, so they're on your other devices too: every device you sign in on.

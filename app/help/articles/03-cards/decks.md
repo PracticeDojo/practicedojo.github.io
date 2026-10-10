@@ -7,7 +7,7 @@ aliases: [decklist, deck builder, save deck, import deck, my decks, edit deck, t
 targets: [intake, library-button, deck-new, deck-import-txt, deck-from-replay]
 related: [default-decks, library, first-match]
 order: 70
-verified: v3.9.1
+verified: v3.11.0
 ---
 
 Keep the decks you play in **My decks**, so they're one tap away on the home screen.

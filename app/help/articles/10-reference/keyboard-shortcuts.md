@@ -7,7 +7,7 @@ aliases: [hotkeys, keys, keyboard, key bindings, space, esc, escape, enter, arro
 targets: [mini-multiverse-keys]
 related: [hotkeys-not-working, card-actions, multiverse-navigate, gestures]
 order: 10
-verified: v3.9.1
+verified: v3.11.0
 ---
 
 Every key the Dojo answers to, grouped by where it works. Keys are single presses: the Dojo leaves anything with Ctrl, Cmd or Alt to your browser. If a key does nothing, see [Shortcuts don't do anything](help:hotkeys-not-working).

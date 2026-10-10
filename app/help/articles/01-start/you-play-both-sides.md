@@ -7,7 +7,7 @@ aliases: [opponent, ai, computer opponent, bot, whose turn, solo, hotseat]
 targets: [turn, opponent-board, your-board]
 related: [end-turn, what-is-the-dojo]
 order: 40
-verified: v3.9.1
+verified: v3.11.0
 ---
 
 There's no computer opponent in the Dojo. You play Player 1's turn, end it, then play Player 2's turn, and so on. That's how you test a line against the best answer you can think of.

@@ -7,7 +7,7 @@ aliases: [share link, send a deck, send a session, copy link, delete link, my li
 targets: [share, lib-links]
 related: [open-a-shared-link, share-limits, files]
 order: 50
-verified: v3.9.1
+verified: v3.11.0
 ---
 
 A share link sends a deck, or a whole match with its Multiverse, to anyone. They open it in their browser; neither of you needs an account.

@@ -7,7 +7,7 @@ aliases: [win, victory, game over, 20 lore, end of game]
 targets: [lore]
 related: [quest, multiverse]
 order: 150
-verified: v3.9.1
+verified: v3.11.0
 ---
 
 The first player to reach 20 lore wins. The Dojo notices, whether the lore came from a quest, **Quest** or the lore **+**.

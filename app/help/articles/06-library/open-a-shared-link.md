@@ -7,7 +7,7 @@ aliases: [shared session, shared deck, link from a friend, save a copy, share no
 targets: [shared-banner, intake]
 related: [share-links, sessions, save-and-rename]
 order: 60
-verified: v3.9.1
+verified: v3.11.0
 ---
 
 Open the link in your browser. You don't need an account, and nothing is saved until you choose to keep it.

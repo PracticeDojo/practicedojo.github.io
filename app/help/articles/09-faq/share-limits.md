@@ -7,7 +7,7 @@ aliases: [sharing limit, too many links, session too big, couldnt share, share f
 targets: [lib-links]
 related: [share-links, open-a-shared-link, library]
 order: 40
-verified: v3.9.1
+verified: v3.11.0
 ---
 
 Share links are free and need no account, so the Dojo keeps a few limits to stay that way. Opening a link has no limits.

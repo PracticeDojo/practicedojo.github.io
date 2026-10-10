@@ -1,6 +1,6 @@
 # ARCH: User Manual, Search and Guided Tours
 
-> **Status:** v0.2, accepted. All six open questions decided as proposed (§14, 2026-10-10). M0 built (§5.7).
+> **Status:** v0.3, built (v3.11.0) on `claude/feat-57-help-and-tours`, waiting for the owner's test before `main` (D7). As built: §5.7 and the dev guide §26. M10 (public `/help/` page) is still later (D4).
 > **Scope:** Practice Dojo (`app/index.html` in `PracticeDojo/practicedojo.github.io`).
 > What's done and what's left is tracked in [`TODO-help-and-tour.md`](TODO-help-and-tour.md). Open questions are in [§13](#13-open-questions); decisions go in the log in [§14](#14-decision-log).
 

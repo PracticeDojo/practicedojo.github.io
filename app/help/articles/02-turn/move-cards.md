@@ -7,7 +7,7 @@ aliases: [bounce, return to hand, put on top of deck, put on bottom of deck, dis
 targets: [field, hand, card-drawer]
 related: [card-actions, inspect-deck, inspect-discard]
 order: 110
-verified: v3.9.1
+verified: v3.11.0
 ---
 
 Card effects move cards between zones all the time. Any card in play or in a hand can go back to the hand, onto the top or bottom of the deck, or into the discard.

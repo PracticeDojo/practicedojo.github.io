@@ -7,7 +7,7 @@ aliases: [probability, odds, chance to draw, hypergeometric, outs, percentages]
 targets: [draw-odds]
 related: [mulligan, inspect-deck]
 order: 60
-verified: v3.9.1
+verified: v3.11.0
 ---
 
 **Draw odds**, on the right of the board, shows the chance of drawing at least one copy of each card in your next few draws. It follows the active player's deck and updates after every change.

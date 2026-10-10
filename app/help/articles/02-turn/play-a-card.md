@@ -7,7 +7,7 @@ aliases: [cast, play card, summon, put into play, deploy]
 targets: [hand, field, card-drawer]
 related: [ink-a-card, locations-and-stacks, card-actions]
 order: 60
-verified: v3.9.1
+verified: v3.11.0
 ---
 
 Play a card from your hand to put it into play. If you have enough ready ink, the Dojo spends the card's cost for you.

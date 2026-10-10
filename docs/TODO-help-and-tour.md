@@ -11,21 +11,21 @@ into the right milestone, or into *Parked* if it's outside the plan.
 
 **Working in parallel:** claim a milestone by putting your branch name after its heading before you start, so two agents don't take the same one. M0 goes first; after it, M1, M2, M3a–e and M4 can all run at once.
 
-*Last updated: 2026-10-10 · live: v3.9.1 · next up: M1, M2, M3a–e and M4 in parallel*
+*Last updated: 2026-10-10 · live: v3.9.1 · built: v3.11.0 on `claude/feat-57-help-and-tours`, waiting for the owner's test (`docs/TEST-PROTOCOL-v3.11.0.md`). Boxes below get ticked when it reaches `main`.*
 
 | Milestone | Status |
 |---|---|
 | Review of the proposal | ✅ Done: all six as proposed (D1–D6) |
-| M0 · Contracts and scaffolding | 🟡 Built on `claude/chore-help-scaffolding`, waiting to merge |
-| M1 · Manual viewer | 🔨 Agent on `wip/m1-viewer` |
-| M2 · Search | 🔨 Agent on `wip/m2-search` |
-| M3a–e · Content | 🔨 Five agents on `wip/m3a-content` … `wip/m3e-content` |
-| M4 · Spotlight | 🔨 Agent on `wip/m4-spotlight` |
-| M5 · Tour engine and scratch view | ⬜ |
-| M6 · Tour content | ⬜ |
-| M7 · Entry points and help in context | ⬜ |
-| M8 · Release Feature 57 (manual) | ⬜ |
-| M9 · Release Feature 58 (tours) | ⬜ |
+| M0 · Contracts and scaffolding | ✅ Built, on `claude/feat-57-help-and-tours` |
+| M1 · Manual viewer | ✅ Built, on `claude/feat-57-help-and-tours` |
+| M2 · Search | ✅ Built (128/128 golden queries), on `claude/feat-57-help-and-tours` |
+| M3a–e · Content | ✅ Built (64 articles), on `claude/feat-57-help-and-tours` |
+| M4 · Spotlight | ✅ Built (`--live`: 140 pass, 0 fail), on `claude/feat-57-help-and-tours` |
+| M5 · Tour engine and scratch view | ✅ Built, on `claude/feat-57-help-and-tours` |
+| M6 · Tour content | ✅ Built (3 tours), on `claude/feat-57-help-and-tours` |
+| M7 · Entry points and help in context | ✅ Built, on `claude/feat-57-help-and-tours` |
+| M8 · Release Feature 57 (manual) | ✅ v3.11.0 (with F58), on `claude/feat-57-help-and-tours` |
+| M9 · Release Feature 58 (tours) | ✅ v3.11.0 (with F57), on `claude/feat-57-help-and-tours` |
 | M10 · Public /help/ page | 💤 Later, optional |
 
 ---
@@ -126,6 +126,30 @@ into the right milestone, or into *Parked* if it's outside the plan.
 
 ## M9 · Release Feature 58 — guided tours
 - [ ] Same steps as M8
+
+## Found while building (not fixed; outside this plan)
+App bugs the writers noticed while checking articles. The manual describes today's behaviour.
+- Desktop: clicking or hovering an unknown card in the active hand throws (`showContextMenu` reads `dbCard.cost`, `showPreview` reads `images`), so it can't be swapped there
+- Q and Space act on the board while the Multiverse (and likely Inspect deck/discard, log import, card search) is open
+- After opening the Multiverse with the mouse, Enter re-presses the focused top-bar button instead of playing from the selected node
+- The auto-save switch isn't remembered across reloads
+- Playing from an auto-save node copies its stock line and raw `**Turn recap**` Markdown into the turn note
+- Esc with card search open over the deck grid closes the deck grid first (unsaved order lost)
+- Esc doesn't close card search / log import while their text field has focus
+- The deck grid's card menu needs `contextmenu`, which iOS Safari never fires (no swap from the deck grid on iPhone)
+- Locations dragged from hand enter play ready (Play Card makes them exerted); `questWithAll` would quest with them, and reads `dbCard.lore` without a null check
+- Shifting onto a character at a location by dragging moves the card to the location instead
+- Separating a stack copies the top card's damage onto every card, exerted and drying
+- Craft hand: removing one copy needs right-click (touch can only Clear); its dialog still has pre-Field Unit styling
+- Return to hand from play isn't logged
+- Peek button says "Hold to reveal hand" on phones, where it's a tap
+- Space on a focused ink bar may also end the turn (code reading only)
+- Library: renaming a non-live session doesn't flag the account copy as behind
+- Save as copy / title edits do nothing on a shared session
+- Copy: the first-sign-in "Choose…" toast says "cloud button" (it's **Save to account**); the Save tooltip always says "Save to this device"; the Save-as-copy dialog says "My sessions" (the tab is Sessions)
+- The shared/practice banner draws over the open Multiverse on phones
+- `features.md` ticks Feature 20 (fill all unknown cards) but nothing in the app implements it
+- A copy saved from a tour is named after the tour
 
 ## Parked (outside the plan)
 - See ARCH §15: analytics, AI answers, command palette, video, tour resume, translations, more tours, changelog panel.

@@ -7,7 +7,7 @@ aliases: [login, log in, log out, logout, discord, google, shared computer]
 targets: [account-button]
 related: [account, account-sync]
 order: 20
-verified: v3.9.1
+verified: v3.11.0
 ---
 
 Sign in to keep your decks and sessions in an account. It's optional; see [Why sign in](help:account).

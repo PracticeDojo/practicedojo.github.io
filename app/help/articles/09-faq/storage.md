@@ -7,7 +7,7 @@ aliases: [lost sessions, sessions disappeared, backup, clear cache, clear site d
 targets: [library]
 related: [account, files, library]
 order: 20
-verified: v3.9.1
+verified: v3.11.0
 ---
 
 Your sessions and decks are saved in this browser, on this device. There's no Dojo server holding them unless you sign in.

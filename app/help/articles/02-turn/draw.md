@@ -7,7 +7,7 @@ aliases: [draw a card, draw step, draw extra]
 targets: [deck]
 related: [inspect-deck, draw-odds]
 order: 30
-verified: v3.9.1
+verified: v3.11.0
 ---
 
 Each turn's draw happens on its own: when a turn begins, the player to play draws one card. Player 1 doesn't draw on their first turn.

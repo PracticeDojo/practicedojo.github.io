@@ -7,7 +7,7 @@ aliases: [rename session, session name, duplicate, copy session, save game]
 targets: [session-title, save, save-copy]
 related: [sessions, account-sync, library]
 order: 20
-verified: v3.9.1
+verified: v3.11.0
 ---
 
 Give the match on the board a name, save it on the spot, or split off a copy to try a different idea.

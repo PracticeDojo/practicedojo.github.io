@@ -7,7 +7,7 @@ aliases: [mulligan, opening hand, starting hand, keep hand, redraw, alter hand]
 targets: [mulligan-dialog, mulligan-hand, mulligan-readout, mulligan-odds, mulligan-confirm]
 related: [craft-hand, draw-odds, draw]
 order: 10
-verified: v3.9.1
+verified: v3.11.0
 ---
 
 Each player's first turn opens on the mulligan. Player 1 chooses as the match starts. Player 2 chooses when Player 1 ends their first turn, before Player 2's draw, so they choose from the seven they were dealt.

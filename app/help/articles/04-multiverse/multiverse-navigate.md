@@ -7,7 +7,7 @@ aliases: [pan, zoom, scroll, arrow keys, thumb keys, cursor, next turn, previous
 targets: [tree-canvas, tree-keys, tree-zoom-reset]
 related: [multiverse-views, mini-multiverse, multiverse-panel]
 order: 90
-verified: v3.9.1
+verified: v3.11.0
 ---
 
 Move around the Multiverse canvas, and step the selection through turns and lines to find the one you want. Nothing loads until you press **Play from here**.

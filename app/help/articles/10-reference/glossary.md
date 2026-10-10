@@ -7,7 +7,7 @@ aliases: [definitions, terms, what does it mean, meaning, vocabulary, drying, dr
 targets: []
 related: [multiverse, what-is-the-dojo]
 order: 30
-verified: v3.9.1
+verified: v3.11.0
 ---
 
 The words this manual uses: first the Dojo's own, then Lorcana's.

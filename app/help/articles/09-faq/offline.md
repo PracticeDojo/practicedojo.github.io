@@ -7,7 +7,7 @@ aliases: [offline, no internet, no connection, cant see card pictures, missing i
 targets: [tweak-card-display]
 related: [card-display, card-preview]
 order: 10
-verified: v3.9.1
+verified: v3.11.0
 ---
 
 Card pictures come from the internet. When one can't load, the card shows as text instead, so the board stays readable and you can keep playing.

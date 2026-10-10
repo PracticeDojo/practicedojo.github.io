@@ -7,7 +7,7 @@ aliases: [attack, fight, challenge mode, combat, block]
 targets: [challenge-mode, challenge-banner, field, opponent-field]
 related: [forecast, card-actions]
 order: 90
-verified: v3.9.1
+verified: v3.11.0
 ---
 
 In a challenge, your character and the opposing card deal their strength to each other as damage. The Dojo works out the damage, exerts your character and banishes anything that ends up with damage equal to its willpower.

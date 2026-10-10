@@ -7,7 +7,7 @@ aliases: [replay, replay file, replay.gz, json, gz, download replay]
 targets: [intake, intake-file, tree-log]
 related: [import-overview, decks]
 order: 30
-verified: v3.9.1
+verified: v3.11.0
 ---
 
 A Duels.ink replay file records the game exactly. It's the best way to bring a game in: your own deck comes through card for card, in order.

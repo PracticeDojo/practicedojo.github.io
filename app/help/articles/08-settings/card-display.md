@@ -7,7 +7,7 @@ aliases: [card size, bigger cards, smaller cards, zoom cards, text mode, text on
 targets: [tweak-card-size, tweak-card-display]
 related: [card-preview, offline, tweaks]
 order: 30
-verified: v3.9.1
+verified: v3.11.0
 ---
 
 Two settings in [Tweaks](help:tweaks) change how cards look: **Card size** and **Card display**.

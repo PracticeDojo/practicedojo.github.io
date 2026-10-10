@@ -7,7 +7,7 @@ aliases: [touch, tap, long press, hold, swipe, drag, pinch, phone controls, tabl
 targets: [card-drawer, hand, ink-bar, turn-notes, tree-keys, peek]
 related: [screen-at-a-glance, card-actions, multiverse-navigate, keyboard-shortcuts]
 order: 20
-verified: v3.9.1
+verified: v3.11.0
 ---
 
 Everything you can do with a finger. Most of it is a tap that opens the card drawer; the rest are holds, swipes and drags.

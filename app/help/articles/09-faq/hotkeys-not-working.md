@@ -7,7 +7,7 @@ aliases: [hotkeys not working, keys not working, space does nothing, keyboard br
 targets: []
 related: [keyboard-shortcuts]
 order: 30
-verified: v3.9.1
+verified: v3.11.0
 ---
 
 The Dojo ignores its shortcuts whenever a key could mean something else. Check these, in order.

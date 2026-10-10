@@ -7,7 +7,7 @@ aliases: [browser, chrome, safari, firefox, edge, ipad, tablet, mobile, phone la
 targets: []
 related: [screen-at-a-glance, gestures, storage]
 order: 50
-verified: v3.9.1
+verified: v3.11.0
 ---
 
 The Dojo runs in the browser: nothing to install. Use a current Chrome, Edge, Firefox or Safari, on a computer, tablet or phone.

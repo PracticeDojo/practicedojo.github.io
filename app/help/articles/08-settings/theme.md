@@ -7,7 +7,7 @@ aliases: [dark mode, light mode, night mode, theme, colour scheme, color, accent
 targets: [tweak-theme, tweak-accent, home-theme]
 related: [tweaks, palette]
 order: 20
-verified: v3.9.1
+verified: v3.11.0
 ---
 
 The **Theme** setting picks a light or dark Dojo; **Accent** picks the colour that marks the main button and where you are.

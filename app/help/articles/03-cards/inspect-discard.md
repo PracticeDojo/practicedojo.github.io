@@ -7,7 +7,7 @@ aliases: [graveyard, discard, return from discard, recursion, view discard, bani
 targets: [discard]
 related: [move-cards]
 order: 30
-verified: v3.9.1
+verified: v3.11.0
 ---
 
 Every card that leaves play or is discarded goes to its owner's discard pile. You can read it at any time and take cards back out.

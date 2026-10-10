@@ -7,7 +7,7 @@ aliases: [continue, resume, my matches, saved games, autosave]
 targets: [recent, all-sessions, session-title]
 related: [save-and-rename, library, storage]
 order: 10
-verified: v3.9.1
+verified: v3.11.0
 ---
 
 A session is one match with its whole Multiverse. The Dojo keeps every session on this device as you play, so you never lose a match by closing the tab.

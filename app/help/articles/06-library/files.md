@@ -7,7 +7,7 @@ aliases: [backup, download session, .dojo.json.gz, json file, load file, upload 
 targets: [tree-export, tree-import, lib-import, intake-file]
 related: [library, share-links, storage]
 order: 40
-verified: v3.9.1
+verified: v3.11.0
 ---
 
 A session file holds a whole match: the board, every Multiverse node, the notes and the log. Export one to keep a backup outside this browser, or to send it to someone by hand.

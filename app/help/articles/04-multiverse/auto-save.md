@@ -7,7 +7,7 @@ aliases: [autosave, auto save, save every turn, save game, checkpoint]
 targets: [auto-save, end-turn]
 related: [save-unfinished-turn, multiverse, end-turn]
 order: 20
-verified: v3.9.1
+verified: v3.11.0
 ---
 
 With **Auto-save every turn** on, each **End turn** adds a node to the Multiverse, so the whole game is saved turn by turn without you doing anything.

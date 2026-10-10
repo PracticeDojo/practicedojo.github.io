@@ -7,7 +7,7 @@ aliases: [plot view, card view, dots, overview, whole game, legend, key, map]
 targets: [plot-toggle, tree-legend]
 related: [multiverse-navigate, nodes]
 order: 80
-verified: v3.9.1
+verified: v3.11.0
 ---
 
 The Multiverse draws the tree two ways: as cards, full nodes you can read, or as the plot, where every saved turn is a dot so you can see a whole game at once.

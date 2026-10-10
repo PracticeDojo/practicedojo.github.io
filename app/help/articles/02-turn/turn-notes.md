@@ -7,7 +7,7 @@ aliases: [notes, note, comment, annotate, write a note, long press]
 targets: [turn-notes]
 related: [nodes, multiverse-panel]
 order: 140
-verified: v3.9.1
+verified: v3.11.0
 ---
 
 Write down what you're trying, or why, as you play. Each player has one note per turn, and it's saved with that turn's node in the Multiverse.

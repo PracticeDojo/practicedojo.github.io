@@ -7,7 +7,7 @@ aliases: [left here, snapshot, lost my board, where you jumped from, keep as nod
 targets: [tree-canvas]
 related: [branches, multiverse-panel, mini-multiverse]
 order: 70
-verified: v3.9.1
+verified: v3.11.0
 ---
 
 When you jump to another node from a board you haven't saved, the Dojo keeps that board as a "Left here" snapshot first. A jump never loses your work.

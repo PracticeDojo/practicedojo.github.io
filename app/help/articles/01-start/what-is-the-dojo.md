@@ -7,7 +7,7 @@ aliases: [about, sandbox, practice, overview, introduction, app, what is this]
 targets: []
 related: [first-match, multiverse, import-overview]
 order: 10
-verified: v3.9.1
+verified: v3.11.0
 ---
 
 The Practice Dojo is a Lorcana sandbox. You put two decks on the table and play the game out by hand, both sides, at your own pace.

@@ -7,7 +7,7 @@ aliases: [replace card, swap card, change card, replace all copies, test a card,
 targets: [hand, deck]
 related: [inspect-deck, unknown-cards]
 order: 40
-verified: v3.9.1
+verified: v3.11.0
 ---
 
 Swap a card for any other card to see how a different list plays, without building a new deck.

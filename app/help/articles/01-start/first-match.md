@@ -7,7 +7,7 @@ aliases: [new game, start game, play a deck, new match, decklist, seat a deck]
 targets: [intake, seats, deck-chips, start-match]
 related: [mulligan, decks, screen-at-a-glance]
 order: 20
-verified: v3.9.1
+verified: v3.11.0
 ---
 
 A match starts on the home screen: put a deck in each seat under **On the table**, then press **Start match**.

@@ -7,7 +7,7 @@ aliases: [location, move to location, shift, boost, put under, stack, separate s
 targets: [field]
 related: [play-a-card, card-actions]
 order: 100
-verified: v3.9.1
+verified: v3.11.0
 ---
 
 Locations sit in your play area with the characters at them above them. Shift and "put under" build a stack: one card on top, the rest underneath.

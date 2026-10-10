@@ -7,7 +7,7 @@ aliases: [exert, ready, damage, banish, tap, untap, kill, destroy, damage counte
 targets: [field, card-drawer]
 related: [challenge, quest, move-cards, keyboard-shortcuts]
 order: 70
-verified: v3.9.1
+verified: v3.11.0
 ---
 
 Every card in play, on either side of the board, can be exerted or readied, take or lose damage, and be banished. Pick whichever way suits your device.

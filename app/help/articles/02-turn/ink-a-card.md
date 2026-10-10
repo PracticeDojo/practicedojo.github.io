@@ -7,7 +7,7 @@ aliases: [put into inkwell, ink drop, add to inkwell, mana, land]
 targets: [hand, ink-bar]
 related: [inkwell, play-a-card, end-turn]
 order: 40
-verified: v3.9.1
+verified: v3.11.0
 ---
 
 Ink a card to grow your inkwell. Ink pays for the cards you play. A card goes in ready, so you can spend it the turn you ink it.

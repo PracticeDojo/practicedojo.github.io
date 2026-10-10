@@ -7,7 +7,7 @@ aliases: [paste log, text log, match log, game log, import log, md, txt]
 targets: [intake, tree-log]
 related: [import-overview, hidden-information]
 order: 20
-verified: v3.9.1
+verified: v3.11.0
 ---
 
 A Duels.ink text log lists every move of a game. Paste it into the Dojo and every turn becomes a node in the Multiverse.

@@ -7,7 +7,7 @@ aliases: [quest all, gain lore, score, points, lore counter, add lore]
 targets: [quest-all, lore]
 related: [winning, card-actions]
 order: 80
-verified: v3.9.1
+verified: v3.11.0
 ---
 
 Questing exerts a character and adds its lore to its player's score. The first to 20 lore wins.

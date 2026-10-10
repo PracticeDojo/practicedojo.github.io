@@ -7,7 +7,7 @@ aliases: [my sessions, my decks, saved sessions, shelves, all sessions]
 targets: [library-button, all-sessions, library, lib-sessions, lib-decks, lib-links, lib-import]
 related: [sessions, decks, share-links, account-sync]
 order: 30
-verified: v3.9.1
+verified: v3.11.0
 ---
 
 The Library holds every session and deck you keep, sorted onto shelves by where each one lives.

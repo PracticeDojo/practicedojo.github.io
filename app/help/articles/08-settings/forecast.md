@@ -7,7 +7,7 @@ aliases: [challenge preview, outcome, who dies, banished preview, damage preview
 targets: [tweak-forecast, challenge-banner]
 related: [challenge, tweaks]
 order: 50
-verified: v3.9.1
+verified: v3.11.0
 ---
 
 **Challenge forecast** sets how much the Dojo tells you about a [challenge](help:challenge) before you make it: who would be banished and how much damage each card would have.

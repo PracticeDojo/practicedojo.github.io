@@ -7,7 +7,7 @@ aliases: [load a turn, restore, jump to turn, load save, rename node, delete nod
 targets: [tree-panel, selected-node, tree-dock]
 related: [nodes, branches, left-here]
 order: 50
-verified: v3.9.1
+verified: v3.11.0
 ---
 
 The panel shows the node you select. Read it there first, then play from it, rename it, change its note or delete it.

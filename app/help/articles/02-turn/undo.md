@@ -7,7 +7,7 @@ aliases: [undo, take back, go back, rewind, oops, mistake, revert]
 targets: [undo]
 related: [branches, end-turn]
 order: 130
-verified: v3.9.1
+verified: v3.11.0
 ---
 
 **Undo** takes back your last action. Press it again to keep going back, one action at a time.

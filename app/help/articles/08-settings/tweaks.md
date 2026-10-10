@@ -7,7 +7,7 @@ aliases: [settings, options, preferences, customise, customize]
 targets: [tweaks, tweaks-panel]
 related: [theme, card-display, palette, forecast]
 order: 10
-verified: v3.9.1
+verified: v3.11.0
 ---
 
 Tweaks is where the Dojo's settings live: how it looks, how big the cards are, and how much it tells you about a challenge.

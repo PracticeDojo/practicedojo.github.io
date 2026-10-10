@@ -7,7 +7,7 @@ aliases: [save now, save mid turn, bookmark, save point, quick save, save before
 targets: [save-turn]
 related: [auto-save, nodes, multiverse-panel]
 order: 30
-verified: v3.9.1
+verified: v3.11.0
 ---
 
 Save the board as it is right now, in the middle of a turn, as a node you can come back to: before a risky challenge, say, or at a moment you want to study later.

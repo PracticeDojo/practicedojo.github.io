@@ -7,7 +7,7 @@ aliases: [hidden cards, opponent hand, missing cards, unknown cards, why unknown
 targets: []
 related: [unknown-cards, import-overview]
 order: 40
-verified: v3.9.1
+verified: v3.11.0
 ---
 
 An import can only show what the game showed. Anything nobody saw comes in as an [unknown card](help:unknown-cards).

@@ -7,7 +7,7 @@ aliases: [tour, tutorial, walkthrough, guide, onboarding, how do I start, show m
 targets: []
 related: [first-match, multiverse, import-overview]
 order: 50
-verified: v3.9.1
+verified: v3.11.0
 ---
 
 A guided tour points at the real controls one at a time and waits while you try each one. There are three, a few minutes each:

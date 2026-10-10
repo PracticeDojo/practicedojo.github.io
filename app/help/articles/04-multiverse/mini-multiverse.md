@@ -7,7 +7,7 @@ aliases: [mini map, minimap, small map, sidebar map, branch point, step through 
 targets: [mini-multiverse, mini-multiverse-keys]
 related: [multiverse-navigate, left-here, branches]
 order: 100
-verified: v3.9.1
+verified: v3.11.0
 ---
 
 The mini multiverse is a small map of the whole tree in the side rail, under the players. Jump to any turn with one click, or step through a line, without opening the full Multiverse.

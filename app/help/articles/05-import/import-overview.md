@@ -7,7 +7,7 @@ aliases: [import game, duels.ink, duels ink, review game, replay a game, analyse
 targets: [intake, readout, example-log]
 related: [import-log, import-replay, hidden-information]
 order: 10
-verified: v3.9.1
+verified: v3.11.0
 ---
 
 Bring a game you played on Duels.ink into the Dojo to look at it turn by turn and try other lines from any point.

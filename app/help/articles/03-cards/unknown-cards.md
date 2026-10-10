@@ -7,7 +7,7 @@ aliases: [unknown card, face down card, card back, missing cards, fill unknown, 
 targets: [deck]
 related: [hidden-information, swap-cards]
 order: 50
-verified: v3.9.1
+verified: v3.11.0
 ---
 
 When you import a Duels.ink game, any card the log or replay never shows becomes an **unknown card**: a card back with no name. You can play on with them or replace them with real cards.

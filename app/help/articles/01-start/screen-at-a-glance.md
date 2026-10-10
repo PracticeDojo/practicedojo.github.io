@@ -7,7 +7,7 @@ aliases: [layout, board, interface, where is, ui, sidebar, player bar]
 targets: [topbar, board, hand, ink-bar, lore, deck, discard, sidebar, draw-odds, more-menu]
 related: [you-play-both-sides, keyboard-shortcuts, gestures]
 order: 30
-verified: v3.9.1
+verified: v3.11.0
 ---
 
 The board is split in two: the player whose turn it is sits at the bottom, the other player at the top. When the turn ends, the two halves swap.

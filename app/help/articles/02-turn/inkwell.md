@@ -7,7 +7,7 @@ aliases: [ink, ready ink, spend ink, exert ink, ink count, mana pool]
 targets: [ink-bar, inkwell-cards, ink-panel]
 related: [ink-a-card, play-a-card]
 order: 50
-verified: v3.9.1
+verified: v3.11.0
 ---
 
 Your inkwell shows how much ink you have ready out of how much you have. Playing a card spends ink for you; these controls are for everything else, like an ability that costs ink.
