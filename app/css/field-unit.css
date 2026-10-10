@@ -7928,6 +7928,123 @@ body.help-open #btn-help i {
 }
 
 
+/* Tour mode (owner testing): a tour step must never read as part of the app, so tours wear
+   Trace, the key family's teal (never the signal, never an ink): the callout is a Trace
+   panel, the ring is Trace, the screen gets a Trace frame and the Practice banner turns Trace.
+   A step that replaces an open one glides there and pulses when it lands. */
+.spot[data-tone="tour"] {
+    --spot-ring: var(--key-trace);
+}
+
+.spot[data-tone="tour"] .spot-hole {
+    border-width: 3px;
+    border-color: var(--key-trace); /* direct: the night and on-glass ring rules set the variable */
+}
+
+.spot[data-tone="tour"] .spot-callout {
+    background: var(--key-trace);
+    border: 1px solid color-mix(in oklch, var(--key-trace) 70%, #000);
+    color: var(--key-trace-ink);
+    box-shadow: 0 12px 32px rgb(0 0 0 / 0.38);
+}
+
+.spot[data-tone="tour"] .spot-title,
+.spot[data-tone="tour"] .spot-text,
+.spot[data-tone="tour"] .spot-note,
+.spot[data-tone="tour"] .spot-text strong,
+.spot[data-tone="tour"] .spot-x {
+    color: var(--key-trace-ink);
+}
+
+.spot[data-tone="tour"] .spot-step {
+    color: color-mix(in oklch, var(--key-trace-ink) 70%, transparent);
+}
+
+.spot[data-tone="tour"] .spot-actions .btn {
+    background: transparent;
+    border: 1px solid color-mix(in oklch, var(--key-trace-ink) 35%, transparent);
+    color: var(--key-trace-ink);
+}
+
+.spot[data-tone="tour"] .spot-actions .btn:hover {
+    background: color-mix(in oklch, var(--key-trace-ink) 10%, transparent);
+}
+
+.spot[data-tone="tour"] .spot-actions .btn-primary {
+    background: var(--key-trace-ink);
+    border-color: var(--key-trace-ink);
+    color: #E6F4F2;
+}
+
+.spot[data-tone="tour"] .spot-actions .btn-primary:hover {
+    background: color-mix(in oklch, var(--key-trace-ink) 85%, var(--key-trace));
+}
+
+.spot[data-tone="tour"] .spot-actions .btn:focus-visible {
+    outline-color: var(--key-trace-ink);
+}
+
+/* Between steps: the callout and the cut-out glide to the new place... */
+.spot.is-glide .spot-callout,
+.spot.is-glide .spot-hole {
+    transition: left 260ms cubic-bezier(0.2, 0.7, 0.2, 1), top 260ms cubic-bezier(0.2, 0.7, 0.2, 1),
+        width 260ms cubic-bezier(0.2, 0.7, 0.2, 1), height 260ms cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+/* ...and pulse when they land, so the eye finds them. */
+@keyframes spot-ring-arrive {
+    0% { box-shadow: 0 0 0 0 color-mix(in oklch, var(--key-trace) 70%, transparent), 0 0 0 200vmax var(--spot-dim); }
+    100% { box-shadow: 0 0 0 16px color-mix(in oklch, var(--key-trace) 0%, transparent), 0 0 0 200vmax var(--spot-dim); }
+}
+
+@keyframes spot-callout-arrive {
+    0% { box-shadow: 0 0 0 0 color-mix(in oklch, var(--key-trace) 75%, transparent), 0 12px 32px rgb(0 0 0 / 0.38); }
+    100% { box-shadow: 0 0 0 14px color-mix(in oklch, var(--key-trace) 0%, transparent), 0 12px 32px rgb(0 0 0 / 0.38); }
+}
+
+.spot.is-arrive[data-tone="tour"] .spot-hole {
+    animation: spot-ring-arrive 900ms ease-out 2;
+}
+
+.spot.is-arrive[data-tone="tour"] .spot-callout {
+    animation: spot-callout-arrive 900ms ease-out 2;
+}
+
+/* The whole screen is framed while a tour runs. */
+body.is-touring::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 1090;
+    border: 3px solid var(--key-trace);
+    pointer-events: none;
+}
+
+/* The Practice banner (a tour's board) in Trace. */
+.shared-banner.is-practice {
+    background: var(--key-trace);
+    border-color: color-mix(in oklch, var(--key-trace) 70%, #000);
+    color: var(--key-trace-ink);
+}
+
+.shared-banner.is-practice > i,
+.shared-banner.is-practice .sb-note {
+    color: var(--key-trace-ink);
+    opacity: 0.85;
+}
+
+.shared-banner.is-practice .btn.btn-primary {
+    background: var(--key-trace-ink);
+    color: #E6F4F2;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .spot.is-glide .spot-callout,
+    .spot.is-glide .spot-hole {
+        transition: none;
+    }
+}
+
 /* ---- M7 · Help in context: the ? links, the home tour strip ---- */
 
 /* The welcome (ARCH §8.2): shown once to a new player over the home screen. A paper

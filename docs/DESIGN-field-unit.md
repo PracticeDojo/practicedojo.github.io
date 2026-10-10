@@ -359,3 +359,4 @@ The app's front door, on the chassis. Two columns: the brand on the left (the ma
 - Don't make a second filled button on the board or the shell. Challenge, Undo, Multiverse, and Save a copy stay paper tools. The card drawer is the exception: it is a panel of function keys (see Function keys).
 - Don't put an ink colour on a function key, and don't invent a key colour outside Coral, Olive, Trace, Graphite and Bone.
 - Don't colour a place (this device, your account, public links) with anything but its key colour, and don't wash a row or panel in it.
+- Guided tours wear Trace, so a tour never reads as part of the app: the tour callout is a Trace panel with Trace-ink text (its primary key is Trace ink with light text), the spotlight ring is 3px Trace, the screen gets a 3px Trace frame while a tour runs, and the Practice banner turns Trace. The callout glides between steps and pulses as it lands (none under reduced motion). "Show me" from the manual stays paper.

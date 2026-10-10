@@ -9,6 +9,7 @@
 //       step,                           // e.g. '2 / 8', shown in mono
 //       buttons: [{ label, primary, onClick }],
 //       passThrough,                    // let clicks reach the target (tour steps that wait for an action)
+//       tone,                           // 'tour': the guided-tour colours (Trace), glide + pulse between steps
 //       onClose
 //   }) -> Promise<boolean>              // false if the target isn't on screen (callout centred instead)
 //   DojoSpotlight.hide(), DojoSpotlight.isOpen()
@@ -46,6 +47,7 @@ window.DojoSpotlight = (function () {
     let cur = null;              // the open spotlight (one at a time)
     let seq = 0;
     let fadeTimer = 0;
+    let glideTimer = null, arriveTimer = null;
     let textIdSeq = 0;
 
     const isPhone = () => !!(window.matchMedia && window.matchMedia(PHONE_MQ).matches);
@@ -530,8 +532,25 @@ window.DojoSpotlight = (function () {
             if (!el.isConnected) el = null;
         }
 
+        // tone: 'tour' paints the callout and ring in Trace (guided tours), so a tour step never
+        // reads as part of the app. A step that replaces an open one glides there and pulses.
+        const moving = !root.hidden && root.classList.contains('is-open') && !reducedMotion();
+        const prevTone = root.dataset.tone || '';
         cur = { id, name: byName ? target : null, wanted: target != null, el: null, ringEl: null, opts, returnFocus, closed: false };
         clearTimeout(fadeTimer);
+        root.dataset.tone = opts.tone || '';
+        if (moving && prevTone === (opts.tone || '')) {
+            root.classList.add('is-glide');
+            clearTimeout(glideTimer);
+            glideTimer = setTimeout(() => { if (root) root.classList.remove('is-glide'); }, 320);
+        }
+        if (opts.tone && !reducedMotion()) {
+            root.classList.remove('is-arrive');
+            void root.offsetWidth;
+            root.classList.add('is-arrive');
+            clearTimeout(arriveTimer);
+            arriveTimer = setTimeout(() => { if (root) root.classList.remove('is-arrive'); }, 1100);
+        }
         fill(opts, label);
         els.note.textContent = `${cap(label || 'that control')} isn't on screen right now.`;
         root.classList.toggle('is-pass', !!opts.passThrough);

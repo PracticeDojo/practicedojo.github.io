@@ -244,6 +244,7 @@ window.DojoTour = (function () {
             passThrough: !!pred,
             focus: pred ? false : step.focus !== false,
             dismiss: 'End tour',
+            tone: 'tour',
             onClose: (reason) => onClose(reason, mine)
         }).then(() => { if (pred) blurSpot(); });
     }
@@ -336,6 +337,7 @@ window.DojoTour = (function () {
             text: `That was **${t.title}**. Nothing you did here was saved. Help (**?**) has the rest, and the tours are at the top of it.`,
             buttons,
             dismiss: 'Close',
+            tone: 'tour',
             onClose: (reason) => { if (run && mine === run.seq && reason !== 'replaced' && reason !== 'button') stop(); }
         });
     }

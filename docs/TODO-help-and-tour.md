@@ -137,6 +137,8 @@ into the right milestone, or into *Parked* if it's outside the plan.
 
 - [x] Suggestion: ask on a player's first match whether to take the tour first. *The first Start match without "Your first turn" done asks once (First match? Take the tour first / Just play). Take the tour first starts the match, runs the tour, and returns to that match; Just play starts it. Checked at 1440: both answers, the session kept, back at the mulligan after Esc*
 
+- [x] Suggestion: tour panels jump and blend into the app. *Tours wear Trace (the key family's teal): a Trace callout panel, a 3px Trace ring, a Trace frame round the screen and a Trace Practice banner. Between steps the callout and cut-out glide (260 ms) and pulse on arrival; none under reduced motion. Show me from the manual stays paper. Checked at 1440 and 390, day and night*
+
 ## Found while building (not fixed; outside this plan)
 App bugs the writers noticed while checking articles. The manual describes today's behaviour.
 - Desktop: clicking or hovering an unknown card in the active hand throws (`showContextMenu` reads `dbCard.cost`, `showPreview` reads `images`), so it can't be swapped there

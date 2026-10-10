@@ -3116,6 +3116,7 @@
                 b.classList.toggle('hidden', !on);
                 if (on) {
                     const tour = this._sharedView.kind === 'tour';
+                    b.classList.toggle('is-practice', tour);
                     document.getElementById('shared-banner-kind').textContent = tour ? 'Practice' : 'Shared';
                     document.getElementById('shared-banner-name').hidden = tour;
                     document.getElementById('shared-banner-title').textContent = this._sharedView.title;
