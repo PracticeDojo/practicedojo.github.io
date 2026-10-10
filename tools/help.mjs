@@ -24,6 +24,12 @@ const OUT = join(HELP, 'manual.json');
 const args = process.argv.slice(2);
 const check = args.includes('--check');
 
+// --live (M4): every target visible in the running app. Lives in tools/help-live.mjs.
+if (args.includes('--live')) {
+    const { runLive } = await import('./help-live.mjs');
+    process.exit(runLive(ROOT));
+}
+
 const later = { '--test': 'M2 (search)', '--live': 'M4 (spotlight)', shots: 'M3 (content)' };
 for (const [flag, ms] of Object.entries(later)) {
     if (args.includes(flag)) {
