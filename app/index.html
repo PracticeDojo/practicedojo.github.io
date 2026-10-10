@@ -1148,7 +1148,7 @@
     <script>
         let cardFuse = null;
 
-        const APP_VERSION = "v3.11.0"; // Centralized version string (v3: Field Unit)
+        const APP_VERSION = "v3.11.1"; // Centralized version string (v3: Field Unit)
 
         // Tweaks panel accent presets (hue values for the OKLCH accent ramp)
         // Tweaks → Accent: the approved Field Unit signals only (design.md ·
@@ -8624,6 +8624,16 @@
                 }
             },
 
+            // The Shift cost printed on a card: a number for an ink Shift ("Shift 5",
+            // "Universal Shift 4", "Puppy Shift 3"), null for a Shift paid another
+            // way ("Shift: Discard a card"), undefined when the card has no Shift.
+            shiftCostOf(dbCard) {
+                const ab = ((dbCard && dbCard.abilities) || []).find(a => a.type === 'keyword' && /Shift$/.test(a.keyword || ''));
+                if (!ab) return undefined;
+                if (typeof ab.keywordValueNumber === 'number') return ab.keywordValueNumber;
+                return /^\d+$/.test(String(ab.keywordValue || '').trim()) ? parseInt(ab.keywordValue, 10) : null;
+            },
+
             shiftOnto(draggedInstanceId, targetInstanceId) {
                 this.saveState();
                 let draggedFound = this.findCard(draggedInstanceId);
@@ -8637,13 +8647,25 @@
                 if (draggedFound.player.id !== this.state.activePlayer || targetFound.player.id !== this.state.activePlayer) return;
 
                 const dbCard = this.cardDB[draggedFound.card.cardId];
+                const beneathDb = this.cardDB[targetFound.card.cardId];
+
+                // A character from hand onto a character pays its Shift cost instead:
+                // a number for ink Shift ("Shift 5", "Universal Shift 4"), null for a
+                // non-ink Shift ("Shift: Discard a card"), which costs no ink here.
+                // Anything else from hand pays its full cost, as before.
+                const charOnChar = dbCard && dbCard.type === 'Character' && beneathDb && beneathDb.type === 'Character';
+                const shiftCost = charOnChar ? this.shiftCostOf(dbCard) : undefined;
+                const inkCost = shiftCost !== undefined ? (shiftCost || 0) : dbCard.cost;
+                const fromHand = draggedFound.loc === 'hand';
+                let inkPaid = null;
 
                 // If coming from hand, handle ink cost automatically
-                if (draggedFound.loc === 'hand') {
+                if (fromHand) {
                     const targetPlayer = draggedFound.player;
-                    if (targetPlayer.inkReady >= dbCard.cost) {
-                        targetPlayer.inkReady -= dbCard.cost;
-                        let inkToExert = dbCard.cost;
+                    if (targetPlayer.inkReady >= inkCost) {
+                        inkPaid = inkCost;
+                        targetPlayer.inkReady -= inkCost;
+                        let inkToExert = inkCost;
                         for (let i = 0; i < targetPlayer.inkwell.length && inkToExert > 0; i++) {
                             if (!targetPlayer.inkwell[i].exerted) {
                                 targetPlayer.inkwell[i].exerted = true;
@@ -8654,7 +8676,6 @@
                 }
 
                 // Check if this stacking is considered a shift (matching names)
-                const beneathDb = this.cardDB[targetFound.card.cardId];
                 const beneathName = beneathDb ? (beneathDb.name || "").toLowerCase() : "";
                 const aboveName = dbCard ? (dbCard.name || "").toLowerCase() : "";
                 const beneathFullName = beneathDb ? (beneathDb.fullName || "").toLowerCase() : "";
@@ -8707,7 +8728,11 @@
 
                 this.markFx(draggedInstanceId, 'shift'); // Feature 37
                 if (isShift) {
-                    this.logAction(`You shifted ${dbCard.name} onto ${beneathDb ? beneathDb.name : 'Unknown card'} (cost ${dbCard.cost}).`);
+                    const costNote = fromHand && shiftCost !== undefined
+                        ? (shiftCost === null ? 'Shift cost isn’t ink, pay it by hand'
+                            : inkPaid === null ? `Shift ${shiftCost}, not enough ink, none spent` : `Shift ${shiftCost}`)
+                        : `cost ${dbCard.cost}`;
+                    this.logAction(`You shifted ${dbCard.name} onto ${beneathDb ? beneathDb.name : 'Unknown card'} (${costNote}).`);
                 } else {
                     this.logAction(`Assigned ${dbCard.name} to stack onto ${beneathDb ? beneathDb.name : 'Unknown card'}.`);
                 }
