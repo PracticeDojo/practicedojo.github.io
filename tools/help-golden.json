@@ -1,40 +1,523 @@
 {
   "$comment": "Golden queries for the manual search (tools/help.mjs --test). Each query must find its article in the top 3. Add queries for the articles you write. device defaults to desktop.",
   "queries": [
-    { "q": "how do i go back", "article": "undo" },
-    { "q": "rewind", "article": "undo" },
-    { "q": "mana", "article": "ink-a-card" },
-    { "q": "put a card in the inkwell", "article": "ink-a-card" },
-    { "q": "ready all ink", "article": "inkwell" },
-    { "q": "attack", "article": "challenge" },
-    { "q": "chalenge", "article": "challenge" },
-    { "q": "tap a character", "article": "card-actions" },
-    { "q": "add damage", "article": "card-actions" },
-    { "q": "dark mode", "article": "theme" },
-    { "q": "put card on bottom of deck", "article": "move-cards" },
-    { "q": "what if", "article": "branches" },
-    { "q": "try a different play", "article": "branches" },
-    { "q": "cant see card pictures", "article": "offline" },
-    { "q": "space", "article": "keyboard-shortcuts" },
-    { "q": "long press", "article": "turn-notes", "device": "phone" },
-    { "q": "mulligan", "article": "mulligan" },
-    { "q": "choose my opening hand", "article": "craft-hand" },
-    { "q": "end turn", "article": "end-turn" },
-    { "q": "graveyard", "article": "inspect-discard" },
-    { "q": "reorder deck", "article": "inspect-deck" },
-    { "q": "replace a card", "article": "swap-cards" },
-    { "q": "probability", "article": "draw-odds" },
-    { "q": "duels ink", "article": "import-overview" },
-    { "q": "replay file", "article": "import-replay" },
-    { "q": "send to a friend", "article": "share-links" },
-    { "q": "backup my sessions", "article": "files" },
-    { "q": "other devices", "article": "account" },
-    { "q": "plot", "article": "multiverse-views" },
-    { "q": "save mid turn", "article": "save-unfinished-turn" },
-    { "q": "left here", "article": "left-here" },
-    { "q": "thumb keys", "article": "multiverse-navigate", "device": "phone" },
-    { "q": "card text only", "article": "card-display" },
-    { "q": "lost my sessions", "article": "storage" },
-    { "q": "who's turn is it", "article": "you-play-both-sides" }
+    {
+      "q": "how do i go back",
+      "article": "undo"
+    },
+    {
+      "q": "rewind",
+      "article": "undo"
+    },
+    {
+      "q": "mana",
+      "article": "ink-a-card"
+    },
+    {
+      "q": "put a card in the inkwell",
+      "article": "ink-a-card"
+    },
+    {
+      "q": "ready all ink",
+      "article": "inkwell"
+    },
+    {
+      "q": "attack",
+      "article": "challenge"
+    },
+    {
+      "q": "chalenge",
+      "article": "challenge"
+    },
+    {
+      "q": "tap a character",
+      "article": "card-actions"
+    },
+    {
+      "q": "add damage",
+      "article": "card-actions"
+    },
+    {
+      "q": "dark mode",
+      "article": "theme"
+    },
+    {
+      "q": "put card on bottom of deck",
+      "article": "move-cards"
+    },
+    {
+      "q": "what if",
+      "article": "branches"
+    },
+    {
+      "q": "try a different play",
+      "article": "branches"
+    },
+    {
+      "q": "cant see card pictures",
+      "article": "offline"
+    },
+    {
+      "q": "space",
+      "article": "keyboard-shortcuts"
+    },
+    {
+      "q": "long press",
+      "article": "turn-notes",
+      "device": "phone"
+    },
+    {
+      "q": "mulligan",
+      "article": "mulligan"
+    },
+    {
+      "q": "choose my opening hand",
+      "article": "craft-hand"
+    },
+    {
+      "q": "end turn",
+      "article": "end-turn"
+    },
+    {
+      "q": "graveyard",
+      "article": "inspect-discard"
+    },
+    {
+      "q": "reorder deck",
+      "article": "inspect-deck"
+    },
+    {
+      "q": "replace a card",
+      "article": "swap-cards"
+    },
+    {
+      "q": "probability",
+      "article": "draw-odds"
+    },
+    {
+      "q": "duels ink",
+      "article": "import-overview"
+    },
+    {
+      "q": "replay file",
+      "article": "import-replay"
+    },
+    {
+      "q": "send to a friend",
+      "article": "share-links"
+    },
+    {
+      "q": "backup my sessions",
+      "article": "files"
+    },
+    {
+      "q": "other devices",
+      "article": "account"
+    },
+    {
+      "q": "plot",
+      "article": "multiverse-views"
+    },
+    {
+      "q": "save mid turn",
+      "article": "save-unfinished-turn"
+    },
+    {
+      "q": "left here",
+      "article": "left-here"
+    },
+    {
+      "q": "thumb keys",
+      "article": "multiverse-navigate",
+      "device": "phone"
+    },
+    {
+      "q": "card text only",
+      "article": "card-display"
+    },
+    {
+      "q": "lost my sessions",
+      "article": "storage"
+    },
+    {
+      "q": "who's turn is it",
+      "article": "you-play-both-sides"
+    },
+    {
+      "q": "what is this app",
+      "article": "what-is-the-dojo"
+    },
+    {
+      "q": "start a new game",
+      "article": "first-match"
+    },
+    {
+      "q": "paste my decklist",
+      "article": "first-match"
+    },
+    {
+      "q": "where is the discard pile",
+      "article": "inspect-discard"
+    },
+    {
+      "q": "play against computer",
+      "article": "you-play-both-sides"
+    },
+    {
+      "q": "see opponent hand",
+      "article": "you-play-both-sides"
+    },
+    {
+      "q": "tutorial",
+      "article": "tours"
+    },
+    {
+      "q": "send cards to bottom",
+      "article": "mulligan"
+    },
+    {
+      "q": "draw a card",
+      "article": "draw"
+    },
+    {
+      "q": "put card in inkwell",
+      "article": "ink-a-card"
+    },
+    {
+      "q": "play a card without enough ink",
+      "article": "play-a-card"
+    },
+    {
+      "q": "card drawer",
+      "article": "card-actions",
+      "device": "phone"
+    },
+    {
+      "q": "quest with all",
+      "article": "quest"
+    },
+    {
+      "q": "change lore",
+      "article": "quest"
+    },
+    {
+      "q": "shift",
+      "article": "locations-and-stacks"
+    },
+    {
+      "q": "move to location",
+      "article": "locations-and-stacks"
+    },
+    {
+      "q": "return card to hand",
+      "article": "move-cards"
+    },
+    {
+      "q": "pass turn",
+      "article": "end-turn"
+    },
+    {
+      "q": "take back a move",
+      "article": "undo"
+    },
+    {
+      "q": "write a note",
+      "article": "turn-notes"
+    },
+    {
+      "q": "long press note",
+      "article": "turn-notes",
+      "device": "phone"
+    },
+    {
+      "q": "game over 20 lore",
+      "article": "winning"
+    },
+    {
+      "q": "zoom in on a card",
+      "article": "card-preview"
+    },
+    {
+      "q": "read card text",
+      "article": "card-preview"
+    },
+    {
+      "q": "reorder my deck",
+      "article": "inspect-deck"
+    },
+    {
+      "q": "shuffle deck",
+      "article": "inspect-deck"
+    },
+    {
+      "q": "get card back from discard",
+      "article": "inspect-discard"
+    },
+    {
+      "q": "replace all copies",
+      "article": "swap-cards"
+    },
+    {
+      "q": "unknown cards",
+      "article": "unknown-cards"
+    },
+    {
+      "q": "fill in missing cards",
+      "article": "unknown-cards"
+    },
+    {
+      "q": "probability of drawing",
+      "article": "draw-odds"
+    },
+    {
+      "q": "save a deck",
+      "article": "decks"
+    },
+    {
+      "q": "import decklist txt",
+      "article": "decks"
+    },
+    {
+      "q": "example deck",
+      "article": "default-decks"
+    },
+    {
+      "q": "demo game",
+      "article": "default-decks"
+    },
+    {
+      "q": "import duels.ink game",
+      "article": "import-overview"
+    },
+    {
+      "q": "paste log",
+      "article": "import-log"
+    },
+    {
+      "q": "replay.gz",
+      "article": "import-replay"
+    },
+    {
+      "q": "opponent hand hidden",
+      "article": "hidden-information"
+    },
+    {
+      "q": "what is the multiverse",
+      "article": "multiverse"
+    },
+    {
+      "q": "go back to an earlier turn",
+      "article": "multiverse"
+    },
+    {
+      "q": "autosave",
+      "article": "auto-save"
+    },
+    {
+      "q": "save every turn",
+      "article": "auto-save"
+    },
+    {
+      "q": "bookmark",
+      "article": "save-unfinished-turn"
+    },
+    {
+      "q": "what does a node show",
+      "article": "nodes"
+    },
+    {
+      "q": "rename node",
+      "article": "multiverse-panel"
+    },
+    {
+      "q": "load a save",
+      "article": "multiverse-panel"
+    },
+    {
+      "q": "lost my board",
+      "article": "left-here"
+    },
+    {
+      "q": "plot view",
+      "article": "multiverse-views"
+    },
+    {
+      "q": "see the whole game",
+      "article": "multiverse-views"
+    },
+    {
+      "q": "zoom the tree",
+      "article": "multiverse-navigate"
+    },
+    {
+      "q": "mini map",
+      "article": "mini-multiverse"
+    },
+    {
+      "q": "branch point",
+      "article": "mini-multiverse"
+    },
+    {
+      "q": "where are my saved games",
+      "article": "sessions"
+    },
+    {
+      "q": "continue last match",
+      "article": "sessions"
+    },
+    {
+      "q": "rename session",
+      "article": "save-and-rename"
+    },
+    {
+      "q": "save a copy",
+      "article": "save-and-rename"
+    },
+    {
+      "q": "my sessions",
+      "article": "library"
+    },
+    {
+      "q": "library",
+      "article": "library"
+    },
+    {
+      "q": "export session file",
+      "article": "files"
+    },
+    {
+      "q": "backup",
+      "article": "files"
+    },
+    {
+      "q": "share link",
+      "article": "share-links"
+    },
+    {
+      "q": "delete link",
+      "article": "share-links"
+    },
+    {
+      "q": "shared session not saved",
+      "article": "open-a-shared-link"
+    },
+    {
+      "q": "share no longer available",
+      "article": "open-a-shared-link"
+    },
+    {
+      "q": "do I need an account",
+      "article": "account"
+    },
+    {
+      "q": "log out",
+      "article": "sign-in"
+    },
+    {
+      "q": "discord login",
+      "article": "sign-in"
+    },
+    {
+      "q": "changed on another device",
+      "article": "account-sync"
+    },
+    {
+      "q": "sync",
+      "article": "account-sync"
+    },
+    {
+      "q": "settings",
+      "article": "tweaks"
+    },
+    {
+      "q": "accent colour",
+      "article": "theme"
+    },
+    {
+      "q": "bigger cards",
+      "article": "card-display"
+    },
+    {
+      "q": "text only",
+      "article": "card-display"
+    },
+    {
+      "q": "grayscale",
+      "article": "palette"
+    },
+    {
+      "q": "player colours",
+      "article": "palette"
+    },
+    {
+      "q": "challenge preview",
+      "article": "forecast"
+    },
+    {
+      "q": "esc",
+      "article": "keyboard-shortcuts"
+    },
+    {
+      "q": "q",
+      "article": "keyboard-shortcuts"
+    },
+    {
+      "q": "hotkeys",
+      "article": "keyboard-shortcuts"
+    },
+    {
+      "q": "keyboard shortcuts",
+      "article": "keyboard-shortcuts"
+    },
+    {
+      "q": "space does nothing",
+      "article": "hotkeys-not-working"
+    },
+    {
+      "q": "keys not working",
+      "article": "hotkeys-not-working"
+    },
+    {
+      "q": "swipe",
+      "article": "gestures",
+      "device": "phone"
+    },
+    {
+      "q": "pinch zoom",
+      "article": "gestures",
+      "device": "phone"
+    },
+    {
+      "q": "what is a node",
+      "article": "nodes"
+    },
+    {
+      "q": "drying",
+      "article": "glossary"
+    },
+    {
+      "q": "no internet",
+      "article": "offline"
+    },
+    {
+      "q": "clear cache",
+      "article": "storage"
+    },
+    {
+      "q": "too many links",
+      "article": "share-limits"
+    },
+    {
+      "q": "session too big",
+      "article": "share-limits"
+    },
+    {
+      "q": "safari",
+      "article": "browsers"
+    },
+    {
+      "q": "ipad",
+      "article": "browsers"
+    }
   ]
 }

@@ -137,17 +137,41 @@
     "desktop",
     "phone"
    ],
-   "aliases": [],
+   "aliases": [
+    "about",
+    "sandbox",
+    "practice",
+    "overview",
+    "introduction",
+    "app",
+    "what is this"
+   ],
    "targets": [],
    "related": [
     "first-match",
     "multiverse",
     "import-overview"
    ],
-   "verified": "none",
-   "todo": true,
-   "headings": [],
-   "body": "TODO: write this article (M3a). The summary above is its scope. How to write it: docs/ARCH-help-and-tour.md §5.\n"
+   "verified": "v3.9.1",
+   "todo": false,
+   "headings": [
+    {
+     "level": 2,
+     "text": "What you can do",
+     "slug": "what-you-can-do"
+    },
+    {
+     "level": 2,
+     "text": "You are the referee",
+     "slug": "you-are-the-referee"
+    },
+    {
+     "level": 2,
+     "text": "Good to know",
+     "slug": "good-to-know"
+    }
+   ],
+   "body": "The Practice Dojo is a Lorcana sandbox. You put two decks on the table and play the game out by hand, both sides, at your own pace.\n\n## What you can do\n\n- **Practise a match.** Seat your deck and an opponent's, press **Start match**, and play both players' turns. See [Start your first match](help:first-match).\n- **Rewind and try another line.** Every turn you end is saved to the **Multiverse**. Go back to any turn, press **Play from here**, and play it differently. The old line stays. See [What the Multiverse is](help:multiverse).\n- **Study a Duels.ink game.** Paste a Duels.ink log or drop a replay file on the home screen, and every turn of that game becomes a turn you can open and replay. See [Study a Duels.ink game](help:import-overview).\n- **Practise an opener.** Mulligan with real draw odds, or pick your seven by hand. See [Mulligan and your opening hand](help:mulligan).\n\n## You are the referee\n\nThe Dojo keeps the board, counts ink, damage and lore, and saves every turn. It doesn't play for the other side and it doesn't stop you breaking a rule: you can play a card you can't afford, ink twice in a turn, or challenge with a character that's still drying. When a challenge breaks a rule, the log says so.\n\n## Good to know\n\n- Nothing to install and no account needed. Your sessions and decks are kept in this browser. Signing in is optional.\n- Card text and art come from an online card database, so the first visit needs a connection.\n"
   },
   {
    "id": "first-match",
@@ -158,7 +182,14 @@
     "desktop",
     "phone"
    ],
-   "aliases": [],
+   "aliases": [
+    "new game",
+    "start game",
+    "play a deck",
+    "new match",
+    "decklist",
+    "seat a deck"
+   ],
    "targets": [
     "intake",
     "seats",
@@ -170,10 +201,26 @@
     "decks",
     "screen-at-a-glance"
    ],
-   "verified": "none",
-   "todo": true,
-   "headings": [],
-   "body": "TODO: write this article (M3a). The summary above is its scope. How to write it: docs/ARCH-help-and-tour.md §5.\n"
+   "verified": "v3.9.1",
+   "todo": false,
+   "headings": [
+    {
+     "level": 2,
+     "text": "Seat two decks",
+     "slug": "seat-two-decks"
+    },
+    {
+     "level": 2,
+     "text": "Start the match",
+     "slug": "start-the-match"
+    },
+    {
+     "level": 2,
+     "text": "Good to know",
+     "slug": "good-to-know"
+    }
+   ],
+   "body": "A match starts on the home screen: put a deck in each seat under **On the table**, then press **Start match**.\n\n## Seat two decks\n\n**On the table** has two seats: **You** (Player 1) and **Opponent** (Player 2).\n\n- **Pick a built-in or saved deck:** press one of the deck chips under the seats. It goes to the first open seat. With both seats taken, it replaces the opponent.\n- **Paste a decklist:** paste it into the big field at the top (one card per line, like `4 Tinker Bell - Giant Fairy`). The readout under it says how many cards it recognised. Press **Play it as you** or **Play against it**, or **Save to My decks** to keep it.\n- **No list to hand?** Press **A decklist** under the field to try an example.\n\n[Show me](show:seats)\n\nEach seat shows the deck's name and card count. The count is marked when it isn't 60. Press **×** on a seat to empty it.\n\n## Start the match\n\nPress **Start match**. Both players draw seven, and Player 1's turn opens on the mulligan: keep the hand or send cards back. See [Mulligan and your opening hand](help:mulligan).\n\n[Show me](show:start-match)\n\n## Good to know\n\n- **You** is Player 1 and goes first. You play both sides; see [You play both sides](help:you-play-both-sides).\n- An empty seat plays 60 random cards.\n- Next time, the home screen seats the same saved decks again (a pasted list isn't kept unless you save it).\n- The match saves itself to this device as you play. Come back to it from **Pick up again** on the home screen.\n"
   },
   {
    "id": "screen-at-a-glance",
@@ -184,7 +231,15 @@
     "desktop",
     "phone"
    ],
-   "aliases": [],
+   "aliases": [
+    "layout",
+    "board",
+    "interface",
+    "where is",
+    "ui",
+    "sidebar",
+    "player bar"
+   ],
    "targets": [
     "topbar",
     "board",
@@ -202,10 +257,31 @@
     "keyboard-shortcuts",
     "gestures"
    ],
-   "verified": "none",
-   "todo": true,
-   "headings": [],
-   "body": "TODO: write this article (M3a). The summary above is its scope. How to write it: docs/ARCH-help-and-tour.md §5.\n"
+   "verified": "v3.9.1",
+   "todo": false,
+   "headings": [
+    {
+     "level": 2,
+     "text": "The top bar",
+     "slug": "the-top-bar"
+    },
+    {
+     "level": 2,
+     "text": "Each player's half",
+     "slug": "each-players-half"
+    },
+    {
+     "level": 2,
+     "text": "The side panels",
+     "slug": "the-side-panels"
+    },
+    {
+     "level": 2,
+     "text": "Good to know",
+     "slug": "good-to-know"
+    }
+   ],
+   "body": "The board is split in two: the player whose turn it is sits at the bottom, the other player at the top. When the turn ends, the two halves swap.\n\n## The top bar\n\n:::desktop\n- **Left:** **‹ Dojo** back to the home screen, the session's title (click to rename), then **Save**, **Save as copy** and **Share**.\n- **Centre:** **Undo**, the turn chip (`TURN 16 → Player 2`) and **Challenge**.\n- **Right:** **Multiverse** and **Tweaks**.\n:::\n\n:::phone\nFrom left to right: **☰** (the side panel), **Undo**, the turn chip, **Challenge**, **Multiverse** and **⋯**. The **⋯** menu holds **Save**, **Save as copy**, **Share link**, **Tweaks** and **Leave to the dojo**.\n:::\n\n[Show me](show:topbar)\n\n## Each player's half\n\n:::desktop\nEach half is labelled `P1 · TO PLAY` or `P2 · WAITING`. It holds:\n\n- **The play area**, where characters, items and locations sit.\n- **Discard**: a list of the cards in it, with a magnifier to look through them.\n- **The ink bar**: ready ink (`4 /7 READY`), **−** / **+**, **Ready all** and the ink cards.\n- **Deck**: the count. Click it to draw.\n- **Lore**: the big number, with **−** and **+**.\n\nThe bottom half also has your hand and the **Turn N notes** box. The top half has the other player's hand face down, with **Hold to Reveal Hand**.\n:::\n\n:::phone\nEach player has one bar: **Lore** with **−** / **+**, **Ink** with its count and pips (tap it for the inkwell), then the discard (its top card and count) and the deck (tap to draw, **⋮** for more). Under the board, the hand tray holds **Quest**, `Hand · N` and **End turn**, with your hand peeking up from the bottom edge.\n:::\n\n[Show me](show:board)\n\n## The side panels\n\n:::desktop\nThe left rail holds the players (deck and hand counts), the mini multiverse, the card preview (hover a card for details), the game log, **Auto-save every turn**, **Quest** and **End turn**. The right pane shows **Draw Odds** for the player to play.\n:::\n\n:::phone\n**☰** opens the side panel: the players, the card preview, the game log, **Auto-save every turn**, **Quest** and **End turn**. Phones have no draw odds pane, mini multiverse or notes box; see [Turn notes](help:turn-notes) for writing a note.\n:::\n\n[Show me](show:sidebar)\n\n## Good to know\n\n- The colour of a half follows the player, not the position: Player 1 keeps their colour when they move to the top.\n- On a phone or tablet, tap a card to open the card drawer with all its actions. See [Act on a card in play](help:card-actions).\n"
   },
   {
    "id": "you-play-both-sides",
@@ -216,7 +292,15 @@
     "desktop",
     "phone"
    ],
-   "aliases": [],
+   "aliases": [
+    "opponent",
+    "ai",
+    "computer opponent",
+    "bot",
+    "whose turn",
+    "solo",
+    "hotseat"
+   ],
    "targets": [
     "turn",
     "opponent-board",
@@ -226,10 +310,26 @@
     "end-turn",
     "what-is-the-dojo"
    ],
-   "verified": "none",
-   "todo": true,
-   "headings": [],
-   "body": "TODO: write this article (M3a). The summary above is its scope. How to write it: docs/ARCH-help-and-tour.md §5.\n"
+   "verified": "v3.9.1",
+   "todo": false,
+   "headings": [
+    {
+     "level": 2,
+     "text": "Whose turn it is",
+     "slug": "whose-turn-it-is"
+    },
+    {
+     "level": 2,
+     "text": "The other player's hand",
+     "slug": "the-other-players-hand"
+    },
+    {
+     "level": 2,
+     "text": "Good to know",
+     "slug": "good-to-know"
+    }
+   ],
+   "body": "There's no computer opponent in the Dojo. You play Player 1's turn, end it, then play Player 2's turn, and so on. That's how you test a line against the best answer you can think of.\n\n## Whose turn it is\n\nThe turn chip in the top bar says it: `TURN 3 → Player 2`. The player to play always sits on the **bottom** half of the board, labelled `TO PLAY`; the other player sits at the top, labelled `WAITING`.\n\n[Show me](show:turn)\n\nWhen you end the turn, the halves swap: the other player moves to the bottom and their turn begins. See [End your turn](help:end-turn).\n\n## The other player's hand\n\nThe waiting player's hand is face down at the top of the board.\n\n:::desktop\nHold **Hold to Reveal Hand** to see it, and let go to hide it again.\n:::\n\n:::phone\nTap **Hold to Reveal Hand** to show it, and tap again to hide it.\n:::\n\nPeeking is noted in the log. The hand hides again when the turn ends.\n\n## Good to know\n\n- You can still act on the waiting player's cards: damage them, banish them, change their lore or draw for them. The Dojo doesn't stop you.\n- The sidebar lists **Player 1 (You)** and **Player 2**. \"You\" is just the seat that goes first.\n"
   },
   {
    "id": "tours",
@@ -240,17 +340,39 @@
     "desktop",
     "phone"
    ],
-   "aliases": [],
+   "aliases": [
+    "tutorial",
+    "walkthrough",
+    "getting started",
+    "learn",
+    "onboarding"
+   ],
    "targets": [],
    "related": [
     "first-match",
     "multiverse",
     "import-overview"
    ],
-   "verified": "none",
-   "todo": true,
-   "headings": [],
-   "body": "TODO: write this article (M3a). The summary above is its scope. How to write it: docs/ARCH-help-and-tour.md §5.\n"
+   "verified": "v3.9.1",
+   "todo": false,
+   "headings": [
+    {
+     "level": 2,
+     "text": "The tours",
+     "slug": "the-tours"
+    },
+    {
+     "level": 2,
+     "text": "Take a tour",
+     "slug": "take-a-tour"
+    },
+    {
+     "level": 2,
+     "text": "Good to know",
+     "slug": "good-to-know"
+    }
+   ],
+   "body": "A guided tour lights up the real controls one at a time and waits for you to try each one. Tours are short, and you only take one if you want to.\n\n## The tours\n\n- **Your first turn**: the mulligan, the board, inking and playing a card, the card's details, ending the turn, the other player's turn, **Undo**, and where the **Multiverse** is.\n- **The Multiverse**: open it, read a turn, select it, **Play from here**, change something to start a new line, save the turn you're in, and the plot.\n- **Study a Duels.ink game**: paste the example log, read what the Dojo understood, and open the imported turns.\n\n## Take a tour\n\nHelp lists the tours at the top of its contents, with a tick on the ones you've finished. Pick one to start.\n\n## Good to know\n\n- A tour runs on a practice board, not your match. Nothing you do in it is saved, and your library isn't touched. When it ends you're back where you were.\n- Leave any time with **✕** or {key:Esc}.\n- A tour doesn't remember where you stopped. Starting again takes a few minutes.\n"
   },
   {
    "id": "mulligan",
@@ -261,7 +383,14 @@
     "desktop",
     "phone"
    ],
-   "aliases": [],
+   "aliases": [
+    "mulligan",
+    "opening hand",
+    "starting hand",
+    "keep hand",
+    "redraw",
+    "alter hand"
+   ],
    "targets": [
     "mulligan-dialog",
     "mulligan-hand",
@@ -274,10 +403,31 @@
     "draw-odds",
     "draw"
    ],
-   "verified": "none",
-   "todo": true,
-   "headings": [],
-   "body": "TODO: write this article (M3a). The summary above is its scope. How to write it: docs/ARCH-help-and-tour.md §5.\n"
+   "verified": "v3.9.1",
+   "todo": false,
+   "headings": [
+    {
+     "level": 2,
+     "text": "Keep or send cards back",
+     "slug": "keep-or-send-cards-back"
+    },
+    {
+     "level": 2,
+     "text": "Read the hand before you choose",
+     "slug": "read-the-hand-before-you-choose"
+    },
+    {
+     "level": 2,
+     "text": "After a mulligan",
+     "slug": "after-a-mulligan"
+    },
+    {
+     "level": 2,
+     "text": "Good to know",
+     "slug": "good-to-know"
+    }
+   ],
+   "body": "Each player's first turn opens on the mulligan. Player 1 chooses as the match starts. Player 2 chooses when Player 1 ends their first turn, before Player 2's draw, so they choose from the seven they were dealt.\n\n## Keep or send cards back\n\nThe dialog shows your seven, cheapest first. The head says whether you're **on the play** (no draw turn 1) or **on the draw** (you draw one once you've chosen).\n\n:::desktop\nClick a card to mark it to go to the bottom; click it again to unmark it. To read a card, click the magnifier in its corner: the card grows in place. Any click or {key:Esc} puts it back.\n:::\n\n:::phone\nTap a card to mark it to go to the bottom; tap it again to unmark it. To read a card, {gesture:long-press} it: it shows large with its name, cost and type. Tap anywhere to close it; that tap marks nothing.\n:::\n\nA marked card sinks and shows `↓ Bottom`. Then press the one button at the foot:\n\n- **Keep hand** when nothing is marked: the hand stays and the deck isn't touched.\n- **Mulligan N cards** otherwise: the marked cards go to the bottom of the deck, you draw as many from the top, then the deck is shuffled.\n\n[Show me](show:mulligan-confirm)\n\n## Read the hand before you choose\n\nUnder the hand, the readout follows your marks: the **Curve** of the cards you'd keep (the ones going back show dashed), **Inkable** (how many you'd keep can be inked) and the plan (`5 kept + 2 redraw`).\n\n**Draw odds** show your chance to find each card: **RD** among the redraws, then within the next turns' draws. Phones show the top three rows; press **All** for the rest.\n\n[Show me](show:mulligan-readout)\n\n## After a mulligan\n\nThe dialog stays open on your new hand. The new cards carry a **NEW** tag and the readout says how many went back and were drawn. You can't mark cards again. Press **Start turn** (or **Draw and start turn** for Player 2) to play.\n\n## Good to know\n\n- Nothing else works until the hand is settled: no hotkeys, and the turn can't end.\n- **Craft hand** picks your seven by hand instead. See [Craft a starting hand](help:craft-hand).\n- **Undo** after the turn has started brings the mulligan back.\n- Leave for the home screen mid-mulligan and the dialog is waiting when you come back.\n"
   },
   {
    "id": "craft-hand",
@@ -288,17 +438,35 @@
     "desktop",
     "phone"
    ],
-   "aliases": [],
+   "aliases": [
+    "craft hand",
+    "choose opening hand",
+    "pick starting hand",
+    "custom hand",
+    "set hand",
+    "opening hand"
+   ],
    "targets": [
     "craft-hand"
    ],
    "related": [
     "mulligan"
    ],
-   "verified": "none",
-   "todo": true,
-   "headings": [],
-   "body": "TODO: write this article (M3a). The summary above is its scope. How to write it: docs/ARCH-help-and-tour.md §5.\n"
+   "verified": "v3.9.1",
+   "todo": false,
+   "headings": [
+    {
+     "level": 2,
+     "text": "Craft your opening hand",
+     "slug": "craft-your-opening-hand"
+    },
+    {
+     "level": 2,
+     "text": "Good to know",
+     "slug": "good-to-know"
+    }
+   ],
+   "body": "Crafting lets you choose your opening hand card by card, so you can practise one opener again and again.\n\n## Craft your opening hand\n\n1. When your mulligan opens, press **Craft hand** (**Craft** on a phone). [Show me](show:craft-hand)\n2. **Craft Starting Hand** shows every different card in your deck, cheapest first. Each says how many you've picked of how many the deck has (`1/4`).\n3. Add a copy by clicking (or tapping) the card. You can't pick more copies than the deck has, or more than seven cards.\n\n:::mouse\nRight-click a card to take one copy back out.\n:::\n\n:::touch\nTo start over, press **Clear**.\n:::\n\n4. When **Selected** reads `7 / 7`, press **Confirm Hand**. The rest of the deck is shuffled and your turn starts. Player 2 draws for the turn first, as usual.\n\n## Good to know\n\n- **Back** (or **×**) returns to the mulligan without changing anything.\n- Crafting takes the place of the mulligan: once you confirm, the opening hand is settled.\n- Changed your mind? **Undo** brings the mulligan back.\n"
   },
   {
    "id": "draw",
@@ -309,7 +477,11 @@
     "desktop",
     "phone"
    ],
-   "aliases": [],
+   "aliases": [
+    "draw a card",
+    "draw step",
+    "draw extra"
+   ],
    "targets": [
     "deck"
    ],
@@ -317,10 +489,21 @@
     "inspect-deck",
     "draw-odds"
    ],
-   "verified": "none",
-   "todo": true,
-   "headings": [],
-   "body": "TODO: write this article (M3a). The summary above is its scope. How to write it: docs/ARCH-help-and-tour.md §5.\n"
+   "verified": "v3.9.1",
+   "todo": false,
+   "headings": [
+    {
+     "level": 2,
+     "text": "Draw another card",
+     "slug": "draw-another-card"
+    },
+    {
+     "level": 2,
+     "text": "Good to know",
+     "slug": "good-to-know"
+    }
+   ],
+   "body": "Each turn's draw happens on its own: when a turn begins, the player to play draws one card. Player 1 doesn't draw on their first turn.\n\n## Draw another card\n\n:::desktop\nClick the deck slab on that player's half. The card goes to their hand. You can also drag the top card of the deck to the hand, the play area or the ink bar.\n:::\n\n:::phone\nTap the deck on that player's bar. The card goes to their hand.\n:::\n\n[Show me](show:deck)\n\nThis works for either player's deck, so card effects that make the other player draw are one click away.\n\n## Good to know\n\n- Extra draws are logged and counted in the turn's **Drawn** recap.\n- An empty deck just doesn't draw. The Dojo doesn't end the game for it.\n- To look through the deck or shuffle it, use the deck's other controls. See [Look through your deck](help:inspect-deck).\n- Made a mistake? **Undo** puts the card back.\n"
   },
   {
    "id": "ink-a-card",
@@ -331,7 +514,13 @@
     "desktop",
     "phone"
    ],
-   "aliases": [],
+   "aliases": [
+    "put into inkwell",
+    "ink drop",
+    "add to inkwell",
+    "mana",
+    "land"
+   ],
    "targets": [
     "hand",
     "ink-bar"
@@ -341,10 +530,26 @@
     "play-a-card",
     "end-turn"
    ],
-   "verified": "none",
-   "todo": true,
-   "headings": [],
-   "body": "TODO: write this article (M3a). The summary above is its scope. How to write it: docs/ARCH-help-and-tour.md §5.\n"
+   "verified": "v3.9.1",
+   "todo": false,
+   "headings": [
+    {
+     "level": 2,
+     "text": "Ink a card",
+     "slug": "ink-a-card"
+    },
+    {
+     "level": 2,
+     "text": "See what you inked this turn",
+     "slug": "see-what-you-inked-this-turn"
+    },
+    {
+     "level": 2,
+     "text": "Good to know",
+     "slug": "good-to-know"
+    }
+   ],
+   "body": "Ink a card to grow your inkwell. Ink pays for the cards you play. A card goes in ready, so you can spend it the turn you ink it.\n\n## Ink a card\n\n:::desktop\nDrag a card from your hand onto your ink bar; anywhere on the bar takes it. Or hover the card and press **INK**, or click it and choose **Add to Inkwell**.\n:::\n\n:::phone\nTap the card in your hand. In the card drawer, press **Ink**. Or drag the card up onto the ink count on your player bar.\n:::\n\n[Show me](show:ink-bar)\n\n## See what you inked this turn\n\nA card inked this turn shows face up in the inkwell, and the count gets a tag: **+1** on desktop, **+1 inked** on a phone. Until you ink, a phone's bar says **No ink yet**. The cards turn face down when that player's next turn begins.\n\n## Good to know\n\n- The Dojo doesn't enforce one ink a turn: the tag just shows how many you've inked.\n- **INK**, **Add to Inkwell** and **Ink** only appear for a card with the inkwell symbol (a phone shows **No ink** instead). Dragging doesn't check, so you can ink any card.\n- To take it back, press **Undo**, or move the ink card to your hand. See [Your inkwell](help:inkwell).\n"
   },
   {
    "id": "inkwell",
@@ -355,7 +560,14 @@
     "desktop",
     "phone"
    ],
-   "aliases": [],
+   "aliases": [
+    "ink",
+    "ready ink",
+    "spend ink",
+    "exert ink",
+    "ink count",
+    "mana pool"
+   ],
    "targets": [
     "ink-bar",
     "inkwell-cards",
@@ -365,10 +577,31 @@
     "ink-a-card",
     "play-a-card"
    ],
-   "verified": "none",
-   "todo": true,
-   "headings": [],
-   "body": "TODO: write this article (M3a). The summary above is its scope. How to write it: docs/ARCH-help-and-tour.md §5.\n"
+   "verified": "v3.9.1",
+   "todo": false,
+   "headings": [
+    {
+     "level": 2,
+     "text": "Read your ink",
+     "slug": "read-your-ink"
+    },
+    {
+     "level": 2,
+     "text": "Spend or ready ink",
+     "slug": "spend-or-ready-ink"
+    },
+    {
+     "level": 2,
+     "text": "Act on one ink card",
+     "slug": "act-on-one-ink-card"
+    },
+    {
+     "level": 2,
+     "text": "Good to know",
+     "slug": "good-to-know"
+    }
+   ],
+   "body": "Your inkwell shows how much ink you have ready out of how much you have. Playing a card spends ink for you; these controls are for everything else, like an ability that costs ink.\n\n## Read your ink\n\n:::desktop\nThe ink bar reads `4 /7 READY`: four ready of seven. Spent ink cards are dimmed and turned. The ink cards sit on the right of the bar, overlapping once they don't fit.\n:::\n\n:::phone\nYour player bar shows `4/7` and a pip for each ink, dimmed when spent.\n:::\n\n[Show me](show:ink-bar)\n\n## Spend or ready ink\n\n:::desktop\nOn the ink bar, **−** spends one ink, **+** readies one, and **Ready all** readies the lot.\n:::\n\n:::phone\nTap the ink count to open the inkwell. **−** spends one, **+** readies one, **Ready all** readies the lot. **×** or a tap outside closes it.\n:::\n\n## Act on one ink card\n\n:::desktop\nClick an ink card. It opens in place with **Exert** (or **Ready**), **To hand** and **Discard**. Click it again, click elsewhere or press {key:Esc} to put it down.\n:::\n\n:::phone\nIn the inkwell, tap an ink card, then **Exert** (or **Ready**), **To hand** or **Discard** in the bar underneath.\n:::\n\n[Show me](show:ink-panel)\n\n## Good to know\n\n- Both players' inkwells work the same way, so you can fix the waiting player's ink too.\n- Ink readies by itself at the start of that player's turn.\n- If you play a card you can't afford, no ink is spent. Spend it by hand with **−** if you need to.\n"
   },
   {
    "id": "play-a-card",
@@ -379,7 +612,13 @@
     "desktop",
     "phone"
    ],
-   "aliases": [],
+   "aliases": [
+    "cast",
+    "play card",
+    "summon",
+    "put into play",
+    "deploy"
+   ],
    "targets": [
     "hand",
     "field",
@@ -390,10 +629,26 @@
     "locations-and-stacks",
     "card-actions"
    ],
-   "verified": "none",
-   "todo": true,
-   "headings": [],
-   "body": "TODO: write this article (M3a). The summary above is its scope. How to write it: docs/ARCH-help-and-tour.md §5.\n"
+   "verified": "v3.9.1",
+   "todo": false,
+   "headings": [
+    {
+     "level": 2,
+     "text": "Play a card",
+     "slug": "play-a-card"
+    },
+    {
+     "level": 2,
+     "text": "Not enough ink?",
+     "slug": "not-enough-ink"
+    },
+    {
+     "level": 2,
+     "text": "Good to know",
+     "slug": "good-to-know"
+    }
+   ],
+   "body": "Play a card from your hand to put it into play. If you have enough ready ink, the Dojo spends the card's cost for you.\n\n## Play a card\n\n:::desktop\nDrag the card from your hand onto your play area; anywhere in the area takes it. Or hover the card and press **PLAY**, or click it and choose **Play Card (-3 Ink)**.\n:::\n\n:::phone\nTap the card in your hand to open the card drawer. It shows the cost and your ready ink. Press **Play · −3 ink**. Or drag the card up onto the board.\n:::\n\n[Show me](show:hand)\n\nA character comes in **drying**: it shows a **NEW** tag and can't quest until your next turn. Songs and actions land in play too; when they're done, banish them to send them to the discard.\n\n## Not enough ink?\n\nYou can still play it. The Dojo plays the card and spends no ink, so you can test a line you can't quite afford. On a phone the key says so: **Play anyway · 2 short**.\n\n## Good to know\n\n- To shift a card or play a character straight to a location, drag it onto that card instead. See [Locations, shift and cards under](help:locations-and-stacks).\n- Card abilities don't trigger by themselves. Do what the card says by hand: draw, add damage, change lore.\n- **Undo** takes the play back, ink included.\n"
   },
   {
    "id": "card-actions",
@@ -404,7 +659,19 @@
     "desktop",
     "phone"
    ],
-   "aliases": [],
+   "aliases": [
+    "exert",
+    "ready",
+    "damage",
+    "banish",
+    "tap",
+    "untap",
+    "kill",
+    "destroy",
+    "damage counter",
+    "card drawer",
+    "card menu"
+   ],
    "targets": [
     "field",
     "card-drawer"
@@ -415,10 +682,36 @@
     "move-cards",
     "keyboard-shortcuts"
    ],
-   "verified": "none",
-   "todo": true,
-   "headings": [],
-   "body": "TODO: write this article (M3a). The summary above is its scope. How to write it: docs/ARCH-help-and-tour.md §5.\n"
+   "verified": "v3.9.1",
+   "todo": false,
+   "headings": [
+    {
+     "level": 2,
+     "text": "Hover controls",
+     "slug": "hover-controls"
+    },
+    {
+     "level": 2,
+     "text": "Hover hotkeys",
+     "slug": "hover-hotkeys"
+    },
+    {
+     "level": 2,
+     "text": "The card menu",
+     "slug": "the-card-menu"
+    },
+    {
+     "level": 2,
+     "text": "The card drawer",
+     "slug": "the-card-drawer"
+    },
+    {
+     "level": 2,
+     "text": "Good to know",
+     "slug": "good-to-know"
+    }
+   ],
+   "body": "Every card in play, on either side of the board, can be exerted or readied, take or lose damage, and be banished. Pick whichever way suits your device.\n\n## Hover controls\n\n:::desktop\nPoint at a card in play. A damage stepper appears on top (**−** `0/3` **+**) and a column of icon buttons down its right edge (hover one for its name): **Challenge** and **Quest** (your characters, when they can), **Exert** or **Ready**, and **Banish**.\n\nUnder every card with willpower sits a track with one segment per point. Click a segment to set the damage exactly; click the lit end segment to take one off.\n:::\n\n## Hover hotkeys\n\n:::desktop\nWith the pointer over a card in play:\n\n| Key | Does |\n|---|---|\n| {key:+} / {key:-} | add / remove one damage |\n| {key:0} – {key:9} | set the damage to that number |\n| {key:E} | exert or ready |\n| {key:B} | banish |\n| {key:C} | challenge mode, with this character picked |\n:::\n\n## The card menu\n\n:::desktop\nRight-click (or click) a card in play for its menu. **Card**: **Exert** / **Ready**, **Quest (+2 Lore)**, **Challenge…**, **Leave Location**, and a **Damage** stepper that stays open while you click it. **Move**: **Banish (To Discard)**, **Return to Hand**, **Put on Top of Deck**, **Put on Bottom of Deck**. **Stack**: **Put Top Card of Deck Under**, **Separate Stacked Cards**. Only what applies to that card shows.\n:::\n\n## The card drawer\n\n:::touch\nTap a card in play to open the card drawer. The head says whose it is and its state (`P2 · exerted · 2 / 5`). Under the card's text:\n\n- **Damage**: tap a segment to set it, or **− 1** / **+ 1**.\n- **Challenge**, **Quest**, **Exert** (or **Ready**) and **Banish**. A key you can't use is hollow.\n- **Move to**: **To hand**, **Deck top**, **Deck bottom**, **Put under**, and **Leave location** or **Separate stack** when they apply.\n\nStep to the next card in play with **‹ ›** or a sideways {gesture:swipe} on the text. **×**, a tap outside or {key:Esc} closes it.\n:::\n\n[Show me](show:field)\n\n## Good to know\n\n- Once damage reaches willpower, the card pulses and shows a **LETHAL · BANISH** button under it (the drawer says `lethal`). The Dojo doesn't banish it until you do, except after a challenge.\n- A banished card goes to its owner's discard with any cards under it, its damage cleared.\n- The Dojo doesn't check card effects. Exert, ready or damage anything the cards say to.\n- Every change can be undone with **Undo**.\n"
   },
   {
    "id": "quest",
@@ -429,7 +722,14 @@
     "desktop",
     "phone"
    ],
-   "aliases": [],
+   "aliases": [
+    "quest all",
+    "gain lore",
+    "score",
+    "points",
+    "lore counter",
+    "add lore"
+   ],
    "targets": [
     "quest-all",
     "lore"
@@ -438,10 +738,31 @@
     "winning",
     "card-actions"
    ],
-   "verified": "none",
-   "todo": true,
-   "headings": [],
-   "body": "TODO: write this article (M3a). The summary above is its scope. How to write it: docs/ARCH-help-and-tour.md §5.\n"
+   "verified": "v3.9.1",
+   "todo": false,
+   "headings": [
+    {
+     "level": 2,
+     "text": "Quest with one character",
+     "slug": "quest-with-one-character"
+    },
+    {
+     "level": 2,
+     "text": "Quest with everyone",
+     "slug": "quest-with-everyone"
+    },
+    {
+     "level": 2,
+     "text": "Change lore by hand",
+     "slug": "change-lore-by-hand"
+    },
+    {
+     "level": 2,
+     "text": "Good to know",
+     "slug": "good-to-know"
+    }
+   ],
+   "body": "Questing exerts a character and adds its lore to its player's score. The first to 20 lore wins.\n\n## Quest with one character\n\n:::desktop\nHover the character and press the quest button (the diamond), or click it and choose **Quest (+2 Lore)**.\n:::\n\n:::touch\nTap the character, then **Quest** in the card drawer.\n:::\n\nYou can quest with a character of the player to play that's ready, not drying, and has lore.\n\n## Quest with everyone\n\nPress **Quest**: every ready, dry character with lore quests at once. The number beside it says how many will. {key:Q} does the same on a keyboard.\n\n:::desktop\n**Quest** sits at the foot of the left rail, above **End turn**.\n:::\n\n:::phone\n**Quest** sits in the hand tray, left of your hand.\n:::\n\n[Show me](show:quest-all)\n\n## Change lore by hand\n\nPress **−** or **+** beside a player's **Lore** to take one off or add one. Use it for lore from abilities and locations, or to fix a mistake. Lore never goes below 0.\n\n[Show me](show:lore)\n\n## Good to know\n\n- Quest uses the lore printed on the card. Bonuses from abilities aren't added; add them with **+**.\n- The Dojo doesn't check quest restrictions on cards; it's up to you.\n- Hand changes to lore are noted in the log, and **Undo** takes any of it back.\n- At 20 lore the Dojo tells you who won. See [Winning a game](help:winning).\n"
   },
   {
    "id": "challenge",
@@ -452,7 +773,13 @@
     "desktop",
     "phone"
    ],
-   "aliases": [],
+   "aliases": [
+    "attack",
+    "fight",
+    "challenge mode",
+    "combat",
+    "block"
+   ],
    "targets": [
     "challenge-mode",
     "challenge-banner",
@@ -463,10 +790,31 @@
     "forecast",
     "card-actions"
    ],
-   "verified": "none",
-   "todo": true,
-   "headings": [],
-   "body": "TODO: write this article (M3a). The summary above is its scope. How to write it: docs/ARCH-help-and-tour.md §5.\n"
+   "verified": "v3.9.1",
+   "todo": false,
+   "headings": [
+    {
+     "level": 2,
+     "text": "Challenge mode",
+     "slug": "challenge-mode"
+    },
+    {
+     "level": 2,
+     "text": "Start from a character",
+     "slug": "start-from-a-character"
+    },
+    {
+     "level": 2,
+     "text": "The forecast",
+     "slug": "the-forecast"
+    },
+    {
+     "level": 2,
+     "text": "Good to know",
+     "slug": "good-to-know"
+    }
+   ],
+   "body": "In a challenge, your character and the opposing card deal their strength to each other as damage. The Dojo works out the damage, exerts your character and banishes anything that ends up with damage equal to its willpower.\n\n## Challenge mode\n\nPress **Challenge** in the top bar (or {key:C}). A bar across the board reads **CHALLENGE MODE**. Then:\n\n:::desktop\nDrag one of your characters onto an opposing card. Or click your character, then click the target. With a character picked, hovering a target shows the forecast.\n:::\n\n:::touch\nTap one of your characters, then tap an opposing card. Once you've picked, every opposing card shows a badge with the outcome. Dragging works too.\n:::\n\nYou stay in the mode to challenge again. Press **Done · Esc** to leave. {key:Esc} first drops the picked character, then leaves. Ending the turn leaves it too.\n\n[Show me](show:challenge-mode)\n\n## Start from a character\n\n:::desktop\nHover your character and press its challenge button, or right-click it and choose **Challenge…**. Challenge mode opens with it picked. You can also drag your character onto an opposing card without entering the mode.\n:::\n\n:::touch\nTap your character and press **Challenge** in the card drawer. Challenge mode opens with it picked; tap the target.\n:::\n\n## The forecast\n\nBefore you commit, the Dojo shows what would happen: each card's damage after the challenge and whether it's banished (**✕ Banishes …**, **⇄ Trade**). Choose how much it shows with **Off**, **Light** or **Full** in the challenge bar. See [Challenge forecast](help:forecast).\n\n## Good to know\n\n- Damage is strength, plus **Challenger +N** on the challenger, minus **Resist +N** on the card taking it. Other abilities aren't applied: fix damage by hand afterwards.\n- The Dojo doesn't stop an exerted or drying challenger, or a ready target. It allows them and notes it in the log.\n- Bodyguard, Evasive and the like aren't checked: you're the referee.\n- One **Undo** takes back the whole challenge.\n"
   },
   {
    "id": "locations-and-stacks",
@@ -477,7 +825,16 @@
     "desktop",
     "phone"
    ],
-   "aliases": [],
+   "aliases": [
+    "location",
+    "move to location",
+    "shift",
+    "boost",
+    "put under",
+    "stack",
+    "separate stack",
+    "unstack"
+   ],
    "targets": [
     "field"
    ],
@@ -485,10 +842,36 @@
     "play-a-card",
     "card-actions"
    ],
-   "verified": "none",
-   "todo": true,
-   "headings": [],
-   "body": "TODO: write this article (M3a). The summary above is its scope. How to write it: docs/ARCH-help-and-tour.md §5.\n"
+   "verified": "v3.9.1",
+   "todo": false,
+   "headings": [
+    {
+     "level": 2,
+     "text": "Move a character to a location",
+     "slug": "move-a-character-to-a-location"
+    },
+    {
+     "level": 2,
+     "text": "Shift onto a character",
+     "slug": "shift-onto-a-character"
+    },
+    {
+     "level": 2,
+     "text": "Put a card under",
+     "slug": "put-a-card-under"
+    },
+    {
+     "level": 2,
+     "text": "Separate a stack",
+     "slug": "separate-a-stack"
+    },
+    {
+     "level": 2,
+     "text": "Good to know",
+     "slug": "good-to-know"
+    }
+   ],
+   "body": "Locations sit in your play area with the characters at them above them. Shift and \"put under\" build a stack: one card on top, the rest underneath.\n\n## Move a character to a location\n\nDrag the character onto the location. A character dragged from your hand is played straight to the location, and its cost is spent.\n\nTo leave, choose **Leave Location** in the card's menu (desktop) or **Leave location** in the card drawer (touch). Or drag the character back onto an empty part of your play area.\n\n:::touch\nDragging works on touch screens too: press the card, then move it.\n:::\n\n## Shift onto a character\n\nDrag the new card from your hand onto the character it shifts onto. It goes on top, keeps the card underneath's damage, exerted state and location, and the log says you shifted. The badge in the corner counts the cards under it.\n\nYou can drop any of your cards onto another of yours this way; only a matching name counts as a shift.\n\n## Put a card under\n\n:::desktop\nRight-click your card and choose **Put Top Card of Deck Under**. The deck's top card goes under it face down.\n:::\n\n:::touch\nTap your card and press **Put under** in the card drawer.\n:::\n\n## Separate a stack\n\nChoose **Separate Stacked Cards** in the menu, or **Separate stack** in the drawer. The cards underneath come out into play, exerted and drying.\n\n[Show me](show:field)\n\n## Good to know\n\n- Dragging from your hand spends the card's full cost, not its Shift cost. Give back the difference with **+** on your ink bar.\n- Moving to a location costs nothing in the Dojo: spend the move cost with **−** on your ink bar.\n- A location's lore isn't added at the start of your turn. Add it with the lore **+**.\n- When a card with cards under it leaves play, the cards under it go with it.\n- Banish a location and the characters at it stay in play.\n"
   },
   {
    "id": "move-cards",
@@ -499,7 +882,15 @@
     "desktop",
     "phone"
    ],
-   "aliases": [],
+   "aliases": [
+    "bounce",
+    "return to hand",
+    "put on top of deck",
+    "put on bottom of deck",
+    "discard",
+    "tuck",
+    "mill"
+   ],
    "targets": [
     "field",
     "hand",
@@ -510,10 +901,31 @@
     "inspect-deck",
     "inspect-discard"
    ],
-   "verified": "none",
-   "todo": true,
-   "headings": [],
-   "body": "TODO: write this article (M3a). The summary above is its scope. How to write it: docs/ARCH-help-and-tour.md §5.\n"
+   "verified": "v3.9.1",
+   "todo": false,
+   "headings": [
+    {
+     "level": 2,
+     "text": "From play",
+     "slug": "from-play"
+    },
+    {
+     "level": 2,
+     "text": "From a hand",
+     "slug": "from-a-hand"
+    },
+    {
+     "level": 2,
+     "text": "By dragging",
+     "slug": "by-dragging"
+    },
+    {
+     "level": 2,
+     "text": "Good to know",
+     "slug": "good-to-know"
+    }
+   ],
+   "body": "Card effects move cards between zones all the time. Any card in play or in a hand can go back to the hand, onto the top or bottom of the deck, or into the discard.\n\n## From play\n\n:::desktop\nRight-click the card. Under **Move**: **Banish (To Discard)**, **Return to Hand**, **Put on Top of Deck**, **Put on Bottom of Deck**.\n:::\n\n:::touch\nTap the card. In the card drawer, **Banish**, or under **Move to**: **To hand**, **Deck top**, **Deck bottom**.\n:::\n\n## From a hand\n\n:::desktop\nRight-click the card in your hand: **Discard Card**, **Put on Top of Deck** or **Put on Bottom of Deck**.\n:::\n\n:::phone\nTap the card in your hand. In the card drawer, **Discard**, or under **More**: **Deck top** or **Deck bottom**.\n:::\n\n## By dragging\n\n:::desktop\nDrag a card onto a deck (it goes on top), a discard pile or a hand. This works from play, a hand or the inkwell.\n:::\n\n[Show me](show:field)\n\n## Good to know\n\n- A card leaving play loses its damage and exert, and takes any cards under it along.\n- The menu and the drawer send a card to its own player's deck, hand or discard. A drag puts it where you drop it.\n- Ink cards go to hand or discard from the inkwell. See [Your inkwell](help:inkwell).\n- To bring a card back from the discard, see [Your discard pile](help:inspect-discard).\n- **Undo** takes any move back.\n"
   },
   {
    "id": "end-turn",
@@ -524,7 +936,14 @@
     "desktop",
     "phone"
    ],
-   "aliases": [],
+   "aliases": [
+    "pass",
+    "pass turn",
+    "next turn",
+    "finish turn",
+    "ready step",
+    "draw step"
+   ],
    "targets": [
     "end-turn",
     "auto-save"
@@ -534,10 +953,31 @@
     "you-play-both-sides",
     "undo"
    ],
-   "verified": "none",
-   "todo": true,
-   "headings": [],
-   "body": "TODO: write this article (M3a). The summary above is its scope. How to write it: docs/ARCH-help-and-tour.md §5.\n"
+   "verified": "v3.9.1",
+   "todo": false,
+   "headings": [
+    {
+     "level": 2,
+     "text": "End the turn",
+     "slug": "end-the-turn"
+    },
+    {
+     "level": 2,
+     "text": "What happens next",
+     "slug": "what-happens-next"
+    },
+    {
+     "level": 2,
+     "text": "Auto-save every turn",
+     "slug": "auto-save-every-turn"
+    },
+    {
+     "level": 2,
+     "text": "Good to know",
+     "slug": "good-to-know"
+    }
+   ],
+   "body": "When you're done, end the turn. The other player's turn begins, and the board swaps so they're at the bottom.\n\n## End the turn\n\n:::desktop\nPress **End turn →** at the foot of the left rail, or press {key:Space}.\n:::\n\n:::phone\nPress **End turn** in the hand tray, right of your hand. It's also in the **☰** panel.\n:::\n\n[Show me](show:end-turn)\n\n## What happens next\n\n1. The other player becomes the player to play. The turn number goes up when Player 1's turn comes round.\n2. **Ready step:** their characters and items ready, drying ends, and their ink readies. Cards they inked last turn turn face down. Locations aren't readied.\n3. **Draw step:** they draw a card.\n4. **Auto-save:** the Multiverse gets a node for the new turn, named like `Turn 4 - Player 1 Active`. It keeps your turn note and a recap of what you did (drew, inked, played, quested, banished). See [Every turn is saved](help:auto-save).\n\nChallenge mode ends, and the other player's hand is hidden again.\n\n## Auto-save every turn\n\nThe switch **Auto-save every turn** sits in the left rail (in the **☰** panel on a phone). It's on by default. Turn it off and ending the turn saves no node.\n\n[Show me](show:auto-save)\n\n## Good to know\n\n- Player 2's first turn opens on their mulligan; their draw comes after it. See [Mulligan](help:mulligan).\n- The turn can't end while a mulligan is open.\n- Abilities that trigger at the start or end of a turn aren't applied: do them by hand.\n- Ended too soon? **Undo** takes you back. The node it saved stays in the Multiverse.\n"
   },
   {
    "id": "undo",
@@ -548,7 +988,15 @@
     "desktop",
     "phone"
    ],
-   "aliases": [],
+   "aliases": [
+    "undo",
+    "take back",
+    "go back",
+    "rewind",
+    "oops",
+    "mistake",
+    "revert"
+   ],
    "targets": [
     "undo"
    ],
@@ -556,10 +1004,26 @@
     "branches",
     "end-turn"
    ],
-   "verified": "none",
-   "todo": true,
-   "headings": [],
-   "body": "TODO: write this article (M3a). The summary above is its scope. How to write it: docs/ARCH-help-and-tour.md §5.\n"
+   "verified": "v3.9.1",
+   "todo": false,
+   "headings": [
+    {
+     "level": 2,
+     "text": "Undo an action",
+     "slug": "undo-an-action"
+    },
+    {
+     "level": 2,
+     "text": "What it covers",
+     "slug": "what-it-covers"
+    },
+    {
+     "level": 2,
+     "text": "Good to know",
+     "slug": "good-to-know"
+    }
+   ],
+   "body": "**Undo** takes back your last action. Press it again to keep going back, one action at a time.\n\n## Undo an action\n\n:::desktop\nPress **Undo** in the top bar, beside the turn chip. The rail's round-arrow button at the foot does the same.\n:::\n\n:::phone\nPress the round-arrow button in the top bar, left of the turn chip.\n:::\n\n[Show me](show:undo)\n\n## What it covers\n\nEverything you do on the board: playing, inking, moving and drawing cards, damage, exert and ready, quests and challenges, lore, ink, turn notes, the mulligan and ending the turn. The log steps back with it.\n\nIt goes back up to 250 actions, and the history is kept with the session, so it still works after you leave and come back.\n\n## Good to know\n\n- There's no redo. To try both versions of a turn, save the turn first and branch in the Multiverse. See [Branching](help:branches).\n- Undo doesn't touch the Multiverse: a node saved when you ended a turn stays. Ending the turn again saves a new node beside it.\n- **Play from here** in the Multiverse, or a jump on the mini multiverse, starts a fresh undo history.\n- **Undo** has no keyboard shortcut.\n"
   },
   {
    "id": "turn-notes",
@@ -570,7 +1034,14 @@
     "desktop",
     "phone"
    ],
-   "aliases": [],
+   "aliases": [
+    "notes",
+    "note",
+    "comment",
+    "annotate",
+    "write a note",
+    "long press"
+   ],
    "targets": [
     "turn-notes"
    ],
@@ -578,10 +1049,26 @@
     "nodes",
     "multiverse-panel"
    ],
-   "verified": "none",
-   "todo": true,
-   "headings": [],
-   "body": "TODO: write this article (M3a). The summary above is its scope. How to write it: docs/ARCH-help-and-tour.md §5.\n"
+   "verified": "v3.9.1",
+   "todo": false,
+   "headings": [
+    {
+     "level": 2,
+     "text": "Write a note",
+     "slug": "write-a-note"
+    },
+    {
+     "level": 2,
+     "text": "Where the note goes",
+     "slug": "where-the-note-goes"
+    },
+    {
+     "level": 2,
+     "text": "Good to know",
+     "slug": "good-to-know"
+    }
+   ],
+   "body": "Write down what you're trying, or why, as you play. Each player has one note per turn, and it's saved with that turn's node in the Multiverse.\n\n## Write a note\n\n:::desktop\nType in the **Turn N notes** box at the bottom left of the board. It saves when you click away.\n:::\n\n:::phone\n{gesture:long-press} (long press) an empty part of the board. A **Turn N notes** dialog opens with the note for the player to play. Press **Save**, or **Cancel** to leave it as it was. {key:Enter} adds a line; {key:Ctrl+Enter} saves.\n:::\n\n[Show me](show:turn-notes)\n\nThe note shows in the game log under the turn it belongs to, as **Turn N note · Player N**.\n\n## Where the note goes\n\nWhen the turn ends with auto-save on, the note goes into the new node, above the recap of the turn. **Save current unfinished turn** in the Multiverse starts its note from it too. To change a note later, edit it in the Multiverse panel. See [The Multiverse panel](help:multiverse-panel).\n\n## Good to know\n\n- The note belongs to the player to play and the turn number. The other player's turn starts with an empty box.\n- Hotkeys don't fire while you type in the notes box.\n- Saving an empty note clears it.\n"
   },
   {
    "id": "winning",
@@ -592,7 +1079,13 @@
     "desktop",
     "phone"
    ],
-   "aliases": [],
+   "aliases": [
+    "win",
+    "victory",
+    "game over",
+    "20 lore",
+    "end of game"
+   ],
    "targets": [
     "lore"
    ],
@@ -600,10 +1093,26 @@
     "quest",
     "multiverse"
    ],
-   "verified": "none",
-   "todo": true,
-   "headings": [],
-   "body": "TODO: write this article (M3a). The summary above is its scope. How to write it: docs/ARCH-help-and-tour.md §5.\n"
+   "verified": "v3.9.1",
+   "todo": false,
+   "headings": [
+    {
+     "level": 2,
+     "text": "When a player reaches 20",
+     "slug": "when-a-player-reaches-20"
+    },
+    {
+     "level": 2,
+     "text": "Try another line",
+     "slug": "try-another-line"
+    },
+    {
+     "level": 2,
+     "text": "Good to know",
+     "slug": "good-to-know"
+    }
+   ],
+   "body": "The first player to reach 20 lore wins. The Dojo notices, whether the lore came from a quest, **Quest** or the lore **+**.\n\n## When a player reaches 20\n\nA dialog says who won, the lore score and the turn. A **Game Over - Player 1 Wins!** node is saved to the Multiverse, whether auto-save is on or not. Then choose:\n\n- **View Multiverse** to see the game as a tree and pick another turn to replay.\n- **Stay Here** to keep playing on this board.\n\n[Show me](show:lore)\n\n## Try another line\n\nA win is the end of one branch, not of the session. Open the **Multiverse**, select an earlier turn and press **Play from here** to play it differently. See [What the Multiverse is](help:multiverse).\n\n## Good to know\n\n- The Dojo doesn't stop the game at 20: the board stays live.\n- It says so once per branch. If you **Undo** below 20 and reach it again, you get the dialog and a new node again.\n- Lore isn't capped at 20, and other ways to win or lose (like an empty deck) aren't checked.\n"
   },
   {
    "id": "card-preview",
@@ -2816,7 +3325,12 @@
     "terms",
     "what does it mean",
     "meaning",
-    "vocabulary"
+    "vocabulary",
+    "drying",
+    "dry",
+    "node",
+    "line",
+    "branch"
    ],
    "targets": [],
    "related": [

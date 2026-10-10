@@ -3,7 +3,7 @@ id: glossary
 title: Glossary
 summary: Dojo words (node, line, branch, Left here, scratch) and the Lorcana terms the manual uses.
 devices: [desktop, phone]
-aliases: [definitions, terms, what does it mean, meaning, vocabulary]
+aliases: [definitions, terms, what does it mean, meaning, vocabulary, drying, dry, node, line, branch]
 targets: []
 related: [multiverse, what-is-the-dojo]
 order: 30

@@ -103,6 +103,8 @@ window.DojoHelpSearch = (function () {
                 const syn = [];
                 for (const g of groups) if (own.includes(padded(g[0].t))) g.slice(1).forEach(w => syn.push(w.raw));
                 r.aliases = (a.aliases || []).concat(syn).join(', ');
+                // The article's own aliases as typed, for an exact whole-query match (lead only).
+                r.exact = lead ? (a.aliases || []).map(x => String(x).toLowerCase().trim()).concat(String(a.title).toLowerCase()) : [];
                 f[F.syn] = terms(syn.join(' '));
                 r.fields = f;
                 r.strs = f.map(padded);
@@ -301,6 +303,9 @@ window.DojoHelpSearch = (function () {
         const key = keyQuery(q);
         const { rel, hits } = key && key.length === 1 ? { rel: new Float64Array(recs.length), hits: new Set() } : score(index, q, false);
         const keyTerm = key && stem(key.replace(/\s+.*/, ''));
+        // A query that is exactly one of an article's aliases (or its title) is a strong hint.
+        const whole = q.trim().toLowerCase().replace(/\s+/g, ' ');
+        recs.forEach((r, ri) => { if (r.exact.includes(whole)) rel[ri] += 0.5; });
         const rows = [];
         recs.forEach((r, ri) => {
             let route = 0;
