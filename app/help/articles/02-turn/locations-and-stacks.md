@@ -7,7 +7,7 @@ aliases: [location, move to location, shift, boost, put under, stack, separate s
 targets: [field]
 related: [play-a-card, card-actions]
 order: 100
-verified: v3.11.0
+verified: v3.11.1
 ---
 
 Locations sit in your play area with the characters at them above them. Shift and "put under" build a stack: one card on top, the rest underneath.
@@ -46,7 +46,7 @@ Choose **Separate Stacked Cards** in the menu, or **Separate stack** in the draw
 
 ## Good to know
 
-- Dragging from your hand spends the card's full cost, not its Shift cost. Give back the difference with **+** on your ink bar.
+- Dragging a character from your hand onto another character spends its Shift cost when it has an ink one (**Shift 5**, **Universal Shift 4**). If you don't have that much ready ink, none is spent. A Shift paid another way (**Shift: Discard a card**) spends no ink: pay it by hand. Any other card dragged from your hand spends its full cost.
 - Moving to a location costs nothing in the Dojo: spend the move cost with **−** on your ink bar.
 - A location's lore isn't added at the start of your turn. Add it with the lore **+**.
 - When a card with cards under it leaves play, the cards under it go with it.

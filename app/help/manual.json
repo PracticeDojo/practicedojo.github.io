@@ -844,7 +844,7 @@
     "play-a-card",
     "card-actions"
    ],
-   "verified": "v3.11.0",
+   "verified": "v3.11.1",
    "todo": false,
    "headings": [
     {
@@ -873,7 +873,7 @@
      "slug": "good-to-know"
     }
    ],
-   "body": "Locations sit in your play area with the characters at them above them. Shift and \"put under\" build a stack: one card on top, the rest underneath.\n\n## Move a character to a location\n\nDrag the character onto the location. A character dragged from your hand is played straight to the location, and its cost is spent.\n\nTo leave, choose **Leave Location** in the card's menu (desktop) or **Leave location** in the card drawer (touch). Or drag the character back onto an empty part of your play area.\n\n:::touch\nDragging works on touch screens too: press the card, then move it.\n:::\n\n## Shift onto a character\n\nDrag the new card from your hand onto the character it shifts onto. It goes on top, keeps the card underneath's damage, exerted state and location, and the log says you shifted. The badge in the corner counts the cards under it.\n\nYou can drop any of your cards onto another of yours this way; only a matching name counts as a shift.\n\n## Put a card under\n\n:::desktop\nRight-click your card and choose **Put Top Card of Deck Under**. The deck's top card goes under it face down.\n:::\n\n:::touch\nTap your card and press **Put under** in the card drawer.\n:::\n\n## Separate a stack\n\nChoose **Separate Stacked Cards** in the menu, or **Separate stack** in the drawer. The cards underneath come out into play, exerted and drying.\n\n[Show me](show:field)\n\n## Good to know\n\n- Dragging from your hand spends the card's full cost, not its Shift cost. Give back the difference with **+** on your ink bar.\n- Moving to a location costs nothing in the Dojo: spend the move cost with **−** on your ink bar.\n- A location's lore isn't added at the start of your turn. Add it with the lore **+**.\n- When a card with cards under it leaves play, the cards under it go with it.\n- Banish a location and the characters at it stay in play.\n"
+   "body": "Locations sit in your play area with the characters at them above them. Shift and \"put under\" build a stack: one card on top, the rest underneath.\n\n## Move a character to a location\n\nDrag the character onto the location. A character dragged from your hand is played straight to the location, and its cost is spent.\n\nTo leave, choose **Leave Location** in the card's menu (desktop) or **Leave location** in the card drawer (touch). Or drag the character back onto an empty part of your play area.\n\n:::touch\nDragging works on touch screens too: press the card, then move it.\n:::\n\n## Shift onto a character\n\nDrag the new card from your hand onto the character it shifts onto. It goes on top, keeps the card underneath's damage, exerted state and location, and the log says you shifted. The badge in the corner counts the cards under it.\n\nYou can drop any of your cards onto another of yours this way; only a matching name counts as a shift.\n\n## Put a card under\n\n:::desktop\nRight-click your card and choose **Put Top Card of Deck Under**. The deck's top card goes under it face down.\n:::\n\n:::touch\nTap your card and press **Put under** in the card drawer.\n:::\n\n## Separate a stack\n\nChoose **Separate Stacked Cards** in the menu, or **Separate stack** in the drawer. The cards underneath come out into play, exerted and drying.\n\n[Show me](show:field)\n\n## Good to know\n\n- Dragging a character from your hand onto another character spends its Shift cost when it has an ink one (**Shift 5**, **Universal Shift 4**). If you don't have that much ready ink, none is spent. A Shift paid another way (**Shift: Discard a card**) spends no ink: pay it by hand. Any other card dragged from your hand spends its full cost.\n- Moving to a location costs nothing in the Dojo: spend the move cost with **−** on your ink bar.\n- A location's lore isn't added at the start of your turn. Add it with the lore **+**.\n- When a card with cards under it leaves play, the cards under it go with it.\n- Banish a location and the characters at it stay in play.\n"
   },
   {
    "id": "move-cards",
@@ -4081,7 +4081,7 @@
      ],
      "until": "inkedThisTurn",
      "text": {
-      "desktop": "Put a card in your inkwell: **drag it from your hand onto the inkwell**, or **click it and press INK**.",
+      "desktop": "Put a card in your inkwell: **drag it from your hand onto the inkwell**, or **click it and press Add to the Inkwell**.",
       "phone": "Put a card in your inkwell: **drag it from your hand onto the inkwell**, or **tap a card in your hand, then Ink**."
      },
      "hint": {
@@ -4101,7 +4101,7 @@
      ],
      "until": "cardPlayed",
      "text": {
-      "desktop": "Now play a card: **drag a 1-cost character onto your play area**, or **click it and press PLAY**.",
+      "desktop": "Now play a card: **drag a 1-cost character onto your play area**, or **click it and press Play Card**.",
       "phone": "Now play a card: **drag a 1-cost character onto your play area**, or **tap a 1-cost character, then Play**."
      },
      "hint": "The cost is the number in the card's top-left corner.",
