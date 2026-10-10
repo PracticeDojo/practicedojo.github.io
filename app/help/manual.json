@@ -2035,6 +2035,17 @@
    "desktop": "#btn-tweaks",
    "phone": "#btn-topbar-more"
   },
+  "help-button": {
+   "label": "Help",
+   "screen": "board",
+   "desktop": "#btn-help",
+   "phone": "#btn-topbar-more"
+  },
+  "home-help": {
+   "label": "Help",
+   "screen": "home",
+   "any": "#btn-home-help"
+  },
   "more-menu": {
    "label": "the ⋯ menu",
    "screen": "board",

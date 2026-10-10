@@ -156,6 +156,8 @@
             <button class="icon-btn" id="btn-tweaks"
                 onclick="document.getElementById('tweaks-panel').classList.toggle('is-open')" title="Tweaks"
                 aria-label="Tweaks"><i class="fa-solid fa-sliders"></i></button>
+            <button class="icon-btn" id="btn-help" onclick="DojoHelp.toggle()" title="Help (?)" aria-label="Help"
+                aria-expanded="false"><i class="fa-regular fa-circle-question"></i></button>
             <button class="icon-btn" id="btn-topbar-more" onclick="App.toggleTopbarMenu(event)" title="More"
                 aria-label="More" aria-haspopup="menu" aria-expanded="false" aria-controls="topbar-menu"><i
                     class="fa-solid fa-ellipsis"></i></button>
@@ -170,6 +172,8 @@
                     class="fa-regular fa-copy"></i>Save as copy</span></button>
         <button class="ctx-item" role="menuitem" onclick="App.closeTopbarMenu(); App.shareCurrentSession()"><span><i
                     class="fa-solid fa-share-nodes"></i>Share link</span></button>
+        <button class="ctx-item" role="menuitem" onclick="App.closeTopbarMenu(); DojoHelp.open()"><span><i
+                    class="fa-regular fa-circle-question"></i>Help &amp; tours</span></button>
         <button class="ctx-item" role="menuitem"
             onclick="App.closeTopbarMenu(); document.getElementById('tweaks-panel').classList.toggle('is-open')"><span><i
                     class="fa-solid fa-sliders"></i>Tweaks</span></button>
@@ -218,6 +222,8 @@
                 <button class="btn btn-ghost" id="btn-open-library" onclick="App.openLibrary('sessions')">
                     <i class="fa-solid fa-book-bookmark"></i> Library <span class="lib-figs" id="home-lib-figs"></span>
                 </button>
+                <button class="btn btn-ghost" id="btn-home-help" onclick="DojoHelp.toggle()" aria-expanded="false"
+                    title="Help (?)"><i class="fa-regular fa-circle-question"></i> Help</button>
             </header>
 
             <section class="home-lede">
@@ -278,6 +284,7 @@
         hidden>
         <div class="lib-hd">
             <h2 id="library-title">Library</h2>
+            <button type="button" class="help-q" data-help="library" aria-label="Help: the Library">?</button>
             <button class="icon-btn ghost" onclick="App.closeLibrary()" aria-label="Close library">&times;</button>
         </div>
         <div class="home-tabs" role="tablist" aria-label="Library">
@@ -367,6 +374,7 @@
                         <div class="mull-lbl">Deck</div>
                         <div class="mull-fig" id="mulligan-deck-count">0</div>
                     </div>
+                    <button type="button" class="help-q" data-help="mulligan" aria-label="Help: mulligan">?</button>
                 </div>
             </div>
             <div class="mull-body">
@@ -565,6 +573,7 @@
                 <div class="divider-v tree-head-rule"></div>
                 <button class="tree-tool" id="tree-view-toggle" onclick="App.toggleTreeView()" aria-pressed="false"
                     title="Show the tree as a plot: every saved turn a dot"><i class="fa-solid fa-braille"></i><span>Plot</span></button>
+                <button type="button" class="help-q" data-help="multiverse" aria-label="Help: the Multiverse">?</button>
                 <button onclick="App.toggleTreePanelSide()" class="close tree-dock-toggle" id="tree-dock-toggle"
                     title="Move the panel to the left" aria-label="Move the panel to the left"><i
                         class="fa-solid fa-table-columns"></i></button>
@@ -978,6 +987,7 @@
         <aside class="prob-pane" id="prob-pane">
             <div class="prob-head">
                 <h3>Draw Odds <span class="mono dim" id="prob-deck-count"></span></h3>
+                <button type="button" class="help-q" data-help="draw-odds" aria-label="Help: draw odds">?</button>
                 <button class="prob-toggle" id="prob-toggle" onclick="App.toggleProbPane()"
                     title="Collapse / expand draw odds">
                     <i class="fa-solid fa-angles-right" id="prob-toggle-icon"></i>
@@ -1026,6 +1036,7 @@
     <div class="tweaks-panel" id="tweaks-panel">
         <div class="tweaks-head">
             <h3>Tweaks</h3>
+            <button type="button" class="help-q" data-help="tweaks" aria-label="Help: Tweaks">?</button>
             <button class="close" id="tweaks-close">&times;</button>
         </div>
         <div class="tweaks-body">
@@ -2088,6 +2099,9 @@
                     // otherwise the home screen, which re-reads the library.
                     if (!(await this.openShareFromUrl())) this.showSetup();
 
+                    // Help deep links: #help, #help/<id>, #help/<id>/<slug> (Feature 57).
+                    if (window.DojoHelp && DojoHelp.openFromHash) DojoHelp.openFromHash();
+
                     // Optional account: does nothing (and loads nothing) unless this
                     // browser is signed in or just came back from signing in.
                     this.initAccount();
@@ -2457,6 +2471,7 @@
 
             // The match on the board is already in the library, so leaving it loses nothing.
             confirmShowSetup() {
+                if (window.DojoHelp && DojoHelp.close) DojoHelp.close();
                 this.showSetup();
             },
 
@@ -11865,6 +11880,9 @@
             // Never hijack browser shortcuts, and stay quiet while a styled dialog is up
             if (e.ctrlKey || e.metaKey || e.altKey) return;
             if (document.querySelector('.dlg-backdrop')) return;
+
+            // Help (Feature 57): ? toggles it; while it's open, Esc and / go to it first.
+            if (window.DojoHelp && DojoHelp.onKey && DojoHelp.onKey(e)) return;
 
             // Escape: close the context menu first, then whichever modal is open
             if (e.key === 'Escape') {
