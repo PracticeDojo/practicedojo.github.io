@@ -219,6 +219,7 @@ window.DojoHelp = (function () {
         clearTimeout(searchTimer);
         const hadFocus = root.contains(document.activeElement);
         root.hidden = true;
+        root.classList.remove('is-away');
         syncOpeners();
         if (/^#help\b/.test(location.hash)) {
             try { history.replaceState(history.state, '', location.pathname + location.search); } catch (e) { }
@@ -566,8 +567,28 @@ window.DojoHelp = (function () {
     function showMe(target, text) {
         const S = window.DojoSpotlight;
         if (!S || typeof S.show !== 'function') return;
-        const go = () => { try { S.show(target, { text }); } catch (e) { console.error('DojoSpotlight.show', e); } };
-        if (device() === 'phone') { close(); requestAnimationFrame(go); } else go();
+        if (device() === 'phone') {
+            close();
+            requestAnimationFrame(() => { try { S.show(target, { text }); } catch (e) { console.error('DojoSpotlight.show', e); } });
+            return;
+        }
+        // Desktop: the drawer stays, unless it covers the target; then it steps
+        // aside until the spotlight closes.
+        let away = false;
+        const back = () => { if (away) { away = false; root.classList.remove('is-away'); } };
+        try {
+            const el = typeof S.resolve === 'function' ? S.resolve(target) : null;
+            if (el && el.getBoundingClientRect) {
+                const a = el.getBoundingClientRect();
+                const b = root.getBoundingClientRect();
+                if (a.right > b.left && a.left < b.right && a.bottom > b.top && a.top < b.bottom) {
+                    away = true;
+                    root.classList.add('is-away');
+                }
+            }
+            const p = S.show(target, { text, onClose: back });
+            if (p && typeof p.catch === 'function') p.catch(back);
+        } catch (e) { back(); console.error('DojoSpotlight.show', e); }
     }
 
     // ---------- Search ----------

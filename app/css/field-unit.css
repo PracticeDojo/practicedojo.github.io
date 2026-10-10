@@ -6795,6 +6795,11 @@ body.palette-competition .tree-node.tn-p2::before {
     display: none;
 }
 
+/* Steps aside while "Show me" lights a control the drawer covers. */
+.help-drawer.is-away {
+    visibility: hidden;
+}
+
 @keyframes help-in {
     from {
         opacity: 0;
