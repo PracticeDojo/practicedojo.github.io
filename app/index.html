@@ -1081,7 +1081,7 @@
     <script>
         let cardFuse = null;
 
-        const APP_VERSION = "v3.9.1"; // Centralized version string (v3: Field Unit)
+        const APP_VERSION = "v3.9.2"; // Centralized version string (v3: Field Unit)
 
         // Tweaks panel accent presets (hue values for the OKLCH accent ramp)
         // Tweaks → Accent: the approved Field Unit signals only (design.md ·
@@ -6110,6 +6110,14 @@
                 if (window.matchMedia && window.matchMedia('(max-width: 760px)').matches) this.toggleSidebar(false);
                 document.getElementById('tree-modal').classList.remove('hidden');
                 document.getElementById('tree-modal').classList.add('flex');
+
+                // Phones always open on the plot (the cards are far too wide for the
+                // screen), even after the cards were picked on an earlier visit. The
+                // Plot tool still flips it for as long as the Multiverse stays open.
+                if (this.isPhoneUI() && this.treeView !== 'plot') {
+                    this.treeView = 'plot';
+                    this.updateTreeViewToggle();
+                }
 
                 // Select the node you are on (else the newest), then centre on it.
                 const live = this.state && this.state.activeBookmarkId;
