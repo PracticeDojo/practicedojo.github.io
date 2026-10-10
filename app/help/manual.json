@@ -614,7 +614,14 @@
     "desktop",
     "phone"
    ],
-   "aliases": [],
+   "aliases": [
+    "zoom card",
+    "card details",
+    "enlarge card",
+    "card text",
+    "hover card",
+    "read card"
+   ],
    "targets": [
     "card-preview",
     "card-drawer"
@@ -623,21 +630,46 @@
     "card-display",
     "offline"
    ],
-   "verified": "none",
-   "todo": true,
-   "headings": [],
-   "body": "TODO: write this article (M3b). The summary above is its scope. How to write it: docs/ARCH-help-and-tour.md §5.\n"
+   "verified": "v3.9.1",
+   "todo": false,
+   "headings": [
+    {
+     "level": 2,
+     "text": "See a card big",
+     "slug": "see-a-card-big"
+    },
+    {
+     "level": 2,
+     "text": "Text mode",
+     "slug": "text-mode"
+    },
+    {
+     "level": 2,
+     "text": "Good to know",
+     "slug": "good-to-know"
+    }
+   ],
+   "body": "Cards on the board are small. The preview shows one big enough to read, with all its abilities.\n\n## See a card big\n\n:::desktop\nPoint at any card: on the board, in a hand, in the discard column, in the draw odds or in a deck or discard grid. It shows in the preview in the side rail, under the mini multiverse. The last card you pointed at stays there until you point at another.\n:::\n\n:::phone\nTap a card in play or in your hand. The card drawer opens with the card's full text and a small picture of it. Step to the next card with ‹ ›, or swipe sideways on the text.\n\nFor other cards (the discard, the other player's hand), tap the card and choose **Preview Card**. The ☰ side panel opens with the card in it.\n:::\n\n[Show me](show:card-preview)\n\n## Text mode\n\nTurn on **Text** under **Card display** in Tweaks to show every card as text instead of art: the board, the hands, the grids and the preview. The text card has the cost (a gold disc if it can be inked, a dark hexagon if not), name, type line, every ability and the stats. See [Card size and Art / Text](help:card-display).\n\n## Good to know\n\n- Locations always show as text in the preview, so they aren't cropped.\n- If a card's art can't load (offline, for example), the preview falls back to its text by itself.\n- On a tablet, tapping a card in play opens the card drawer; a hand card's menu has **Preview Card**.\n"
   },
   {
    "id": "inspect-deck",
    "section": "cards",
    "title": "Look through your deck and reorder it",
-   "summary": "Open your deck, drag cards into a custom order, shuffle, and save the order.",
+   "summary": "Open a deck, drag its cards into the order you want, save the order, or shuffle it.",
    "devices": [
     "desktop",
     "phone"
    ],
-   "aliases": [],
+   "aliases": [
+    "inspect deck",
+    "view deck",
+    "search deck",
+    "stack the deck",
+    "deck order",
+    "reorder deck",
+    "shuffle deck",
+    "library"
+   ],
    "targets": [
     "deck"
    ],
@@ -646,10 +678,31 @@
     "draw",
     "draw-odds"
    ],
-   "verified": "none",
-   "todo": true,
-   "headings": [],
-   "body": "TODO: write this article (M3b). The summary above is its scope. How to write it: docs/ARCH-help-and-tour.md §5.\n"
+   "verified": "v3.9.1",
+   "todo": false,
+   "headings": [
+    {
+     "level": 2,
+     "text": "Open the deck",
+     "slug": "open-the-deck"
+    },
+    {
+     "level": 2,
+     "text": "Reorder it",
+     "slug": "reorder-it"
+    },
+    {
+     "level": 2,
+     "text": "Shuffle it",
+     "slug": "shuffle-it"
+    },
+    {
+     "level": 2,
+     "text": "Good to know",
+     "slug": "good-to-know"
+    }
+   ],
+   "body": "Open a deck to see every card left in it, in draw order, and set up the draws you want to practise.\n\n## Open the deck\n\n:::desktop\nClick the magnifier at the top right of the deck. Or right-click the deck and choose **Inspect Deck**. Clicking the deck itself draws a card.\n:::\n\n:::phone\nTap the ⋮ button on the deck in the player bar, then **Inspect Deck**. Tapping the deck itself draws a card.\n:::\n\n[Show me](show:deck)\n\nThe grid starts with the top card: the first card is the next one drawn. This works on both players' decks.\n\n## Reorder it\n\n1. Drag a card onto the place you want it. The card you dropped on moves along.\n2. Press **Save Custom Order**. **Cancel** (or {key:Esc}) leaves the deck as it was.\n\nSaving also adds a node called *Custom deck ordering* to the Multiverse, so you can come back to this order.\n\n## Shuffle it\n\n:::desktop\nClick the shuffle button at the bottom right of the deck, or right-click the deck and choose **Shuffle Deck**.\n:::\n\n:::phone\nTap ⋮ on the deck, then **Shuffle Deck**.\n:::\n\n## Good to know\n\n- The Dojo doesn't stop you from stacking a deck. You're the referee.\n- To change which cards are in the deck, see [Swap a card](help:swap-cards).\n- **Undo** takes back a shuffle or a saved order.\n"
   },
   {
    "id": "inspect-discard",
@@ -660,28 +713,64 @@
     "desktop",
     "phone"
    ],
-   "aliases": [],
+   "aliases": [
+    "graveyard",
+    "discard",
+    "return from discard",
+    "recursion",
+    "view discard",
+    "banished cards"
+   ],
    "targets": [
     "discard"
    ],
    "related": [
     "move-cards"
    ],
-   "verified": "none",
-   "todo": true,
-   "headings": [],
-   "body": "TODO: write this article (M3b). The summary above is its scope. How to write it: docs/ARCH-help-and-tour.md §5.\n"
+   "verified": "v3.9.1",
+   "todo": false,
+   "headings": [
+    {
+     "level": 2,
+     "text": "Read the discard",
+     "slug": "read-the-discard"
+    },
+    {
+     "level": 2,
+     "text": "Open it in full",
+     "slug": "open-it-in-full"
+    },
+    {
+     "level": 2,
+     "text": "Bring a card back",
+     "slug": "bring-a-card-back"
+    },
+    {
+     "level": 2,
+     "text": "Good to know",
+     "slug": "good-to-know"
+    }
+   ],
+   "body": "Every card that leaves play or is discarded goes to its owner's discard pile. You can read it at any time and take cards back out.\n\n## Read the discard\n\n:::desktop\nEach half of the board has a **Discard** column: the cards listed newest first, with cost / strength / lore on the right. Past eight cards, **+N more** shows the rest. Point at a row to see the card in the preview.\n:::\n\n:::phone\nThe discard is the mini card on the player bar: it shows the top card and how many cards are in the pile.\n:::\n\n[Show me](show:discard)\n\n## Open it in full\n\n:::desktop\nClick the magnifier in the **Discard** header, or right-click the column and choose **Inspect Discard Pile**.\n:::\n\n:::phone\nTap the magnifier on the discard's mini card.\n:::\n\nThe pile opens as a grid of cards, oldest first.\n\n## Bring a card back\n\n:::desktop\nClick or right-click a card in the column or the grid. Choose **Play Card to Field**, **Return to Hand**, **Move to Top of Deck** or **Move to Bottom of Deck**. You can also drag a row from the column onto the field, the hand or the deck.\n:::\n\n:::phone\nTap a card in the grid, or the top card on the bar, and pick one of the same moves. **Preview Card** shows it big.\n:::\n\nThe grid stays open, so you can take out several cards.\n\n## Good to know\n\n- The Dojo doesn't check that a card is allowed to come back. You're the referee.\n- **Play Card to Field** spends ink when the player has enough ready.\n"
   },
   {
    "id": "swap-cards",
    "section": "cards",
    "title": "Swap a card in your hand or deck",
-   "summary": "Replace one card, or every copy of it, with any card of your deck's inks to test a different list.",
+   "summary": "Replace one card, or every copy of it, with any other card to test a different list.",
    "devices": [
     "desktop",
     "phone"
    ],
-   "aliases": [],
+   "aliases": [
+    "replace card",
+    "swap card",
+    "change card",
+    "replace all copies",
+    "test a card",
+    "tech card",
+    "sideboard"
+   ],
    "targets": [
     "hand",
     "deck"
@@ -690,21 +779,44 @@
     "inspect-deck",
     "unknown-cards"
    ],
-   "verified": "none",
-   "todo": true,
-   "headings": [],
-   "body": "TODO: write this article (M3b). The summary above is its scope. How to write it: docs/ARCH-help-and-tour.md §5.\n"
+   "verified": "v3.9.1",
+   "todo": false,
+   "headings": [
+    {
+     "level": 2,
+     "text": "Swap a card in your hand",
+     "slug": "swap-a-card-in-your-hand"
+    },
+    {
+     "level": 2,
+     "text": "Replace cards in the deck",
+     "slug": "replace-cards-in-the-deck"
+    },
+    {
+     "level": 2,
+     "text": "Good to know",
+     "slug": "good-to-know"
+    }
+   ],
+   "body": "Swap a card for any other card to see how a different list plays, without building a new deck.\n\n## Swap a card in your hand\n\n:::desktop\nRight-click the card in your hand and choose **Swap Card**.\n:::\n\n:::phone\nTap the card in your hand. In the card drawer, under **More**, press **Swap**.\n:::\n\nType at least two letters of a card's name in **Search Replacement Card**, then click the card you want. It takes the old card's place in the hand straight away.\n\n## Replace cards in the deck\n\n1. Open the deck: see [Look through your deck](help:inspect-deck).\n2. Right-click a card in the grid and choose **Replace this card**, or **Replace all copies** to change every copy of it in the deck.\n3. Search and click the new card.\n4. Press **Save Custom Order**. Until you do, nothing changes: **Cancel** throws the replacements away.\n\n:::phone\nOn a phone, the menu for a card in the deck grid opens with a press and hold. Some phone browsers (Safari on iPhone) don't open it.\n:::\n\n## Good to know\n\n- The search offers every card, not just your deck's inks. The Dojo doesn't check that the new card is legal in your deck, or how many copies you have.\n- **Replace all copies** only changes the cards in the deck, not the copies in your hand, in play or in the discard.\n- **Undo** takes back a hand swap.\n- Swaps change this match only. To change a saved deck, edit it in the Library: see [Your decks](help:decks).\n"
   },
   {
    "id": "unknown-cards",
    "section": "cards",
    "title": "Unknown cards and filling them in",
-   "summary": "Imports leave cards they couldn't see as unknown; swap them one by one or fill them all from a decklist.",
+   "summary": "Imports leave cards they couldn't see as unknown; replace them one at a time or all at once.",
    "devices": [
     "desktop",
     "phone"
    ],
-   "aliases": [],
+   "aliases": [
+    "unknown card",
+    "face down card",
+    "card back",
+    "missing cards",
+    "fill unknown",
+    "placeholder"
+   ],
    "targets": [
     "deck"
    ],
@@ -712,10 +824,26 @@
     "hidden-information",
     "swap-cards"
    ],
-   "verified": "none",
-   "todo": true,
-   "headings": [],
-   "body": "TODO: write this article (M3b). The summary above is its scope. How to write it: docs/ARCH-help-and-tour.md §5.\n"
+   "verified": "v3.9.1",
+   "todo": false,
+   "headings": [
+    {
+     "level": 2,
+     "text": "Where they show up",
+     "slug": "where-they-show-up"
+    },
+    {
+     "level": 2,
+     "text": "Replace them",
+     "slug": "replace-them"
+    },
+    {
+     "level": 2,
+     "text": "Good to know",
+     "slug": "good-to-know"
+    }
+   ],
+   "body": "When you import a Duels.ink game, any card the log or replay never shows becomes an **unknown card**: a card back with no name. You can play on with them or replace them with real cards.\n\n## Where they show up\n\n- **Decks.** The cards nobody drew or revealed yet. In the deck grid they show as a card back marked *(Unknown)*.\n- **The opponent's hand**, when the game never revealed those cards.\n- **Cards under a character** after a boost or shift in a text log.\n- **Draw odds** groups them in one **Unknown** row, so you can see how many are left.\n\n## Replace them\n\n1. Open the deck: see [Look through your deck](help:inspect-deck).\n2. Right-click an unknown card. **Replace this card** changes that one; **Replace all copies** turns every unknown card in the deck into the card you pick.\n3. Press **Save Custom Order**.\n\nAn unknown card in the other player's hand can be swapped: right-click it and choose **Swap Card**. On a phone, tap an unknown card in your hand and press **Swap** (see [Swap a card](help:swap-cards)).\n\n## Good to know\n\n- There's no button to fill the unknown cards from a decklist. Replace them by hand, or draw and play with them as they are.\n- An unknown card has no cost or stats, so it stays out of the curve and the odds of named cards.\n- Saving the order adds a node to the Multiverse, so the filled-in deck is kept with that turn.\n"
   },
   {
    "id": "draw-odds",
@@ -725,7 +853,14 @@
    "devices": [
     "desktop"
    ],
-   "aliases": [],
+   "aliases": [
+    "probability",
+    "odds",
+    "chance to draw",
+    "hypergeometric",
+    "outs",
+    "percentages"
+   ],
    "targets": [
     "draw-odds"
    ],
@@ -733,10 +868,31 @@
     "mulligan",
     "inspect-deck"
    ],
-   "verified": "none",
-   "todo": true,
-   "headings": [],
-   "body": "TODO: write this article (M3b). The summary above is its scope. How to write it: docs/ARCH-help-and-tour.md §5.\n"
+   "verified": "v3.9.1",
+   "todo": false,
+   "headings": [
+    {
+     "level": 2,
+     "text": "Read the odds",
+     "slug": "read-the-odds"
+    },
+    {
+     "level": 2,
+     "text": "Change the draw windows",
+     "slug": "change-the-draw-windows"
+    },
+    {
+     "level": 2,
+     "text": "Hide the pane",
+     "slug": "hide-the-pane"
+    },
+    {
+     "level": 2,
+     "text": "Good to know",
+     "slug": "good-to-know"
+    }
+   ],
+   "body": "**Draw odds**, on the right of the board, shows the chance of drawing at least one copy of each card in your next few draws. It follows the active player's deck and updates after every change.\n\n[Show me](show:draw-odds)\n\n## Read the odds\n\nEach row is a card in the player's whole list, wherever its copies are now:\n\n- **Left**: copies still in the deck.\n- The three number columns: the chance, in percent, of drawing at least one copy within the next 1, 2 or 3 draws.\n\nRows with the most copies left come first. A card with no copies left stays in the list, greyed out with dashes. The number next to the title is the deck size. Point at a row to see the card in the preview.\n\n## Change the draw windows\n\nClick a column's number (1, 2 or 3) and type how many draws it should cover, from 1 to 60. The mulligan's odds use the same three windows.\n\n## Hide the pane\n\nClick the arrows at the top right of **Draw odds** to fold it into a thin strip; click them again to open it.\n\n## Good to know\n\n- The odds assume the deck is in random order. After you stack a deck by hand, they don't know the order you set.\n- Unknown cards from an import are grouped in one **Unknown** row.\n- On a phone there's no draw odds pane; the mulligan shows its own odds. See [Mulligan](help:mulligan).\n"
   },
   {
    "id": "decks",
@@ -747,7 +903,15 @@
     "desktop",
     "phone"
    ],
-   "aliases": [],
+   "aliases": [
+    "decklist",
+    "deck builder",
+    "save deck",
+    "import deck",
+    "my decks",
+    "edit deck",
+    "txt"
+   ],
    "targets": [
     "intake",
     "library-button",
@@ -760,10 +924,31 @@
     "library",
     "first-match"
    ],
-   "verified": "none",
-   "todo": true,
-   "headings": [],
-   "body": "TODO: write this article (M3b). The summary above is its scope. How to write it: docs/ARCH-help-and-tour.md §5.\n"
+   "verified": "v3.9.1",
+   "todo": false,
+   "headings": [
+    {
+     "level": 2,
+     "text": "Paste a decklist",
+     "slug": "paste-a-decklist"
+    },
+    {
+     "level": 2,
+     "text": "Add a deck in the Library",
+     "slug": "add-a-deck-in-the-library"
+    },
+    {
+     "level": 2,
+     "text": "Edit, seat or delete",
+     "slug": "edit-seat-or-delete"
+    },
+    {
+     "level": 2,
+     "text": "Good to know",
+     "slug": "good-to-know"
+    }
+   ],
+   "body": "Keep the decks you play in **My decks**, so they're one tap away on the home screen.\n\n## Paste a decklist\n\nPaste a list into the field on the home screen, one card per line, like `4 Tinker Bell - Giant Fairy`. The readout under it says what it understood: the inks, and how many of the 60 cards it recognised (and which lines it skipped). Then choose:\n\n- **Play it as you** or **Play against it** to seat it for the next match.\n- **Save to My decks** to keep it.\n\n[Show me](show:intake)\n\n## Add a deck in the Library\n\nOpen **Library**, then **Decks**:\n\n- **New deck**: type a name, paste the list, add notes if you like, and press **Save deck**.\n- **Import .txt**: pick a text file with a decklist. It opens in the same form to check and save.\n- **From a replay**: pick a Duels.ink replay file (.json, .replay or .replay.gz). The form fills with your exact 60 from that game.\n\n[Show me](show:deck-new)\n\n## Edit, seat or delete\n\nEach deck has **You** and **Opponent** to seat it. Its **⋯** menu has **Edit**, **Share a link** and **Delete…**. Saving an edit updates a seat that holds that deck.\n\n## Good to know\n\n- The Dojo doesn't check deck rules. A list that isn't 60 cards plays with the cards it has, and the seat's count turns amber.\n- If no card is recognised, the deck is 60 random cards.\n- My decks live in this browser. Signing in keeps them in your account too: see [The Library](help:library).\n"
   },
   {
    "id": "default-decks",
@@ -774,7 +959,15 @@
     "desktop",
     "phone"
    ],
-   "aliases": [],
+   "aliases": [
+    "default decks",
+    "sample deck",
+    "example deck",
+    "demo",
+    "example game",
+    "precon",
+    "starter deck"
+   ],
    "targets": [
     "deck-chips",
     "recent"
@@ -783,10 +976,26 @@
     "decks",
     "sessions"
    ],
-   "verified": "none",
-   "todo": true,
-   "headings": [],
-   "body": "TODO: write this article (M3b). The summary above is its scope. How to write it: docs/ARCH-help-and-tour.md §5.\n"
+   "verified": "v3.9.1",
+   "todo": false,
+   "headings": [
+    {
+     "level": 2,
+     "text": "Play a built-in deck",
+     "slug": "play-a-built-in-deck"
+    },
+    {
+     "level": 2,
+     "text": "Explore a demo",
+     "slug": "explore-a-demo"
+    },
+    {
+     "level": 2,
+     "text": "Good to know",
+     "slug": "good-to-know"
+    }
+   ],
+   "body": "The Dojo comes with a few decks and example games, so you can start without a list of your own.\n\n## Play a built-in deck\n\nOn the home screen, under **On the table**, pick a deck chip. It goes to the first open seat (**You**, then **Opponent**). Press **Start match**.\n\n[Show me](show:deck-chips)\n\nThe Library's **Decks** tab lists them on the **Built in** shelf, grouped by set, with **You** and **Opponent** to seat them. To make your own version, open its **⋯** menu and choose **Copy to my decks and edit**.\n\n## Explore a demo\n\nUnder **Pick up again**, the demos are marked *Demo · opens as your own copy*. Press **Explore** to open one: a full game with its Multiverse, to step through and play from any turn.\n\n[Show me](show:recent)\n\n## Good to know\n\n- A demo opens as a copy in your sessions. Change it as much as you like; the demo itself stays the same.\n- Built-in decks are the same for everyone and can't be edited in place.\n- **A decklist**, under the paste field, puts a built-in list in the field to try.\n- An empty seat plays 60 random cards.\n"
   },
   {
    "id": "multiverse",
@@ -797,19 +1006,46 @@
     "desktop",
     "phone"
    ],
-   "aliases": [],
+   "aliases": [
+    "timeline",
+    "timelines",
+    "tree",
+    "save points",
+    "what if",
+    "replay a turn",
+    "go back to a turn"
+   ],
    "targets": [
-    "multiverse"
+    "multiverse",
+    "tree-canvas",
+    "tree-panel"
    ],
    "related": [
     "auto-save",
     "branches",
-    "nodes"
+    "nodes",
+    "multiverse-panel"
    ],
-   "verified": "none",
-   "todo": true,
-   "headings": [],
-   "body": "TODO: write this article (M3c). The summary above is its scope. How to write it: docs/ARCH-help-and-tour.md §5.\n"
+   "verified": "v3.9.1",
+   "todo": false,
+   "headings": [
+    {
+     "level": 2,
+     "text": "Open the Multiverse",
+     "slug": "open-the-multiverse"
+    },
+    {
+     "level": 2,
+     "text": "What you see",
+     "slug": "what-you-see"
+    },
+    {
+     "level": 2,
+     "text": "Good to know",
+     "slug": "good-to-know"
+    }
+   ],
+   "body": "The Multiverse keeps every turn you've saved, so you can go back to any of them and play it another way.\n\nEach saved board is a **node**. Nodes link up turn by turn into a line: the game as you played it. Go back to an earlier node, play on from it, and the new turns grow a second line from that point: a branch. All the lines together make a tree, and that tree is the Multiverse. It's how you answer \"what if I had challenged instead of quested on turn 6?\": play both and compare.\n\n## Open the Multiverse\n\n:::desktop\nClick **Multiverse** in the top bar, or press {key:M}. Press {key:M} or {key:Esc} again, or the ✕, to go back to the board.\n:::\n\n:::phone\nTap the branch icon in the top bar. Tap ✕ to go back to the board.\n:::\n\n[Show me](show:multiverse)\n\n## What you see\n\n- **The canvas** draws the tree, the earliest turns on the left. The path from the start to the node you're on is highlighted; the other lines are grey.\n- **The panel** sits beside the canvas (under it on a phone). It shows the node you select, with **Play from here**, and holds **Save current unfinished turn**.\n\n[Show me](show:tree-panel)\n\n## Good to know\n\n- Nodes come from [auto-save](help:auto-save) at the end of each turn, from [saving the turn you're in](help:save-unfinished-turn), and from imported Duels.ink games. When a player reaches 20 lore, the Dojo also saves a **Game Over** node that closes the branch.\n- Selecting a node only shows it. Your board changes when you press **Play from here**.\n- Jumping never loses the board you leave: see [\"Left here\" snapshots](help:left-here).\n- The tree is part of the session: it's saved with it, and **Export** in the Multiverse header writes the session to a file, tree included.\n"
   },
   {
    "id": "auto-save",
@@ -820,19 +1056,42 @@
     "desktop",
     "phone"
    ],
-   "aliases": [],
+   "aliases": [
+    "autosave",
+    "auto save",
+    "save every turn",
+    "save game",
+    "checkpoint"
+   ],
    "targets": [
     "auto-save",
     "end-turn"
    ],
    "related": [
     "save-unfinished-turn",
-    "multiverse"
+    "multiverse",
+    "end-turn"
    ],
-   "verified": "none",
-   "todo": true,
-   "headings": [],
-   "body": "TODO: write this article (M3c). The summary above is its scope. How to write it: docs/ARCH-help-and-tour.md §5.\n"
+   "verified": "v3.9.1",
+   "todo": false,
+   "headings": [
+    {
+     "level": 2,
+     "text": "Turn auto-save on or off",
+     "slug": "turn-auto-save-on-or-off"
+    },
+    {
+     "level": 2,
+     "text": "What an auto-save keeps",
+     "slug": "what-an-auto-save-keeps"
+    },
+    {
+     "level": 2,
+     "text": "Good to know",
+     "slug": "good-to-know"
+    }
+   ],
+   "body": "With **Auto-save every turn** on, each **End turn** adds a node to the Multiverse, so the whole game is saved turn by turn without you doing anything.\n\n## Turn auto-save on or off\n\n:::desktop\nThe **Auto-save every turn** switch sits at the foot of the side rail, above **Quest** and **End turn**.\n\n[Show me](show:auto-save)\n:::\n\n:::phone\nOpen the ☰ menu. The **Auto-save every turn** switch is near the bottom, above **Quest** and **End turn**.\n\n[Show me](show:menu)\n:::\n\n## What an auto-save keeps\n\nWhen you end a turn, the next player readies and draws, and then the Dojo saves the board as a node. Its name says the turn and the player about to play: **Turn 5 - Player 2 Active** holds the board at the start of Player 2's turn 5. The node also keeps:\n\n- the note written for the turn that just ended (see [Turn notes](help:turn-notes)),\n- a **Turn recap** of that turn: what was drawn, inked, played, shifted, discarded, quested and banished,\n- the cards behind the recap, in sections such as **Played**, **Inked** and **Drawn**.\n\nThe new node hangs off the node you were on, so the tree follows the line you're playing. A toast says **Auto-Saved Timeline**.\n\n## Good to know\n\n- With the switch off, ending a turn saves nothing. Save by hand with [Save current unfinished turn](help:save-unfinished-turn).\n- The switch is on each time you open the Dojo; turning it off lasts until you reload.\n- On turn 1, the node waits until Player 2 has settled their mulligan and drawn, so it holds the board Player 2 plays from.\n- When a player reaches 20 lore, the Dojo saves a **Game Over** node even with auto-save off.\n"
   },
   {
    "id": "save-unfinished-turn",
@@ -843,18 +1102,37 @@
     "desktop",
     "phone"
    ],
-   "aliases": [],
+   "aliases": [
+    "save now",
+    "save mid turn",
+    "bookmark",
+    "save point",
+    "quick save",
+    "save before challenge"
+   ],
    "targets": [
     "save-turn"
    ],
    "related": [
     "auto-save",
-    "nodes"
+    "nodes",
+    "multiverse-panel"
    ],
-   "verified": "none",
-   "todo": true,
-   "headings": [],
-   "body": "TODO: write this article (M3c). The summary above is its scope. How to write it: docs/ARCH-help-and-tour.md §5.\n"
+   "verified": "v3.9.1",
+   "todo": false,
+   "headings": [
+    {
+     "level": 2,
+     "text": "Save current unfinished turn",
+     "slug": "save-current-unfinished-turn"
+    },
+    {
+     "level": 2,
+     "text": "Good to know",
+     "slug": "good-to-know"
+    }
+   ],
+   "body": "Save the board as it is right now, in the middle of a turn, as a node you can come back to: before a risky challenge, say, or at a moment you want to study later.\n\n## Save current unfinished turn\n\n:::desktop\nPress {key:T} on the board, or open the Multiverse and click **Save current unfinished turn** at the top of the panel.\n:::\n\n:::phone\nOpen the Multiverse and tap **Save current unfinished turn** at the top of the panel, under the canvas.\n:::\n\n[Show me](show:save-turn)\n\nThe button opens a short form:\n\n1. **Name** starts as **Turn 7 - Player 1 (unfinished)**. Change it to say what the node is for.\n2. **Note** starts with your turn note and a recap of what you've done so far this turn (drew, inked, played…). Edit it freely; Markdown works.\n3. **This node keeps** shows the cards the node will record, by section.\n4. Press **Save node**. **Cancel** closes the form without saving.\n\n:::desktop\nIn the **Name** field, {key:Enter} saves. {key:Esc} closes the form.\n:::\n\n## Good to know\n\n- Your board doesn't change: carry on playing. The new node hangs off the node you were on and becomes the one you're on, so the next auto-save hangs off it.\n- You can rename the node or change its note later in [the panel](help:multiverse-panel).\n- **Save as copy** in the top bar is something else: it copies the whole session.\n"
   },
   {
    "id": "nodes",
@@ -865,18 +1143,46 @@
     "desktop",
     "phone"
    ],
-   "aliases": [],
+   "aliases": [
+    "node card",
+    "saved turn",
+    "game over node",
+    "you are here",
+    "turn recap"
+   ],
    "targets": [
     "tree-canvas"
    ],
    "related": [
     "multiverse-panel",
+    "multiverse-views",
     "turn-notes"
    ],
-   "verified": "none",
-   "todo": true,
-   "headings": [],
-   "body": "TODO: write this article (M3c). The summary above is its scope. How to write it: docs/ARCH-help-and-tour.md §5.\n"
+   "verified": "v3.9.1",
+   "todo": false,
+   "headings": [
+    {
+     "level": 2,
+     "text": "What's on a node",
+     "slug": "whats-on-a-node"
+    },
+    {
+     "level": 2,
+     "text": "Which node is which",
+     "slug": "which-node-is-which"
+    },
+    {
+     "level": 2,
+     "text": "Every card section",
+     "slug": "every-card-section"
+    },
+    {
+     "level": 2,
+     "text": "Good to know",
+     "slug": "good-to-know"
+    }
+   ],
+   "body": "A node is one saved board. In the cards view each node is a small card; this is how to read it. (A phone opens the Multiverse on the plot; tap **Plot**, the grid of dots in the header, for the cards. See [Cards and plot](help:multiverse-views).)\n\n## What's on a node\n\n- **Tone:** a light card is Player 1's turn, a dark card Player 2's. The deck icon says the same.\n- **Name:** an auto-save is called **Turn 16 - Player 2 Active**: the board at the start of that player's turn. A turn you saved yourself ends in **(unfinished)**.\n- **Subline:** the turn, the lore (**P1: 10 - P2: 11**) and the time it was saved.\n- **Note:** a dark box with the turn's note and its **Turn recap** (drew, inked, played…). Click it to edit it in the panel.\n- **Played:** the cards played that turn.\n- **The bin** deletes the node (with **Undo**).\n\n## Which node is which\n\n- **The node you're on** (your board came from it) has a coloured border and foot, and the path to it is highlighted. The panel calls it **· you are here**.\n- **The selected node** (the one the panel shows) has four corner marks around it.\n- **A \"Left here\" snapshot** has a dashed outline and a dashed line to its node. See [\"Left here\" snapshots](help:left-here).\n- **A won branch** ends in a **Game Over** node with a trophy, a plate with the winner's lore and **Branch closed**, and a short bar after it.\n\n## Every card section\n\nSelect a node to see all its card sections in the panel: **Played**, **Inked**, **Drawn**, **Discarded**, **Banished**, **Quested** and **Starting hand**. In **Starting hand**, cards that left the hand that turn are crossed out. To show every section inside every node, turn on **Show in nodes** under **Turn recap** in the panel.\n\n[Show me](show:tree-canvas)\n\n## Good to know\n\n- The name and the note are yours to change: see [The panel](help:multiverse-panel).\n- On an auto-save, **Turn recap** lists the turn that just ended, not the one the board is about to play.\n"
   },
   {
    "id": "multiverse-panel",
@@ -887,19 +1193,61 @@
     "desktop",
     "phone"
    ],
-   "aliases": [],
+   "aliases": [
+    "load a turn",
+    "restore",
+    "jump to turn",
+    "load save",
+    "rename node",
+    "delete node",
+    "edit note",
+    "lore race"
+   ],
    "targets": [
     "tree-panel",
-    "selected-node"
+    "selected-node",
+    "tree-dock"
    ],
    "related": [
     "nodes",
-    "branches"
+    "branches",
+    "left-here"
    ],
-   "verified": "none",
-   "todo": true,
-   "headings": [],
-   "body": "TODO: write this article (M3c). The summary above is its scope. How to write it: docs/ARCH-help-and-tour.md §5.\n"
+   "verified": "v3.9.1",
+   "todo": false,
+   "headings": [
+    {
+     "level": 2,
+     "text": "Select a node",
+     "slug": "select-a-node"
+    },
+    {
+     "level": 2,
+     "text": "Play from here",
+     "slug": "play-from-here"
+    },
+    {
+     "level": 2,
+     "text": "Rename a node",
+     "slug": "rename-a-node"
+    },
+    {
+     "level": 2,
+     "text": "Edit the note",
+     "slug": "edit-the-note"
+    },
+    {
+     "level": 2,
+     "text": "Delete a node",
+     "slug": "delete-a-node"
+    },
+    {
+     "level": 2,
+     "text": "Good to know",
+     "slug": "good-to-know"
+    }
+   ],
+   "body": "The panel shows the node you select. Read it there first, then play from it, rename it, change its note or delete it.\n\n## Select a node\n\n:::desktop\nClick a node, or a dot in the plot. The arrow keys move the selection (see [Moving around](help:multiverse-navigate)).\n:::\n\n:::phone\nTap a node or a dot, or move the cursor with the thumb keys. The panel is under the canvas: scroll down to read all of it.\n:::\n\nSelecting doesn't touch your board. The panel shows **Selected** (with **· you are here** on the node you're on), the name, the turn, lore and time, the note, **Lore race to 20** and the **Turn recap** as cards.\n\n[Show me](show:selected-node)\n\n## Play from here\n\nPress **Play from here**. The board becomes that node's board and the Multiverse closes.\n\n:::desktop\nOr double-click the node, or press {key:Enter}.\n:::\n\nIf the board you left wasn't saved, it's kept as a [\"Left here\" snapshot](help:left-here).\n\n## Rename a node\n\nClick its name in the panel, type, and press {key:Enter} (or click away). {key:Esc} cancels.\n\n## Edit the note\n\nClick the note, or **Add a note…** when it's empty. The whole text is yours to edit, turn recap included; Markdown works. Click away to save. {key:Esc} cancels.\n\n:::desktop\n{key:Ctrl+Enter} saves too. Clicking a note on a node opens it here.\n:::\n\n## Delete a node\n\nPress the bin, in the panel or on the node. Its later turns aren't lost: they move up to hang off the node before it. The toast offers **Undo**.\n\n## Good to know\n\n:::desktop\nThe panel docks on the right. The columns button in the Multiverse header moves it to the left (or back), and the Dojo remembers the side. [Show me](show:tree-dock)\n:::\n\n- A \"Left here\" snapshot has **Keep as node** instead of a name and note to edit.\n"
   },
   {
    "id": "branches",
@@ -910,19 +1258,49 @@
     "desktop",
     "phone"
    ],
-   "aliases": [],
+   "aliases": [
+    "branch",
+    "alternate line",
+    "what if",
+    "replay a turn",
+    "try again",
+    "take back a turn",
+    "compare lines"
+   ],
    "targets": [
     "tree-canvas"
    ],
    "related": [
     "multiverse",
+    "multiverse-panel",
     "left-here",
     "undo"
    ],
-   "verified": "none",
-   "todo": true,
-   "headings": [],
-   "body": "TODO: write this article (M3c). The summary above is its scope. How to write it: docs/ARCH-help-and-tour.md §5.\n"
+   "verified": "v3.9.1",
+   "todo": false,
+   "headings": [
+    {
+     "level": 2,
+     "text": "Try another line",
+     "slug": "try-another-line"
+    },
+    {
+     "level": 2,
+     "text": "Compare the lines",
+     "slug": "compare-the-lines"
+    },
+    {
+     "level": 2,
+     "text": "Go back to the first line",
+     "slug": "go-back-to-the-first-line"
+    },
+    {
+     "level": 2,
+     "text": "Good to know",
+     "slug": "good-to-know"
+    }
+   ],
+   "body": "To try another line, go back to an earlier node and play on from it. The new turns grow a new branch, and the line you played before stays exactly as it was.\n\n## Try another line\n\n1. Open the Multiverse and select the node to go back to. An auto-save named **Turn 6 - Player 1 Active** is the board at the start of Player 1's turn 6, so pick it to replay that turn.\n2. Press **Play from here**. You're back on the board, at that point in the game.\n3. Play the turn differently and end it. With auto-save on, the new node hangs off the one you played from, beside the turn that followed before: that's a branch.\n4. Keep playing. Every turn you end adds to the new line.\n\n[Show me](show:tree-canvas)\n\n## Compare the lines\n\nThe path to the node you're on is highlighted; the other lines are grey. Select nodes on each line and compare their **Lore race to 20** and **Turn recap** in the panel. The plot shows the whole game at once (see [Cards and plot](help:multiverse-views)).\n\n## Go back to the first line\n\nSelect any node on it and press **Play from here**.\n\n## Good to know\n\n- Branching never changes or deletes the nodes you already have.\n- The board you leave is kept as a [\"Left here\" snapshot](help:left-here) if it wasn't saved.\n- **Undo** doesn't reach across a jump: its history starts fresh from the node you play from.\n- When a player reaches 20 lore, a **Game Over** node closes the branch, and the Dojo offers **View Multiverse** or **Stay Here**. You can still go back and play a branch where the other player wins.\n"
   },
   {
    "id": "left-here",
@@ -933,18 +1311,47 @@
     "desktop",
     "phone"
    ],
-   "aliases": [],
+   "aliases": [
+    "left here",
+    "snapshot",
+    "lost my board",
+    "where you jumped from",
+    "keep as node",
+    "unsaved changes"
+   ],
    "targets": [
     "tree-canvas"
    ],
    "related": [
     "branches",
+    "multiverse-panel",
     "mini-multiverse"
    ],
-   "verified": "none",
-   "todo": true,
-   "headings": [],
-   "body": "TODO: write this article (M3c). The summary above is its scope. How to write it: docs/ARCH-help-and-tour.md §5.\n"
+   "verified": "v3.9.1",
+   "todo": false,
+   "headings": [
+    {
+     "level": 2,
+     "text": "When a snapshot is kept",
+     "slug": "when-a-snapshot-is-kept"
+    },
+    {
+     "level": 2,
+     "text": "Find a snapshot",
+     "slug": "find-a-snapshot"
+    },
+    {
+     "level": 2,
+     "text": "Use a snapshot",
+     "slug": "use-a-snapshot"
+    },
+    {
+     "level": 2,
+     "text": "Good to know",
+     "slug": "good-to-know"
+    }
+   ],
+   "body": "When you jump to another node from a board you haven't saved, the Dojo keeps that board as a \"Left here\" snapshot first. A jump never loses your work.\n\n## When a snapshot is kept\n\nEvery jump checks the board you're leaving: **Play from here**, and on desktop a double-click, {key:Enter} or a click in the mini multiverse. If the board has changed since it was loaded or saved, it's kept as a snapshot. If it's exactly a node or snapshot that's still in the tree, nothing is added.\n\n## Find a snapshot\n\nA snapshot hangs off the node you were last on, on a dashed line:\n\n- in cards, a dashed card titled **Left here** and the time, like **Left here · 14:32**,\n- in the plot, a dashed ring,\n- in the mini multiverse, a dashed hollow dot.\n\n## Use a snapshot\n\nSelect it. The panel says **Where you jumped from** and offers:\n\n- **Play from here** loads that board again.\n- **Keep as node** turns it into a real node where it hangs, named like **Turn 9 - Player 1 (kept 14:32)**. Then you can rename it and write a note.\n- The bin discards it. The toast offers **Undo**.\n\n[Show me](show:tree-canvas)\n\n## Good to know\n\n- Only the last five snapshots are kept. A sixth pushes out the oldest, so keep the ones that matter as nodes.\n- A snapshot isn't a node until you keep it: it can't be renamed and has no note.\n"
   },
   {
    "id": "multiverse-views",
@@ -955,7 +1362,16 @@
     "desktop",
     "phone"
    ],
-   "aliases": [],
+   "aliases": [
+    "plot view",
+    "card view",
+    "dots",
+    "overview",
+    "whole game",
+    "legend",
+    "key",
+    "map"
+   ],
    "targets": [
     "plot-toggle",
     "tree-legend"
@@ -964,10 +1380,26 @@
     "multiverse-navigate",
     "nodes"
    ],
-   "verified": "none",
-   "todo": true,
-   "headings": [],
-   "body": "TODO: write this article (M3c). The summary above is its scope. How to write it: docs/ARCH-help-and-tour.md §5.\n"
+   "verified": "v3.9.1",
+   "todo": false,
+   "headings": [
+    {
+     "level": 2,
+     "text": "Switch between cards and plot",
+     "slug": "switch-between-cards-and-plot"
+    },
+    {
+     "level": 2,
+     "text": "Read the plot",
+     "slug": "read-the-plot"
+    },
+    {
+     "level": 2,
+     "text": "Good to know",
+     "slug": "good-to-know"
+    }
+   ],
+   "body": "The Multiverse draws the tree two ways: as cards, full nodes you can read, or as the plot, where every saved turn is a dot so you can see a whole game at once.\n\n## Switch between cards and plot\n\n:::desktop\nClick **Plot** in the Multiverse header; it stays dark while the plot is on. Click it again for the cards.\n:::\n\n:::phone\nTap **Plot** (the grid of dots) in the Multiverse header, left of ✕. A phone opens on the plot until you pick a view.\n:::\n\nThe Dojo remembers your choice.\n\n[Show me](show:plot-toggle)\n\n## Read the plot\n\n- Each saved turn is a dot in its deck's two inks: **Player 1 solid, Player 2 striped**. Its turn number sits under it.\n- A ruler along the top gives the turn and whose step each column is (**P1**, **P2**).\n- Lines run from each turn to the next. The path to the node you're on is highlighted; \"Left here\" snapshots hang on dashed lines.\n- **You are here:** a ring around the dot your board came from.\n- **Cursor:** a crosshair on the selected dot, with a tag like **T12 · P1 · 7–6** (turn, player, lore).\n- **20 lore · branch closed:** a won branch ends in a square dot, a bar, the winner's lore and who won.\n- **Left here:** a dashed ring.\n\nA key names all of these: along the foot of the canvas on desktop, along its top on a phone.\n\n[Show me](show:tree-legend)\n\n## Good to know\n\n- Click or tap a dot to select it, as with a card. The panel shows it.\n- On desktop the plot opens fitted to the whole game. A phone opens it up close, on the cursor; the zoom out thumb key shows the whole game (see [Moving around](help:multiverse-navigate)).\n- The cards show more of each turn; the plot shows the shape of the game.\n"
   },
   {
    "id": "multiverse-navigate",
@@ -978,7 +1410,18 @@
     "desktop",
     "phone"
    ],
-   "aliases": [],
+   "aliases": [
+    "pan",
+    "zoom",
+    "scroll",
+    "arrow keys",
+    "thumb keys",
+    "cursor",
+    "next turn",
+    "previous turn",
+    "reset zoom",
+    "find my turn"
+   ],
    "targets": [
     "tree-canvas",
     "tree-keys",
@@ -986,12 +1429,34 @@
    ],
    "related": [
     "multiverse-views",
-    "mini-multiverse"
+    "mini-multiverse",
+    "multiverse-panel"
    ],
-   "verified": "none",
-   "todo": true,
-   "headings": [],
-   "body": "TODO: write this article (M3c). The summary above is its scope. How to write it: docs/ARCH-help-and-tour.md §5.\n"
+   "verified": "v3.9.1",
+   "todo": false,
+   "headings": [
+    {
+     "level": 2,
+     "text": "Pan and zoom",
+     "slug": "pan-and-zoom"
+    },
+    {
+     "level": 2,
+     "text": "Arrow keys",
+     "slug": "arrow-keys"
+    },
+    {
+     "level": 2,
+     "text": "Thumb keys",
+     "slug": "thumb-keys"
+    },
+    {
+     "level": 2,
+     "text": "Good to know",
+     "slug": "good-to-know"
+    }
+   ],
+   "body": "Move around the Multiverse canvas, and step the selection through turns and lines to find the one you want. Nothing loads until you press **Play from here**.\n\n## Pan and zoom\n\n:::desktop\nDrag the canvas to pan. Scroll to zoom in or out at the pointer. **Reset zoom** (the button left of ✕) fits the whole plot; in cards it goes back to full size at the start of the tree.\n\n[Show me](show:tree-zoom-reset)\n:::\n\n:::phone\nDrag with one finger to pan, {gesture:pinch} to zoom.\n:::\n\n## Arrow keys\n\n:::desktop\nThe arrow keys move the selection, and the canvas follows it:\n\n- {key:←} the turn before.\n- {key:→} the turn after (the oldest one, if the line branches there).\n- {key:↑} {key:↓} the next branch up or down from the same node.\n- {key:Enter} plays from the selected node.\n:::\n\n## Thumb keys\n\n:::phone\nSix keys sit at the canvas's foot. They move the cursor, and the panel under the canvas shows the turn it's on.\n\n- **◀** the turn before. **▶** the turn after: back the way you came, else along the line you're on.\n- **▲** **▼** the nearest turn on another line above or below, near the same point in the game.\n- **◎** back to the node you're on.\n- **Zoom out** (the magnifier) fits the whole game. Press it again, or step, to come back in close. It's there in the plot only.\n\nHold an arrow to keep stepping. A key that can't go anywhere is hollow.\n\n[Show me](show:tree-keys)\n:::\n\n## Good to know\n\n- Opening the Multiverse selects the node you're on (or the newest) and centres on it.\n- On desktop, the [mini multiverse](help:mini-multiverse) in the side rail steps through the tree and loads each turn straight away.\n"
   },
   {
    "id": "mini-multiverse",
@@ -1001,19 +1466,48 @@
    "devices": [
     "desktop"
    ],
-   "aliases": [],
+   "aliases": [
+    "mini map",
+    "minimap",
+    "small map",
+    "sidebar map",
+    "branch point",
+    "step through turns"
+   ],
    "targets": [
     "mini-multiverse",
     "mini-multiverse-keys"
    ],
    "related": [
     "multiverse-navigate",
-    "left-here"
+    "left-here",
+    "branches"
    ],
-   "verified": "none",
-   "todo": true,
-   "headings": [],
-   "body": "TODO: write this article (M3c). The summary above is its scope. How to write it: docs/ARCH-help-and-tour.md §5.\n"
+   "verified": "v3.9.1",
+   "todo": false,
+   "headings": [
+    {
+     "level": 2,
+     "text": "Read the map",
+     "slug": "read-the-map"
+    },
+    {
+     "level": 2,
+     "text": "Jump to a turn",
+     "slug": "jump-to-a-turn"
+    },
+    {
+     "level": 2,
+     "text": "Step through a line",
+     "slug": "step-through-a-line"
+    },
+    {
+     "level": 2,
+     "text": "Good to know",
+     "slug": "good-to-know"
+    }
+   ],
+   "body": "The mini multiverse is a small map of the whole tree in the side rail, under the players. Jump to any turn with one click, or step through a line, without opening the full Multiverse.\n\n## Read the map\n\n- Each dot is a saved turn; each row is a line. A branch takes the nearest free row.\n- The line you're on is highlighted, with filled dots. Turns ahead of you on it (a line you stepped back along) are dashed rings.\n- The node you're on has a ring, dashed once the board has changed since it.\n- \"Left here\" snapshots are dashed hollow dots. A won branch ends in a square dot and a bar.\n- The head reads like **T14 · P2 · 8–8** (turn, player, lore) for the node you're on, or the dot under the pointer, whose name shows at the foot.\n- **Edited · kept if you jump** at the foot means your board has changed since its node.\n\n[Show me](show:mini-multiverse)\n\n## Jump to a turn\n\nClick a dot: the board becomes that turn straight away, with no **Play from here**. Drag or scroll the map to pan. The button in the head opens the full Multiverse.\n\n## Step through a line\n\nThe keys under the map load the turn they step to:\n\n- **⏮** back to the last branch point behind you, or the start.\n- **◀** the turn before. **▶** the next turn on the line.\n- **⏭** on to the next branch point ahead, or the end of the line.\n- **↑** **↓** the nearest turn on the line above or below.\n\nClick the map first and {key:←} {key:→} {key:↑} {key:↓}, {key:Home} and {key:End} do the same.\n\n[Show me](show:mini-multiverse-keys)\n\n## Good to know\n\n- Stepping back keeps the rest of the line ahead of you, so **▶** retraces it.\n- On a board you've changed since its node, **◀** reloads that node and **▶** goes on to the next turn.\n- A board you leave unsaved is kept as a [\"Left here\" snapshot](help:left-here).\n- Phones don't show the map. Use the [thumb keys](help:multiverse-navigate) in the Multiverse instead.\n"
   },
   {
    "id": "import-overview",
@@ -1024,7 +1518,15 @@
     "desktop",
     "phone"
    ],
-   "aliases": [],
+   "aliases": [
+    "import game",
+    "duels.ink",
+    "duels ink",
+    "review game",
+    "replay a game",
+    "analyse match",
+    "game log"
+   ],
    "targets": [
     "intake",
     "readout",
@@ -1035,10 +1537,26 @@
     "import-replay",
     "hidden-information"
    ],
-   "verified": "none",
-   "todo": true,
-   "headings": [],
-   "body": "TODO: write this article (M3b). The summary above is its scope. How to write it: docs/ARCH-help-and-tour.md §5.\n"
+   "verified": "v3.9.1",
+   "todo": false,
+   "headings": [
+    {
+     "level": 2,
+     "text": "Bring in a game",
+     "slug": "bring-in-a-game"
+    },
+    {
+     "level": 2,
+     "text": "What you get",
+     "slug": "what-you-get"
+    },
+    {
+     "level": 2,
+     "text": "Good to know",
+     "slug": "good-to-know"
+    }
+   ],
+   "body": "Bring a game you played on Duels.ink into the Dojo to look at it turn by turn and try other lines from any point.\n\n## Bring in a game\n\n1. Open the home screen.\n2. Paste the game's text log into the field, or press **Choose a file** for a replay file. You can also drop a file anywhere on the page.\n3. The readout says what it found: a **Duels.ink log** with its number of turns, or a **Duels.ink replay** with the players' names.\n4. Press **Study this game**.\n\n[Show me](show:readout)\n\nNo game to hand? Press **A Duels.ink log** under the field to load an example.\n\n## What you get\n\n- A new session named after the players or their inks, with *(Duels.ink)* at the end.\n- One Multiverse node per turn, with the turn's moves in its note and its card sections (played, inked, drawn and so on).\n- The board at the end of the game.\n\nOpen **Multiverse**, pick a turn and press **Play from here** to load it, then play it differently. See [The Multiverse](help:multiverse).\n\n## Good to know\n\n- A replay file rebuilds the game most exactly. A text log is fine too. Compare them in [Import a text log](help:import-log) and [Import a replay file](help:import-replay).\n- Some cards stay unknown: see [What an import knows and doesn't](help:hidden-information).\n- The Dojo can't fetch games from Duels.ink by itself. Copy or download the game there first.\n"
   },
   {
    "id": "import-log",
@@ -1049,7 +1567,15 @@
     "desktop",
     "phone"
    ],
-   "aliases": [],
+   "aliases": [
+    "paste log",
+    "text log",
+    "match log",
+    "game log",
+    "import log",
+    "md",
+    "txt"
+   ],
    "targets": [
     "intake",
     "tree-log"
@@ -1058,10 +1584,31 @@
     "import-overview",
     "hidden-information"
    ],
-   "verified": "none",
-   "todo": true,
-   "headings": [],
-   "body": "TODO: write this article (M3b). The summary above is its scope. How to write it: docs/ARCH-help-and-tour.md §5.\n"
+   "verified": "v3.9.1",
+   "todo": false,
+   "headings": [
+    {
+     "level": 2,
+     "text": "From the home screen",
+     "slug": "from-the-home-screen"
+    },
+    {
+     "level": 2,
+     "text": "From the Multiverse",
+     "slug": "from-the-multiverse"
+    },
+    {
+     "level": 2,
+     "text": "Which logs work",
+     "slug": "which-logs-work"
+    },
+    {
+     "level": 2,
+     "text": "Good to know",
+     "slug": "good-to-know"
+    }
+   ],
+   "body": "A Duels.ink text log lists every move of a game. Paste it into the Dojo and every turn becomes a node in the Multiverse.\n\n## From the home screen\n\n1. Copy the whole log from Duels.ink.\n2. Paste it into the field on the home screen. You can paste anywhere on the page; it lands in the field.\n3. Check the readout: **Duels.ink log** and *A N-turn game*.\n4. Press **Study this game**.\n\n[Show me](show:intake)\n\nA log saved as a .txt or .md file works too: press **Choose a file**.\n\n## From the Multiverse\n\nOpen **Multiverse** and press **Log** in its header. Paste the log into **Import Duels.ink Log** (or choose a file). When the message under it says the log is valid, press **Import**. The game opens as a new session; the one you were in stays in your Library.\n\n[Show me](show:tree-log)\n\n## Which logs work\n\nBoth of Duels.ink's formats: the newer one that says *You* and *Opponent*, and the older one with *Player 1* and *Player 2*. The log needs its `--- Turn 1 ---` lines; without the starting hand lines it still imports, with a warning that fewer cards can be placed.\n\n## Good to know\n\n- In the Dojo, the log's owner (*You*) is Player 1.\n- The newer log hides the opponent's hand and draws. See [What an import knows and doesn't](help:hidden-information).\n- Cards the log never names come in as unknown cards: see [Unknown cards](help:unknown-cards).\n"
   },
   {
    "id": "import-replay",
@@ -1072,7 +1619,14 @@
     "desktop",
     "phone"
    ],
-   "aliases": [],
+   "aliases": [
+    "replay",
+    "replay file",
+    "replay.gz",
+    "json",
+    "gz",
+    "download replay"
+   ],
    "targets": [
     "intake",
     "intake-file",
@@ -1082,10 +1636,26 @@
     "import-overview",
     "decks"
    ],
-   "verified": "none",
-   "todo": true,
-   "headings": [],
-   "body": "TODO: write this article (M3b). The summary above is its scope. How to write it: docs/ARCH-help-and-tour.md §5.\n"
+   "verified": "v3.9.1",
+   "todo": false,
+   "headings": [
+    {
+     "level": 2,
+     "text": "Import it",
+     "slug": "import-it"
+    },
+    {
+     "level": 2,
+     "text": "Play your deck from it",
+     "slug": "play-your-deck-from-it"
+    },
+    {
+     "level": 2,
+     "text": "Good to know",
+     "slug": "good-to-know"
+    }
+   ],
+   "body": "A Duels.ink replay file records the game exactly. It's the best way to bring a game in: your own deck comes through card for card, in order.\n\n## Import it\n\n1. Download the replay from Duels.ink. It usually ends in **.replay.gz**; there's no need to unzip it.\n2. On the home screen, press **Choose a file** and pick it, or drop the file anywhere on the page.\n3. The readout shows **Duels.ink replay**, the two players and the number of turns.\n4. Press **Study this game**.\n\n[Show me](show:intake-file)\n\nYou can also open **Multiverse**, press **Log**, choose the file and press **Import**.\n\n## Play your deck from it\n\nThe readout's **Play my deck from it** seats the deck you played as **You**, ready for a new match. To keep that deck, use **From a replay** in the Library's **Decks** tab: see [Your decks](help:decks).\n\n## Good to know\n\n- The players keep their Duels.ink names, and each keeps their Duels.ink seat: if you were the second player, you're Player 2.\n- Your deck is exact, in its real order. The opponent's hidden cards stay unknown until they show them: see [What an import knows and doesn't](help:hidden-information).\n- Only replay files carry a decklist. A text log can't give you **Play my deck from it**.\n"
   },
   {
    "id": "hidden-information",
@@ -1096,16 +1666,39 @@
     "desktop",
     "phone"
    ],
-   "aliases": [],
+   "aliases": [
+    "hidden cards",
+    "opponent hand",
+    "missing cards",
+    "unknown cards",
+    "why unknown",
+    "inaccurate import"
+   ],
    "targets": [],
    "related": [
     "unknown-cards",
     "import-overview"
    ],
-   "verified": "none",
-   "todo": true,
-   "headings": [],
-   "body": "TODO: write this article (M3b). The summary above is its scope. How to write it: docs/ARCH-help-and-tour.md §5.\n"
+   "verified": "v3.9.1",
+   "todo": false,
+   "headings": [
+    {
+     "level": 2,
+     "text": "From a replay file",
+     "slug": "from-a-replay-file"
+    },
+    {
+     "level": 2,
+     "text": "From a text log",
+     "slug": "from-a-text-log"
+    },
+    {
+     "level": 2,
+     "text": "Good to know",
+     "slug": "good-to-know"
+    }
+   ],
+   "body": "An import can only show what the game showed. Anything nobody saw comes in as an [unknown card](help:unknown-cards).\n\n## From a replay file\n\n- **Your deck** is exact: every card, in the order you'd have drawn it.\n- **The opponent's hand and deck** are hidden. Cards they play, ink or show later are put back into their hand and deck in the earlier turns: soonest first in the hand, the rest in the deck. Cards they never show stay unknown.\n\n## From a text log\n\n- **Your deck**: the cards you go on to draw are on top, in order. The rest of the deck was never named, so it's unknown.\n- **The opponent**, in the newer *You / Opponent* log: their opening hand and draws are hidden. As with a replay, cards they reveal later are filled in; the rest stay unknown.\n- In the older *Player 1 / Player 2* log both hands are shown, so both sides work like your own.\n- A card put into the inkwell or under a character face down isn't named either.\n\n## Good to know\n\n- Where the opponent's hidden cards sit (hand or deck) is the Dojo's best guess, not a fact.\n- A text log can miss a step a replay has, such as an ability that exerts a character without naming it.\n- Fix anything you know better: [swap cards](help:swap-cards) in a hand, or replace them in the deck.\n"
   },
   {
    "id": "sessions",
@@ -1825,16 +2418,48 @@
     "desktop",
     "phone"
    ],
-   "aliases": [],
-   "targets": [],
+   "aliases": [
+    "offline",
+    "no internet",
+    "no connection",
+    "cant see card pictures",
+    "missing images",
+    "blank cards",
+    "card art not loading",
+    "error loading database"
+   ],
+   "targets": [
+    "tweak-card-display"
+   ],
    "related": [
     "card-display",
     "card-preview"
    ],
-   "verified": "none",
-   "todo": true,
-   "headings": [],
-   "body": "TODO: write this article (M3e). The summary above is its scope. How to write it: docs/ARCH-help-and-tour.md §5.\n"
+   "verified": "v3.9.1",
+   "todo": false,
+   "headings": [
+    {
+     "level": 2,
+     "text": "When art doesn't load",
+     "slug": "when-art-doesnt-load"
+    },
+    {
+     "level": 2,
+     "text": "Text cards on purpose",
+     "slug": "text-cards-on-purpose"
+    },
+    {
+     "level": 2,
+     "text": "Starting without a connection",
+     "slug": "starting-without-a-connection"
+    },
+    {
+     "level": 2,
+     "text": "Good to know",
+     "slug": "good-to-know"
+    }
+   ],
+   "body": "Card pictures come from the internet. When one can't load, the card shows as text instead, so the board stays readable and you can keep playing.\n\n## When art doesn't load\n\nA card without its picture shows its name, version, ink cost, and strength and willpower. Its full text is still there: in the preview on desktop, in the card drawer on a phone. Face-down cards and the deck go plain dark.\n\nPictures come back by themselves when your connection does. Pictures that loaded once in a session stay loaded, even if the connection drops later.\n\n## Text cards on purpose\n\nIn **Tweaks**, set **Card display** to **Text**. Every card then shows as text, and the Dojo loads no card pictures at all: handy on a slow or metered connection.\n\n[Show me](show:tweak-card-display)\n\n## Starting without a connection\n\nThe Dojo keeps a copy of the card database in this browser after the first visit, so it can start without downloading it again. The very first visit needs a connection: without one you see *Error loading database. Please refresh.*\n\nThe Dojo isn't an installed app. Once it's open you can play offline, but reopening it with no connection works only if your browser still has its files cached.\n\n## Good to know\n\n- Your sessions and decks are saved in this browser, so they don't need a connection. See [Where your things are kept](help:storage).\n- Share links, opening a link, and signing in need a connection.\n"
   },
   {
    "id": "storage",
@@ -1845,18 +2470,44 @@
     "desktop",
     "phone"
    ],
-   "aliases": [],
+   "aliases": [
+    "lost sessions",
+    "sessions disappeared",
+    "backup",
+    "clear cache",
+    "clear site data",
+    "private window",
+    "incognito",
+    "where are my decks"
+   ],
    "targets": [
     "library"
    ],
    "related": [
     "account",
-    "files"
+    "files",
+    "library"
    ],
-   "verified": "none",
-   "todo": true,
-   "headings": [],
-   "body": "TODO: write this article (M3e). The summary above is its scope. How to write it: docs/ARCH-help-and-tour.md §5.\n"
+   "verified": "v3.9.1",
+   "todo": false,
+   "headings": [
+    {
+     "level": 2,
+     "text": "What deletes them",
+     "slug": "what-deletes-them"
+    },
+    {
+     "level": 2,
+     "text": "How to keep them",
+     "slug": "how-to-keep-them"
+    },
+    {
+     "level": 2,
+     "text": "Good to know",
+     "slug": "good-to-know"
+    }
+   ],
+   "body": "Your sessions and decks are saved in this browser, on this device. There's no Dojo server holding them unless you sign in.\n\n## What deletes them\n\n- **Clearing this site's data** (cookies and site data, or browsing data) deletes every session and deck saved here.\n- **Another browser or device** has its own, separate library. Chrome and Firefox on the same computer don't share one.\n- **A private window** may not keep anything after it closes, or may not let the Dojo save at all. The Library then says *This browser isn't letting the Dojo keep a library (private window?).*\n- **The browser itself** may clear storage when the device runs short of space. When you save, the Dojo asks the browser to keep its storage, but the browser decides.\n\nIf a save fails, the Dojo says *Couldn't save to this device. Export the session to keep it.*\n\n## How to keep them\n\n- **Export a file.** In the Library, open a session's **⋯** menu and choose **Export file (.dojo.json.gz)**. Keep the file anywhere; **Import file** opens it again. See [Export and import session files](help:files).\n- **Sign in.** Decks follow your account by themselves; a session goes to your account when you press **Save**. See [Why sign in](help:account).\n\n[Show me](show:library)\n\n## Good to know\n\n- The Library sorts everything by where it lives: *On this device*, *Only on this device*, *In your account + this device*.\n- Your share links belong to this browser too. Clear its data and the links keep working for everyone, but you can no longer list or delete them, unless you signed in first.\n- Your **Tweaks** choices are kept in this browser as well.\n"
   },
   {
    "id": "hotkeys-not-working",
@@ -1866,15 +2517,47 @@
    "devices": [
     "desktop"
    ],
-   "aliases": [],
+   "aliases": [
+    "hotkeys not working",
+    "keys not working",
+    "space does nothing",
+    "keyboard broken",
+    "shortcut ignored"
+   ],
    "targets": [],
    "related": [
     "keyboard-shortcuts"
    ],
-   "verified": "none",
-   "todo": true,
-   "headings": [],
-   "body": "TODO: write this article (M3e). The summary above is its scope. How to write it: docs/ARCH-help-and-tour.md §5.\n"
+   "verified": "v3.9.1",
+   "todo": false,
+   "headings": [
+    {
+     "level": 2,
+     "text": "You're typing in a field",
+     "slug": "youre-typing-in-a-field"
+    },
+    {
+     "level": 2,
+     "text": "A dialog, the mulligan or the home screen is in front",
+     "slug": "a-dialog-the-mulligan-or-the-home-screen-is-in-front"
+    },
+    {
+     "level": 2,
+     "text": "A card key does nothing",
+     "slug": "a-card-key-does-nothing"
+    },
+    {
+     "level": 2,
+     "text": "Space pressed a button",
+     "slug": "space-pressed-a-button"
+    },
+    {
+     "level": 2,
+     "text": "Good to know",
+     "slug": "good-to-know"
+    }
+   ],
+   "body": "The Dojo ignores its shortcuts whenever a key could mean something else. Check these, in order.\n\n## You're typing in a field\n\nWhile the cursor is in a text field (the session title, the turn notes box, the paste field, a search box), keys type letters. Click an empty part of the board, or press {key:Tab} to leave the field. In the session title, {key:Enter} keeps the name and leaves it.\n\n## A dialog, the mulligan or the home screen is in front\n\n- **A dialog is open.** Only its own {key:Enter} and {key:Esc} work. Answer it first.\n- **The mulligan is up.** No shortcut works until you choose **Keep hand** or **Mulligan**, so {key:Space} can't end the turn by accident.\n- **The home screen is in front.** Game keys never act on the board hidden behind it. {key:Esc} takes you back to your match, if one is on the board.\n\n## A card key does nothing\n\n{key:E}, {key:B}, {key:0}–{key:9} and the damage keys need the pointer over a card in play, and nothing open over the board (the Multiverse, **Inspect deck**, a card search). They also rest while challenge mode is on: press {key:Esc} or **Done** to leave it.\n\n## Space pressed a button\n\nIf you just clicked a button, it keeps the focus and {key:Space} presses it again instead of ending the turn. Click an empty part of the board first.\n\n## Good to know\n\n- The Dojo leaves Ctrl, Cmd and Alt combinations to the browser, so {key:Ctrl+Z} doesn't undo. Use **Undo** in the top bar.\n- The mini multiverse's arrow keys need the map to have focus: click it first.\n- Phones have no shortcuts; see [Touch gestures](help:gestures).\n"
   },
   {
    "id": "share-limits",
@@ -1885,15 +2568,43 @@
     "desktop",
     "phone"
    ],
-   "aliases": [],
-   "targets": [],
-   "related": [
-    "share-links"
+   "aliases": [
+    "sharing limit",
+    "too many links",
+    "session too big",
+    "couldnt share",
+    "share failed",
+    "link not working",
+    "no longer available"
    ],
-   "verified": "none",
-   "todo": true,
-   "headings": [],
-   "body": "TODO: write this article (M3e). The summary above is its scope. How to write it: docs/ARCH-help-and-tour.md §5.\n"
+   "targets": [
+    "lib-links"
+   ],
+   "related": [
+    "share-links",
+    "open-a-shared-link",
+    "library"
+   ],
+   "verified": "v3.9.1",
+   "todo": false,
+   "headings": [
+    {
+     "level": 2,
+     "text": "The limits",
+     "slug": "the-limits"
+    },
+    {
+     "level": 2,
+     "text": "What the messages mean",
+     "slug": "what-the-messages-mean"
+    },
+    {
+     "level": 2,
+     "text": "Good to know",
+     "slug": "good-to-know"
+    }
+   ],
+   "body": "Share links are free and need no account, so the Dojo keeps a few limits to stay that way. Opening a link has no limits.\n\n## The limits\n\n- **20 links a day and 100 in total**, per browser (or per account once you sign in). Both count the links you still have: deleting old ones in **Library → Links** frees room. The day is the last 24 hours.\n- **10 MB per session**, compressed. A deck link is just the list.\n- **Shared storage.** When the Dojo's shared storage fills up, sharing sessions pauses for everyone. Deck links still work.\n\n[Show me](show:lib-links)\n\n## What the messages mean\n\n- *You've reached the sharing limit: 20 links a day and 100 in total.* Delete links you no longer need, or wait.\n- *This session is N MB compressed, and shared sessions can be up to 10 MB.* Delete auto-saves or dead-end branches in the Multiverse, then share again.\n- *Sharing sessions is paused because the Dojo's shared storage is full.* Nothing you can fix; share the deck, or send the file instead ([Export and import session files](help:files)).\n- *Too many new sharers from this network in the last hour.* The first link from a browser sets it up for sharing, and that is limited per network. Try again later.\n- *This browser can't compress session files, so it can't share them.* Use a current browser.\n- *Couldn't reach the sharing service.* Check your connection.\n- **This share is no longer available**: the person who made the link deleted it.\n\n## Good to know\n\n- A link is a snapshot. Later changes to your session aren't in it; share again to send them.\n"
   },
   {
    "id": "browsers",
@@ -1904,16 +2615,44 @@
     "desktop",
     "phone"
    ],
-   "aliases": [],
+   "aliases": [
+    "browser",
+    "chrome",
+    "safari",
+    "firefox",
+    "edge",
+    "ipad",
+    "tablet",
+    "mobile",
+    "phone layout",
+    "supported devices"
+   ],
    "targets": [],
    "related": [
     "screen-at-a-glance",
-    "gestures"
+    "gestures",
+    "storage"
    ],
-   "verified": "none",
-   "todo": true,
-   "headings": [],
-   "body": "TODO: write this article (M3e). The summary above is its scope. How to write it: docs/ARCH-help-and-tour.md §5.\n"
+   "verified": "v3.9.1",
+   "todo": false,
+   "headings": [
+    {
+     "level": 2,
+     "text": "What the browser needs",
+     "slug": "what-the-browser-needs"
+    },
+    {
+     "level": 2,
+     "text": "Phone, tablet or computer",
+     "slug": "phone-tablet-or-computer"
+    },
+    {
+     "level": 2,
+     "text": "Good to know",
+     "slug": "good-to-know"
+    }
+   ],
+   "body": "The Dojo runs in the browser: nothing to install. Use a current Chrome, Edge, Firefox or Safari, on a computer, tablet or phone.\n\n## What the browser needs\n\n- **Storage (IndexedDB)** for your sessions, your decks and the card database. Some private windows block it; then nothing is kept. See [Where your things are kept](help:storage).\n- **Compression** for session files and share links. Without it, the Dojo still saves on the device, but it can't share a session or open a `.gz` file.\n- **A connection the first time**, to download the card database. See [Playing offline](help:offline).\n\n## Phone, tablet or computer\n\nThe layout follows the width of the window, and the controls follow how you point.\n\n- **760 pixels wide or less** gets the phone layout: one player bar per player, your hand along the bottom, the card drawer, the **⋯** menu and the Multiverse's thumb keys. No mini multiverse or draw odds column.\n- **Wider** gets the desktop layout: the side rail with the mini multiverse, the preview, the log and the draw odds.\n- **A mouse** gets hover controls on cards, right-click menus and [keyboard shortcuts](help:keyboard-shortcuts).\n- **A touch screen** gets taps instead: a tap on a card in play opens the card drawer. See [Touch gestures](help:gestures).\n\nA tablet is the desktop layout with touch. Turning a phone sideways, or zooming the browser, can change the layout.\n\n## Good to know\n\n- Each browser keeps its own library. Sessions saved in Safari don't show up in Chrome; sign in to have them in both.\n"
   },
   {
    "id": "keyboard-shortcuts",
@@ -1923,16 +2662,76 @@
    "devices": [
     "desktop"
    ],
-   "aliases": [],
-   "targets": [],
+   "aliases": [
+    "hotkeys",
+    "keys",
+    "keyboard",
+    "key bindings",
+    "space",
+    "esc",
+    "escape",
+    "enter",
+    "arrow keys"
+   ],
+   "targets": [
+    "mini-multiverse-keys"
+   ],
    "related": [
     "hotkeys-not-working",
-    "card-actions"
+    "card-actions",
+    "multiverse-navigate",
+    "gestures"
    ],
-   "verified": "none",
-   "todo": true,
-   "headings": [],
-   "body": "TODO: write this article (M3e). The summary above is its scope. How to write it: docs/ARCH-help-and-tour.md §5.\n"
+   "verified": "v3.9.1",
+   "todo": false,
+   "headings": [
+    {
+     "level": 2,
+     "text": "Anywhere on the board",
+     "slug": "anywhere-on-the-board"
+    },
+    {
+     "level": 2,
+     "text": "On a card under the pointer",
+     "slug": "on-a-card-under-the-pointer"
+    },
+    {
+     "level": 2,
+     "text": "A card with keyboard focus",
+     "slug": "a-card-with-keyboard-focus"
+    },
+    {
+     "level": 2,
+     "text": "Card drawer",
+     "slug": "card-drawer"
+    },
+    {
+     "level": 2,
+     "text": "Multiverse",
+     "slug": "multiverse"
+    },
+    {
+     "level": 2,
+     "text": "Mini multiverse",
+     "slug": "mini-multiverse"
+    },
+    {
+     "level": 2,
+     "text": "Menus and dialogs",
+     "slug": "menus-and-dialogs"
+    },
+    {
+     "level": 2,
+     "text": "Help",
+     "slug": "help"
+    },
+    {
+     "level": 2,
+     "text": "Good to know",
+     "slug": "good-to-know"
+    }
+   ],
+   "body": "Every key the Dojo answers to, grouped by where it works. Keys are single presses: the Dojo leaves anything with Ctrl, Cmd or Alt to your browser. If a key does nothing, see [Shortcuts don't do anything](help:hotkeys-not-working).\n\n## Anywhere on the board\n\n| Key | What it does |\n|---|---|\n| {key:Space} | **End turn**. If a button has focus, Space presses that button instead |\n| {key:Q} | **Quest** with every ready character of the active player that has lore and isn't drying |\n| {key:M} | Open or close the **Multiverse** |\n| {key:T} | **Save current unfinished turn**: opens the Multiverse with the form, its name ready to type |\n| {key:C} | Turn **Challenge** mode on or off |\n| {key:Esc} | Close the innermost thing that's open (see below) |\n\n**Esc** closes one thing at a time, in this order: a card's menu, the card drawer, the inkwell sheet, a picked ink card, the picked challenger, challenge mode, the Multiverse, the Library, the home screen (back to your match, if one is on the board), a card you're looking at in the mulligan, then **Inspect deck**, **Inspect discard**, the log import window or the card search.\n\nThere's no key for **Undo**: press **Undo** in the top bar.\n\n## On a card under the pointer\n\nPoint at a card in play, on either side, and press:\n\n| Key | What it does |\n|---|---|\n| {key:+} or {key:=} | Add 1 damage |\n| {key:-} | Remove 1 damage |\n| {key:0} to {key:9} | Set the damage to that number |\n| {key:E} | Exert or ready |\n| {key:B} | Banish (to the discard) |\n| {key:C} | Challenge mode, with this character picked as the challenger (one of the active player's characters) |\n\nThese work only while no window is open over the board, and not in challenge mode. The card's menu shows the same keys beside **Exert**, **Challenge…** and **Banish**.\n\n## A card with keyboard focus\n\nPress {key:Tab} to move through the cards.\n\n| Key | What it does |\n|---|---|\n| {key:Enter} or {key:Space} | Open the card's menu. In challenge mode, pick the card or challenge it |\n| {key:↑} {key:↓} | Move through the menu's items |\n| {key:Enter} | Choose the item |\n| {key:Esc} | Close the menu |\n\nThe cards in the discard list beside the board open their menu the same way.\n\n## Card drawer\n\nOn a touch screen with a keyboard (a tablet), the card drawer takes:\n\n| Key | What it does |\n|---|---|\n| {key:←} {key:→} | The previous or next card: in the hand, or in play on that card's side |\n| {key:Esc} | Close the drawer |\n\n## Multiverse\n\n| Key | What it does |\n|---|---|\n| {key:←} | Select the turn before (the node's parent) |\n| {key:→} | Select the turn after (the node's first child) |\n| {key:↑} {key:↓} | Select the branch above or below: the next node that grows from the same parent |\n| {key:Enter} | **Play from here**: load the selected node |\n| {key:T} | **Save current unfinished turn** |\n| {key:M} or {key:Esc} | Close the Multiverse |\n\nWith the mouse: drag the canvas to pan, scroll to zoom, double-click a node to play from it.\n\n**Editing in the panel:**\n\n| Key | What it does |\n|---|---|\n| {key:Enter} or {key:Space} on the note | Start editing the note |\n| {key:Enter} in a node's name | Save the name |\n| {key:Ctrl+Enter} ({key:Cmd+Enter} on a Mac) in a note | Save the note. Clicking away saves too |\n| {key:Esc} in a name or note | Cancel the edit |\n| {key:Enter} in the save form's **Name** | **Save node** |\n| {key:Esc} in the save form | Close the form |\n\n[Show me](show:tree-canvas)\n\n## Mini multiverse\n\nClick the map or one of its step keys first, so it has focus. Then:\n\n| Key | What it does |\n|---|---|\n| {key:←} | Previous turn |\n| {key:→} | Next turn on this line |\n| {key:↑} {key:↓} | The line above or below |\n| {key:Home} | Back to the last branch point, or the start |\n| {key:End} | On to the next branch point, or the line's end |\n\nClick a dot to load it; drag or scroll the map to pan.\n\n[Show me](show:mini-multiverse-keys)\n\n## Menus and dialogs\n\n| Where | Key | What it does |\n|---|---|---|\n| Dialogs | {key:Enter} | Confirm (the main button) |\n| Dialogs | {key:Esc} | Cancel |\n| A note dialog, like **Turn N notes** | {key:Enter} | New line |\n| A note dialog | {key:Ctrl+Enter} or {key:Cmd+Enter} | Save |\n| Session title | {key:Enter} | Keep the new name |\n| Session title | {key:Esc} | Put the old name back |\n| Library tabs | {key:←} {key:→} | **Sessions**, **Decks**, **Links** |\n| A Library row's **⋯** menu | {key:↑} {key:↓} {key:Home} {key:End} | Move through the items |\n| A Library row's **⋯** menu | {key:Esc} or {key:Tab} | Close the menu (Esc closes the menu before the Library) |\n| Inkwell | {key:Esc} | Put down a picked ink card |\n| Mulligan | {key:Esc} | Put back a card you're looking at. The mulligan itself stays until you settle the hand |\n\nWhile a dialog is open, the board's keys do nothing.\n\n## Help\n\n| Key | What it does |\n|---|---|\n| {key:?} | Open or close help (not while you're typing) |\n| {key:/} | Jump to the help search |\n| {key:↑} {key:↓} | Move through the search results |\n| {key:Enter} | Open the result |\n| {key:Esc} | Back from an article, then close help |\n| {key:Backspace} in an empty search | Back to the contents |\n\n## Good to know\n\n- **Q** and **Space** still act on the board while the Multiverse is open: they quest and end the turn on the board behind it.\n- On a phone there are no shortcuts. See [Touch gestures](help:gestures).\n"
   },
   {
    "id": "gestures",
@@ -1942,16 +2741,66 @@
    "devices": [
     "phone"
    ],
-   "aliases": [],
-   "targets": [],
+   "aliases": [
+    "touch",
+    "tap",
+    "long press",
+    "hold",
+    "swipe",
+    "drag",
+    "pinch",
+    "phone controls",
+    "tablet"
+   ],
+   "targets": [
+    "card-drawer",
+    "hand",
+    "ink-bar",
+    "turn-notes",
+    "tree-keys",
+    "peek"
+   ],
    "related": [
     "screen-at-a-glance",
-    "card-actions"
+    "card-actions",
+    "multiverse-navigate",
+    "keyboard-shortcuts"
    ],
-   "verified": "none",
-   "todo": true,
-   "headings": [],
-   "body": "TODO: write this article (M3e). The summary above is its scope. How to write it: docs/ARCH-help-and-tour.md §5.\n"
+   "verified": "v3.9.1",
+   "todo": false,
+   "headings": [
+    {
+     "level": 2,
+     "text": "Cards",
+     "slug": "cards"
+    },
+    {
+     "level": 2,
+     "text": "Challenge",
+     "slug": "challenge"
+    },
+    {
+     "level": 2,
+     "text": "The board",
+     "slug": "the-board"
+    },
+    {
+     "level": 2,
+     "text": "Mulligan",
+     "slug": "mulligan"
+    },
+    {
+     "level": 2,
+     "text": "Multiverse",
+     "slug": "multiverse"
+    },
+    {
+     "level": 2,
+     "text": "Menus",
+     "slug": "menus"
+    }
+   ],
+   "body": "Everything you can do with a finger. Most of it is a tap that opens the card drawer; the rest are holds, swipes and drags.\n\n## Cards\n\n| Gesture | Where | What it does |\n|---|---|---|\n| {gesture:tap} | A card in play | Opens the card drawer: damage, **Challenge**, **Quest**, **Exert**, **Banish** and the moves |\n| {gesture:tap} | A card in your hand (phone) | Opens the card drawer for it: **Play**, **Ink**, **Discard**, and more |\n| {gesture:swipe} | Sideways on the card text in the drawer | The next card (swipe left) or the previous one (swipe right) |\n| {gesture:tap} | Outside the drawer | Closes it |\n| {gesture:drag} | A card from your hand, up | Onto the field to play it, onto the ink count to ink it, onto a matching character to shift it |\n| {gesture:drag} | Any card you can pick up | Onto the discard, the deck or a hand to move it there |\n\n:::desktop touch\nOn a tablet, a tap on a card in your hand opens its menu instead of the drawer.\n:::\n\n[Show me](show:card-drawer)\n\n## Challenge\n\n| Gesture | What it does |\n|---|---|\n| {gesture:tap} **Challenge** | Turns challenge mode on |\n| {gesture:tap} your character, then an opponent's card | Challenges it |\n| {gesture:drag} your character onto an opponent's card | Challenges it too |\n\n## The board\n\n| Gesture | Where | What it does |\n|---|---|---|\n| {gesture:long-press} | The empty battlefield, about half a second | Opens **Turn N notes** for the active player |\n| {gesture:tap} | The ink count | Opens the inkwell sheet: spend, ready, **Ready all**, each ink card |\n| {gesture:tap} | The deck | Draws a card |\n| {gesture:tap} | **⋮** on the deck | Deck actions: inspect, shuffle |\n| {gesture:tap} | The magnifier on the discard | Opens the discard |\n| {gesture:tap} | **Hold to reveal hand** | Shows the other player's hand; tap again to hide it |\n| {gesture:tap} | **−** / **+** by the lore | Changes the lore by one |\n| {gesture:tap} | **Quest** / **End turn** by your hand | Quest with every ready character / end the turn |\n\nMoving your finger cancels a long press, so scrolling never opens the notes.\n\n[Show me](show:turn-notes)\n\n## Mulligan\n\n| Gesture | What it does |\n|---|---|\n| {gesture:tap} a card | Marks it to go to the bottom (tap again to keep it) |\n| {gesture:long-press} a card | Shows it large with its name, cost and type. It stays when you lift your finger |\n| {gesture:tap} anywhere | Closes the large card. That tap marks nothing |\n\n## Multiverse\n\n| Gesture | What it does |\n|---|---|\n| {gesture:tap} a node or dot | Selects it; the panel shows it |\n| {gesture:tap} **Play from here** | Loads the selected node |\n| {gesture:drag} the canvas | Pans |\n| {gesture:pinch} | Zooms in or out |\n| {gesture:tap} a thumb key | ◀ ▶ the turn before / after, ▲ ▼ another line, ◎ back to where you are, zoom out to see the whole game (plot only) |\n| {gesture:long-press} an arrow key | Keeps stepping, like holding a key |\n\n[Show me](show:tree-keys)\n\n## Menus\n\n- {gesture:tap} **☰** for the side rail: the players, the game log and **Auto-save every turn**.\n- {gesture:tap} **⋯** for **Save**, **Save as copy**, **Share link**, **Tweaks** and **Leave to the dojo**. Tap outside to close it.\n"
   },
   {
    "id": "glossary",
@@ -1962,16 +2811,33 @@
     "desktop",
     "phone"
    ],
-   "aliases": [],
+   "aliases": [
+    "definitions",
+    "terms",
+    "what does it mean",
+    "meaning",
+    "vocabulary"
+   ],
    "targets": [],
    "related": [
     "multiverse",
     "what-is-the-dojo"
    ],
-   "verified": "none",
-   "todo": true,
-   "headings": [],
-   "body": "TODO: write this article (M3e). The summary above is its scope. How to write it: docs/ARCH-help-and-tour.md §5.\n"
+   "verified": "v3.9.1",
+   "todo": false,
+   "headings": [
+    {
+     "level": 2,
+     "text": "Dojo words",
+     "slug": "dojo-words"
+    },
+    {
+     "level": 2,
+     "text": "Lorcana words",
+     "slug": "lorcana-words"
+    }
+   ],
+   "body": "The words this manual uses: first the Dojo's own, then Lorcana's.\n\n## Dojo words\n\n- **Session.** One match and everything saved from it: the board, its Multiverse and its history. It saves itself as you play. [Sessions](help:sessions)\n- **Multiverse.** The tree of every saved turn in a session. [The Multiverse](help:multiverse)\n- **Node.** One saved board in the Multiverse: whose turn, the lore, a note and what happened. [Reading a node](help:nodes)\n- **Line.** A run of turns, one after another, from the start to where it ends.\n- **Branch.** A line that splits off an earlier node, when you play from there and do something different. [Branching](help:branches)\n- **The line you're on.** The line that leads to the board in front of you. The Dojo marks it, and the node you're on, in the signal colour.\n- **Auto-save.** With **Auto-save every turn** on, ending a turn saves the board as a node. [Every turn is saved](help:auto-save)\n- **Left here.** A dashed snapshot of a board you jumped away from before saving it. [Left here snapshots](help:left-here)\n- **Library.** Your sessions, decks and links, on shelves by where they're kept: this device, your account, built in, public links. [The Library](help:library)\n- **Share link.** A short link to a frozen copy of a deck or a session. Anyone with it can open it. [Share a deck or a session](help:share-links)\n- **Practice board.** The board a guided tour runs on. Nothing on it is saved, and your own match is kept as it was. [Guided tours](help:tours)\n- **Unknown card.** A card an imported game never showed. It reads **Unknown card** until you fill it in. [Unknown cards](help:unknown-cards)\n\n## Lorcana words\n\n- **Ink, inkwell.** Cards put face down to pay for other cards. Each ink pays 1 once a turn. [Ink a card](help:ink-a-card)\n- **Ready, exert.** A ready card stands upright. Exerting turns it sideways, to quest, challenge or pay for an ability. [Act on a card](help:card-actions)\n- **Quest.** Exert a character to gain its lore. [Quest and lore](help:quest)\n- **Lore.** The score. The first player to 20 wins. [Winning](help:winning)\n- **Challenge.** Exert your character to fight an exerted opposing character (or a location); each deals damage equal to its strength. [Challenge](help:challenge)\n- **Banish.** Put a card from play into its owner's discard, for example when its damage reaches its willpower.\n- **Drying.** A character played this turn can't quest or challenge yet. The board marks it **NEW**.\n- **Shift.** Play a character on top of another version of it, for its shift cost. The card underneath stays under it. [Locations, shift and cards under](help:locations-and-stacks)\n- **Singer, song.** A character can exert to sing a song instead of paying its ink. The Dojo doesn't track singing: exert the singer and play the song yourself.\n- **Location.** A card your characters can move to. It has willpower and can give lore. [Locations](help:locations-and-stacks)\n\nThe Dojo doesn't enforce Lorcana's rules. You're the referee.\n"
   }
  ],
  "targets": {
