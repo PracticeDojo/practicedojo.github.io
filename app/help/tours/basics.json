@@ -3,7 +3,9 @@
   "title": "Your first turn",
   "order": 1,
   "minutes": 3,
-  "start": { "scenario": "basics.dojo.json.gz" },
+  "start": {
+    "scenario": "basics.dojo.json.gz"
+  },
   "steps": [
     {
       "id": "welcome",
@@ -13,12 +15,56 @@
       }
     },
     {
-      "id": "mulligan",
-      "target": { "desktop": "mulligan-dialog", "phone": "mulligan-confirm" },
+      "id": "mull-look",
+      "target": {
+        "desktop": "mulligan-dialog",
+        "phone": "mulligan-hand"
+      },
+      "until": "mulliganLooked",
+      "text": {
+        "desktop": "First, your opening hand. Look at a card up close: click the magnifier in its top-right corner. Click again to put it back.",
+        "phone": "First, your opening hand. Press and hold a card to see it large. Tap anywhere on it to put it back."
+      },
+      "learn": "mulligan",
+      "also": {
+        "phone": [
+          "mulligan-peek"
+        ]
+      }
+    },
+    {
+      "id": "mull-mark",
+      "target": {
+        "desktop": "mulligan-dialog",
+        "phone": "mulligan-hand"
+      },
+      "until": "mulliganMarked",
+      "text": {
+        "desktop": "Click a card you don't want, say the most expensive one, to send it to the bottom. The curve and inkable readout under the hand show what you'd keep. Click it again to keep it.",
+        "phone": "Tap a card you don't want, say the most expensive one, to send it to the bottom. The readout under the hand shows what you'd keep. Tap it again to keep it."
+      },
+      "learn": "mulligan"
+    },
+    {
+      "id": "mull-confirm",
+      "target": "mulligan-confirm",
+      "until": "mulliganChosen",
+      "text": {
+        "desktop": "Press **Mulligan** (the key counts the cards you marked): they go to the bottom of your deck, you draw as many, and the deck is shuffled. Nothing marked? The key says **Keep hand**.",
+        "phone": "Tap **Mulligan** (the key counts the cards you marked): they go to the bottom of your deck, you draw as many, and the deck is shuffled. Nothing marked? The key says **Keep hand**."
+      },
+      "learn": "mulligan"
+    },
+    {
+      "id": "mull-start",
+      "target": {
+        "desktop": "mulligan-dialog",
+        "phone": "mulligan-confirm"
+      },
       "until": "mulliganSettled",
       "text": {
-        "desktop": "First, your opening hand. Click cards to send them to the bottom and press **Mulligan**, or press **Keep hand**.",
-        "phone": "First, your opening hand. It's a good one: tap **Keep hand**. (Another time, tap cards first to send them to the bottom.)"
+        "desktop": "Your new hand: the card you drew has a **NEW** pip. Press **Start turn** to play.",
+        "phone": "Your new hand: the card you drew has a **NEW** pip. Tap **Start turn** to play."
       },
       "learn": "mulligan"
     },
@@ -30,20 +76,33 @@
     },
     {
       "id": "ink",
-      "target": { "desktop": "your-board", "phone": "hand" },
-      "also": ["card-drawer"],
+      "target": {
+        "desktop": "your-board",
+        "phone": "hand"
+      },
+      "also": [
+        "card-drawer"
+      ],
       "until": "inkedThisTurn",
       "text": {
         "desktop": "Put a card in your inkwell: drag it from your hand onto the inkwell, or hover it and press **INK**.",
         "phone": "Put a card in your inkwell: tap a card in your hand, then **Ink**."
       },
-      "hint": { "desktop": "Only inkable cards have **INK**.", "phone": "Only inkable cards can be inked; the others say **No ink**." },
+      "hint": {
+        "desktop": "Only inkable cards have **INK**.",
+        "phone": "Only inkable cards can be inked; the others say **No ink**."
+      },
       "learn": "ink-a-card"
     },
     {
       "id": "play",
-      "target": { "desktop": "your-board", "phone": "hand" },
-      "also": ["card-drawer"],
+      "target": {
+        "desktop": "your-board",
+        "phone": "hand"
+      },
+      "also": [
+        "card-drawer"
+      ],
       "until": "cardPlayed",
       "text": {
         "desktop": "Now play a card: drag a 1-cost character onto your play area, or hover it and press **PLAY**.",
@@ -63,7 +122,9 @@
       "id": "read-card-phone",
       "device": "phone",
       "target": "hand",
-      "also": ["card-drawer"],
+      "also": [
+        "card-drawer"
+      ],
       "until": "drawerRead",
       "text": "Tap a card in your hand to open its drawer: the card full size, and what you can do with it. Close it when you've read it.",
       "learn": "card-actions"
@@ -81,8 +142,20 @@
     },
     {
       "id": "both-sides",
-      "target": { "desktop": "your-board", "phone": "hand" },
-      "also": { "desktop": ["mulligan-dialog", "card-drawer"], "phone": ["mulligan-confirm", "card-drawer"] },
+      "target": {
+        "desktop": "your-board",
+        "phone": "hand"
+      },
+      "also": {
+        "desktop": [
+          "mulligan-dialog",
+          "card-drawer"
+        ],
+        "phone": [
+          "mulligan-confirm",
+          "card-drawer"
+        ]
+      },
       "until": "settledAndInked",
       "text": "Now you're Player 2: the board turns round, so their side is at the bottom. Settle their opening hand, then ink one of their cards.",
       "learn": "you-play-both-sides"

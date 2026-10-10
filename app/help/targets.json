@@ -460,6 +460,11 @@
       "label": "Player palette",
       "screen": "tweaks",
       "any": "#tweak-palette"
+    },
+    "mulligan-peek": {
+      "label": "the card held up close",
+      "screen": "mulligan",
+      "phone": "#mulligan-peek"
     }
   }
 }

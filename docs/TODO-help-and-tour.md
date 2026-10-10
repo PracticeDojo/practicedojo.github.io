@@ -127,6 +127,10 @@ into the right milestone, or into *Parked* if it's outside the plan.
 ## M9 · Release Feature 58 — guided tours
 - [ ] Same steps as M8
 
+## Owner testing (on `claude/feat-57-help-and-tours`)
+- [x] Tour "Your first turn": **Skip this step** on the mulligan left the dialog up while the tour moved on. *Fixed: a predicate can carry a `skip` action; the mulligan steps settle the hand (Keep hand, or Start turn after a mulligan) and Player 2's step settles their hand and inks a card so Undo still has something to take back. A queued advance no longer fires after a skip has already moved the tour (it skipped a step). Checked in Chromium at 1440 and 390: skipping every mulligan step lands on the board step with the dialog closed*
+- [x] Tour "Your first turn": the mulligan only showed **Keep hand**. *Now four steps: look at a card (magnifier on desktop, press and hold on phones, the spotlight grows to the held card), mark one for the bottom (the readout), **Mulligan**, then the new hand's NEW pip and **Start turn**. Walked through by its own instructions at 1440 and 390*
+
 ## Found while building (not fixed; outside this plan)
 App bugs the writers noticed while checking articles. The manual describes today's behaviour.
 - Desktop: clicking or hovering an unknown card in the active hand throws (`showContextMenu` reads `dbCard.cost`, `showPreview` reads `images`), so it can't be swapped there

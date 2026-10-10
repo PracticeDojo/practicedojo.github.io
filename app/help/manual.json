@@ -1602,7 +1602,7 @@
      "slug": "good-to-know"
     }
    ],
-   "body": "With **Auto-save every turn** on, each **End turn** adds a node to the Multiverse, so the whole game is saved turn by turn without you doing anything.\n\n## Turn auto-save on or off\n\n:::desktop\nThe **Auto-save every turn** switch sits at the foot of the side rail, above **Quest** and **End turn**.\n\n[Show me](show:auto-save)\n:::\n\n:::phone\nOpen the ☰ menu. The **Auto-save every turn** switch is near the bottom, above **Quest** and **End turn**.\n\n[Show me](show:menu)\n:::\n\n## What an auto-save keeps\n\nWhen you end a turn, the next player readies and draws, and then the Dojo saves the board as a node. Its name says the turn and the player about to play: **Turn 5 - Player 2 Active** holds the board at the start of Player 2's turn 5. The node also keeps:\n\n- the note written for the turn that just ended (see [Turn notes](help:turn-notes)),\n- a **Turn recap** of that turn: what was drawn, inked, played, shifted, discarded, quested and banished,\n- the cards behind the recap, in sections such as **Played**, **Inked** and **Drawn**.\n\nThe new node hangs off the node you were on, so the tree follows the line you're playing. A toast says **Auto-Saved Timeline**.\n\n## Good to know\n\n- With the switch off, ending a turn saves nothing. Save by hand with [Save current unfinished turn](help:save-unfinished-turn).\n- The switch is on each time you open the Dojo; turning it off lasts until you reload.\n- On turn 1, the node waits until Player 2 has settled their mulligan and drawn, so it holds the board Player 2 plays from.\n- When a player reaches 20 lore, the Dojo saves a **Game Over** node even with auto-save off.\n"
+   "body": "With **Auto-save every turn** on, each **End turn** adds a node to the Multiverse, so the whole game is saved turn by turn without you doing anything.\n\n## Turn auto-save on or off\n\n:::desktop\nThe **Auto-save every turn** switch sits at the foot of the side rail, above **Quest** and **End turn**.\n\n[Show me](show:auto-save)\n:::\n\n:::phone\nOpen the ☰ menu. The **Auto-save every turn** switch is near the bottom, above **Quest** and **End turn**.\n\n[Show me](show:menu)\n:::\n\n## What an auto-save keeps\n\nWhen you end a turn, the next player readies and draws, and then the Dojo saves the board as a node. Its name says the turn and the player about to play: **Turn 5 - Player 2 Active** holds the board at the start of Player 2's turn 5. The node also keeps:\n\n- the note written for the turn that just ended (see [Turn notes](help:turn-notes)),\n- a **Turn recap** of that turn: what was drawn, inked, played, shifted, discarded, quested and banished,\n- the cards behind the recap, in sections such as **Played**, **Inked** and **Drawn**.\n\nThe new node hangs off the node you were on, so the tree follows the line you're playing.\n\n## Good to know\n\n- With the switch off, ending a turn saves nothing. Save by hand with [Save current unfinished turn](help:save-unfinished-turn).\n- The switch is on each time you open the Dojo; turning it off lasts until you reload.\n- On turn 1, the node waits until Player 2 has settled their mulligan and drawn, so it holds the board Player 2 plays from.\n- When a player reaches 20 lore, the Dojo saves a **Game Over** node even with auto-save off.\n"
   },
   {
    "id": "save-unfinished-turn",
@@ -1802,16 +1802,11 @@
     },
     {
      "level": 2,
-     "text": "Go back to the first line",
-     "slug": "go-back-to-the-first-line"
-    },
-    {
-     "level": 2,
      "text": "Good to know",
      "slug": "good-to-know"
     }
    ],
-   "body": "To try another line, go back to an earlier node and play on from it. The new turns grow a new branch, and the line you played before stays exactly as it was.\n\n## Try another line\n\n1. Open the Multiverse and select the node to go back to. An auto-save named **Turn 6 - Player 1 Active** is the board at the start of Player 1's turn 6, so pick it to replay that turn.\n2. Press **Play from here**. You're back on the board, at that point in the game.\n3. Play the turn differently and end it. With auto-save on, the new node hangs off the one you played from, beside the turn that followed before: that's a branch.\n4. Keep playing. Every turn you end adds to the new line.\n\n[Show me](show:tree-canvas)\n\n## Compare the lines\n\nThe path to the node you're on is highlighted; the other lines are grey. Select nodes on each line and compare their **Lore race to 20** and **Turn recap** in the panel. The plot shows the whole game at once (see [Cards and plot](help:multiverse-views)).\n\n## Go back to the first line\n\nSelect any node on it and press **Play from here**.\n\n## Good to know\n\n- Branching never changes or deletes the nodes you already have.\n- The board you leave is kept as a [\"Left here\" snapshot](help:left-here) if it wasn't saved.\n- **Undo** doesn't reach across a jump: its history starts fresh from the node you play from.\n- When a player reaches 20 lore, a **Game Over** node closes the branch, and the Dojo offers **View Multiverse** or **Stay Here**. You can still go back and play a branch where the other player wins.\n"
+   "body": "To try another line, go back to an earlier node and play on from it. The new turns grow a new branch, and the line you played before stays exactly as it was.\n\n## Try another line\n\n1. Open the Multiverse and select the node to go back to. An auto-save named **Turn 6 - Player 1 Active** is the board at the start of Player 1's turn 6, so pick it to replay that turn.\n2. Press **Play from here**. You're back on the board, at that point in the game.\n3. Play the turn differently and end it. With auto-save on, the new node hangs off the one you played from, beside the turn that followed before: that's a branch.\n4. Keep playing. Every turn you end adds to the new line.\n\n[Show me](show:tree-canvas)\n\n## Compare the lines\n\nThe path to the node you're on is highlighted; the other lines are grey. Select nodes on each line and compare their **Lore race to 20** and **Turn recap** in the panel. The plot shows the whole game at once (see [Cards and plot](help:multiverse-views)).\n\n\n## Good to know\n\n- Branching never changes or deletes the nodes you already have.\n- The board you leave is kept as a [\"Left here\" snapshot](help:left-here) if it wasn't saved.\n- **Undo** doesn't reach across a jump: its history starts fresh from the node you play from.\n- When a player reaches 20 lore, a **Game Over** node closes the branch, and the Dojo offers **View Multiverse** or **Stay Here**. You can still go back and play a branch where the other player wins.\n"
   },
   {
    "id": "left-here",
@@ -1862,7 +1857,7 @@
      "slug": "good-to-know"
     }
    ],
-   "body": "When you jump to another node from a board you haven't saved, the Dojo keeps that board as a \"Left here\" snapshot first. A jump never loses your work.\n\n## When a snapshot is kept\n\nEvery jump checks the board you're leaving: **Play from here**, and on desktop a double-click, {key:Enter} or a click in the mini multiverse. If the board has changed since it was loaded or saved, it's kept as a snapshot. If it's exactly a node or snapshot that's still in the tree, nothing is added.\n\n## Find a snapshot\n\nA snapshot hangs off the node you were last on, on a dashed line:\n\n- in cards, a dashed card titled **Left here** and the time, like **Left here · 14:32**,\n- in the plot, a dashed ring,\n- in the mini multiverse, a dashed hollow dot.\n\n## Use a snapshot\n\nSelect it. The panel says **Where you jumped from** and offers:\n\n- **Play from here** loads that board again.\n- **Keep as node** turns it into a real node where it hangs, named like **Turn 9 - Player 1 (kept 14:32)**. Then you can rename it and write a note.\n- The bin discards it. The toast offers **Undo**.\n\n[Show me](show:tree-canvas)\n\n## Good to know\n\n- Only the last five snapshots are kept. A sixth pushes out the oldest, so keep the ones that matter as nodes.\n- A snapshot isn't a node until you keep it: it can't be renamed and has no note.\n"
+   "body": "When you jump to another node from a board you haven't saved, the Dojo keeps that board as a \"Left here\" snapshot first. A jump never loses your work.\n\n## When a snapshot is kept\n\nEvery jump checks the board you're leaving: **Play from here**, and on desktop a double-click, {key:Enter} or a click in the mini multiverse. If the board has changed since it was loaded or saved, it's kept as a snapshot. If it's exactly a node or snapshot that's still in the tree, nothing is added.\n\n## Find a snapshot\n\n%%%TODO: Add a screenshot of a snapshot\n\nA snapshot hangs off the node you were last on, on a dashed line:\n\n- in cards, a dashed card titled **Left here** and the time, like **Left here · 14:32**,\n- in the plot, a dashed ring,\n- in the mini multiverse, a dashed hollow dot.\n\n## Use a snapshot\n\nSelect it. The panel says **Where you jumped from** and offers:\n\n- **Play from here** loads that board again.\n- **Keep as node** turns it into a real node where it hangs, named like **Turn 9 - Player 1 (kept 14:32)**. Then you can rename it and write a note.\n- The bin discards it. The toast offers **Undo**.\n\n[Show me](show:tree-canvas)\n\n## Good to know\n\n- Only the last five snapshots are kept. A sixth pushes out the oldest, so keep the ones that matter as nodes.\n- A snapshot isn't a node until you keep it: it can't be renamed and has no note.\n"
   },
   {
    "id": "multiverse-views",
@@ -2018,7 +2013,7 @@
      "slug": "good-to-know"
     }
    ],
-   "body": "The mini multiverse is a small map of the whole tree in the side rail, under the players. Jump to any turn with one click, or step through a line, without opening the full Multiverse.\n\n## Read the map\n\n- Each dot is a saved turn; each row is a line. A branch takes the nearest free row.\n- The line you're on is highlighted, with filled dots. Turns ahead of you on it (a line you stepped back along) are dashed rings.\n- The node you're on has a ring, dashed once the board has changed since it.\n- \"Left here\" snapshots are dashed hollow dots. A won branch ends in a square dot and a bar.\n- The head reads like **T14 · P2 · 8–8** (turn, player, lore) for the node you're on, or the dot under the pointer, whose name shows at the foot.\n- **Edited · kept if you jump** at the foot means your board has changed since its node.\n\n[Show me](show:mini-multiverse)\n\n## Jump to a turn\n\nClick a dot: the board becomes that turn straight away, with no **Play from here**. Drag or scroll the map to pan. The button in the head opens the full Multiverse.\n\n## Step through a line\n\nThe keys under the map load the turn they step to:\n\n- **⏮** back to the last branch point behind you, or the start.\n- **◀** the turn before. **▶** the next turn on the line.\n- **⏭** on to the next branch point ahead, or the end of the line.\n- **↑** **↓** the nearest turn on the line above or below.\n\nClick the map first and {key:←} {key:→} {key:↑} {key:↓}, {key:Home} and {key:End} do the same.\n\n[Show me](show:mini-multiverse-keys)\n\n## Good to know\n\n- Stepping back keeps the rest of the line ahead of you, so **▶** retraces it.\n- On a board you've changed since its node, **◀** reloads that node and **▶** goes on to the next turn.\n- A board you leave unsaved is kept as a [\"Left here\" snapshot](help:left-here).\n- Phones don't show the map. Use the [thumb keys](help:multiverse-navigate) in the Multiverse instead.\n"
+   "body": "The mini multiverse is a small map of the whole tree in the side rail, under the players. Jump to any turn with one click, or step through a line, without opening the full Multiverse.\n\n%%%TODO: ADD SCREENSHOT%%%%\n\n\n## Read the map\n\n- Each dot is a saved turn; each row is a line. A branch takes the nearest free row.\n- The line you're on is highlighted, with filled dots. Turns ahead of you on it (a line you stepped back along) are dashed rings.\n- The node you're on has a ring, dashed once the board has changed since it.\n- \"Left here\" snapshots are dashed hollow dots. A won branch ends in a square dot and a bar.\n- The head reads like **T14 · P2 · 8–8** (turn, player, lore) for the node you're on, or the dot under the pointer, whose name shows at the foot.\n- **Edited · kept if you jump** at the foot means your board has changed since its node.\n\n[Show me](show:mini-multiverse)\n\n## Jump to a turn\n\nClick a dot: the board becomes that turn straight away, with no **Play from here**. Drag or scroll the map to pan. The button in the head opens the full Multiverse.\n\n## Step through a line\n\nThe keys under the map load the turn they step to:\n\n- **⏮** back to the last branch point behind you, or the start.\n- **◀** the turn before. **▶** the next turn on the line.\n- **⏭** on to the next branch point ahead, or the end of the line.\n- **↑** **↓** the nearest turn on the line above or below.\n\nClick the map first and {key:←} {key:→} {key:↑} {key:↓}, {key:Home} and {key:End} do the same.\n\n[Show me](show:mini-multiverse-keys)\n\n## Good to know\n\n- Stepping back keeps the rest of the line ahead of you, so **▶** retraces it.\n- On a board you've changed since its node, **◀** reloads that node and **▶** goes on to the next turn.\n- A board you leave unsaved is kept as a [\"Left here\" snapshot](help:left-here).\n- Phones don't show the map. Use the [thumb keys](help:multiverse-navigate) in the Multiverse instead.\n"
   },
   {
    "id": "import-overview",
@@ -3816,6 +3811,11 @@
    "label": "Player palette",
    "screen": "tweaks",
    "any": "#tweak-palette"
+  },
+  "mulligan-peek": {
+   "label": "the card held up close",
+   "screen": "mulligan",
+   "phone": "#mulligan-peek"
   }
  },
  "synonyms": [
@@ -4006,20 +4006,61 @@
     {
      "id": "welcome",
      "text": {
-      "desktop": "This is a practice board with two Set 13 decks. Nothing you do here is saved. Leave any time with **✕** or Esc.",
-      "phone": "This is a practice board with two Set 13 decks. Nothing you do here is saved. Leave any time with **✕**."
+      "desktop": "Welcome to the Practice Dojo! This is a practice board with two pre-fabricated decks. Nothing you do here is saved. Leave any time with **✕** or Esc.",
+      "phone": "Welcome to the Practice Dojo! This is a practice board with two pre-fabricated decks. Nothing you do here is saved. Leave any time with **✕**."
      }
     },
     {
-     "id": "mulligan",
+     "id": "mull-look",
+     "target": {
+      "desktop": "mulligan-dialog",
+      "phone": "mulligan-hand"
+     },
+     "until": "mulliganLooked",
+     "text": {
+      "desktop": "First, your opening hand. Look at a card up close: click the magnifier in its top-right corner. Click again to put it back.",
+      "phone": "First, your opening hand. Press and hold a card to see it large. Tap anywhere on it to put it back."
+     },
+     "learn": "mulligan",
+     "also": {
+      "phone": [
+       "mulligan-peek"
+      ]
+     }
+    },
+    {
+     "id": "mull-mark",
+     "target": {
+      "desktop": "mulligan-dialog",
+      "phone": "mulligan-hand"
+     },
+     "until": "mulliganMarked",
+     "text": {
+      "desktop": "Click a card you don't want, say the most expensive one, to send it to the bottom. The curve and inkable readout under the hand show what you'd keep. Click it again to keep it.",
+      "phone": "Tap a card you don't want, say the most expensive one, to send it to the bottom. The readout under the hand shows what you'd keep. Tap it again to keep it."
+     },
+     "learn": "mulligan"
+    },
+    {
+     "id": "mull-confirm",
+     "target": "mulligan-confirm",
+     "until": "mulliganChosen",
+     "text": {
+      "desktop": "Press **Mulligan** (the key counts the cards you marked): they go to the bottom of your deck, you draw as many, and the deck is shuffled. Nothing marked? The key says **Keep hand**.",
+      "phone": "Tap **Mulligan** (the key counts the cards you marked): they go to the bottom of your deck, you draw as many, and the deck is shuffled. Nothing marked? The key says **Keep hand**."
+     },
+     "learn": "mulligan"
+    },
+    {
+     "id": "mull-start",
      "target": {
       "desktop": "mulligan-dialog",
       "phone": "mulligan-confirm"
      },
      "until": "mulliganSettled",
      "text": {
-      "desktop": "First, your opening hand. Click cards to send them to the bottom and press **Mulligan**, or press **Keep hand**.",
-      "phone": "First, your opening hand. It's a good one: tap **Keep hand**. (Another time, tap cards first to send them to the bottom.)"
+      "desktop": "Your new hand: the card you drew has a **NEW** pip. Press **Start turn** to play.",
+      "phone": "Your new hand: the card you drew has a **NEW** pip. Tap **Start turn** to play."
      },
      "learn": "mulligan"
     },

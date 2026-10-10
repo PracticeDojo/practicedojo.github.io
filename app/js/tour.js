@@ -81,13 +81,62 @@ window.DojoTour = (function () {
     // ---------- Predicates (§8.3): read App.state and the DOM. ctx is the step's memory,
     // filled by init() when the step starts. ----------
     const turnActs = () => { const a = app(); return (a && a.state && a.state.turnActions) || {}; };
+
+    // Settles an opening hand that is still being chosen, the way its own keys would: back from
+    // Craft hand, put a looked-at card down, keep the hand (or start the turn after a mulligan).
+    // Skipping a mulligan step must never leave the dialog up behind the tour.
+    function settleMulligan(a) {
+        for (let n = 0; n < 3 && a && a.state && a.state.mulliganPending; n++) {
+            if (visible('craft-hand-modal') && a.backToMulligan) a.backToMulligan();
+            if (a.closeMulliganLook) a.closeMulliganLook();
+            if (a.hideMulliganPeek) a.hideMulliganPeek();
+            const p = a.state.players[a.state.activePlayer];
+            if (!p.hasMulliganed) a.mulliganSelection = [];
+            a.confirmMulligan();
+        }
+    }
+    const activeP = (a) => a.state.players[a.state.activePlayer];
+
+    // A predicate may have skip(ctx, app): what Skip this step does before moving on, so
+    // the board is where the following steps expect it.
     const until = {
-        mulliganSettled: { test: () => { const a = app(); return !!(a && a.state && !a.state.mulliganPending); } },
+        mulliganSettled: {
+            test: () => { const a = app(); return !!(a && a.state && !a.state.mulliganPending); },
+            skip: (c, a) => settleMulligan(a)
+        },
+        // A card looked at closely and put back: the magnifier (mouse) or press and hold (touch).
+        mulliganLooked: {
+            test: (c, a) => {
+                if (!a.state.mulliganPending) return true;
+                const open = !!a._mullLookSlot || (a.isMulliganPeekOpen && a.isMulliganPeekOpen());
+                if (open) c.seen = true;
+                return !!c.seen && !open;
+            },
+            skip: (c, a) => { if (a.closeMulliganLook) a.closeMulliganLook(); if (a.hideMulliganPeek) a.hideMulliganPeek(); }
+        },
+        // At least one card marked to go to the bottom (or the hand already settled).
+        mulliganMarked: {
+            test: (c, a) => !a.state.mulliganPending || activeP(a).hasMulliganed || (a.mulliganSelection || []).length > 0
+        },
+        // The choice is made: a mulligan (the new hand is on show) or a keep.
+        mulliganChosen: {
+            test: (c, a) => !a.state.mulliganPending || !!activeP(a).hasMulliganed,
+            skip: (c, a) => settleMulligan(a)
+        },
         inkedThisTurn: { test: () => (turnActs().inked || []).length > 0 },
         cardPlayed: { test: () => ((turnActs().played || []).length + (turnActs().shifted || []).length) > 0 },
         quested: { test: () => (turnActs().quested || []).length > 0 },
         // The other player's opening hand is settled and one of their cards inked.
-        settledAndInked: { test: (c, a) => !a.state.mulliganPending && (turnActs().inked || []).length > 0 },
+        settledAndInked: {
+            test: (c, a) => !a.state.mulliganPending && (turnActs().inked || []).length > 0,
+            // Settle their hand and ink an inkable card for them, so the Undo step after has an ink to take back.
+            skip: (c, a) => {
+                settleMulligan(a);
+                if ((turnActs().inked || []).length) return;
+                const card = activeP(a).hand.find((x) => { const d = a.cardDB[x.cardId]; return d && d.inkwell; });
+                if (card && a.playToInkwell) a.playToInkwell(card.instanceId);
+            }
+        },
         turnEnded: {
             init: (c, a) => { c.turn = a.state.turn; c.ap = a.state.activePlayer; },
             test: (c, a) => a.state.turn !== c.turn || a.state.activePlayer !== c.ap
@@ -172,7 +221,13 @@ window.DojoTour = (function () {
         const backTo = previousReadOnly(i);
         if (backTo >= 0) buttons.push({ label: 'Back', onClick: () => { go(backTo); } });
         if (step.learn) buttons.push({ label: 'Learn more', onClick: () => learn(step.learn) });
-        if (pred) buttons.push({ label: 'Skip this step', onClick: () => { go(i + 1); } });
+        if (pred) buttons.push({ label: 'Skip this step', onClick: () => {
+            // busy: the renders a skip causes mustn't also move the tour on.
+            run.busy = true;
+            if (pred.skip) try { pred.skip(run.ctx, a); } catch (e) { console.warn('DojoTour skip', e); }
+            run.busy = false;
+            go(i + 1);
+        } });
         else buttons.push({ label: i === list.length - 1 ? 'Finish' : 'Next', primary: true, onClick: () => { go(i + 1); } });
 
         run.shownTarget = effectiveTarget(step);
@@ -241,7 +296,8 @@ window.DojoTour = (function () {
         if (pred) {
             let ok = false;
             try { ok = !!pred.test(run.ctx, a); } catch (e) { ok = false; }
-            if (ok) { run.busy = true; setTimeout(() => { if (run) { run.busy = false; go(run.i + 1); } }, 250); return; }
+            // Move on after a beat, unless something (Skip, Back) already moved the tour.
+            if (ok) { const at = run.i; run.busy = true; setTimeout(() => { if (!run) return; run.busy = false; if (run.i === at) go(at + 1); }, 250); return; }
             if (!run.hinted && step.hint && Date.now() - run.since > HINT_MS) { run.hinted = true; show(run.i); return; }
         }
         if (step.also && effectiveTarget(step) !== run.shownTarget) show(run.i);
