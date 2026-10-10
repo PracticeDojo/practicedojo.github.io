@@ -27,7 +27,7 @@ The Dojo gets your name, picture and email from Discord or Google. It never sees
 The first time you sign in on a device that already has decks or sessions, the Dojo asks whether to save them to your account:
 
 - **All** saves every one.
-- **Choose…** opens the Library, where **Save to account** (in a row's **⋯**) or **Save all to account** (on the **Only on this device** shelf) saves them one shelf or one row at a time.
+- **Choose…** opens the Library, where **Save to account** (in a row's **⋯**) or **Save all N to account** (on the **Only on this device** shelf) saves one row or a whole shelf.
 - **Not now** leaves them on this device only. You can still save them from the Library later.
 
 Either way, they stay on this device too.

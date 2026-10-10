@@ -10,7 +10,7 @@ order: 10
 verified: v3.9.1
 ---
 
-An account is optional. It keeps your decks and sessions somewhere other than this browser, so they're on every device you sign in on.
+An account is optional. It keeps your decks and sessions somewhere other than this browser, so they're on your other devices too: every device you sign in on.
 
 ## Signed out, everything works
 
