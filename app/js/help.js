@@ -673,7 +673,7 @@ window.DojoHelp = (function () {
         const sl = s.toLowerCase();
         words.forEach((w) => {
             let i = sl.indexOf(w);
-            while (i >= 0) { ranges.push([i, i + w.length - 1]); i = sl.indexOf(w, i + w.length); }
+            while (i >= 0) { ranges.push([i, i + w.length]); i = sl.indexOf(w, i + w.length); }
         });
         ranges.sort((x, y) => x[0] - y[0]);
         return { text: s, ranges };
@@ -741,18 +741,19 @@ window.DojoHelp = (function () {
     }
 
     // A snippet with its matched ranges in ink weight. Text only: never innerHTML.
+    // Ranges are [start, end) with the end exclusive, like String.slice (help-search.js).
     function marked_(snip) {
         const t = String(snip.text || '');
         const el = h('span', { class: 'help-res-s' });
-        const ranges = (snip.ranges || []).map(([s, e]) => [Math.max(0, s), Math.min(t.length - 1, e)])
-            .filter(([s, e]) => e >= s).sort((x, y) => x[0] - y[0]);
+        const ranges = (snip.ranges || []).map(([s, e]) => [Math.max(0, s), Math.min(t.length, e)])
+            .filter(([s, e]) => e > s).sort((x, y) => x[0] - y[0]);
         let pos = 0;
         ranges.forEach(([s, e]) => {
             if (s < pos) s = pos;
-            if (e < s) return;
+            if (e <= s) return;
             if (s > pos) el.appendChild(document.createTextNode(t.slice(pos, s)));
-            el.appendChild(h('mark', { text: t.slice(s, e + 1) }));
-            pos = e + 1;
+            el.appendChild(h('mark', { text: t.slice(s, e) }));
+            pos = e;
         });
         if (pos < t.length) el.appendChild(document.createTextNode(t.slice(pos)));
         return el;
