@@ -12,6 +12,9 @@ verified: v3.11.0
 
 The mini multiverse is a small map of the whole tree in the side rail, under the players. Jump to any turn with one click, or step through a line, without opening the full Multiverse.
 
+%%%TODO: ADD SCREENSHOT%%%%
+
+
 ## Read the map
 
 - Each dot is a saved turn; each row is a line. A branch takes the nearest free row.
