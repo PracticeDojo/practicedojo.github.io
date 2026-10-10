@@ -1,0 +1,454 @@
+{
+  "$comment": "Named UI targets for \"Show me\" and the tours. Each maps to a selector per device (any / desktop / phone); screen says what must be open for it to be visible. See docs/ARCH-help-and-tour.md §7.1.",
+  "targets": {
+    "topbar": {
+      "label": "the top bar",
+      "screen": "board",
+      "any": "#topbar"
+    },
+    "home-button": {
+      "label": "the way back to the home screen (‹ Dojo)",
+      "screen": "board",
+      "desktop": "#btn-home",
+      "phone": "#btn-topbar-more"
+    },
+    "session-title": {
+      "label": "the session title",
+      "screen": "board",
+      "desktop": "#session-title"
+    },
+    "save": {
+      "label": "Save",
+      "screen": "board",
+      "desktop": "#btn-session-save",
+      "phone": "#btn-topbar-more"
+    },
+    "save-copy": {
+      "label": "Save as copy",
+      "screen": "board",
+      "desktop": "#btn-session-copy",
+      "phone": "#btn-topbar-more"
+    },
+    "share": {
+      "label": "Share",
+      "screen": "board",
+      "desktop": "#btn-session-share",
+      "phone": "#btn-topbar-more"
+    },
+    "undo": {
+      "label": "Undo",
+      "screen": "board",
+      "any": "#btn-undo"
+    },
+    "turn": {
+      "label": "the turn chip",
+      "screen": "board",
+      "any": "#turn-pill"
+    },
+    "challenge-mode": {
+      "label": "Challenge",
+      "screen": "board",
+      "any": "#btn-challenge-mode"
+    },
+    "multiverse": {
+      "label": "Multiverse",
+      "screen": "board",
+      "any": "#btn-multiverse"
+    },
+    "tweaks": {
+      "label": "Tweaks",
+      "screen": "board",
+      "desktop": "#btn-tweaks",
+      "phone": "#btn-topbar-more"
+    },
+    "more-menu": {
+      "label": "the ⋯ menu",
+      "screen": "board",
+      "phone": "#btn-topbar-more"
+    },
+    "menu": {
+      "label": "the ☰ menu (players, log, auto-save)",
+      "screen": "board",
+      "phone": "#mobile-menu-btn"
+    },
+    "sidebar": {
+      "label": "the side rail",
+      "screen": "board",
+      "desktop": "#sidebar"
+    },
+    "players": {
+      "label": "the player rows",
+      "screen": "board",
+      "desktop": "#player-rows"
+    },
+    "mini-multiverse": {
+      "label": "the mini multiverse",
+      "screen": "board",
+      "desktop": "#mmv"
+    },
+    "mini-multiverse-keys": {
+      "label": "the mini multiverse step keys",
+      "screen": "board",
+      "desktop": "#mmv-ctl"
+    },
+    "card-preview": {
+      "label": "the card preview",
+      "screen": "board",
+      "desktop": "#card-preview"
+    },
+    "log": {
+      "label": "the game log",
+      "screen": "board",
+      "desktop": "#game-log"
+    },
+    "auto-save": {
+      "label": "Auto-save every turn",
+      "screen": "board",
+      "desktop": "#auto-save-row"
+    },
+    "quest-all": {
+      "label": "Quest (with every ready character)",
+      "screen": "board",
+      "desktop": "#btn-quest-all",
+      "phone": "#btn-quest-all-mobile"
+    },
+    "end-turn": {
+      "label": "End turn",
+      "screen": "board",
+      "desktop": "#btn-end-turn",
+      "phone": "#btn-end-turn-mobile"
+    },
+    "board": {
+      "label": "the board",
+      "screen": "board",
+      "any": "#play"
+    },
+    "opponent-board": {
+      "label": "the other player's half (top)",
+      "screen": "board",
+      "any": "#top-board"
+    },
+    "your-board": {
+      "label": "the active player's half (bottom)",
+      "screen": "board",
+      "any": "#bottom-board"
+    },
+    "hand": {
+      "label": "your hand",
+      "screen": "board",
+      "any": "#bottom-hand"
+    },
+    "opponent-hand": {
+      "label": "the other player's hand",
+      "screen": "board",
+      "any": "#top-hand"
+    },
+    "peek": {
+      "label": "Hold to reveal hand",
+      "screen": "board",
+      "any": "#top-peek"
+    },
+    "field": {
+      "label": "your play area",
+      "screen": "board",
+      "any": "#bottom-field"
+    },
+    "opponent-field": {
+      "label": "the other player's play area",
+      "screen": "board",
+      "any": "#top-field"
+    },
+    "ink-bar": {
+      "label": "your inkwell",
+      "screen": "board",
+      "any": "#bottom-ink-bar"
+    },
+    "inkwell-cards": {
+      "label": "your ink cards",
+      "screen": "board",
+      "desktop": "#bottom-inkwell-cards"
+    },
+    "lore": {
+      "label": "your lore",
+      "screen": "board",
+      "desktop": "#bottom-lore-badge",
+      "phone": "#bottom-lore-bar"
+    },
+    "deck": {
+      "label": "your deck",
+      "screen": "board",
+      "any": "#bottom-deck"
+    },
+    "discard": {
+      "label": "your discard pile",
+      "screen": "board",
+      "any": "#bottom-discard"
+    },
+    "turn-notes": {
+      "label": "the turn notes",
+      "screen": "board",
+      "desktop": "#turn-notes",
+      "phone": "#bottom-field"
+    },
+    "draw-odds": {
+      "label": "Draw odds",
+      "screen": "board",
+      "desktop": "#prob-pane"
+    },
+    "card-drawer": {
+      "label": "the card drawer",
+      "screen": "drawer",
+      "any": "#card-sheet"
+    },
+    "ink-panel": {
+      "label": "the inkwell sheet",
+      "screen": "drawer",
+      "phone": "#ink-panel"
+    },
+    "challenge-banner": {
+      "label": "the challenge mode bar",
+      "screen": "challenge",
+      "any": "#challenge-banner"
+    },
+    "shared-banner": {
+      "label": "the shared session bar",
+      "screen": "shared",
+      "any": "#shared-banner"
+    },
+    "mulligan-dialog": {
+      "label": "the mulligan",
+      "screen": "mulligan",
+      "any": "#mulligan-dialog"
+    },
+    "mulligan-hand": {
+      "label": "the opening hand",
+      "screen": "mulligan",
+      "any": "#mulligan-hand"
+    },
+    "mulligan-readout": {
+      "label": "the curve and inkable readout",
+      "screen": "mulligan",
+      "any": "#mulligan-readout"
+    },
+    "mulligan-odds": {
+      "label": "the mulligan draw odds",
+      "screen": "mulligan",
+      "any": "#mulligan-odds"
+    },
+    "mulligan-confirm": {
+      "label": "Keep hand / Mulligan",
+      "screen": "mulligan",
+      "any": "#mulligan-confirm"
+    },
+    "craft-hand": {
+      "label": "Craft hand",
+      "screen": "mulligan",
+      "any": "#mulligan-craft"
+    },
+    "tree-canvas": {
+      "label": "the Multiverse canvas",
+      "screen": "multiverse",
+      "any": "#tree-viewport"
+    },
+    "tree-panel": {
+      "label": "the Multiverse panel",
+      "screen": "multiverse",
+      "any": "#tree-panel"
+    },
+    "save-turn": {
+      "label": "Save current unfinished turn",
+      "screen": "multiverse",
+      "any": "#tp-save-open"
+    },
+    "selected-node": {
+      "label": "the selected node",
+      "screen": "multiverse",
+      "any": "#tp-sel"
+    },
+    "plot-toggle": {
+      "label": "Plot",
+      "screen": "multiverse",
+      "any": "#tree-view-toggle"
+    },
+    "tree-legend": {
+      "label": "the plot's key",
+      "screen": "multiverse",
+      "any": "#tree-legend"
+    },
+    "tree-keys": {
+      "label": "the thumb keys",
+      "screen": "multiverse",
+      "phone": "#tree-keys"
+    },
+    "tree-dock": {
+      "label": "the panel side switch",
+      "screen": "multiverse",
+      "desktop": "#tree-dock-toggle"
+    },
+    "tree-zoom-reset": {
+      "label": "Reset zoom",
+      "screen": "multiverse",
+      "desktop": "#tree-zoom-reset"
+    },
+    "tree-import": {
+      "label": "Import",
+      "screen": "multiverse",
+      "any": "#tree-import"
+    },
+    "tree-export": {
+      "label": "Export",
+      "screen": "multiverse",
+      "any": "#tree-export"
+    },
+    "tree-log": {
+      "label": "Log (import a Duels.ink game)",
+      "screen": "multiverse",
+      "any": "#tree-log"
+    },
+    "tree-close": {
+      "label": "Close",
+      "screen": "multiverse",
+      "any": "#tree-close"
+    },
+    "intake": {
+      "label": "the paste field",
+      "screen": "home",
+      "any": "#well"
+    },
+    "example-deck": {
+      "label": "A decklist (example)",
+      "screen": "home",
+      "any": "#btn-example-deck"
+    },
+    "example-log": {
+      "label": "A Duels.ink log (example)",
+      "screen": "home",
+      "any": "#btn-example-log"
+    },
+    "intake-file": {
+      "label": "Choose a file",
+      "screen": "home",
+      "any": "#btn-intake-file"
+    },
+    "readout": {
+      "label": "the readout",
+      "screen": "home",
+      "any": "#readout"
+    },
+    "seats": {
+      "label": "On the table",
+      "screen": "home",
+      "any": "#home-seats"
+    },
+    "deck-chips": {
+      "label": "the deck chips",
+      "screen": "home",
+      "any": "#home-chips"
+    },
+    "start-match": {
+      "label": "Start match",
+      "screen": "home",
+      "any": "#btn-start-match"
+    },
+    "recent": {
+      "label": "Pick up again",
+      "screen": "home",
+      "any": "#home-recent"
+    },
+    "all-sessions": {
+      "label": "All sessions",
+      "screen": "home",
+      "any": "#btn-all-sessions"
+    },
+    "library-button": {
+      "label": "Library",
+      "screen": "home",
+      "any": "#btn-open-library"
+    },
+    "account-button": {
+      "label": "Sign in",
+      "screen": "home",
+      "any": "#btn-account"
+    },
+    "home-theme": {
+      "label": "the theme switch",
+      "screen": "home",
+      "any": "#home-theme"
+    },
+    "library": {
+      "label": "the Library",
+      "screen": "library",
+      "any": "#library-drawer"
+    },
+    "lib-sessions": {
+      "label": "Sessions",
+      "screen": "library",
+      "any": "#lib-tab-sessions"
+    },
+    "lib-decks": {
+      "label": "Decks",
+      "screen": "library",
+      "any": "#lib-tab-decks"
+    },
+    "lib-links": {
+      "label": "Links",
+      "screen": "library",
+      "any": "#lib-tab-shared"
+    },
+    "lib-import": {
+      "label": "Import file",
+      "screen": "library",
+      "any": "#btn-lib-import"
+    },
+    "deck-new": {
+      "label": "New deck",
+      "screen": "library",
+      "any": "#btn-deck-new"
+    },
+    "deck-import-txt": {
+      "label": "Import .txt",
+      "screen": "library",
+      "any": "#btn-deck-import-txt"
+    },
+    "deck-from-replay": {
+      "label": "From a replay",
+      "screen": "library",
+      "any": "#btn-deck-from-replay"
+    },
+    "tweaks-panel": {
+      "label": "Tweaks",
+      "screen": "tweaks",
+      "any": "#tweaks-panel"
+    },
+    "tweak-theme": {
+      "label": "Theme",
+      "screen": "tweaks",
+      "any": "#tweak-theme"
+    },
+    "tweak-accent": {
+      "label": "Accent",
+      "screen": "tweaks",
+      "any": "#tweak-accent-row"
+    },
+    "tweak-card-size": {
+      "label": "Card size",
+      "screen": "tweaks",
+      "any": "#tweak-card-size"
+    },
+    "tweak-card-display": {
+      "label": "Card display",
+      "screen": "tweaks",
+      "any": "#tweak-card-mode"
+    },
+    "tweak-forecast": {
+      "label": "Challenge forecast",
+      "screen": "tweaks",
+      "any": "#tweak-chal-forecast"
+    },
+    "tweak-palette": {
+      "label": "Player palette",
+      "screen": "tweaks",
+      "any": "#tweak-palette"
+    }
+  }
+}

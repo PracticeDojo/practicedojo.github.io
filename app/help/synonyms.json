@@ -1,0 +1,30 @@
+{
+  "$comment": "Player words -> Dojo words. The first word of each group is the Dojo's; a search record that contains it also matches the rest. Lowercase. Keep 'library' out: in the Dojo it means the Library drawer, not the deck. See docs/ARCH-help-and-tour.md §6.3.",
+  "groups": [
+    ["ink", "mana", "land", "lands", "resource"],
+    ["inkwell", "mana pool", "resources"],
+    ["challenge", "attack", "fight", "combat", "battle"],
+    ["exert", "tap", "turn sideways"],
+    ["ready", "untap"],
+    ["banish", "destroy", "kill", "dies", "die"],
+    ["discard", "graveyard", "trash", "bin", "yard"],
+    ["lore", "points", "score", "victory points", "life"],
+    ["quest", "score points", "gain lore"],
+    ["undo", "rewind", "take back", "go back", "oops", "revert"],
+    ["multiverse", "timeline", "timelines", "tree", "history", "what if"],
+    ["branch", "branches", "fork", "alternate line", "variation"],
+    ["node", "snapshot", "checkpoint", "save point"],
+    ["mulligan", "redraw", "opening hand", "starting hand", "keep"],
+    ["deck", "decklist", "list"],
+    ["theme", "dark mode", "night mode", "light mode", "colours", "colors"],
+    ["tweaks", "settings", "options", "preferences"],
+    ["share", "send", "link", "url"],
+    ["export", "download", "backup", "back up"],
+    ["import", "upload", "load", "open file"],
+    ["sign in", "log in", "login", "account", "sync"],
+    ["shortcut", "hotkey", "hotkeys", "keyboard", "key"],
+    ["drawer", "card menu", "actions"],
+    ["shift", "evolve"],
+    ["opponent", "enemy", "other player"]
+  ]
+}

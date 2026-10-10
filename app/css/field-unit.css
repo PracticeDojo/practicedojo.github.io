@@ -6770,3 +6770,19 @@ body.palette-competition .tree-node.tn-p2::before {
 .dlg-note-input::placeholder {
     color: var(--fu-glass-mute);
 }
+
+/* =====================================================================
+   Help & tours (Features 57–58, docs/ARCH-help-and-tour.md)
+   One slot per milestone, so PRs built in parallel append in different
+   places. Keep each milestone's rules inside its own slot.
+   ===================================================================== */
+
+/* ---- M1 · Manual viewer: drawer (desktop), sheet (phone), contents, article ---- */
+
+/* ---- M2 · Search: result rows, highlights, no-results ---- */
+
+/* ---- M4 · Spotlight: dimmer, ring, callout ---- */
+
+/* ---- M5 · Tours: callout steps, practice banner ---- */
+
+/* ---- M7 · Help in context: the ? links, the home tour strip ---- */

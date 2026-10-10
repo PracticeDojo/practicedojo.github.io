@@ -9,12 +9,12 @@ into the right milestone, or into *Parked* if it's outside the plan.
 
 **Working in parallel:** claim a milestone by putting your branch name after its heading before you start, so two agents don't take the same one. M0 goes first; after it, M1, M2, M3a–e and M4 can all run at once.
 
-*Last updated: 2026-10-10 · live: v3.9.1*
+*Last updated: 2026-10-10 · live: v3.9.1 · next up: M1, M2, M3a–e and M4 in parallel*
 
 | Milestone | Status |
 |---|---|
 | Review of the proposal | ✅ Done: all six as proposed (D1–D6) |
-| M0 · Contracts and scaffolding | ⬜ Not started |
+| M0 · Contracts and scaffolding | 🟡 Built on `claude/chore-help-scaffolding`, waiting to merge |
 | M1 · Manual viewer | ⬜ |
 | M2 · Search | ⬜ |
 | M3a–e · Content | ⬜ |
@@ -37,7 +37,10 @@ into the right milestone, or into *Parked* if it's outside the plan.
 - [x] Q6 No command palette for now
 - [x] Decisions copied into the ARCH decision log (§14). *D1–D6, 2026-10-10*
 
-## M0 · Contracts and scaffolding (§5, §7.1, §10)
+## M0 · Contracts and scaffolding (§5, §7.1, §10) — `claude/chore-help-scaffolding`
+
+*Built 2026-10-10 (ARCH §5.7); boxes get ticked when it reaches `main`. Verified: `node tools/help.mjs --check` passes; the validator caught every fault planted in a test article and a target; the board is pixel-identical at 1440 and 390 before and after the new ids.*
+
 - [ ] `app/help/` layout: `articles/<NN-section>/`, `tours/`, `img/`, `sections.json`
 - [ ] One stub article per id in §5.4 (front matter + `TODO` body)
 - [ ] `targets.json` with real selectors for every target the articles and tours need; ids added to controls that lack one (markup only)

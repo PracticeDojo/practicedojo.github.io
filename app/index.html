@@ -108,7 +108,7 @@
         <div class="topbar-left">
             <button id="mobile-menu-btn" class="icon-btn" onclick="App.toggleSidebar()" title="Menu"
                 aria-label="Open menu"><i class="fa-solid fa-bars"></i></button>
-            <button class="tb-home" onclick="App.confirmShowSetup()" title="Leave to the dojo (your match stays saved)"
+            <button class="tb-home" id="btn-home" onclick="App.confirmShowSetup()" title="Leave to the dojo (your match stays saved)"
                 aria-label="Leave to the dojo"><i class="fa-solid fa-chevron-left"></i><span
                     class="brand-mark"></span><span class="tb-home-label">Dojo</span></button>
             <div class="divider-v tb-home-rule"></div>
@@ -121,7 +121,7 @@
                 <button class="icon-btn ghost" id="btn-session-save" onclick="App.saveSessionNow()"
                     title="Save to this device" aria-label="Save session"><i
                         class="fa-solid fa-floppy-disk"></i></button>
-                <button class="icon-btn ghost session-copy" onclick="App.saveSessionAsCopy()" title="Save as copy"
+                <button class="icon-btn ghost session-copy" id="btn-session-copy" onclick="App.saveSessionAsCopy()" title="Save as copy"
                     aria-label="Save session as a copy"><i class="fa-regular fa-copy"></i></button>
                 <button class="icon-btn ghost" id="btn-session-share" onclick="App.shareCurrentSession()"
                     title="Share a link to this session" aria-label="Share session"><i
@@ -229,12 +229,12 @@
                         <span class="hint">Nothing to paste? Try an example:</span>
                         <button class="btn btn-ghost" id="btn-example-deck" onclick="App.intakeExample('deck')"><i
                                 class="fa-solid fa-layer-group"></i> A decklist</button>
-                        <button class="btn btn-ghost" onclick="App.intakeExample('log')"><i
+                        <button class="btn btn-ghost" id="btn-example-log" onclick="App.intakeExample('log')"><i
                                 class="fa-solid fa-film"></i> A Duels.ink log</button>
                         <input type="file" id="intake-file" class="hidden"
                             accept=".json,.gz,.txt,.md,.log,.replay,application/json,application/gzip,text/plain"
                             onchange="App.onIntakeFile(event)">
-                        <button class="btn" onclick="document.getElementById('intake-file').click()"><i
+                        <button class="btn" id="btn-intake-file" onclick="document.getElementById('intake-file').click()"><i
                                 class="fa-solid fa-file-arrow-up"></i> Choose a file</button>
                     </div>
                 </div>
@@ -257,7 +257,7 @@
                 </section>
                 <section class="home-box" aria-labelledby="home-recent-title">
                     <h3 id="home-recent-title">Pick up again
-                        <button class="link-btn" onclick="App.openLibrary('sessions')">All sessions</button>
+                        <button class="link-btn" id="btn-all-sessions" onclick="App.openLibrary('sessions')">All sessions</button>
                     </h3>
                     <div id="home-recent"></div>
                 </section>
@@ -290,7 +290,7 @@
             <div class="lib-toolbar is-end">
                 <input type="file" id="setup-import-file" class="hidden"
                     accept=".json,.gz,application/json,application/gzip" onchange="App.importTimelines(event)">
-                <button class="btn btn-ghost" onclick="document.getElementById('setup-import-file').click()">
+                <button class="btn btn-ghost" id="btn-lib-import" onclick="document.getElementById('setup-import-file').click()">
                     <i class="fa-solid fa-file-import"></i> Import file
                 </button>
             </div>
@@ -299,17 +299,17 @@
 
         <section class="lib-panel" id="lib-panel-decks" role="tabpanel" aria-labelledby="lib-tab-decks" hidden>
             <div class="lib-toolbar">
-                <button class="btn btn-ghost" onclick="App.openDeckEditor(null)">
+                <button class="btn btn-ghost" id="btn-deck-new" onclick="App.openDeckEditor(null)">
                     <i class="fa-solid fa-plus"></i> New deck
                 </button>
                 <input type="file" id="deck-import-txt" class="hidden" accept=".txt,text/plain"
                     onchange="App.importDeckTxt(event)">
-                <button class="btn btn-ghost" onclick="document.getElementById('deck-import-txt').click()">
+                <button class="btn btn-ghost" id="btn-deck-import-txt" onclick="document.getElementById('deck-import-txt').click()">
                     <i class="fa-solid fa-file-lines"></i> Import .txt
                 </button>
                 <input type="file" id="deck-import-replay" class="hidden" accept=".json,.replay,.gz"
                     onchange="App.importDeckFromReplay(event)">
-                <button class="btn btn-ghost" onclick="document.getElementById('deck-import-replay').click()"
+                <button class="btn btn-ghost" id="btn-deck-from-replay" onclick="document.getElementById('deck-import-replay').click()"
                     title="Use your exact decklist from a Duels.ink replay file">
                     <i class="fa-solid fa-film"></i> From a replay
                 </button>
@@ -344,7 +344,7 @@
     <!-- Mulligan Modal (Feature 54: mulligan mode) -->
     <div id="mulligan-modal" role="dialog" aria-modal="true" aria-labelledby="mulligan-title"
         class="modal-backdrop mull-modal fixed inset-0 flex items-center justify-center hidden" style="z-index:90">
-        <div class="mull-dlg">
+        <div class="mull-dlg" id="mulligan-dialog">
             <div class="mull-head">
                 <div class="mull-head-main">
                     <div class="mull-lbl" id="mulligan-context">Opening hand</div>
@@ -399,7 +399,7 @@
             </div>
             <div class="mull-foot">
                 <div class="mull-lbl mull-hint mull-long" id="mulligan-hint"></div>
-                <button class="btn btn-ghost mull-craft" onclick="App.openCraftHand()"
+                <button class="btn btn-ghost mull-craft" id="mulligan-craft" onclick="App.openCraftHand()"
                     title="Pick your seven from the whole deck instead"><i class="fa-solid fa-wand-magic-sparkles"></i>
                     <span class="mull-long">Craft hand</span><span class="mull-short">Craft</span></button>
                 <button class="btn btn-primary" id="mulligan-confirm" onclick="App.confirmMulligan()">Keep hand</button>
@@ -550,11 +550,11 @@
             <div class="flex items-center gap-2">
                 <input type="file" id="import-file" class="hidden"
                     accept=".json,.gz,application/json,application/gzip" onchange="App.importTimelines(event)">
-                <button class="tree-tool" onclick="document.getElementById('import-file').click()"
+                <button class="tree-tool" id="tree-import" onclick="document.getElementById('import-file').click()"
                     title="Import a session file"><i class="fa-solid fa-file-import"></i><span>Import</span></button>
-                <button class="tree-tool" onclick="App.exportTimelines()" title="Export this session as a file"><i
+                <button class="tree-tool" id="tree-export" onclick="App.exportTimelines()" title="Export this session as a file"><i
                         class="fa-solid fa-file-export"></i><span>Export</span></button>
-                <button class="tree-tool" onclick="App.openImportLogModal()"
+                <button class="tree-tool" id="tree-log" onclick="App.openImportLogModal()"
                     title="Import a Duels.ink log or replay"><i class="fa-solid fa-file-lines"></i><span>Log</span></button>
                 <div class="divider-v tree-head-rule"></div>
                 <button class="tree-tool" id="tree-view-toggle" onclick="App.toggleTreeView()" aria-pressed="false"
@@ -562,9 +562,9 @@
                 <button onclick="App.toggleTreePanelSide()" class="close tree-dock-toggle" id="tree-dock-toggle"
                     title="Move the panel to the left" aria-label="Move the panel to the left"><i
                         class="fa-solid fa-table-columns"></i></button>
-                <button onclick="App.resetTreeZoom()" class="close tree-zoom-reset" title="Reset Zoom" aria-label="Reset zoom"><i
+                <button onclick="App.resetTreeZoom()" class="close tree-zoom-reset" id="tree-zoom-reset" title="Reset Zoom" aria-label="Reset zoom"><i
                         class="fa-solid fa-compress"></i></button>
-                <button onclick="App.closeTreeModal()" class="close" aria-label="Close multiverse view"><i
+                <button onclick="App.closeTreeModal()" class="close" id="tree-close" aria-label="Close multiverse view"><i
                         class="fa-solid fa-times"></i></button>
             </div>
         </div>
@@ -637,12 +637,12 @@
     <div id="app" class="app hidden">
 
         <!-- SIDEBAR -->
-        <aside class="sidebar">
+        <aside class="sidebar" id="sidebar">
             <div class="sidebar-section">
                 <div class="section-head">
                     <h3>Players</h3><span class="hint" id="app-version-sidebar"></span>
                 </div>
-                <div class="player-rows">
+                <div class="player-rows" id="player-rows">
                     <div class="player-row is-p1 is-active" id="p0-badge">
                         <span class="deck-icon is-p1"></span>
                         <span class="player-name">Player 1 (You)</span>
@@ -673,7 +673,7 @@
                         save the turn you're in (T).</div>
                     <div class="mmv-cap" id="mmv-cap"></div>
                 </div>
-                <div class="mmv-ctl" role="group" aria-label="Step through the multiverse">
+                <div class="mmv-ctl" id="mmv-ctl" role="group" aria-label="Step through the multiverse">
                     <button class="icon-btn" data-mmv="forkBack" onclick="App.mmvStep('forkBack')"
                         title="Back to the last branch point, or the start (Home)"
                         aria-label="Back to the last branch point or the start"><i
@@ -695,7 +695,7 @@
             </section>
 
             <!-- Hover details: the card on a glass inset -->
-            <div class="hover-module">
+            <div class="hover-module" id="card-preview">
                 <!-- Card Preview Panel -->
                 <div class="preview-pane">
                     <span id="sidebar-preview-placeholder" class="preview-placeholder">Hover a card for details</span>
@@ -722,7 +722,7 @@
             <div class="log-pane" id="game-log"><!-- Log entries injected here --></div>
 
             <div class="sidebar-foot">
-                <div class="toggle-row">
+                <div class="toggle-row" id="auto-save-row">
                     <span class="toggle-label"
                         title="Automatically save the game state to the Multiverse Tree before ending each turn">Auto-save
                         every turn</span>
@@ -733,7 +733,7 @@
                     </label>
                 </div>
                 <div class="action-row tri">
-                    <button class="btn" onclick="App.questWithAll()" title="Quest with all available characters">
+                    <button class="btn" id="btn-quest-all" onclick="App.questWithAll()" title="Quest with all available characters">
                         <i class="fa-solid fa-diamond" style="color:var(--lvi)"></i> Quest <span class="mono dim"
                             id="quest-count">0</span>
                     </button>
@@ -743,7 +743,7 @@
                         aria-label="Multiverse"><i class="fa-solid fa-code-branch"></i></button>
                     <button class="icon-btn" onclick="App.undo()" title="Undo last action"><i
                             class="fa-solid fa-rotate-left"></i></button>
-                    <button class="btn btn-p1 btn-block" onclick="App.endTurn()">End turn &rarr;</button>
+                    <button class="btn btn-p1 btn-block" id="btn-end-turn" onclick="App.endTurn()">End turn &rarr;</button>
                 </div>
             </div>
 
@@ -758,7 +758,7 @@
             <!-- TOP (opponent) half -->
             <div class="board-half top is-p2" id="top-board">
                 <div class="board-bg-letter" id="top-player-bg-text">P2</div>
-                <div class="lore-badge is-p2">
+                <div class="lore-badge is-p2" id="top-lore-badge">
                     <div class="lore-row">
                         <button class="minus" onclick="App.changeLore(App.state.inactivePlayer, -1)"
                             title="Decrease Lore">&minus;</button>
@@ -771,7 +771,7 @@
 
                 <!-- hand row -->
                 <div class="hand-wrap">
-                    <button class="peek-toggle" onmousedown="App.setHandReveal(true)"
+                    <button class="peek-toggle" id="top-peek" onmousedown="App.setHandReveal(true)"
                         onmouseup="App.setHandReveal(false)" onmouseleave="App.setHandReveal(false)"
                         ontouchstart="App.togglePeek(event)" title="Tap (or hold on desktop) to peek opponent hand">
                         <i id="reveal-icon" class="fa-solid fa-eye"></i> <span id="reveal-text">Hold to Reveal
@@ -786,7 +786,7 @@
                 <!-- pile row (ink + discard + deck) -->
                 <div class="pile-row">
                     <!-- Phones: lore lives in the bar (the floating badge is hidden there). -->
-                    <div class="lore-chip">
+                    <div id="top-lore-bar" class="lore-chip">
                         <span class="lore-chip-label">Lore</span>
                         <span class="lore-chip-value" id="top-lore-chip">0</span>
                         <div class="lore-chip-btns">
@@ -796,7 +796,7 @@
                                 title="Increase Lore">+</button>
                         </div>
                     </div>
-                    <div class="ink-cluster is-counter drop-zone" ondragover="App.allowDrop(event)"
+                    <div id="top-ink-bar" class="ink-cluster is-counter drop-zone" ondragover="App.allowDrop(event)"
                         ondragenter="App.dragEnter(event)" ondragleave="App.dragLeave(event)"
                         ondrop="App.drop(event, 'inkwell', 'top')" role="button" tabindex="0" aria-haspopup="dialog"
                         title="Inkwell — click to manage, drop a card to ink it"
@@ -818,7 +818,7 @@
                                 onclick="event.stopPropagation(); App.inspectDiscard(App.state.inactivePlayer)"><i
                                     class="fa-solid fa-magnifying-glass"></i></button>
                         </div>
-                        <div class="pile deck drop-zone" draggable="true"
+                        <div class="pile deck drop-zone" id="top-deck" draggable="true"
                             onclick="App.drawCard(App.state.inactivePlayer)"
                             ondragstart="App.dragStartTopCard(event, 'top')" ondragover="App.allowDrop(event)"
                             ondragenter="App.dragEnter(event)" ondragleave="App.dragLeave(event)"
@@ -858,14 +858,14 @@
             <div class="board-half bottom is-p1" id="bottom-board">
                 <div class="board-bg-letter" id="bottom-player-bg-text">P1</div>
 
-                <div class="notes-panel">
+                <div class="notes-panel" id="turn-notes">
                     <div class="notes-head"><i class="fa-solid fa-book-open"></i><span>Turn <span
                                 id="turn-comment-header-num">1</span> notes</span></div>
                     <textarea id="active-turn-comment" placeholder="Add notes for this turn… (saves on blur)"
                         onblur="App.updateTurnComment(App.state.turn, App.state.activePlayer, this.value)"></textarea>
                 </div>
 
-                <div class="lore-badge is-p1">
+                <div class="lore-badge is-p1" id="bottom-lore-badge">
                     <div class="lore-row">
                         <button class="minus" onclick="App.changeLore(App.state.activePlayer, -1)"
                             title="Decrease Lore">&minus;</button>
@@ -886,7 +886,7 @@
                 <!-- pile row -->
                 <div class="pile-row">
                     <!-- Phones: lore lives in the bar (the floating badge is hidden there). -->
-                    <div class="lore-chip">
+                    <div id="bottom-lore-bar" class="lore-chip">
                         <span class="lore-chip-label">Lore</span>
                         <span class="lore-chip-value" id="bottom-lore-chip">0</span>
                         <div class="lore-chip-btns">
@@ -896,7 +896,7 @@
                                 title="Increase Lore">+</button>
                         </div>
                     </div>
-                    <div class="ink-cluster is-counter drop-zone" ondragover="App.allowDrop(event)"
+                    <div id="bottom-ink-bar" class="ink-cluster is-counter drop-zone" ondragover="App.allowDrop(event)"
                         ondragenter="App.dragEnter(event)" ondragleave="App.dragLeave(event)"
                         ondrop="App.drop(event, 'inkwell', 'bottom')" role="button" tabindex="0" aria-haspopup="dialog"
                         title="Inkwell — click to manage, drop a card to ink it"
@@ -919,7 +919,7 @@
                                 onclick="event.stopPropagation(); App.inspectDiscard(App.state.activePlayer)"><i
                                     class="fa-solid fa-magnifying-glass"></i></button>
                         </div>
-                        <div class="pile deck drop-zone" draggable="true" onclick="App.drawCard(App.state.activePlayer)"
+                        <div class="pile deck drop-zone" id="bottom-deck" draggable="true" onclick="App.drawCard(App.state.activePlayer)"
                             ondragstart="App.dragStartTopCard(event, 'bottom')" ondragover="App.allowDrop(event)"
                             ondragenter="App.dragEnter(event)" ondragleave="App.dragLeave(event)"
                             ondrop="App.drop(event, 'deck', 'bottom')"
@@ -949,13 +949,13 @@
                     <!-- Mobile-only quick actions: the two most-used current-player actions
                      (Quest with all, End turn), in the hand tray. Hidden on desktop. -->
                     <div class="mobile-quick-actions" id="mobile-quick-actions">
-                        <button class="btn mqa-btn mqa-quest" onclick="App.questWithAll()"
+                        <button class="btn mqa-btn mqa-quest" id="btn-quest-all-mobile" onclick="App.questWithAll()"
                             title="Quest with all available characters">
                             <i class="fa-solid fa-diamond" style="color:var(--lvi)"></i>
                             <span class="mqa-label">Quest</span>
                             <span class="mqa-count" id="quest-count-mobile">0</span>
                         </button>
-                        <button class="btn btn-p1 mqa-btn mqa-end" onclick="App.endTurn()" title="End turn">
+                        <button class="btn btn-p1 mqa-btn mqa-end" id="btn-end-turn-mobile" onclick="App.endTurn()" title="End turn">
                             <span class="mqa-label">End turn</span>
                             <i class="fa-solid fa-arrow-right"></i>
                         </button>

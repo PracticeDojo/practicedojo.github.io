@@ -1,0 +1,2203 @@
+{
+ "format": "practice-dojo-manual",
+ "version": 1,
+ "sections": [
+  {
+   "id": "start",
+   "title": "Getting started",
+   "articles": [
+    "what-is-the-dojo",
+    "first-match",
+    "screen-at-a-glance",
+    "you-play-both-sides",
+    "tours"
+   ]
+  },
+  {
+   "id": "turn",
+   "title": "Playing a turn",
+   "articles": [
+    "mulligan",
+    "craft-hand",
+    "draw",
+    "ink-a-card",
+    "inkwell",
+    "play-a-card",
+    "card-actions",
+    "quest",
+    "challenge",
+    "locations-and-stacks",
+    "move-cards",
+    "end-turn",
+    "undo",
+    "turn-notes",
+    "winning"
+   ]
+  },
+  {
+   "id": "cards",
+   "title": "Cards and decks",
+   "articles": [
+    "card-preview",
+    "inspect-deck",
+    "inspect-discard",
+    "swap-cards",
+    "unknown-cards",
+    "draw-odds",
+    "decks",
+    "default-decks"
+   ]
+  },
+  {
+   "id": "multiverse",
+   "title": "The Multiverse",
+   "articles": [
+    "multiverse",
+    "auto-save",
+    "save-unfinished-turn",
+    "nodes",
+    "multiverse-panel",
+    "branches",
+    "left-here",
+    "multiverse-views",
+    "multiverse-navigate",
+    "mini-multiverse"
+   ]
+  },
+  {
+   "id": "import",
+   "title": "Importing games",
+   "articles": [
+    "import-overview",
+    "import-log",
+    "import-replay",
+    "hidden-information"
+   ]
+  },
+  {
+   "id": "library",
+   "title": "Sessions, library and sharing",
+   "articles": [
+    "sessions",
+    "save-and-rename",
+    "library",
+    "files",
+    "share-links",
+    "open-a-shared-link"
+   ]
+  },
+  {
+   "id": "account",
+   "title": "Your account (optional)",
+   "articles": [
+    "account",
+    "sign-in",
+    "account-sync"
+   ]
+  },
+  {
+   "id": "settings",
+   "title": "Settings",
+   "articles": [
+    "tweaks",
+    "theme",
+    "card-display",
+    "palette",
+    "forecast"
+   ]
+  },
+  {
+   "id": "faq",
+   "title": "Help and fixes",
+   "articles": [
+    "offline",
+    "storage",
+    "hotkeys-not-working",
+    "share-limits",
+    "browsers"
+   ]
+  },
+  {
+   "id": "reference",
+   "title": "Reference",
+   "articles": [
+    "keyboard-shortcuts",
+    "gestures",
+    "glossary"
+   ]
+  }
+ ],
+ "articles": [
+  {
+   "id": "what-is-the-dojo",
+   "section": "start",
+   "title": "What the Dojo is",
+   "summary": "A Lorcana sandbox: play both sides, rewind any turn and try another line, or study a Duels.ink game.",
+   "devices": [
+    "desktop",
+    "phone"
+   ],
+   "aliases": [],
+   "targets": [],
+   "related": [
+    "first-match",
+    "multiverse",
+    "import-overview"
+   ],
+   "verified": "none",
+   "todo": true,
+   "headings": [],
+   "body": "TODO: write this article (M3a). The summary above is its scope. How to write it: docs/ARCH-help-and-tour.md §5.\n"
+  },
+  {
+   "id": "first-match",
+   "section": "start",
+   "title": "Start your first match",
+   "summary": "Seat two decks (or paste a list), press Start match, and settle your opening hand.",
+   "devices": [
+    "desktop",
+    "phone"
+   ],
+   "aliases": [],
+   "targets": [
+    "intake",
+    "seats",
+    "deck-chips",
+    "start-match"
+   ],
+   "related": [
+    "mulligan",
+    "decks",
+    "screen-at-a-glance"
+   ],
+   "verified": "none",
+   "todo": true,
+   "headings": [],
+   "body": "TODO: write this article (M3a). The summary above is its scope. How to write it: docs/ARCH-help-and-tour.md §5.\n"
+  },
+  {
+   "id": "screen-at-a-glance",
+   "section": "start",
+   "title": "The screen at a glance",
+   "summary": "Where everything is on the board: the top bar, both halves, your hand, ink, lore, deck, discard and the side panels.",
+   "devices": [
+    "desktop",
+    "phone"
+   ],
+   "aliases": [],
+   "targets": [
+    "topbar",
+    "board",
+    "hand",
+    "ink-bar",
+    "lore",
+    "deck",
+    "discard",
+    "sidebar",
+    "draw-odds",
+    "more-menu"
+   ],
+   "related": [
+    "you-play-both-sides",
+    "keyboard-shortcuts",
+    "gestures"
+   ],
+   "verified": "none",
+   "todo": true,
+   "headings": [],
+   "body": "TODO: write this article (M3a). The summary above is its scope. How to write it: docs/ARCH-help-and-tour.md §5.\n"
+  },
+  {
+   "id": "you-play-both-sides",
+   "section": "start",
+   "title": "You play both sides",
+   "summary": "The Dojo has no opponent AI: you take both turns, and the board shows whose turn it is.",
+   "devices": [
+    "desktop",
+    "phone"
+   ],
+   "aliases": [],
+   "targets": [
+    "turn",
+    "opponent-board",
+    "your-board"
+   ],
+   "related": [
+    "end-turn",
+    "what-is-the-dojo"
+   ],
+   "verified": "none",
+   "todo": true,
+   "headings": [],
+   "body": "TODO: write this article (M3a). The summary above is its scope. How to write it: docs/ARCH-help-and-tour.md §5.\n"
+  },
+  {
+   "id": "tours",
+   "section": "start",
+   "title": "Guided tours",
+   "summary": "Short tours that point at the real controls on a practice board. Nothing you do in a tour is saved.",
+   "devices": [
+    "desktop",
+    "phone"
+   ],
+   "aliases": [],
+   "targets": [],
+   "related": [
+    "first-match",
+    "multiverse",
+    "import-overview"
+   ],
+   "verified": "none",
+   "todo": true,
+   "headings": [],
+   "body": "TODO: write this article (M3a). The summary above is its scope. How to write it: docs/ARCH-help-and-tour.md §5.\n"
+  },
+  {
+   "id": "mulligan",
+   "section": "turn",
+   "title": "Mulligan and your opening hand",
+   "summary": "Each player's first turn opens on their mulligan: keep the seven, or mark cards to send to the bottom and draw again.",
+   "devices": [
+    "desktop",
+    "phone"
+   ],
+   "aliases": [],
+   "targets": [
+    "mulligan-dialog",
+    "mulligan-hand",
+    "mulligan-readout",
+    "mulligan-odds",
+    "mulligan-confirm"
+   ],
+   "related": [
+    "craft-hand",
+    "draw-odds",
+    "draw"
+   ],
+   "verified": "none",
+   "todo": true,
+   "headings": [],
+   "body": "TODO: write this article (M3a). The summary above is its scope. How to write it: docs/ARCH-help-and-tour.md §5.\n"
+  },
+  {
+   "id": "craft-hand",
+   "section": "turn",
+   "title": "Craft a starting hand",
+   "summary": "Pick your seven from the whole deck instead of drawing them, to practise a specific opener.",
+   "devices": [
+    "desktop",
+    "phone"
+   ],
+   "aliases": [],
+   "targets": [
+    "craft-hand"
+   ],
+   "related": [
+    "mulligan"
+   ],
+   "verified": "none",
+   "todo": true,
+   "headings": [],
+   "body": "TODO: write this article (M3a). The summary above is its scope. How to write it: docs/ARCH-help-and-tour.md §5.\n"
+  },
+  {
+   "id": "draw",
+   "section": "turn",
+   "title": "Drawing cards",
+   "summary": "You draw at the start of your turn automatically; draw more from the deck any time.",
+   "devices": [
+    "desktop",
+    "phone"
+   ],
+   "aliases": [],
+   "targets": [
+    "deck"
+   ],
+   "related": [
+    "inspect-deck",
+    "draw-odds"
+   ],
+   "verified": "none",
+   "todo": true,
+   "headings": [],
+   "body": "TODO: write this article (M3a). The summary above is its scope. How to write it: docs/ARCH-help-and-tour.md §5.\n"
+  },
+  {
+   "id": "ink-a-card",
+   "section": "turn",
+   "title": "Ink a card",
+   "summary": "Put a card from your hand into your inkwell, face down, to pay for cards later.",
+   "devices": [
+    "desktop",
+    "phone"
+   ],
+   "aliases": [],
+   "targets": [
+    "hand",
+    "ink-bar"
+   ],
+   "related": [
+    "inkwell",
+    "play-a-card",
+    "end-turn"
+   ],
+   "verified": "none",
+   "todo": true,
+   "headings": [],
+   "body": "TODO: write this article (M3a). The summary above is its scope. How to write it: docs/ARCH-help-and-tour.md §5.\n"
+  },
+  {
+   "id": "inkwell",
+   "section": "turn",
+   "title": "Your inkwell: ready, spend, ready all",
+   "summary": "Read your ready ink, spend or ready it by hand, and act on a single ink card.",
+   "devices": [
+    "desktop",
+    "phone"
+   ],
+   "aliases": [],
+   "targets": [
+    "ink-bar",
+    "inkwell-cards",
+    "ink-panel"
+   ],
+   "related": [
+    "ink-a-card",
+    "play-a-card"
+   ],
+   "verified": "none",
+   "todo": true,
+   "headings": [],
+   "body": "TODO: write this article (M3a). The summary above is its scope. How to write it: docs/ARCH-help-and-tour.md §5.\n"
+  },
+  {
+   "id": "play-a-card",
+   "section": "turn",
+   "title": "Play a card",
+   "summary": "Move a card from your hand onto the field; the Dojo spends the ink for you.",
+   "devices": [
+    "desktop",
+    "phone"
+   ],
+   "aliases": [],
+   "targets": [
+    "hand",
+    "field",
+    "card-drawer"
+   ],
+   "related": [
+    "ink-a-card",
+    "locations-and-stacks",
+    "card-actions"
+   ],
+   "verified": "none",
+   "todo": true,
+   "headings": [],
+   "body": "TODO: write this article (M3a). The summary above is its scope. How to write it: docs/ARCH-help-and-tour.md §5.\n"
+  },
+  {
+   "id": "card-actions",
+   "section": "turn",
+   "title": "Act on a card in play (exert, ready, damage, banish)",
+   "summary": "Exert and ready, add or remove damage, banish, and the hover hotkeys for each.",
+   "devices": [
+    "desktop",
+    "phone"
+   ],
+   "aliases": [],
+   "targets": [
+    "field",
+    "card-drawer"
+   ],
+   "related": [
+    "challenge",
+    "quest",
+    "move-cards",
+    "keyboard-shortcuts"
+   ],
+   "verified": "none",
+   "todo": true,
+   "headings": [],
+   "body": "TODO: write this article (M3a). The summary above is its scope. How to write it: docs/ARCH-help-and-tour.md §5.\n"
+  },
+  {
+   "id": "quest",
+   "section": "turn",
+   "title": "Quest and lore",
+   "summary": "Quest with one character or all of them, and change lore by hand.",
+   "devices": [
+    "desktop",
+    "phone"
+   ],
+   "aliases": [],
+   "targets": [
+    "quest-all",
+    "lore"
+   ],
+   "related": [
+    "winning",
+    "card-actions"
+   ],
+   "verified": "none",
+   "todo": true,
+   "headings": [],
+   "body": "TODO: write this article (M3a). The summary above is its scope. How to write it: docs/ARCH-help-and-tour.md §5.\n"
+  },
+  {
+   "id": "challenge",
+   "section": "turn",
+   "title": "Challenge",
+   "summary": "Challenge an opposing card by dragging or tapping, with a forecast of what happens before you commit.",
+   "devices": [
+    "desktop",
+    "phone"
+   ],
+   "aliases": [],
+   "targets": [
+    "challenge-mode",
+    "challenge-banner",
+    "field",
+    "opponent-field"
+   ],
+   "related": [
+    "forecast",
+    "card-actions"
+   ],
+   "verified": "none",
+   "todo": true,
+   "headings": [],
+   "body": "TODO: write this article (M3a). The summary above is its scope. How to write it: docs/ARCH-help-and-tour.md §5.\n"
+  },
+  {
+   "id": "locations-and-stacks",
+   "section": "turn",
+   "title": "Locations, shift and cards under",
+   "summary": "Move characters to a location, shift onto a character, put cards under, and separate a stack.",
+   "devices": [
+    "desktop",
+    "phone"
+   ],
+   "aliases": [],
+   "targets": [
+    "field"
+   ],
+   "related": [
+    "play-a-card",
+    "card-actions"
+   ],
+   "verified": "none",
+   "todo": true,
+   "headings": [],
+   "body": "TODO: write this article (M3a). The summary above is its scope. How to write it: docs/ARCH-help-and-tour.md §5.\n"
+  },
+  {
+   "id": "move-cards",
+   "section": "turn",
+   "title": "Move cards: to hand, deck top or bottom, discard",
+   "summary": "Send any card back to the hand, the top or bottom of the deck, or the discard.",
+   "devices": [
+    "desktop",
+    "phone"
+   ],
+   "aliases": [],
+   "targets": [
+    "field",
+    "hand",
+    "card-drawer"
+   ],
+   "related": [
+    "card-actions",
+    "inspect-deck",
+    "inspect-discard"
+   ],
+   "verified": "none",
+   "todo": true,
+   "headings": [],
+   "body": "TODO: write this article (M3a). The summary above is its scope. How to write it: docs/ARCH-help-and-tour.md §5.\n"
+  },
+  {
+   "id": "end-turn",
+   "section": "turn",
+   "title": "End your turn",
+   "summary": "End the turn: the other player readies, draws, and the turn is saved to the Multiverse if auto-save is on.",
+   "devices": [
+    "desktop",
+    "phone"
+   ],
+   "aliases": [],
+   "targets": [
+    "end-turn",
+    "auto-save"
+   ],
+   "related": [
+    "auto-save",
+    "you-play-both-sides",
+    "undo"
+   ],
+   "verified": "none",
+   "todo": true,
+   "headings": [],
+   "body": "TODO: write this article (M3a). The summary above is its scope. How to write it: docs/ARCH-help-and-tour.md §5.\n"
+  },
+  {
+   "id": "undo",
+   "section": "turn",
+   "title": "Undo",
+   "summary": "Take back the last action, as many steps as you like.",
+   "devices": [
+    "desktop",
+    "phone"
+   ],
+   "aliases": [],
+   "targets": [
+    "undo"
+   ],
+   "related": [
+    "branches",
+    "end-turn"
+   ],
+   "verified": "none",
+   "todo": true,
+   "headings": [],
+   "body": "TODO: write this article (M3a). The summary above is its scope. How to write it: docs/ARCH-help-and-tour.md §5.\n"
+  },
+  {
+   "id": "turn-notes",
+   "section": "turn",
+   "title": "Turn notes",
+   "summary": "Write a note for the turn you're in; it travels with the turn into the Multiverse.",
+   "devices": [
+    "desktop",
+    "phone"
+   ],
+   "aliases": [],
+   "targets": [
+    "turn-notes"
+   ],
+   "related": [
+    "nodes",
+    "multiverse-panel"
+   ],
+   "verified": "none",
+   "todo": true,
+   "headings": [],
+   "body": "TODO: write this article (M3a). The summary above is its scope. How to write it: docs/ARCH-help-and-tour.md §5.\n"
+  },
+  {
+   "id": "winning",
+   "section": "turn",
+   "title": "Winning a game (20 lore)",
+   "summary": "At 20 lore the branch is won: the Dojo says so and offers the Multiverse to try other lines.",
+   "devices": [
+    "desktop",
+    "phone"
+   ],
+   "aliases": [],
+   "targets": [
+    "lore"
+   ],
+   "related": [
+    "quest",
+    "multiverse"
+   ],
+   "verified": "none",
+   "todo": true,
+   "headings": [],
+   "body": "TODO: write this article (M3a). The summary above is its scope. How to write it: docs/ARCH-help-and-tour.md §5.\n"
+  },
+  {
+   "id": "card-preview",
+   "section": "cards",
+   "title": "Read a card: preview and text mode",
+   "summary": "See a card big with its full text: the preview on desktop, the card drawer on a phone, and text mode for every card.",
+   "devices": [
+    "desktop",
+    "phone"
+   ],
+   "aliases": [],
+   "targets": [
+    "card-preview",
+    "card-drawer"
+   ],
+   "related": [
+    "card-display",
+    "offline"
+   ],
+   "verified": "none",
+   "todo": true,
+   "headings": [],
+   "body": "TODO: write this article (M3b). The summary above is its scope. How to write it: docs/ARCH-help-and-tour.md §5.\n"
+  },
+  {
+   "id": "inspect-deck",
+   "section": "cards",
+   "title": "Look through your deck and reorder it",
+   "summary": "Open your deck, drag cards into a custom order, shuffle, and save the order.",
+   "devices": [
+    "desktop",
+    "phone"
+   ],
+   "aliases": [],
+   "targets": [
+    "deck"
+   ],
+   "related": [
+    "swap-cards",
+    "draw",
+    "draw-odds"
+   ],
+   "verified": "none",
+   "todo": true,
+   "headings": [],
+   "body": "TODO: write this article (M3b). The summary above is its scope. How to write it: docs/ARCH-help-and-tour.md §5.\n"
+  },
+  {
+   "id": "inspect-discard",
+   "section": "cards",
+   "title": "Your discard pile",
+   "summary": "Read the discard on the board, open it in full, and bring cards back.",
+   "devices": [
+    "desktop",
+    "phone"
+   ],
+   "aliases": [],
+   "targets": [
+    "discard"
+   ],
+   "related": [
+    "move-cards"
+   ],
+   "verified": "none",
+   "todo": true,
+   "headings": [],
+   "body": "TODO: write this article (M3b). The summary above is its scope. How to write it: docs/ARCH-help-and-tour.md §5.\n"
+  },
+  {
+   "id": "swap-cards",
+   "section": "cards",
+   "title": "Swap a card in your hand or deck",
+   "summary": "Replace one card, or every copy of it, with any card of your deck's inks to test a different list.",
+   "devices": [
+    "desktop",
+    "phone"
+   ],
+   "aliases": [],
+   "targets": [
+    "hand",
+    "deck"
+   ],
+   "related": [
+    "inspect-deck",
+    "unknown-cards"
+   ],
+   "verified": "none",
+   "todo": true,
+   "headings": [],
+   "body": "TODO: write this article (M3b). The summary above is its scope. How to write it: docs/ARCH-help-and-tour.md §5.\n"
+  },
+  {
+   "id": "unknown-cards",
+   "section": "cards",
+   "title": "Unknown cards and filling them in",
+   "summary": "Imports leave cards they couldn't see as unknown; swap them one by one or fill them all from a decklist.",
+   "devices": [
+    "desktop",
+    "phone"
+   ],
+   "aliases": [],
+   "targets": [
+    "deck"
+   ],
+   "related": [
+    "hidden-information",
+    "swap-cards"
+   ],
+   "verified": "none",
+   "todo": true,
+   "headings": [],
+   "body": "TODO: write this article (M3b). The summary above is its scope. How to write it: docs/ARCH-help-and-tour.md §5.\n"
+  },
+  {
+   "id": "draw-odds",
+   "section": "cards",
+   "title": "Draw odds",
+   "summary": "The chance to draw each card in your next draws, updated as the game changes.",
+   "devices": [
+    "desktop"
+   ],
+   "aliases": [],
+   "targets": [
+    "draw-odds"
+   ],
+   "related": [
+    "mulligan",
+    "inspect-deck"
+   ],
+   "verified": "none",
+   "todo": true,
+   "headings": [],
+   "body": "TODO: write this article (M3b). The summary above is its scope. How to write it: docs/ARCH-help-and-tour.md §5.\n"
+  },
+  {
+   "id": "decks",
+   "section": "cards",
+   "title": "Your decks: new, import, edit",
+   "summary": "Paste or import a decklist, save it to My decks, edit it, and seat it for a match.",
+   "devices": [
+    "desktop",
+    "phone"
+   ],
+   "aliases": [],
+   "targets": [
+    "intake",
+    "library-button",
+    "deck-new",
+    "deck-import-txt",
+    "deck-from-replay"
+   ],
+   "related": [
+    "default-decks",
+    "library",
+    "first-match"
+   ],
+   "verified": "none",
+   "todo": true,
+   "headings": [],
+   "body": "TODO: write this article (M3b). The summary above is its scope. How to write it: docs/ARCH-help-and-tour.md §5.\n"
+  },
+  {
+   "id": "default-decks",
+   "section": "cards",
+   "title": "Built-in decks and demos",
+   "summary": "Ready-made decks for each set and example sessions to explore, all without signing in.",
+   "devices": [
+    "desktop",
+    "phone"
+   ],
+   "aliases": [],
+   "targets": [
+    "deck-chips",
+    "recent"
+   ],
+   "related": [
+    "decks",
+    "sessions"
+   ],
+   "verified": "none",
+   "todo": true,
+   "headings": [],
+   "body": "TODO: write this article (M3b). The summary above is its scope. How to write it: docs/ARCH-help-and-tour.md §5.\n"
+  },
+  {
+   "id": "multiverse",
+   "section": "multiverse",
+   "title": "What the Multiverse is",
+   "summary": "Every saved turn is a node in a tree; jump to any of them and play a different line from there.",
+   "devices": [
+    "desktop",
+    "phone"
+   ],
+   "aliases": [],
+   "targets": [
+    "multiverse"
+   ],
+   "related": [
+    "auto-save",
+    "branches",
+    "nodes"
+   ],
+   "verified": "none",
+   "todo": true,
+   "headings": [],
+   "body": "TODO: write this article (M3c). The summary above is its scope. How to write it: docs/ARCH-help-and-tour.md §5.\n"
+  },
+  {
+   "id": "auto-save",
+   "section": "multiverse",
+   "title": "Every turn is saved",
+   "summary": "With auto-save on, ending a turn saves the board as a node in the Multiverse.",
+   "devices": [
+    "desktop",
+    "phone"
+   ],
+   "aliases": [],
+   "targets": [
+    "auto-save",
+    "end-turn"
+   ],
+   "related": [
+    "save-unfinished-turn",
+    "multiverse"
+   ],
+   "verified": "none",
+   "todo": true,
+   "headings": [],
+   "body": "TODO: write this article (M3c). The summary above is its scope. How to write it: docs/ARCH-help-and-tour.md §5.\n"
+  },
+  {
+   "id": "save-unfinished-turn",
+   "section": "multiverse",
+   "title": "Save the turn you're in",
+   "summary": "Save the board mid-turn as a node, with a name and a note.",
+   "devices": [
+    "desktop",
+    "phone"
+   ],
+   "aliases": [],
+   "targets": [
+    "save-turn"
+   ],
+   "related": [
+    "auto-save",
+    "nodes"
+   ],
+   "verified": "none",
+   "todo": true,
+   "headings": [],
+   "body": "TODO: write this article (M3c). The summary above is its scope. How to write it: docs/ARCH-help-and-tour.md §5.\n"
+  },
+  {
+   "id": "nodes",
+   "section": "multiverse",
+   "title": "Reading a node",
+   "summary": "What a node shows: whose turn, the lore, the note, the turn recap and the cards played.",
+   "devices": [
+    "desktop",
+    "phone"
+   ],
+   "aliases": [],
+   "targets": [
+    "tree-canvas"
+   ],
+   "related": [
+    "multiverse-panel",
+    "turn-notes"
+   ],
+   "verified": "none",
+   "todo": true,
+   "headings": [],
+   "body": "TODO: write this article (M3c). The summary above is its scope. How to write it: docs/ARCH-help-and-tour.md §5.\n"
+  },
+  {
+   "id": "multiverse-panel",
+   "section": "multiverse",
+   "title": "The panel: select, play from here, rename, notes, delete",
+   "summary": "Select a node to read it in the panel, play from it, rename it, edit its note or delete it.",
+   "devices": [
+    "desktop",
+    "phone"
+   ],
+   "aliases": [],
+   "targets": [
+    "tree-panel",
+    "selected-node"
+   ],
+   "related": [
+    "nodes",
+    "branches"
+   ],
+   "verified": "none",
+   "todo": true,
+   "headings": [],
+   "body": "TODO: write this article (M3c). The summary above is its scope. How to write it: docs/ARCH-help-and-tour.md §5.\n"
+  },
+  {
+   "id": "branches",
+   "section": "multiverse",
+   "title": "Branching: try another line",
+   "summary": "Play from an earlier node and do something different: the new turns grow a new branch.",
+   "devices": [
+    "desktop",
+    "phone"
+   ],
+   "aliases": [],
+   "targets": [
+    "tree-canvas"
+   ],
+   "related": [
+    "multiverse",
+    "left-here",
+    "undo"
+   ],
+   "verified": "none",
+   "todo": true,
+   "headings": [],
+   "body": "TODO: write this article (M3c). The summary above is its scope. How to write it: docs/ARCH-help-and-tour.md §5.\n"
+  },
+  {
+   "id": "left-here",
+   "section": "multiverse",
+   "title": "\"Left here\" snapshots",
+   "summary": "When you jump away from an unsaved board, the Dojo keeps it as a dashed \"Left here\" snapshot.",
+   "devices": [
+    "desktop",
+    "phone"
+   ],
+   "aliases": [],
+   "targets": [
+    "tree-canvas"
+   ],
+   "related": [
+    "branches",
+    "mini-multiverse"
+   ],
+   "verified": "none",
+   "todo": true,
+   "headings": [],
+   "body": "TODO: write this article (M3c). The summary above is its scope. How to write it: docs/ARCH-help-and-tour.md §5.\n"
+  },
+  {
+   "id": "multiverse-views",
+   "section": "multiverse",
+   "title": "Cards and plot",
+   "summary": "Switch between full node cards and the plot, where every saved turn is a dot.",
+   "devices": [
+    "desktop",
+    "phone"
+   ],
+   "aliases": [],
+   "targets": [
+    "plot-toggle",
+    "tree-legend"
+   ],
+   "related": [
+    "multiverse-navigate",
+    "nodes"
+   ],
+   "verified": "none",
+   "todo": true,
+   "headings": [],
+   "body": "TODO: write this article (M3c). The summary above is its scope. How to write it: docs/ARCH-help-and-tour.md §5.\n"
+  },
+  {
+   "id": "multiverse-navigate",
+   "section": "multiverse",
+   "title": "Moving around: keys, thumb keys, zoom",
+   "summary": "Pan, zoom, and step through turns and lines with the arrow keys or the thumb keys.",
+   "devices": [
+    "desktop",
+    "phone"
+   ],
+   "aliases": [],
+   "targets": [
+    "tree-canvas",
+    "tree-keys",
+    "tree-zoom-reset"
+   ],
+   "related": [
+    "multiverse-views",
+    "mini-multiverse"
+   ],
+   "verified": "none",
+   "todo": true,
+   "headings": [],
+   "body": "TODO: write this article (M3c). The summary above is its scope. How to write it: docs/ARCH-help-and-tour.md §5.\n"
+  },
+  {
+   "id": "mini-multiverse",
+   "section": "multiverse",
+   "title": "The mini multiverse",
+   "summary": "The small map beside the board: click a dot to jump, step through a line, find branch points.",
+   "devices": [
+    "desktop"
+   ],
+   "aliases": [],
+   "targets": [
+    "mini-multiverse",
+    "mini-multiverse-keys"
+   ],
+   "related": [
+    "multiverse-navigate",
+    "left-here"
+   ],
+   "verified": "none",
+   "todo": true,
+   "headings": [],
+   "body": "TODO: write this article (M3c). The summary above is its scope. How to write it: docs/ARCH-help-and-tour.md §5.\n"
+  },
+  {
+   "id": "import-overview",
+   "section": "import",
+   "title": "Study a Duels.ink game",
+   "summary": "Paste or drop a Duels.ink log or replay and the Dojo rebuilds the game turn by turn as a Multiverse.",
+   "devices": [
+    "desktop",
+    "phone"
+   ],
+   "aliases": [],
+   "targets": [
+    "intake",
+    "readout",
+    "example-log"
+   ],
+   "related": [
+    "import-log",
+    "import-replay",
+    "hidden-information"
+   ],
+   "verified": "none",
+   "todo": true,
+   "headings": [],
+   "body": "TODO: write this article (M3b). The summary above is its scope. How to write it: docs/ARCH-help-and-tour.md §5.\n"
+  },
+  {
+   "id": "import-log",
+   "section": "import",
+   "title": "Import a text log",
+   "summary": "Copy the match log from Duels.ink and paste it into the home screen or the Multiverse's Log tool.",
+   "devices": [
+    "desktop",
+    "phone"
+   ],
+   "aliases": [],
+   "targets": [
+    "intake",
+    "tree-log"
+   ],
+   "related": [
+    "import-overview",
+    "hidden-information"
+   ],
+   "verified": "none",
+   "todo": true,
+   "headings": [],
+   "body": "TODO: write this article (M3b). The summary above is its scope. How to write it: docs/ARCH-help-and-tour.md §5.\n"
+  },
+  {
+   "id": "import-replay",
+   "section": "import",
+   "title": "Import a replay file",
+   "summary": "Drop the replay file Duels.ink gives you (.json, .replay or .replay.gz) for the most exact rebuild.",
+   "devices": [
+    "desktop",
+    "phone"
+   ],
+   "aliases": [],
+   "targets": [
+    "intake",
+    "intake-file",
+    "tree-log"
+   ],
+   "related": [
+    "import-overview",
+    "decks"
+   ],
+   "verified": "none",
+   "todo": true,
+   "headings": [],
+   "body": "TODO: write this article (M3b). The summary above is its scope. How to write it: docs/ARCH-help-and-tour.md §5.\n"
+  },
+  {
+   "id": "hidden-information",
+   "section": "import",
+   "title": "What an import knows and doesn't",
+   "summary": "Your own deck is exact from a replay; the opponent's hidden cards stay unknown until they reveal them.",
+   "devices": [
+    "desktop",
+    "phone"
+   ],
+   "aliases": [],
+   "targets": [],
+   "related": [
+    "unknown-cards",
+    "import-overview"
+   ],
+   "verified": "none",
+   "todo": true,
+   "headings": [],
+   "body": "TODO: write this article (M3b). The summary above is its scope. How to write it: docs/ARCH-help-and-tour.md §5.\n"
+  },
+  {
+   "id": "sessions",
+   "section": "library",
+   "title": "Sessions save themselves",
+   "summary": "Every match is a session, kept on this device as you play, and listed under Pick up again.",
+   "devices": [
+    "desktop",
+    "phone"
+   ],
+   "aliases": [],
+   "targets": [
+    "recent",
+    "session-title"
+   ],
+   "related": [
+    "save-and-rename",
+    "library",
+    "storage"
+   ],
+   "verified": "none",
+   "todo": true,
+   "headings": [],
+   "body": "TODO: write this article (M3d). The summary above is its scope. How to write it: docs/ARCH-help-and-tour.md §5.\n"
+  },
+  {
+   "id": "save-and-rename",
+   "section": "library",
+   "title": "Save, save as copy, rename",
+   "summary": "Name the session, save it now, or save a copy to try something without touching the original.",
+   "devices": [
+    "desktop",
+    "phone"
+   ],
+   "aliases": [],
+   "targets": [
+    "session-title",
+    "save",
+    "save-copy"
+   ],
+   "related": [
+    "sessions",
+    "account-sync"
+   ],
+   "verified": "none",
+   "todo": true,
+   "headings": [],
+   "body": "TODO: write this article (M3d). The summary above is its scope. How to write it: docs/ARCH-help-and-tour.md §5.\n"
+  },
+  {
+   "id": "library",
+   "section": "library",
+   "title": "The Library: sessions, decks, links",
+   "summary": "Everything you keep, on shelves by where it lives: this device, your account, built in, public links.",
+   "devices": [
+    "desktop",
+    "phone"
+   ],
+   "aliases": [],
+   "targets": [
+    "library-button",
+    "library",
+    "lib-sessions",
+    "lib-decks",
+    "lib-links"
+   ],
+   "related": [
+    "sessions",
+    "decks",
+    "share-links"
+   ],
+   "verified": "none",
+   "todo": true,
+   "headings": [],
+   "body": "TODO: write this article (M3d). The summary above is its scope. How to write it: docs/ARCH-help-and-tour.md §5.\n"
+  },
+  {
+   "id": "files",
+   "section": "library",
+   "title": "Export and import session files",
+   "summary": "Save a session as a file to back it up or send it, and open a session file.",
+   "devices": [
+    "desktop",
+    "phone"
+   ],
+   "aliases": [],
+   "targets": [
+    "tree-export",
+    "tree-import",
+    "lib-import",
+    "intake-file"
+   ],
+   "related": [
+    "library",
+    "share-links"
+   ],
+   "verified": "none",
+   "todo": true,
+   "headings": [],
+   "body": "TODO: write this article (M3d). The summary above is its scope. How to write it: docs/ARCH-help-and-tour.md §5.\n"
+  },
+  {
+   "id": "share-links",
+   "section": "library",
+   "title": "Share a deck or a session",
+   "summary": "Make a short link to a deck or a whole multiverse; anyone can open it, no account needed.",
+   "devices": [
+    "desktop",
+    "phone"
+   ],
+   "aliases": [],
+   "targets": [
+    "share",
+    "lib-links"
+   ],
+   "related": [
+    "open-a-shared-link",
+    "share-limits"
+   ],
+   "verified": "none",
+   "todo": true,
+   "headings": [],
+   "body": "TODO: write this article (M3d). The summary above is its scope. How to write it: docs/ARCH-help-and-tour.md §5.\n"
+  },
+  {
+   "id": "open-a-shared-link",
+   "section": "library",
+   "title": "Open a link someone sent you",
+   "summary": "A shared session opens on the board unsaved until you save a copy; a shared deck lands on the home screen.",
+   "devices": [
+    "desktop",
+    "phone"
+   ],
+   "aliases": [],
+   "targets": [
+    "shared-banner"
+   ],
+   "related": [
+    "share-links",
+    "sessions"
+   ],
+   "verified": "none",
+   "todo": true,
+   "headings": [],
+   "body": "TODO: write this article (M3d). The summary above is its scope. How to write it: docs/ARCH-help-and-tour.md §5.\n"
+  },
+  {
+   "id": "account",
+   "section": "account",
+   "title": "Why sign in (and why you don't have to)",
+   "summary": "Everything works signed out; signing in keeps your decks and sessions on every device.",
+   "devices": [
+    "desktop",
+    "phone"
+   ],
+   "aliases": [],
+   "targets": [
+    "account-button"
+   ],
+   "related": [
+    "sign-in",
+    "storage"
+   ],
+   "verified": "none",
+   "todo": true,
+   "headings": [],
+   "body": "TODO: write this article (M3d). The summary above is its scope. How to write it: docs/ARCH-help-and-tour.md §5.\n"
+  },
+  {
+   "id": "sign-in",
+   "section": "account",
+   "title": "Sign in and out",
+   "summary": "Sign in with Discord or Google, choose what to bring from this device, and sign out safely on a shared computer.",
+   "devices": [
+    "desktop",
+    "phone"
+   ],
+   "aliases": [],
+   "targets": [
+    "account-button"
+   ],
+   "related": [
+    "account",
+    "account-sync"
+   ],
+   "verified": "none",
+   "todo": true,
+   "headings": [],
+   "body": "TODO: write this article (M3d). The summary above is its scope. How to write it: docs/ARCH-help-and-tour.md §5.\n"
+  },
+  {
+   "id": "account-sync",
+   "section": "account",
+   "title": "What goes to your account, and conflicts",
+   "summary": "Decks follow you automatically; sessions go up when you press Save; what happens when two devices disagree.",
+   "devices": [
+    "desktop",
+    "phone"
+   ],
+   "aliases": [],
+   "targets": [
+    "save",
+    "library"
+   ],
+   "related": [
+    "sign-in",
+    "save-and-rename"
+   ],
+   "verified": "none",
+   "todo": true,
+   "headings": [],
+   "body": "TODO: write this article (M3d). The summary above is its scope. How to write it: docs/ARCH-help-and-tour.md §5.\n"
+  },
+  {
+   "id": "tweaks",
+   "section": "settings",
+   "title": "Tweaks",
+   "summary": "Where the settings are and what each one changes.",
+   "devices": [
+    "desktop",
+    "phone"
+   ],
+   "aliases": [],
+   "targets": [
+    "tweaks",
+    "tweaks-panel"
+   ],
+   "related": [
+    "theme",
+    "card-display",
+    "palette",
+    "forecast"
+   ],
+   "verified": "none",
+   "todo": true,
+   "headings": [],
+   "body": "TODO: write this article (M3d). The summary above is its scope. How to write it: docs/ARCH-help-and-tour.md §5.\n"
+  },
+  {
+   "id": "theme",
+   "section": "settings",
+   "title": "Day, night and accent",
+   "summary": "Follow your device's light or dark setting, or pick Day or Night, and choose the accent colour.",
+   "devices": [
+    "desktop",
+    "phone"
+   ],
+   "aliases": [],
+   "targets": [
+    "tweak-theme",
+    "tweak-accent",
+    "home-theme"
+   ],
+   "related": [
+    "tweaks"
+   ],
+   "verified": "none",
+   "todo": true,
+   "headings": [],
+   "body": "TODO: write this article (M3d). The summary above is its scope. How to write it: docs/ARCH-help-and-tour.md §5.\n"
+  },
+  {
+   "id": "card-display",
+   "section": "settings",
+   "title": "Card size and Art / Text",
+   "summary": "Make cards bigger or smaller, and show card art or text-only cards everywhere.",
+   "devices": [
+    "desktop",
+    "phone"
+   ],
+   "aliases": [],
+   "targets": [
+    "tweak-card-size",
+    "tweak-card-display"
+   ],
+   "related": [
+    "card-preview",
+    "offline"
+   ],
+   "verified": "none",
+   "todo": true,
+   "headings": [],
+   "body": "TODO: write this article (M3d). The summary above is its scope. How to write it: docs/ARCH-help-and-tour.md §5.\n"
+  },
+  {
+   "id": "palette",
+   "section": "settings",
+   "title": "Player palette",
+   "summary": "How the two players are coloured: by their deck's inks, two fixed colours, or grey.",
+   "devices": [
+    "desktop",
+    "phone"
+   ],
+   "aliases": [],
+   "targets": [
+    "tweak-palette"
+   ],
+   "related": [
+    "tweaks"
+   ],
+   "verified": "none",
+   "todo": true,
+   "headings": [],
+   "body": "TODO: write this article (M3d). The summary above is its scope. How to write it: docs/ARCH-help-and-tour.md §5.\n"
+  },
+  {
+   "id": "forecast",
+   "section": "settings",
+   "title": "Challenge forecast",
+   "summary": "How much the Dojo shows about a challenge before you make it: off, one line, or the full forecast.",
+   "devices": [
+    "desktop",
+    "phone"
+   ],
+   "aliases": [],
+   "targets": [
+    "tweak-forecast",
+    "challenge-banner"
+   ],
+   "related": [
+    "challenge"
+   ],
+   "verified": "none",
+   "todo": true,
+   "headings": [],
+   "body": "TODO: write this article (M3d). The summary above is its scope. How to write it: docs/ARCH-help-and-tour.md §5.\n"
+  },
+  {
+   "id": "offline",
+   "section": "faq",
+   "title": "Playing offline and missing card art",
+   "summary": "Card names and text still show when art can't load, and the card database is kept for offline starts.",
+   "devices": [
+    "desktop",
+    "phone"
+   ],
+   "aliases": [],
+   "targets": [],
+   "related": [
+    "card-display",
+    "card-preview"
+   ],
+   "verified": "none",
+   "todo": true,
+   "headings": [],
+   "body": "TODO: write this article (M3e). The summary above is its scope. How to write it: docs/ARCH-help-and-tour.md §5.\n"
+  },
+  {
+   "id": "storage",
+   "section": "faq",
+   "title": "Where your things are kept, and how to lose them",
+   "summary": "Sessions and decks live in this browser unless you sign in; clearing site data deletes them.",
+   "devices": [
+    "desktop",
+    "phone"
+   ],
+   "aliases": [],
+   "targets": [
+    "library"
+   ],
+   "related": [
+    "account",
+    "files"
+   ],
+   "verified": "none",
+   "todo": true,
+   "headings": [],
+   "body": "TODO: write this article (M3e). The summary above is its scope. How to write it: docs/ARCH-help-and-tour.md §5.\n"
+  },
+  {
+   "id": "hotkeys-not-working",
+   "section": "faq",
+   "title": "Shortcuts don't do anything",
+   "summary": "Why a keyboard shortcut might not fire: typing in a field, a dialog open, or the home screen.",
+   "devices": [
+    "desktop"
+   ],
+   "aliases": [],
+   "targets": [],
+   "related": [
+    "keyboard-shortcuts"
+   ],
+   "verified": "none",
+   "todo": true,
+   "headings": [],
+   "body": "TODO: write this article (M3e). The summary above is its scope. How to write it: docs/ARCH-help-and-tour.md §5.\n"
+  },
+  {
+   "id": "share-limits",
+   "section": "faq",
+   "title": "Share link limits",
+   "summary": "How many links you can make, how big a session can be, and what the messages mean.",
+   "devices": [
+    "desktop",
+    "phone"
+   ],
+   "aliases": [],
+   "targets": [],
+   "related": [
+    "share-links"
+   ],
+   "verified": "none",
+   "todo": true,
+   "headings": [],
+   "body": "TODO: write this article (M3e). The summary above is its scope. How to write it: docs/ARCH-help-and-tour.md §5.\n"
+  },
+  {
+   "id": "browsers",
+   "section": "faq",
+   "title": "Browsers and devices",
+   "summary": "Which browsers the Dojo runs in, and what changes on a phone or tablet.",
+   "devices": [
+    "desktop",
+    "phone"
+   ],
+   "aliases": [],
+   "targets": [],
+   "related": [
+    "screen-at-a-glance",
+    "gestures"
+   ],
+   "verified": "none",
+   "todo": true,
+   "headings": [],
+   "body": "TODO: write this article (M3e). The summary above is its scope. How to write it: docs/ARCH-help-and-tour.md §5.\n"
+  },
+  {
+   "id": "keyboard-shortcuts",
+   "section": "reference",
+   "title": "Keyboard shortcuts",
+   "summary": "Every key the Dojo listens to, on the board, on a card, in the Multiverse and in dialogs.",
+   "devices": [
+    "desktop"
+   ],
+   "aliases": [],
+   "targets": [],
+   "related": [
+    "hotkeys-not-working",
+    "card-actions"
+   ],
+   "verified": "none",
+   "todo": true,
+   "headings": [],
+   "body": "TODO: write this article (M3e). The summary above is its scope. How to write it: docs/ARCH-help-and-tour.md §5.\n"
+  },
+  {
+   "id": "gestures",
+   "section": "reference",
+   "title": "Touch gestures",
+   "summary": "Every tap, hold, swipe and drag on a phone or tablet.",
+   "devices": [
+    "phone"
+   ],
+   "aliases": [],
+   "targets": [],
+   "related": [
+    "screen-at-a-glance",
+    "card-actions"
+   ],
+   "verified": "none",
+   "todo": true,
+   "headings": [],
+   "body": "TODO: write this article (M3e). The summary above is its scope. How to write it: docs/ARCH-help-and-tour.md §5.\n"
+  },
+  {
+   "id": "glossary",
+   "section": "reference",
+   "title": "Glossary",
+   "summary": "Dojo words (node, line, branch, Left here, scratch) and the Lorcana terms the manual uses.",
+   "devices": [
+    "desktop",
+    "phone"
+   ],
+   "aliases": [],
+   "targets": [],
+   "related": [
+    "multiverse",
+    "what-is-the-dojo"
+   ],
+   "verified": "none",
+   "todo": true,
+   "headings": [],
+   "body": "TODO: write this article (M3e). The summary above is its scope. How to write it: docs/ARCH-help-and-tour.md §5.\n"
+  }
+ ],
+ "targets": {
+  "topbar": {
+   "label": "the top bar",
+   "screen": "board",
+   "any": "#topbar"
+  },
+  "home-button": {
+   "label": "the way back to the home screen (‹ Dojo)",
+   "screen": "board",
+   "desktop": "#btn-home",
+   "phone": "#btn-topbar-more"
+  },
+  "session-title": {
+   "label": "the session title",
+   "screen": "board",
+   "desktop": "#session-title"
+  },
+  "save": {
+   "label": "Save",
+   "screen": "board",
+   "desktop": "#btn-session-save",
+   "phone": "#btn-topbar-more"
+  },
+  "save-copy": {
+   "label": "Save as copy",
+   "screen": "board",
+   "desktop": "#btn-session-copy",
+   "phone": "#btn-topbar-more"
+  },
+  "share": {
+   "label": "Share",
+   "screen": "board",
+   "desktop": "#btn-session-share",
+   "phone": "#btn-topbar-more"
+  },
+  "undo": {
+   "label": "Undo",
+   "screen": "board",
+   "any": "#btn-undo"
+  },
+  "turn": {
+   "label": "the turn chip",
+   "screen": "board",
+   "any": "#turn-pill"
+  },
+  "challenge-mode": {
+   "label": "Challenge",
+   "screen": "board",
+   "any": "#btn-challenge-mode"
+  },
+  "multiverse": {
+   "label": "Multiverse",
+   "screen": "board",
+   "any": "#btn-multiverse"
+  },
+  "tweaks": {
+   "label": "Tweaks",
+   "screen": "board",
+   "desktop": "#btn-tweaks",
+   "phone": "#btn-topbar-more"
+  },
+  "more-menu": {
+   "label": "the ⋯ menu",
+   "screen": "board",
+   "phone": "#btn-topbar-more"
+  },
+  "menu": {
+   "label": "the ☰ menu (players, log, auto-save)",
+   "screen": "board",
+   "phone": "#mobile-menu-btn"
+  },
+  "sidebar": {
+   "label": "the side rail",
+   "screen": "board",
+   "desktop": "#sidebar"
+  },
+  "players": {
+   "label": "the player rows",
+   "screen": "board",
+   "desktop": "#player-rows"
+  },
+  "mini-multiverse": {
+   "label": "the mini multiverse",
+   "screen": "board",
+   "desktop": "#mmv"
+  },
+  "mini-multiverse-keys": {
+   "label": "the mini multiverse step keys",
+   "screen": "board",
+   "desktop": "#mmv-ctl"
+  },
+  "card-preview": {
+   "label": "the card preview",
+   "screen": "board",
+   "desktop": "#card-preview"
+  },
+  "log": {
+   "label": "the game log",
+   "screen": "board",
+   "desktop": "#game-log"
+  },
+  "auto-save": {
+   "label": "Auto-save every turn",
+   "screen": "board",
+   "desktop": "#auto-save-row"
+  },
+  "quest-all": {
+   "label": "Quest (with every ready character)",
+   "screen": "board",
+   "desktop": "#btn-quest-all",
+   "phone": "#btn-quest-all-mobile"
+  },
+  "end-turn": {
+   "label": "End turn",
+   "screen": "board",
+   "desktop": "#btn-end-turn",
+   "phone": "#btn-end-turn-mobile"
+  },
+  "board": {
+   "label": "the board",
+   "screen": "board",
+   "any": "#play"
+  },
+  "opponent-board": {
+   "label": "the other player's half (top)",
+   "screen": "board",
+   "any": "#top-board"
+  },
+  "your-board": {
+   "label": "the active player's half (bottom)",
+   "screen": "board",
+   "any": "#bottom-board"
+  },
+  "hand": {
+   "label": "your hand",
+   "screen": "board",
+   "any": "#bottom-hand"
+  },
+  "opponent-hand": {
+   "label": "the other player's hand",
+   "screen": "board",
+   "any": "#top-hand"
+  },
+  "peek": {
+   "label": "Hold to reveal hand",
+   "screen": "board",
+   "any": "#top-peek"
+  },
+  "field": {
+   "label": "your play area",
+   "screen": "board",
+   "any": "#bottom-field"
+  },
+  "opponent-field": {
+   "label": "the other player's play area",
+   "screen": "board",
+   "any": "#top-field"
+  },
+  "ink-bar": {
+   "label": "your inkwell",
+   "screen": "board",
+   "any": "#bottom-ink-bar"
+  },
+  "inkwell-cards": {
+   "label": "your ink cards",
+   "screen": "board",
+   "desktop": "#bottom-inkwell-cards"
+  },
+  "lore": {
+   "label": "your lore",
+   "screen": "board",
+   "desktop": "#bottom-lore-badge",
+   "phone": "#bottom-lore-bar"
+  },
+  "deck": {
+   "label": "your deck",
+   "screen": "board",
+   "any": "#bottom-deck"
+  },
+  "discard": {
+   "label": "your discard pile",
+   "screen": "board",
+   "any": "#bottom-discard"
+  },
+  "turn-notes": {
+   "label": "the turn notes",
+   "screen": "board",
+   "desktop": "#turn-notes",
+   "phone": "#bottom-field"
+  },
+  "draw-odds": {
+   "label": "Draw odds",
+   "screen": "board",
+   "desktop": "#prob-pane"
+  },
+  "card-drawer": {
+   "label": "the card drawer",
+   "screen": "drawer",
+   "any": "#card-sheet"
+  },
+  "ink-panel": {
+   "label": "the inkwell sheet",
+   "screen": "drawer",
+   "phone": "#ink-panel"
+  },
+  "challenge-banner": {
+   "label": "the challenge mode bar",
+   "screen": "challenge",
+   "any": "#challenge-banner"
+  },
+  "shared-banner": {
+   "label": "the shared session bar",
+   "screen": "shared",
+   "any": "#shared-banner"
+  },
+  "mulligan-dialog": {
+   "label": "the mulligan",
+   "screen": "mulligan",
+   "any": "#mulligan-dialog"
+  },
+  "mulligan-hand": {
+   "label": "the opening hand",
+   "screen": "mulligan",
+   "any": "#mulligan-hand"
+  },
+  "mulligan-readout": {
+   "label": "the curve and inkable readout",
+   "screen": "mulligan",
+   "any": "#mulligan-readout"
+  },
+  "mulligan-odds": {
+   "label": "the mulligan draw odds",
+   "screen": "mulligan",
+   "any": "#mulligan-odds"
+  },
+  "mulligan-confirm": {
+   "label": "Keep hand / Mulligan",
+   "screen": "mulligan",
+   "any": "#mulligan-confirm"
+  },
+  "craft-hand": {
+   "label": "Craft hand",
+   "screen": "mulligan",
+   "any": "#mulligan-craft"
+  },
+  "tree-canvas": {
+   "label": "the Multiverse canvas",
+   "screen": "multiverse",
+   "any": "#tree-viewport"
+  },
+  "tree-panel": {
+   "label": "the Multiverse panel",
+   "screen": "multiverse",
+   "any": "#tree-panel"
+  },
+  "save-turn": {
+   "label": "Save current unfinished turn",
+   "screen": "multiverse",
+   "any": "#tp-save-open"
+  },
+  "selected-node": {
+   "label": "the selected node",
+   "screen": "multiverse",
+   "any": "#tp-sel"
+  },
+  "plot-toggle": {
+   "label": "Plot",
+   "screen": "multiverse",
+   "any": "#tree-view-toggle"
+  },
+  "tree-legend": {
+   "label": "the plot's key",
+   "screen": "multiverse",
+   "any": "#tree-legend"
+  },
+  "tree-keys": {
+   "label": "the thumb keys",
+   "screen": "multiverse",
+   "phone": "#tree-keys"
+  },
+  "tree-dock": {
+   "label": "the panel side switch",
+   "screen": "multiverse",
+   "desktop": "#tree-dock-toggle"
+  },
+  "tree-zoom-reset": {
+   "label": "Reset zoom",
+   "screen": "multiverse",
+   "desktop": "#tree-zoom-reset"
+  },
+  "tree-import": {
+   "label": "Import",
+   "screen": "multiverse",
+   "any": "#tree-import"
+  },
+  "tree-export": {
+   "label": "Export",
+   "screen": "multiverse",
+   "any": "#tree-export"
+  },
+  "tree-log": {
+   "label": "Log (import a Duels.ink game)",
+   "screen": "multiverse",
+   "any": "#tree-log"
+  },
+  "tree-close": {
+   "label": "Close",
+   "screen": "multiverse",
+   "any": "#tree-close"
+  },
+  "intake": {
+   "label": "the paste field",
+   "screen": "home",
+   "any": "#well"
+  },
+  "example-deck": {
+   "label": "A decklist (example)",
+   "screen": "home",
+   "any": "#btn-example-deck"
+  },
+  "example-log": {
+   "label": "A Duels.ink log (example)",
+   "screen": "home",
+   "any": "#btn-example-log"
+  },
+  "intake-file": {
+   "label": "Choose a file",
+   "screen": "home",
+   "any": "#btn-intake-file"
+  },
+  "readout": {
+   "label": "the readout",
+   "screen": "home",
+   "any": "#readout"
+  },
+  "seats": {
+   "label": "On the table",
+   "screen": "home",
+   "any": "#home-seats"
+  },
+  "deck-chips": {
+   "label": "the deck chips",
+   "screen": "home",
+   "any": "#home-chips"
+  },
+  "start-match": {
+   "label": "Start match",
+   "screen": "home",
+   "any": "#btn-start-match"
+  },
+  "recent": {
+   "label": "Pick up again",
+   "screen": "home",
+   "any": "#home-recent"
+  },
+  "all-sessions": {
+   "label": "All sessions",
+   "screen": "home",
+   "any": "#btn-all-sessions"
+  },
+  "library-button": {
+   "label": "Library",
+   "screen": "home",
+   "any": "#btn-open-library"
+  },
+  "account-button": {
+   "label": "Sign in",
+   "screen": "home",
+   "any": "#btn-account"
+  },
+  "home-theme": {
+   "label": "the theme switch",
+   "screen": "home",
+   "any": "#home-theme"
+  },
+  "library": {
+   "label": "the Library",
+   "screen": "library",
+   "any": "#library-drawer"
+  },
+  "lib-sessions": {
+   "label": "Sessions",
+   "screen": "library",
+   "any": "#lib-tab-sessions"
+  },
+  "lib-decks": {
+   "label": "Decks",
+   "screen": "library",
+   "any": "#lib-tab-decks"
+  },
+  "lib-links": {
+   "label": "Links",
+   "screen": "library",
+   "any": "#lib-tab-shared"
+  },
+  "lib-import": {
+   "label": "Import file",
+   "screen": "library",
+   "any": "#btn-lib-import"
+  },
+  "deck-new": {
+   "label": "New deck",
+   "screen": "library",
+   "any": "#btn-deck-new"
+  },
+  "deck-import-txt": {
+   "label": "Import .txt",
+   "screen": "library",
+   "any": "#btn-deck-import-txt"
+  },
+  "deck-from-replay": {
+   "label": "From a replay",
+   "screen": "library",
+   "any": "#btn-deck-from-replay"
+  },
+  "tweaks-panel": {
+   "label": "Tweaks",
+   "screen": "tweaks",
+   "any": "#tweaks-panel"
+  },
+  "tweak-theme": {
+   "label": "Theme",
+   "screen": "tweaks",
+   "any": "#tweak-theme"
+  },
+  "tweak-accent": {
+   "label": "Accent",
+   "screen": "tweaks",
+   "any": "#tweak-accent-row"
+  },
+  "tweak-card-size": {
+   "label": "Card size",
+   "screen": "tweaks",
+   "any": "#tweak-card-size"
+  },
+  "tweak-card-display": {
+   "label": "Card display",
+   "screen": "tweaks",
+   "any": "#tweak-card-mode"
+  },
+  "tweak-forecast": {
+   "label": "Challenge forecast",
+   "screen": "tweaks",
+   "any": "#tweak-chal-forecast"
+  },
+  "tweak-palette": {
+   "label": "Player palette",
+   "screen": "tweaks",
+   "any": "#tweak-palette"
+  }
+ },
+ "synonyms": [
+  [
+   "ink",
+   "mana",
+   "land",
+   "lands",
+   "resource"
+  ],
+  [
+   "inkwell",
+   "mana pool",
+   "resources"
+  ],
+  [
+   "challenge",
+   "attack",
+   "fight",
+   "combat",
+   "battle"
+  ],
+  [
+   "exert",
+   "tap",
+   "turn sideways"
+  ],
+  [
+   "ready",
+   "untap"
+  ],
+  [
+   "banish",
+   "destroy",
+   "kill",
+   "dies",
+   "die"
+  ],
+  [
+   "discard",
+   "graveyard",
+   "trash",
+   "bin",
+   "yard"
+  ],
+  [
+   "lore",
+   "points",
+   "score",
+   "victory points",
+   "life"
+  ],
+  [
+   "quest",
+   "score points",
+   "gain lore"
+  ],
+  [
+   "undo",
+   "rewind",
+   "take back",
+   "go back",
+   "oops",
+   "revert"
+  ],
+  [
+   "multiverse",
+   "timeline",
+   "timelines",
+   "tree",
+   "history",
+   "what if"
+  ],
+  [
+   "branch",
+   "branches",
+   "fork",
+   "alternate line",
+   "variation"
+  ],
+  [
+   "node",
+   "snapshot",
+   "checkpoint",
+   "save point"
+  ],
+  [
+   "mulligan",
+   "redraw",
+   "opening hand",
+   "starting hand",
+   "keep"
+  ],
+  [
+   "deck",
+   "decklist",
+   "list"
+  ],
+  [
+   "theme",
+   "dark mode",
+   "night mode",
+   "light mode",
+   "colours",
+   "colors"
+  ],
+  [
+   "tweaks",
+   "settings",
+   "options",
+   "preferences"
+  ],
+  [
+   "share",
+   "send",
+   "link",
+   "url"
+  ],
+  [
+   "export",
+   "download",
+   "backup",
+   "back up"
+  ],
+  [
+   "import",
+   "upload",
+   "load",
+   "open file"
+  ],
+  [
+   "sign in",
+   "log in",
+   "login",
+   "account",
+   "sync"
+  ],
+  [
+   "shortcut",
+   "hotkey",
+   "hotkeys",
+   "keyboard",
+   "key"
+  ],
+  [
+   "drawer",
+   "card menu",
+   "actions"
+  ],
+  [
+   "shift",
+   "evolve"
+  ],
+  [
+   "opponent",
+   "enemy",
+   "other player"
+  ]
+ ],
+ "tours": []
+}

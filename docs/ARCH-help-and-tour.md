@@ -1,6 +1,6 @@
 # ARCH: User Manual, Search and Guided Tours
 
-> **Status:** v0.2, accepted. All six open questions decided as proposed (§14, 2026-10-10). M0 under way.
+> **Status:** v0.2, accepted. All six open questions decided as proposed (§14, 2026-10-10). M0 built (§5.7).
 > **Scope:** Practice Dojo (`app/index.html` in `PracticeDojo/practicedojo.github.io`).
 > What's done and what's left is tracked in [`TODO-help-and-tour.md`](TODO-help-and-tour.md). Open questions are in [§13](#13-open-questions); decisions go in the log in [§14](#14-decision-log).
 
@@ -317,6 +317,17 @@ The manual sounds like the rest of the repo's docs and the app's own labels:
 Few, on purpose. Use one only where a picture explains layout better than words: *The screen at a glance* (desktop and phone), *Reading a node*, *Cards and plot*. Everything else uses *Show me*.
 
 `tools/help.mjs shots` takes them with the dojo-screenshots tool, day and night, as `.webp` into `app/help/img/` (`<name>-<device>-<theme>.webp`); the viewer shows the one that matches the theme and the device switch. `node tools/refresh-landing.mjs` stays separate; the release checklist (§12) runs both.
+
+### 5.7 As built (M0)
+What the scaffolding settled, beyond the sketches above. Later milestones build to these.
+- **64 stub articles** under `app/help/articles/`, one per id in §5.4. Each has full front matter and a `TODO` body; its `summary` is the writer's brief. A stub may carry `verified: none`; a written article must have a real version.
+- **`targets.json`** is `{ "$comment", "targets": { name: { label, screen, any | desktop | phone } } }`. `label` is what a callout calls the control ("End turn"); `screen` is what must be open for it to show (`board`, `home`, `library`, `multiverse`, `mulligan`, `tweaks`, `drawer`, `challenge`, `shared`), for the spotlight and `--live`. A device key beats `any`. 88 targets.
+- **New ids in `app/index.html`** (markup only, pixel-identical at 1440 and 390): `btn-home`, `btn-session-copy`, `btn-end-turn`, `btn-quest-all`, `btn-end-turn-mobile`, `btn-quest-all-mobile`, `sidebar`, `player-rows`, `mmv-ctl`, `card-preview`, `auto-save-row`, `top-/bottom-lore-badge`, `top-/bottom-lore-bar`, `top-/bottom-ink-bar`, `top-/bottom-deck`, `top-peek`, `turn-notes`, `mulligan-dialog`, `mulligan-craft`, `tree-import`, `tree-export`, `tree-log`, `tree-zoom-reset`, `tree-close`, `btn-example-log`, `btn-intake-file`, `btn-all-sessions`, `btn-lib-import`, `btn-deck-new`, `btn-deck-import-txt`, `btn-deck-from-replay`. On phones, controls that live in the ⋯ menu (Save, Save as copy, Share, Tweaks, the way home) target `#btn-topbar-more`.
+- **`synonyms.json`** is `{ "$comment", "groups": [[…]] }`.
+- **`manual.json`** (version 1): `{ format: "practice-dojo-manual", version, sections: [{ id, title, articles: [ids] }], articles: [{ id, section, title, summary, devices, aliases, targets, related, verified, todo, headings: [{ level, text, slug }], body }], targets, synonyms, tours }`. Articles come in section order, then `order`, then id. No timestamps or app version, so it only changes when a source does.
+- **Heading slugs are made by the tool** (lowercase, punctuation dropped, spaces to hyphens, `-2` for repeats) and shipped in `headings`. The viewer and the search use those, never their own rule.
+- **`field-unit.css`** ends with a *Help & tours* section holding one empty slot per milestone (M1, M2, M4, M5, M7).
+- `app/help/README.md` is the writers' quick guide.
 
 ---
 
