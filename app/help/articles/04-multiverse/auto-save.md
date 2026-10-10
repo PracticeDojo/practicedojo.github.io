@@ -34,7 +34,7 @@ When you end a turn, the next player readies and draws, and then the Dojo saves 
 - a **Turn recap** of that turn: what was drawn, inked, played, shifted, discarded, quested and banished,
 - the cards behind the recap, in sections such as **Played**, **Inked** and **Drawn**.
 
-The new node hangs off the node you were on, so the tree follows the line you're playing. A toast says **Auto-Saved Timeline**.
+The new node hangs off the node you were on, so the tree follows the line you're playing.
 
 ## Good to know
 
