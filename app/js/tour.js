@@ -24,7 +24,8 @@
 //     Nothing about a running tour is stored: a reload ends it.
 //   - Home: DojoTour.onHome() (from App.showSetup) shows the welcome (#tour-welcome) to new
 //     players, or once tells existing players where help is. takeOffer() / dismissOffer();
-//     dismissing points the spotlight at Help.
+//     dismissing points the spotlight at Help. The first Start match asks once whether to take
+//     the tour first (shouldAskFirstMatch / askFirstMatch, from App.startGame).
 //   - Until Help has been opened once, body.help-breathe makes the Help keys breathe in the
 //     signal colour (paused during a tour). DojoTour.helpSeen() ends it (help.js calls it on open).
 window.DojoTour = (function () {
@@ -485,6 +486,27 @@ window.DojoTour = (function () {
         start('basics');
     }
 
+    // ---------- The first match (owner suggestion) ----------
+    // The first time a player presses Start match without having finished "Your first turn",
+    // ask once whether to take the tour first. App.startGame() starts the match either way;
+    // the tour then runs on its practice board and brings the player back to that match.
+    function shouldAskFirstMatch() {
+        const st = readStore();
+        return !run && !st.firstMatchAsked && !(st.done && st.done.basics) && !ARRIVED_BY_LINK;
+    }
+
+    async function askFirstMatch() {
+        writeStore({ firstMatchAsked: true });
+        const a = app();
+        if (!a || !a.dialog) return false;
+        const ok = await a.dialog({
+            title: 'First match?', icon: 'fa-graduation-cap', help: 'tours',
+            message: 'The 3-minute tour walks you through a first turn on a practice board, then brings you back to this match. Nothing in the tour is saved.',
+            confirmText: 'Take the tour first', cancelText: 'Just play'
+        });
+        return !!ok;
+    }
+
     // Explore on my own: then show where Help lives, so it can be found later.
     function dismissOffer() {
         writeStore({ offer: 'dismissed' });
@@ -508,6 +530,8 @@ window.DojoTour = (function () {
         onKey,
         onHome,
         helpSeen,
+        shouldAskFirstMatch,
+        askFirstMatch,
         takeOffer,
         dismissOffer
     };

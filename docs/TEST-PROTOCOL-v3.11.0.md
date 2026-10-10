@@ -39,6 +39,7 @@ Scope: **Feature 57 · Help (manual, search, Show me)** and **Feature 58 · Guid
 | D.1 | Private window, home screen | A welcome dialog: *New here? Take the 3-minute tour.* **Start the tour** · **Explore on my own** (a bottom sheet on a phone) |
 | D.2 | **Explore on my own** (or Esc), then reload | The spotlight points at **Help**; after the reload the welcome stays gone |
 | D.3 | A browser that already has sessions | No welcome; one toast says where Help is, once |
+| D.3a | Private window: answer the welcome with **Explore on my own**, then **Start match** | *First match?* with **Take the tour first** / **Just play**. Just play: the match starts, and the next Start match doesn't ask. Take the tour first: the tour runs; ✕ or Esc brings you back to the new match at its mulligan |
 | D.3b | Before opening Help | The **?** (desktop), **Help** (home) and **⋯** (phone) keys breathe in orange; not during a tour; once Help has been opened they stop for good |
 | D.4 | Open a share link (`?s=…`) in a private window | No tour strip |
 | D.5 | Help → *Your first turn*, follow it on desktop | Banner *Practice · not saved*; each step lights a real control; waiting steps continue when you do the action; Space works on the end-turn step; ends on a closing card |

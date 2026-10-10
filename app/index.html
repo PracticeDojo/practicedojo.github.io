@@ -4323,7 +4323,16 @@
                 return array;
             },
 
-            startGame() {
+            startGame(opts = {}) {
+                // Feature 58: a player's first match asks once whether to take the tour first.
+                // The match starts either way; the tour comes back to it when it ends.
+                if (!opts.asked && window.DojoTour && DojoTour.shouldAskFirstMatch && DojoTour.shouldAskFirstMatch()) {
+                    DojoTour.askFirstMatch().then((tour) => {
+                        this.startGame({ asked: true });
+                        if (tour) DojoTour.start('basics');
+                    });
+                    return;
+                }
                 const deck1Str = this.seats[1] ? this.seats[1].decklist : '';
                 const deck2Str = this.seats[2] ? this.seats[2].decklist : '';
 

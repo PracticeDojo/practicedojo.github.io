@@ -26,7 +26,7 @@ Open Help (the **?** in the top bar, or {key:?}). The tours are at the top of th
 Open Help from the **⋯** menu, or **Help** on the home screen. The tours are at the top of the list; a ✓ marks the ones you've finished.
 :::
 
-The first time you open the Dojo, a welcome offers the first tour: **Start the tour**, or **Explore on my own** (it won't ask again). Until you first open Help, its button breathes in orange so you can find it.
+The first time you open the Dojo, a welcome offers the first tour: **Start the tour**, or **Explore on my own** (it won't ask again). Your first **Start match** asks once more, unless you've done *Your first turn*: **Take the tour first** starts your match, runs the tour, then brings you back to it; **Just play** gets on with it. Until you first open Help, its button breathes in orange so you can find it.
 
 ## During a tour
 

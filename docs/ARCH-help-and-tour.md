@@ -504,6 +504,7 @@ Each tour has desktop and phone wording and targets where they differ (`text: { 
 - **The Help keys breathe** in the signal colour (a 6px halo, 2.4 s) until Help is first opened, for every player: the desktop top bar's **?**, the home screen's **Help**, and on phones the **⋯** key (Help lives in its menu, whose Help item is signal too). Paused during a tour; a steady ring under *prefers-reduced-motion*.
 - **Everyone:** Help lists the tours at the top of its contents, with ✓ on finished ones. The *Guided tours* article lists them too.
 - **No pop-ups, no auto-start, no "you haven't finished the tour" nags.**
+- **The first match:** the first time a player presses **Start match** without having finished *Your first turn*, a small dialog asks once: **Take the tour first** (the match starts, the tour runs on its practice board, then the player is back at that match) or **Just play**. Not for share-link arrivals. *(Owner suggestion, v0.3.)*
 - **Existing players** see no welcome. When Feature 57 ships, a one-time toast (*New: Help and guided tours · press ?*; on phones *in the ⋯ menu*) says where it lives. Shown once, then remembered.
 
 ### 8.3 Tour file
