@@ -13,7 +13,7 @@ into the right milestone, or into *Parked* if it's outside the plan.
 
 | Milestone | Status |
 |---|---|
-| Review of the proposal | ⏳ Waiting **(you)**: answer §13 Q1–Q6 |
+| Review of the proposal | ✅ Done: all six as proposed (D1–D6) |
 | M0 · Contracts and scaffolding | ⬜ Not started |
 | M1 · Manual viewer | ⬜ |
 | M2 · Search | ⬜ |
@@ -28,14 +28,14 @@ into the right milestone, or into *Parked* if it's outside the plan.
 
 ---
 
-## Review **(you)**
-- [ ] Q1 Desktop help as a side drawer (board stays usable)
-- [ ] Q2 `basics` tour on a scripted board
-- [ ] Q3 A Help tool in the desktop top bar
-- [ ] Q4 Public `/help/` page later
-- [ ] Q5 No tour offer for people arriving by share link
-- [ ] Q6 No command palette for now
-- [ ] Decisions copied into the ARCH decision log (§14)
+## Review **(you)** — *decided 2026-10-10: every recommendation accepted*
+- [x] Q1 Desktop help as a side drawer (board stays usable)
+- [x] Q2 `basics` tour on a scripted board
+- [x] Q3 A Help tool in the desktop top bar
+- [x] Q4 Public `/help/` page later
+- [x] Q5 No tour offer for people arriving by share link
+- [x] Q6 No command palette for now
+- [x] Decisions copied into the ARCH decision log (§14). *D1–D6, 2026-10-10*
 
 ## M0 · Contracts and scaffolding (§5, §7.1, §10)
 - [ ] `app/help/` layout: `articles/<NN-section>/`, `tours/`, `img/`, `sections.json`

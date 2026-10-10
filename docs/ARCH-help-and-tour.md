@@ -1,6 +1,6 @@
 # ARCH: User Manual, Search and Guided Tours
 
-> **Status:** v0.1, proposal. Nothing is built yet.
+> **Status:** v0.2, accepted. All six open questions decided as proposed (§14, 2026-10-10). M0 under way.
 > **Scope:** Practice Dojo (`app/index.html` in `PracticeDojo/practicedojo.github.io`).
 > What's done and what's left is tracked in [`TODO-help-and-tour.md`](TODO-help-and-tour.md). Open questions are in [§13](#13-open-questions); decisions go in the log in [§14](#14-decision-log).
 
@@ -675,6 +675,8 @@ A static `/help/` page that reads the same `manual.json` with `help.js` in a pag
 
 ## 13. Open questions
 
+All answered as proposed on 2026-10-10; see D1–D6 in §14.
+
 | # | Question | Proposal |
 |---|---|---|
 | Q1 | Desktop help: a side drawer that keeps the board usable, or a centred modal? | Side drawer (§6.2). Read and try at once. |
@@ -690,7 +692,12 @@ A static `/help/` page that reads the same `manual.json` with `help.js` in a pag
 
 | # | Decision | Date |
 |---|---|---|
-| | *(empty until the proposal is reviewed)* | |
+| D1 | Desktop help is a non-modal side drawer; the board stays usable while it's open (Q1) | 2026-10-10 |
+| D2 | The `basics` tour starts on a scripted practice board, not the player's decks (Q2) | 2026-10-10 |
+| D3 | The desktop top bar gets an icon-only **Help** paper tool beside Tweaks (Q3) | 2026-10-10 |
+| D4 | The public `/help/` page (M10) waits until after Feature 57 ships (Q4) | 2026-10-10 |
+| D5 | No tour offer for people who arrive through a share link (Q5) | 2026-10-10 |
+| D6 | No command palette in the help search for now (Q6) | 2026-10-10 |
 
 ---
 
