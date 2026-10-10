@@ -264,13 +264,20 @@ if (existsSync(tourDir)) {
             const texts = typeof s.text === 'string' ? [s.text] : s.text && typeof s.text === 'object' ? Object.values(s.text) : [];
             if (!texts.length) err(sw, 'no text');
             if (s.text && typeof s.text === 'object') Object.keys(s.text).forEach(k => { if (!DEVICES.includes(k)) err(sw, `text.${k}: use desktop or phone`); });
-            if (s.target && !targets[s.target]) err(sw, `target "${s.target}" isn't in app/help/targets.json`);
+            // target: a name, or { desktop, phone }; also: [names], or { desktop: [...], phone: [...] }
+            const names = (v) => (typeof v === 'string' ? [v] : Array.isArray(v) ? v : v && typeof v === 'object' ? Object.values(v).flat() : []);
+            for (const k of ['target', 'also']) {
+                if (s[k] && typeof s[k] === 'object' && !Array.isArray(s[k])) Object.keys(s[k]).forEach(d => { if (!DEVICES.includes(d)) err(sw, `${k}.${d}: use desktop or phone`); });
+                names(s[k]).forEach(n => { if (!targets[n]) err(sw, `${k} "${n}" isn't in app/help/targets.json`); });
+            }
             if (s.learn && !byId[s.learn]) err(sw, `learn: no article "${s.learn}"`);
             if (s.device && !DEVICES.includes(s.device)) err(sw, 'device must be desktop or phone');
             if (s.until != null && typeof s.until !== 'string') err(sw, 'until is the name of a predicate in tour.js');
         });
-        tours.push({ id, title: t.title, minutes: t.minutes, start: t.start || null, steps: t.steps });
+        tours.push({ id, title: t.title, minutes: t.minutes, order: Number.isFinite(t.order) ? t.order : 999, start: t.start || null, steps: t.steps });
     }
+    // Help lists the tours in their `order` (then by file name).
+    tours.sort((a, b) => a.order - b.order);
 }
 
 // ---- Golden queries (run by --test once search exists) ----
