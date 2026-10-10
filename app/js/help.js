@@ -37,6 +37,7 @@ window.DojoHelp = (function () {
     let articleId = null;
     let articleSlug = null;
     let contentsScroll = 0;
+    let openSecs = null;       // contents: the section ids shown open
     let query = '';
     let results = [];
     let active = -1;
@@ -287,36 +288,66 @@ window.DojoHelp = (function () {
                 opts && opts.summary === false ? null : h('span', { class: 'help-row-s', text: a.summary || '' })));
     }
 
+    // Contents: the tours in a glass well (things to do), then the manual as numbered,
+    // collapsible sections (things to read). openSecs: the sections shown open; the first
+    // opens on the first visit, and the one you were reading stays open when you come back.
     function renderContents() {
         const kids = [];
         const tours = (manual && manual.tours) || [];
         if (tours.length) {
             const done = readProgress();
             const canStart = !!(window.DojoTour && typeof window.DojoTour.start === 'function');
-            kids.push(h('section', { class: 'help-grp', 'aria-labelledby': 'help-grp-tours' },
-                h('h3', { class: 'help-lbl', id: 'help-grp-tours', text: 'Tours' }),
-                h('ul', { class: 'help-list' }, tours.map((t) => h('li', null,
+            kids.push(h('section', { class: 'help-grp help-tours', 'aria-labelledby': 'help-grp-tours' },
+                h('h3', { class: 'help-lbl', id: 'help-grp-tours' }, 'Guided tours',
+                    h('span', { class: 'help-lbl-n', text: 'on a practice board' })),
+                h('ul', { class: 'help-tour-list' }, tours.map((t) => h('li', null,
                     h('button', {
-                        type: 'button', class: 'help-row help-tour', 'data-tour': t.id, disabled: !canStart,
+                        type: 'button', class: 'help-tour' + (done[t.id] ? ' is-done' : ''), 'data-tour': t.id, disabled: !canStart,
                         title: canStart ? null : 'Tours are coming soon'
                     },
-                        h('span', { class: 'help-row-t' }, t.title || t.id,
-                            t.minutes ? h('span', { class: 'help-row-m', text: `· ${t.minutes} min` }) : null),
-                        done[t.id] ? h('span', { class: 'help-done', title: 'Done', 'aria-label': 'Done', text: '✓' }) : null))))));
+                        h('span', { class: 'help-tour-play', 'aria-hidden': 'true' }, icon('fa-solid fa-play')),
+                        h('span', { class: 'help-tour-t', text: t.title || t.id }),
+                        t.minutes ? h('span', { class: 'help-tour-m', text: `${t.minutes} min` }) : null,
+                        done[t.id]
+                            ? h('span', { class: 'help-tour-go', title: 'Done', 'aria-label': 'Done' }, '✓ Again')
+                            : h('span', { class: 'help-tour-go', 'aria-hidden': 'true', text: 'Start ›' })))))));
         }
-        (manual.sections || []).forEach((s) => {
-            const arts = (s.articles || []).map((id) => byId[id]).filter(Boolean);
-            if (!arts.length) return;
-            kids.push(h('section', { class: 'help-grp', 'aria-labelledby': `help-grp-${s.id}` },
-                h('h3', { class: 'help-lbl', id: `help-grp-${s.id}`, text: s.title }),
-                h('ul', { class: 'help-list' }, arts.map((a) => articleRow(a)))));
+        const secs = (manual.sections || []).map((s) => ({ s, arts: (s.articles || []).map((id) => byId[id]).filter(Boolean) }))
+            .filter((x) => x.arts.length);
+        if (!openSecs) openSecs = new Set(secs.length ? [secs[0].s.id] : []);
+        const total = secs.reduce((n, x) => n + x.arts.length, 0);
+        kids.push(h('h3', { class: 'help-lbl help-man-lbl' }, 'Manual', h('span', { class: 'help-lbl-n', text: `${total} articles` })));
+        secs.forEach(({ s, arts }, i) => {
+            const open = openSecs.has(s.id);
+            const listId = `help-sec-${s.id}`;
+            kids.push(h('section', { class: 'help-sec' + (open ? ' is-open' : '') },
+                h('button', {
+                    type: 'button', class: 'help-sec-h', 'data-sec': s.id,
+                    'aria-expanded': open ? 'true' : 'false', 'aria-controls': listId
+                },
+                    h('span', { class: 'help-sec-n', text: String(i + 1).padStart(2, '0') }),
+                    h('span', { class: 'help-sec-t', text: s.title }),
+                    h('span', { class: 'help-sec-c', text: String(arts.length) }),
+                    icon('fa-solid fa-chevron-down help-sec-chev')),
+                h('ul', { class: 'help-list help-sec-list', id: listId, hidden: !open }, arts.map((a) => articleRow(a)))));
         });
         els.body.replaceChildren(h('nav', { class: 'help-toc', 'aria-label': 'Manual contents' }, kids));
+    }
+
+    function toggleSection(id) {
+        if (!openSecs) openSecs = new Set();
+        if (openSecs.has(id)) openSecs.delete(id); else openSecs.add(id);
+        const keep = els.body.scrollTop;
+        renderContents();
+        els.body.scrollTop = keep;
+        const btn = els.body.querySelector(`[data-sec="${id}"]`);
+        if (btn) btn.focus({ preventScroll: true });
     }
 
     // ---------- Article ----------
     function showArticle(id, slug) {
         if (view === 'contents') contentsScroll = els.body.scrollTop;
+        if (byId[id]) { if (!openSecs) openSecs = new Set(); openSecs.add(byId[id].section); }
         view = 'article';
         articleId = id;
         articleSlug = slug || null;
@@ -822,6 +853,8 @@ window.DojoHelp = (function () {
             return;
         }
         if (t.closest('[data-back]')) { e.preventDefault(); showContents(); return; }
+        const sec = t.closest('[data-sec]');
+        if (sec) { toggleSection(sec.getAttribute('data-sec')); return; }
         if (t.closest('[data-browse]')) { setQuery('', false); showContents(); return; }
         const other = t.closest('.help-other-go');
         if (other) { setDev(other.getAttribute('data-dev')); return; }

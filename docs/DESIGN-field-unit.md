@@ -342,7 +342,7 @@ The app's front door, on the chassis. Two columns: the brand on the left (the ma
 ## Do's and don'ts
 
 - Do keep the live readings. A Field Unit board that drops the discard, the log, the odds, or the node recap is wrong.
-- Do use the approved signal only for End turn / Launch, live lore, the active branch, the multiverse cursor, auto-save on, a new-card pip, and the Help key until Help is first opened (it breathes: a signal halo, never a fill).
+- Do use the approved signal only for End turn / Launch, live lore, the active branch, the multiverse cursor, auto-save on, a new-card pip, the Help key until Help is first opened (it breathes: a signal halo, never a fill), and links between Help articles (by day deepened toward ink so 13px text keeps AA on paper; the underline is the pure signal).
 - Do use Ember `#E4572E` by day and Radio `#E86B2A` on Kiln, unless a theme explicitly picks Coral, Olive, or Trace.
 - Do keep Kiln paper at `#221F1B` and the well at `#0C0C0C`. Do not grey the night chassis.
 - Do use ink colors only as player ticks and cost pips.

@@ -7476,6 +7476,222 @@ body.help-open #btn-help i {
     display: none;
 }
 
+/* Contents, v2 (owner testing): tours read as things to do, the manual as numbered sections.
+   Tours sit in a glass well like the board's; sections are indexed rows (signal mono, as the
+   landing page's spec rows) that open and close. */
+.help-lbl-n {
+    margin-left: 8px;
+    font-weight: 400;
+    letter-spacing: 0.08em;
+    color: var(--text-faint);
+}
+
+.help-tours .help-lbl {
+    margin-bottom: 6px;
+}
+
+.help-tour-list {
+    margin: 0;
+    padding: 4px;
+    list-style: none;
+    background: var(--fu-glass);
+    border-radius: var(--radius-inset, 10px);
+}
+
+.help-tour-list > li + li {
+    border-top: 1px solid var(--fu-glass-line);
+}
+
+.help-tour {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 10px 10px;
+    border: 0;
+    border-radius: 7px;
+    background: none;
+    color: var(--fu-light);
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+.help-tour:hover,
+.help-tour:focus-visible {
+    background: var(--fu-glass-raised);
+}
+
+.help-tour:disabled {
+    cursor: default;
+    opacity: 0.5;
+}
+
+.help-tour-play {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    border: 1px solid var(--fu-glass-line);
+    border-radius: 6px;
+    font-size: 8px;
+    color: var(--fu-glass-2);
+}
+
+.help-tour:hover .help-tour-play {
+    border-color: var(--accent);
+    color: var(--accent);
+}
+
+.help-tour-t {
+    flex: 1 1 auto;
+    min-width: 0;
+    font-size: 13px;
+    font-weight: 560;
+}
+
+.help-tour-m,
+.help-tour-go {
+    flex: none;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--fu-glass-mute);
+}
+
+.help-tour-go {
+    min-width: 56px;
+    text-align: right;
+    color: var(--fu-glass-2);
+}
+
+.help-tour:hover .help-tour-go {
+    color: var(--accent);
+}
+
+.help-tour.is-done .help-tour-go {
+    color: var(--fu-glass-mute);
+}
+
+.help-man-lbl {
+    margin: 20px 0 4px;
+}
+
+.help-sec {
+    border-top: 1px solid var(--fu-row-rule);
+}
+
+.help-sec:last-child {
+    border-bottom: 1px solid var(--fu-row-rule);
+}
+
+.help-sec-h {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 11px 4px;
+    border: 0;
+    background: none;
+    color: var(--text);
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+.help-sec-h:hover .help-sec-t {
+    text-decoration: underline;
+    text-decoration-color: var(--border-strong);
+    text-underline-offset: 3px;
+}
+
+.help-sec-n {
+    flex: none;
+    width: 18px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--accent);
+}
+
+.help-sec-t {
+    flex: 1 1 auto;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+}
+
+.help-sec-c {
+    flex: none;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-dim);
+}
+
+.help-sec-chev {
+    flex: none;
+    width: 12px;
+    font-size: 10px;
+    color: var(--text-dim);
+    transition: transform 120ms ease-out;
+}
+
+.help-sec.is-open .help-sec-chev {
+    transform: rotate(180deg);
+}
+
+.help-sec-list {
+    margin: 0 0 10px 13px;
+    padding-left: 15px;
+    border-left: 1px solid var(--border);
+}
+
+.help-sec-list[hidden] {
+    display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .help-sec-chev {
+        transition: none;
+    }
+}
+
+/* Links to other articles: the signal. By day it is deepened toward ink so 13px text keeps AA
+   on paper (Ember on paper is about 3.7:1); the underline stays the pure signal. */
+.help-prose a,
+.help-rel .help-row-t {
+    color: color-mix(in oklch, var(--accent) 74%, var(--text));
+    text-decoration: underline;
+    text-decoration-color: var(--accent);
+    text-decoration-thickness: 1px;
+    text-underline-offset: 3px;
+}
+
+.help-prose a:hover,
+.help-rel .help-row:hover .help-row-t {
+    text-decoration-thickness: 2px;
+}
+
+:root[data-theme="night"] .help-prose a,
+:root[data-theme="night"] .help-rel .help-row-t {
+    color: var(--accent);
+}
+
+.help-rel .help-row-t {
+    text-decoration: none;
+}
+
+.help-rel .help-row:hover .help-row-t {
+    text-decoration: underline;
+}
+
+.help-rel .help-row-t::after {
+    content: '→';
+    margin-left: 2px;
+}
+
 /* ---- M2 · Search: result rows, highlights, no-results ---- */
 
 /* ---- M4 · Spotlight: dimmer, ring, callout ---- */

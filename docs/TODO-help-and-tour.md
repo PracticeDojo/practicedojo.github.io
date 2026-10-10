@@ -133,6 +133,8 @@ into the right milestone, or into *Parked* if it's outside the plan.
 
 - [x] First-time players barely noticed the tour offer (a strip under the headline). *Now a welcome dialog over the home screen (a bottom sheet on phones) with **Start the tour** / **Explore on my own**; exploring points the spotlight at Help. The Help keys breathe in the signal until Help is first opened (paused in tours, steady under reduced motion); DESIGN-field-unit.md allows that use. Checked at 1440 and 390, day and night: welcome, explore → spotlight on Help, start → tour runs, Esc → home with no welcome, opening Help stops the breathing*
 
+- [x] Help drawer: tours and sections looked the same, and links were black. *Tours now sit in a glass well (play mark, minutes, Start › or ✓ Again); the manual is ten numbered sections (signal mono index, title, count) that open and close, with their articles behind a hairline; the section you read stays open, Getting started opens first. Links are signal (by day deepened toward ink for AA, pure-signal underline; Radio at night); Related rows are signal with an arrow. Checked at 1440 and 390, day and night*
+
 ## Found while building (not fixed; outside this plan)
 App bugs the writers noticed while checking articles. The manual describes today's behaviour.
 - Desktop: clicking or hovering an unknown card in the active hand throws (`showContextMenu` reads `dbCard.cost`, `showPreview` reads `images`), so it can't be swapped there
