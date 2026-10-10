@@ -3,12 +3,14 @@
   "title": "Study a Duels.ink game",
   "order": 3,
   "minutes": 2,
-  "start": { "screen": "home" },
+  "start": {
+    "screen": "home"
+  },
   "steps": [
     {
       "id": "intake",
       "target": "intake",
-      "text": "Paste a Duels.ink log or replay into this field, or drop the file on the page. The Dojo works out what it is.",
+      "text": "**Paste a Duels.ink log or replay into this field**, or **drop the file on the page**. The Dojo works out what it is.",
       "learn": "import-overview"
     },
     {
@@ -16,8 +18,8 @@
       "target": "example-log",
       "until": "importRead",
       "text": {
-        "desktop": "No game to hand? Press **A Duels.ink log** for an example.",
-        "phone": "No game to hand? Tap **A Duels.ink log** for an example."
+        "desktop": "No game to hand? **Press A Duels.ink log** for an example.",
+        "phone": "No game to hand? **Tap A Duels.ink log** for an example."
       }
     },
     {
@@ -31,8 +33,8 @@
       "target": "readout",
       "until": "scratchOpen",
       "text": {
-        "desktop": "Press **Study this game**. In the tour it opens as a practice board, so nothing goes in your library.",
-        "phone": "Tap **Study this game**. In the tour it opens as a practice board, so nothing goes in your library."
+        "desktop": "**Press Study this game.** In the tour it opens as a practice board, so nothing goes in your library.",
+        "phone": "**Tap Study this game.** In the tour it opens as a practice board, so nothing goes in your library."
       },
       "learn": "import-log"
     },
@@ -41,13 +43,13 @@
       "target": "multiverse",
       "until": "multiverseOpen",
       "focus": false,
-      "text": "Every turn of the game is now a node. Open the **Multiverse** to see them.",
+      "text": "Every turn of the game is now a node. **Open the Multiverse** to see them.",
       "learn": "multiverse"
     },
     {
       "id": "turns",
       "target": "tree-canvas",
-      "text": "Here's the game turn by turn. Select a node and **Play from here** to replay it. Cards the log never names stay unknown until you fill them in.",
+      "text": "Here's the game turn by turn. **Select a node and press Play from here** to replay it. Cards the log never names stay unknown until you fill them in.",
       "learn": "hidden-information"
     }
   ]

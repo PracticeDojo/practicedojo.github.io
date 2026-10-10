@@ -10,8 +10,8 @@
     {
       "id": "welcome",
       "text": {
-        "desktop": "Welcome to the Practice Dojo! This is a practice board with two pre-fabricated decks. Nothing you do here is saved. Leave any time with **✕** or Esc.",
-        "phone": "Welcome to the Practice Dojo! This is a practice board with two pre-fabricated decks. Nothing you do here is saved. Leave any time with **✕**."
+        "desktop": "Welcome to the Practice Dojo! This is a practice board with two pre-fabricated decks. Nothing you do here is saved. **Leave any time with ✕ or Esc.**",
+        "phone": "Welcome to the Practice Dojo! This is a practice board with two pre-fabricated decks. Nothing you do here is saved. **Leave any time with ✕.**"
       }
     },
     {
@@ -22,8 +22,8 @@
       },
       "until": "mulliganLooked",
       "text": {
-        "desktop": "First, your opening hand. Look at a card up close: click the magnifier in its top-right corner. Click again to put it back.",
-        "phone": "First, your opening hand. Press and hold a card to see it large. Tap anywhere on it to put it back."
+        "desktop": "First, your opening hand. **Click the magnifier** in a card's top-right corner to look at it up close. **Click again** to put it back.",
+        "phone": "First, your opening hand. **Press and hold a card** to see it large. **Tap anywhere on it** to put it back."
       },
       "learn": "mulligan",
       "also": {
@@ -40,8 +40,8 @@
       },
       "until": "mulliganMarked",
       "text": {
-        "desktop": "Click a card you don't want, say the most expensive one, to send it to the bottom. The curve and inkable readout under the hand show what you'd keep. Click it again to keep it.",
-        "phone": "Tap a card you don't want, say the most expensive one, to send it to the bottom. The readout under the hand shows what you'd keep. Tap it again to keep it."
+        "desktop": "**Click a card you don't want**, say the most expensive one, to send it to the bottom. The curve and inkable readout under the hand show what you'd keep. Click it again to keep it.",
+        "phone": "**Tap a card you don't want**, say the most expensive one, to send it to the bottom. The readout under the hand shows what you'd keep. Tap it again to keep it."
       },
       "learn": "mulligan"
     },
@@ -50,8 +50,8 @@
       "target": "mulligan-confirm",
       "until": "mulliganChosen",
       "text": {
-        "desktop": "Press **Mulligan** (the key counts the cards you marked): they go to the bottom of your deck, you draw as many, and the deck is shuffled. Nothing marked? The key says **Keep hand**.",
-        "phone": "Tap **Mulligan** (the key counts the cards you marked): they go to the bottom of your deck, you draw as many, and the deck is shuffled. Nothing marked? The key says **Keep hand**."
+        "desktop": "**Press Mulligan** (the key counts the cards you marked): they go to the bottom of your deck, you draw as many, and the deck is shuffled. Nothing marked? The key says Keep hand.",
+        "phone": "**Tap Mulligan** (the key counts the cards you marked): they go to the bottom of your deck, you draw as many, and the deck is shuffled. Nothing marked? The key says Keep hand."
       },
       "learn": "mulligan"
     },
@@ -63,8 +63,8 @@
       },
       "until": "mulliganSettled",
       "text": {
-        "desktop": "Your new hand: the card you drew has a **NEW** pip. Press **Start turn** to play.",
-        "phone": "Your new hand: the card you drew has a **NEW** pip. Tap **Start turn** to play."
+        "desktop": "Your new hand: the card you drew has a NEW pip. **Press Start turn** to play.",
+        "phone": "Your new hand: the card you drew has a NEW pip. **Tap Start turn** to play."
       },
       "learn": "mulligan"
     },
@@ -85,8 +85,8 @@
       ],
       "until": "inkedThisTurn",
       "text": {
-        "desktop": "Put a card in your inkwell: drag it from your hand onto the inkwell, or hover it and press **INK**.",
-        "phone": "Put a card in your inkwell: tap a card in your hand, then **Ink**."
+        "desktop": "Put a card in your inkwell: **drag it from your hand onto the inkwell**, or **hover it and press INK**.",
+        "phone": "Put a card in your inkwell: **tap a card in your hand, then Ink**."
       },
       "hint": {
         "desktop": "Only inkable cards have **INK**.",
@@ -105,8 +105,8 @@
       ],
       "until": "cardPlayed",
       "text": {
-        "desktop": "Now play a card: drag a 1-cost character onto your play area, or hover it and press **PLAY**.",
-        "phone": "Now play a card: tap a 1-cost character, then **Play**."
+        "desktop": "Now play a card: **drag a 1-cost character onto your play area**, or **hover it and press PLAY**.",
+        "phone": "Now play a card: **tap a 1-cost character, then Play**."
       },
       "hint": "The cost is the number in the card's top-left corner.",
       "learn": "play-a-card"
@@ -115,7 +115,7 @@
       "id": "read-card",
       "device": "desktop",
       "target": "card-preview",
-      "text": "Hover any card on the board to read it here, full size: cost, strength, willpower, lore and text.",
+      "text": "**Hover any card on the board** to read it here, full size: cost, strength, willpower, lore and text.",
       "learn": "card-preview"
     },
     {
@@ -126,7 +126,7 @@
         "card-drawer"
       ],
       "until": "drawerRead",
-      "text": "Tap a card in your hand to open its drawer: the card full size, and what you can do with it. Close it when you've read it.",
+      "text": "**Tap a card in your hand** to open its drawer: the card full size, and what you can do with it. **Close it** when you've read it.",
       "learn": "card-actions"
     },
     {
@@ -135,8 +135,8 @@
       "until": "turnEnded",
       "focus": false,
       "text": {
-        "desktop": "Done for this turn? Press **End turn**, or the Space bar.",
-        "phone": "Done for this turn? Tap **End turn**."
+        "desktop": "Done for this turn? **Press End turn**, or the Space bar.",
+        "phone": "Done for this turn? **Tap End turn**."
       },
       "learn": "end-turn"
     },
@@ -157,7 +157,7 @@
         ]
       },
       "until": "settledAndInked",
-      "text": "Now you're Player 2: the board turns round, so their side is at the bottom. Settle their opening hand, then ink one of their cards.",
+      "text": "Now you're Player 2: the board turns round, so their side is at the bottom. **Settle their opening hand, then ink one of their cards.**",
       "learn": "you-play-both-sides"
     },
     {
@@ -165,8 +165,8 @@
       "target": "undo",
       "until": "undone",
       "text": {
-        "desktop": "Changed your mind? **Undo** takes back the last thing you did. Press it now to take that ink back.",
-        "phone": "Changed your mind? **Undo** takes back the last thing you did. Tap it now to take that ink back."
+        "desktop": "Changed your mind? Undo takes back the last thing you did. **Press Undo** now to take that ink back.",
+        "phone": "Changed your mind? Undo takes back the last thing you did. **Tap Undo** now to take that ink back."
       },
       "learn": "undo"
     },
@@ -174,14 +174,14 @@
       "id": "multiverse",
       "device": "desktop",
       "target": "mini-multiverse",
-      "text": "Every turn you end is kept as a node in the **Multiverse**. The mini map shows them here; **Multiverse** (or M) opens the whole tree.",
+      "text": "Every turn you end is kept as a node in the Multiverse. The mini map shows them here; **press Multiverse (or M)** to open the whole tree.",
       "learn": "mini-multiverse"
     },
     {
       "id": "multiverse-phone",
       "device": "phone",
       "target": "multiverse",
-      "text": "Every turn you end is kept as a node in the **Multiverse**. This button opens the whole tree.",
+      "text": "Every turn you end is kept as a node in the Multiverse. **Tap this button** to open the whole tree.",
       "learn": "multiverse"
     }
   ]

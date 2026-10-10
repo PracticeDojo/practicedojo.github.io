@@ -7931,7 +7931,7 @@ body.help-open #btn-help i {
 /* Tour mode (owner testing): a tour step must never read as part of the app, so tours wear
    Olive, from the key family (never the signal, never an ink): the callout is an Olive panel,
    the ring is Olive, the screen gets an Olive frame and the Practice banner turns Olive.
-   A step that replaces an open one glides there and pulses when it lands.
+   Steps change in place, without moving or resizing animations (owner testing).
    --tour / --tour-ink: one place to change the tour colour. Kiln lifts Olive as the Library does. */
 :root {
     --tour: var(--key-olive);
@@ -7995,32 +7995,6 @@ body.help-open #btn-help i {
     outline-color: var(--tour-ink);
 }
 
-/* Between steps: the callout and the cut-out glide to the new place... */
-.spot.is-glide .spot-callout,
-.spot.is-glide .spot-hole {
-    transition: left 260ms cubic-bezier(0.2, 0.7, 0.2, 1), top 260ms cubic-bezier(0.2, 0.7, 0.2, 1),
-        width 260ms cubic-bezier(0.2, 0.7, 0.2, 1), height 260ms cubic-bezier(0.2, 0.7, 0.2, 1);
-}
-
-/* ...and pulse when they land, so the eye finds them. */
-@keyframes spot-ring-arrive {
-    0% { box-shadow: 0 0 0 0 color-mix(in oklch, var(--tour) 70%, transparent), 0 0 0 200vmax var(--spot-dim); }
-    100% { box-shadow: 0 0 0 16px color-mix(in oklch, var(--tour) 0%, transparent), 0 0 0 200vmax var(--spot-dim); }
-}
-
-@keyframes spot-callout-arrive {
-    0% { box-shadow: 0 0 0 0 color-mix(in oklch, var(--tour) 75%, transparent), 0 12px 32px rgb(0 0 0 / 0.38); }
-    100% { box-shadow: 0 0 0 14px color-mix(in oklch, var(--tour) 0%, transparent), 0 12px 32px rgb(0 0 0 / 0.38); }
-}
-
-.spot.is-arrive[data-tone="tour"] .spot-hole {
-    animation: spot-ring-arrive 900ms ease-out 2;
-}
-
-.spot.is-arrive[data-tone="tour"] .spot-callout {
-    animation: spot-callout-arrive 900ms ease-out 2;
-}
-
 /* The whole screen is framed while a tour runs. */
 body.is-touring::after {
     content: '';
@@ -8049,12 +8023,6 @@ body.is-touring::after {
     color: var(--tour-key-text);
 }
 
-@media (prefers-reduced-motion: reduce) {
-    .spot.is-glide .spot-callout,
-    .spot.is-glide .spot-hole {
-        transition: none;
-    }
-}
 
 /* ---- M7 · Help in context: the ? links, the home tour strip ---- */
 

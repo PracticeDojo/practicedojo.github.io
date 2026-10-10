@@ -141,6 +141,8 @@ into the right milestone, or into *Parked* if it's outside the plan.
 
 - [x] Owner: tour colour Trace → Olive. *`--tour` / `--tour-ink` in field-unit.css (Olive `#8C8A2E` with `#141311` text, about 5:1; Kiln `#9C9A34`); the callout's primary key is that ink with paper text. Checked at 1440 and 390, day and night*
 
+- [x] Owner: bold the calls to action in tour text, and drop the outline's glide and pulse (distracting, looked broken). *Every step in the three tours bolds its action as one phrase ("**Tap Start turn**"); the spotlight no longer glides, resizes or pulses between steps (only its first fade-in remains)*
+
 ## Found while building (not fixed; outside this plan)
 App bugs the writers noticed while checking articles. The manual describes today's behaviour.
 - Desktop: clicking or hovering an unknown card in the active hand throws (`showContextMenu` reads `dbCard.cost`, `showPreview` reads `images`), so it can't be swapped there
