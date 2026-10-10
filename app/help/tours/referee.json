@@ -1,0 +1,230 @@
+{
+  "id": "referee",
+  "title": "You're the referee",
+  "order": 2,
+  "minutes": 4,
+  "start": {
+    "scenario": "referee.dojo.json.gz"
+  },
+  "steps": [
+    {
+      "id": "welcome",
+      "text": {
+        "desktop": "A game in progress: your turn 9. The Dojo moves the cards and keeps the score, but **it doesn't read the cards**. Nothing checks a card's text, its keywords or what it lets you choose. You do, as you would across a real table. **Leave any time with ✕ or Esc.**",
+        "phone": "A game in progress: your turn 9. The Dojo moves the cards and keeps the score, but **it doesn't read the cards**. Nothing checks a card's text, its keywords or what it lets you choose. You do, as you would across a real table. **Leave any time with ✕.**"
+      },
+      "learn": "what-is-the-dojo"
+    },
+    {
+      "id": "horseman-play",
+      "target": {
+        "desktop": "your-board",
+        "phone": "hand"
+      },
+      "also": [
+        "card-drawer"
+      ],
+      "until": "cardIn",
+      "args": {
+        "card": "The Horseman Strikes!",
+        "zone": ["field", "discard"]
+      },
+      "text": {
+        "desktop": "In your hand: **The Horseman Strikes!** “Draw a card. You may banish chosen character with Evasive.” **Play it: drag it onto your play area**, or **click it and press Play Card**. Its 3 ink are spent for you.",
+        "phone": "In your hand: **The Horseman Strikes!** “Draw a card. You may banish chosen character with Evasive.” **Play it: tap it in your hand, then Play.** Its 3 ink are spent for you."
+      },
+      "learn": "play-a-card"
+    },
+    {
+      "id": "horseman-draw",
+      "target": "deck",
+      "until": "drew",
+      "text": {
+        "desktop": "Nothing happened: the card's effects are yours to carry out. It says draw a card, so **click your deck to draw one**.",
+        "phone": "Nothing happened: the card's effects are yours to carry out. It says draw a card, so **tap your deck to draw one**."
+      },
+      "learn": "draw"
+    },
+    {
+      "id": "horseman-banish",
+      "target": "opponent-field",
+      "also": [
+        "card-drawer"
+      ],
+      "until": "cardIn",
+      "args": {
+        "card": "Vixey - Forest Friend",
+        "zone": "discard",
+        "side": "them"
+      },
+      "text": {
+        "desktop": "Now “banish chosen character with Evasive”. Which of theirs has Evasive? The Dojo won't tell you, and it won't stop you choosing wrong. **Hover their cards to read them, then banish the one with Evasive**: hover it and press Banish, or B.",
+        "phone": "Now “banish chosen character with Evasive”. Which of theirs has Evasive? The Dojo won't tell you, and it won't stop you choosing wrong. **Tap their cards to read them, then banish the one with Evasive** with Banish in its drawer."
+      },
+      "hint": "It's **Vixey**: Evasive is the first word of her text.",
+      "wrong": {
+        "until": "cardIn",
+        "args": {
+          "card": ["Elinor - Renowned Diplomat", "Nani - Stage Manager"],
+          "zone": "discard",
+          "side": "them"
+        },
+        "text": "The Dojo let you, but that character doesn't have Evasive. Across a real table your opponent would stop you; here, you're the referee. **Press Undo**, then banish the one with Evasive."
+      },
+      "learn": "card-actions"
+    },
+    {
+      "id": "horseman-discard",
+      "target": "field",
+      "also": [
+        "card-drawer"
+      ],
+      "until": "cardIn",
+      "args": {
+        "card": "The Horseman Strikes!",
+        "zone": "discard"
+      },
+      "text": {
+        "desktop": "An action stays in play until you put it away. **Send The Horseman Strikes! to your discard: hover it and press Banish**, or drag it onto your discard pile.",
+        "phone": "An action stays in play until you put it away. **Send The Horseman Strikes! to your discard: tap it, then Banish.**"
+      },
+      "learn": "play-a-card"
+    },
+    {
+      "id": "maneuvers-plan",
+      "target": "your-board",
+      "text": "A longer play now. You have **6 ink**, Peter Pan and Luisa are ready, and Elinor is in your way. The plan: quest with Luisa, use **Magical Maneuvers** to exert Elinor and take Luisa back to your hand, then shift **Peter Pan & Tinker Bell** onto Peter Pan and challenge Elinor."
+    },
+    {
+      "id": "quest-luisa",
+      "target": "field",
+      "also": [
+        "card-drawer"
+      ],
+      "until": "quested",
+      "args": {
+        "card": "Luisa Madrigal - Pushing Through"
+      },
+      "text": {
+        "desktop": "**Quest with Luisa Madrigal: hover her and press the quest diamond**, or right-click her and choose Quest.",
+        "phone": "**Quest with Luisa Madrigal: tap her, then Quest.**"
+      },
+      "learn": "quest"
+    },
+    {
+      "id": "maneuvers-play",
+      "target": {
+        "desktop": "your-board",
+        "phone": "hand"
+      },
+      "also": [
+        "card-drawer"
+      ],
+      "until": "cardIn",
+      "args": {
+        "card": "Magical Maneuvers",
+        "zone": ["field", "discard"]
+      },
+      "text": {
+        "desktop": "**Play Magical Maneuvers** (2 ink): drag it onto your play area, or click it and press Play Card. “Return chosen character of yours to your hand. Exert chosen character.”",
+        "phone": "**Play Magical Maneuvers** (2 ink): tap it in your hand, then Play. “Return chosen character of yours to your hand. Exert chosen character.”"
+      },
+      "learn": "play-a-card"
+    },
+    {
+      "id": "maneuvers-discard",
+      "target": "field",
+      "also": [
+        "card-drawer"
+      ],
+      "until": "cardIn",
+      "args": {
+        "card": "Magical Maneuvers",
+        "zone": "discard"
+      },
+      "text": {
+        "desktop": "Same as before: the Dojo doesn't put an action away for you. **Send Magical Maneuvers to your discard yourself**: hover it and press Banish, or drag it onto your discard pile.",
+        "phone": "Same as before: the Dojo doesn't put an action away for you. **Send Magical Maneuvers to your discard yourself: tap it, then Banish.**"
+      },
+      "learn": "play-a-card"
+    },
+    {
+      "id": "exert-elinor",
+      "target": "opponent-field",
+      "also": [
+        "card-drawer"
+      ],
+      "until": "cardExerted",
+      "args": {
+        "card": "Elinor - Renowned Diplomat",
+        "side": "them"
+      },
+      "text": {
+        "desktop": "Now its effects, one at a time. “Exert chosen character”: **exert Elinor: hover her and press Exert**, or E.",
+        "phone": "Now its effects, one at a time. “Exert chosen character”: **exert Elinor: tap her, then Exert.**"
+      },
+      "learn": "card-actions"
+    },
+    {
+      "id": "bounce-luisa",
+      "target": "field",
+      "also": [
+        "card-drawer"
+      ],
+      "until": "cardIn",
+      "args": {
+        "card": "Luisa Madrigal - Pushing Through",
+        "zone": "hand"
+      },
+      "text": {
+        "desktop": "“Return chosen character of yours to your hand”: **right-click Luisa and choose Return to Hand**, or drag her onto your hand. The lore she quested for stays.",
+        "phone": "“Return chosen character of yours to your hand”: **tap Luisa, then To hand.** The lore she quested for stays."
+      },
+      "learn": "move-cards"
+    },
+    {
+      "id": "shift",
+      "target": {
+        "desktop": "your-board",
+        "phone": "hand"
+      },
+      "until": "shifted",
+      "args": {
+        "card": "Peter Pan & Tinker Bell - Fast Friends",
+        "onto": "Peter Pan - Vine Duelist"
+      },
+      "text": {
+        "desktop": "**Shift Peter Pan & Tinker Bell onto Peter Pan: drag it from your hand onto Peter Pan.** Its Shift cost, 4 ink, is spent for you. It takes Peter Pan's place, ready and dry.",
+        "phone": "**Shift Peter Pan & Tinker Bell onto Peter Pan: press it in your hand and drag it onto Peter Pan.** Its Shift cost, 4 ink, is spent for you. It takes Peter Pan's place, ready and dry."
+      },
+      "learn": "locations-and-stacks"
+    },
+    {
+      "id": "challenge",
+      "target": {
+        "desktop": "field",
+        "phone": "board"
+      },
+      "also": [
+        "card-drawer"
+      ],
+      "until": "challenged",
+      "args": {
+        "card": "Peter Pan & Tinker Bell - Fast Friends",
+        "target": "Elinor - Renowned Diplomat"
+      },
+      "text": {
+        "desktop": "Elinor is exerted, so she can be challenged. **Drag Peter Pan & Tinker Bell onto Elinor** to challenge her. The forecast shows how it ends before you let go.",
+        "phone": "Elinor is exerted, so she can be challenged. **Drag Peter Pan & Tinker Bell onto Elinor** to challenge her, or tap it, press Challenge, then tap Elinor."
+      },
+      "hint": "The Dojo would let you challenge a ready character too, or one with Evasive. Keeping to the rules is up to you.",
+      "learn": "challenge"
+    },
+    {
+      "id": "lore",
+      "target": "lore",
+      "text": "Some cards change lore outright. **A Pirate's Life**: “Each opponent loses 2 lore. You gain 2 lore.” Nothing does that for you: **press + or − beside a player's Lore** to set it, any time, for any card that asks.",
+      "learn": "quest"
+    }
+  ]
+}

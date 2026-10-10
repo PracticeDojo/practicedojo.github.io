@@ -700,6 +700,19 @@ Implements version 2 of `docs/DESIGN-field-unit.md` (Kiln dark mode, signal fami
 - **Signal family.** By day the signal is Ember `#E4572E`; on Kiln it is Radio `#E86B2A` with dark text on the key. Tweaks → Accent offers only the approved swaps: **Signal** (the theme's own), **Coral**, **Olive** (its lore numeral lifts to `#C6C45A` on the well) and **Trace**. Each carries the text colour that sits on it. The old Amber / Rose / Emerald / Violet / Azure accents were ink colours, so a saved pick of one falls back to Signal.
 - **CSS file.** The Field Unit tokens, themes, palettes and component styles moved from the inline `<style>` to `app/css/field-unit.css`, loaded right after it (pixel-identical move). The older inline rules stay put.
 
+## Feature 59: "You're the referee" tour — card effects are yours to carry out (v3.12.0)
+
+### User Story
+- As a new player, I want to see that the Dojo is a sandbox that doesn't read the cards, so I know to carry out card effects and keep to the rules myself, as I would across a real table.
+
+### Details
+- **A fourth guided tour**, second in Help's list (the closing card of *Your first turn* offers it next): *You're the referee*, on a scripted practice board (`app/help/tours/referee.dojo.json.gz`: turn 9, Player 1 to play with 9 ink, Peter Pan - Vine Duelist and Luisa Madrigal - Pushing Through in play; Elinor - Renowned Diplomat, Vixey - Forest Friend and Nani - Stage Manager across the table).
+- **The Horseman Strikes!**: play it, draw a card by clicking the deck, then banish the opposing character with Evasive. Banish one without it and the tour says the Dojo let you, that an opponent would have stopped you, and to press Undo. Then put the action in the discard.
+- **A longer play with the 6 ink left**: quest with Luisa, play Magical Maneuvers and discard it yourself, exert Elinor, return Luisa to your hand, shift Peter Pan & Tinker Bell - Fast Friends onto Peter Pan (Shift 4), and challenge Elinor by dragging onto her.
+- **Lore by hand**: the last step shows **+** / **−** beside each player's lore, for cards like A Pirate's Life.
+- **Tour engine**: a step can pass `args` to its predicate, so one predicate serves many steps (`cardIn`, `cardExerted`, `quested`, `drew`, `shifted`, `challenged`, each with a Skip that makes the move), and `wrong: { until, args, text }` swaps the step's text while the player has done the wrong thing. New lessons need only JSON. `tools/help.mjs` checks both fields.
+- Code: `app/help/tours/referee.json`, `app/js/tour.js`; the board is built by `node tools/referee-board.mjs` (edit its zones and re-run). The other tours moved down one in Help's order.
+
 ## Feature 58: Guided tours for first-time players (v3.11.0)
 
 ### User Story
@@ -709,7 +722,7 @@ Implements version 2 of `docs/DESIGN-field-unit.md` (Kiln dark mode, signal fami
 ### Details
 Built from `docs/ARCH-help-and-tour.md` §8 (M5–M7). Shipped together with Feature 57 as v3.11.0.
 - **Opt in.** New players (no sessions on the device, not arriving by a share link) see one strip under the home headline: *New here? Take the 3-minute tour.* **Start tour** · **Not now** (hides it for good). Players who already have sessions get a one-time toast saying where Help is. No pop-ups, no auto-start. The tours are always listed at the top of Help, with ✓ on finished ones.
-- **Three tours:** *Your first turn* (a scripted practice board: mulligan, the board, ink, play, read a card, end turn, the other side, Undo, where the Multiverse is), *The Multiverse* (a copy of the Set 13 demo: nodes, Play from here, branching, saving the turn you're in, plot, mini map or thumb keys) and *Study a Duels.ink game* (the example log, the readout, the imported turns).
+- **Three tours** (a fourth, *You're the referee*, came with Feature 59): *Your first turn* (a scripted practice board: mulligan, the board, ink, play, read a card, end turn, the other side, Undo, where the Multiverse is), *The Multiverse* (a copy of the Set 13 demo: nodes, Play from here, branching, saving the turn you're in, plot, mini map or thumb keys) and *Study a Duels.ink game* (the example log, the readout, the imported turns).
 - **Point and try.** Each step lights the real control (the spotlight) and, where it teaches an action, waits for the player to do it, with *Skip this step*. Desktop and phone have their own wording and targets. A hint appears after 20 seconds; *Learn more* opens the article and the tour carries on when Help closes. ✕ or Esc ends a tour.
 - **Never touches your things.** Tours run on a practice board, a scratch view like an unsaved shared session (*Practice · not saved*; Save offers Save a copy). The match on the board is saved first and put back afterwards; the device library is unchanged.
 - Code: `app/js/tour.js` (`DojoTour`), tours in `app/help/tours/` (`basics.json` + `basics.dojo.json.gz`, `multiverse.json`, `import.json`), `App.openScratch` / `closeScratch` in `app/index.html`.
@@ -1077,3 +1090,4 @@ The public page (`index.html`) follows Field Unit too, as `docs/DESIGN-field-uni
 - [x] Patch: Mulligan card stays up after a hold
 - [x] Feature 57: User manual with fuzzy search, for desktop and phone
 - [x] Feature 58: Guided tours for first-time players
+- [x] Feature 59: "You're the referee" tour — card effects are yours to carry out

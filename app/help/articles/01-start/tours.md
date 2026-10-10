@@ -7,12 +7,13 @@ aliases: [tour, tutorial, walkthrough, guide, onboarding, how do I start, show m
 targets: []
 related: [first-match, multiverse, import-overview]
 order: 50
-verified: v3.11.0
+verified: v3.12.0
 ---
 
-A guided tour points at the real controls one at a time and waits while you try each one. There are three, a few minutes each:
+A guided tour points at the real controls one at a time and waits while you try each one. There are four, a few minutes each:
 
 - **Your first turn**: the mulligan, the board, inking and playing a card, reading a card, ending the turn, playing the other side, [Undo](help:undo) and where the [Multiverse](help:multiverse) is.
+- **You're the referee**: a game in progress where you carry out the cards' effects yourself. Draw for **The Horseman Strikes!** and pick the character with Evasive (the Dojo lets you pick wrong), put actions in the discard, quest, exert, return a character to your hand, shift, challenge, and set lore by hand.
 - **The Multiverse**: on a copy of the Set 13 demo. Open it, read and select a node, **Play from here**, branches, saving the turn you're in, the plot view, and the mini map (desktop) or the thumb keys (phone).
 - **Study a Duels.ink game**: the paste field, the example log, the readout, **Study this game** and the imported turns in the Multiverse.
 

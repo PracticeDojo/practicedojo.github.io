@@ -1,7 +1,7 @@
 {
   "id": "multiverse",
   "title": "The Multiverse",
-  "order": 2,
+  "order": 3,
   "minutes": 3,
   "start": {
     "demo": "s13-amber-amethyst-vs-amethyst-ruby"

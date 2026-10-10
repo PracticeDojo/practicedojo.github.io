@@ -280,6 +280,8 @@ if (existsSync(tourDir)) {
             if (s.learn && !byId[s.learn]) err(sw, `learn: no article "${s.learn}"`);
             if (s.device && !DEVICES.includes(s.device)) err(sw, 'device must be desktop or phone');
             if (s.until != null && typeof s.until !== 'string') err(sw, 'until is the name of a predicate in tour.js');
+            if (s.args != null && (typeof s.args !== 'object' || Array.isArray(s.args))) err(sw, 'args is an object handed to the predicate');
+            if (s.wrong != null && (typeof s.wrong.until !== 'string' || !s.wrong.text)) err(sw, 'wrong needs until (a predicate) and text');
         });
         tours.push({ id, title: t.title, minutes: t.minutes, order: Number.isFinite(t.order) ? t.order : 999, start: t.start || null, steps: t.steps });
     }
