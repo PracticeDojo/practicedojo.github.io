@@ -132,8 +132,8 @@ While a dialog is open, the board's keys do nothing.
 | {key:/} | Jump to the help search |
 | {key:↑} {key:↓} | Move through the search results |
 | {key:Enter} | Open the result |
-| {key:Esc} | Back from an article, then close help |
-| {key:Backspace} in an empty search | Back to the contents |
+| {key:Esc} | Clear the search, then go back from an article, then close help |
+| {key:Backspace} in an empty search | Back from an article to the contents |
 
 ## Good to know
 
