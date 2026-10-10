@@ -735,6 +735,11 @@ Built from `docs/ARCH-help-and-tour.md` §4–§7 and §10 (M0–M4, M7).
 ### Details
 - On a touch screen, press and hold a card in the mulligan: it shows large, as before, but now **stays** when you lift your finger. The next tap anywhere closes it and brings you back to the mulligan; that tap marks nothing. Closing as the finger lifted made the card hard to read.
 
+## Patch: Multiverse always opens on the plot on phones (v3.9.2)
+
+### Details
+- **A phone opens the Multiverse on the plot every time**, even if the cards were picked on an earlier visit (the saved preference no longer overrides it on phones). The Plot tool still flips to the cards for as long as the Multiverse stays open. Desktop and tablets keep their saved choice.
+
 ## Feature 56: Multiverse on phones — thumb keys, the key on top, the plot first (v3.9.0)
 
 ### User Story

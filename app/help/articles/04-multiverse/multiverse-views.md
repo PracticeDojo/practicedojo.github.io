@@ -15,14 +15,12 @@ The Multiverse draws the tree two ways: as cards, full nodes you can read, or as
 ## Switch between cards and plot
 
 :::desktop
-Click **Plot** in the Multiverse header; it stays dark while the plot is on. Click it again for the cards.
+Click **Plot** in the Multiverse header; it stays dark while the plot is on. Click it again for the cards. The Dojo remembers your choice.
 :::
 
 :::phone
-Tap **Plot** (the grid of dots) in the Multiverse header, left of ✕. A phone opens on the plot until you pick a view.
+Tap **Plot** (the grid of dots) in the Multiverse header, left of ✕, to switch to the cards while the Multiverse is open. A phone always opens the Multiverse on the plot: the cards are far too wide for the screen.
 :::
-
-The Dojo remembers your choice.
 
 [Show me](show:plot-toggle)
 
