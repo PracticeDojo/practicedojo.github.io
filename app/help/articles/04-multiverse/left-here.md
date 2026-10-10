@@ -18,6 +18,8 @@ Every jump checks the board you're leaving: **Play from here**, and on desktop a
 
 ## Find a snapshot
 
+%%%TODO: Add a screenshot of a snapshot
+
 A snapshot hangs off the node you were last on, on a dashed line:
 
 - in cards, a dashed card titled **Left here** and the time, like **Left here · 14:32**,
