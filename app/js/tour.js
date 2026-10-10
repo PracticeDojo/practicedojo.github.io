@@ -13,6 +13,11 @@
 //       { demo: '<id>' }                      a scratch copy of a demo (the first if no id matches)
 //       { screen: 'home' }                    the home screen; Study this game opens a practice board
 //   - Steps (§8.3): read-only (Next / Back) or `until` a predicate below (Skip this step).
+//     `args` (an object) is handed to the predicate as ctx.args, so one predicate serves many
+//     steps: cardIn { card, zone, side }, cardExerted { card, side }, quested { card }, drew,
+//     shifted { card, onto }, challenged { card, target }. `card` is a card's full name (or a
+//     list of them); `side` is 'you' (the player to play, the default) or 'them'. `wrong: { until, args, text }` swaps the step's
+//     text while its predicate holds: the Dojo lets a player do the wrong thing, the tour says so.
 //     `text`, `target` and `also` plain or { desktop, phone }; `device` skips a step on the other device; `hint`
 //     (plain or per device) joins the text after 20 s; `learn` adds Learn more (help opens on
 //     that article, the tour waits and comes back when help closes); `also: [targets]` moves
@@ -101,6 +106,27 @@ window.DojoTour = (function () {
     }
     const activeP = (a) => a.state.players[a.state.activePlayer];
 
+    // Cards by name, for predicates with args (the referee tour). `names` is a full name or a list.
+    const sideOf = (a, side) => a.state.players[side === 'them' ? a.state.inactivePlayer : a.state.activePlayer];
+    const named = (a, names) => {
+        const want = [].concat(names || []);
+        return (c) => { const d = c && a.cardDB[c.cardId]; return !!(d && (want.includes(d.fullName) || want.includes(d.name))); };
+    };
+    const ZONES = ['hand', 'field', 'discard', 'inkwell', 'deck'];
+    // The first matching card on that side outside the zones it should end up in: { card, zone }.
+    function findOn(a, side, names, notIn = []) {
+        const p = sideOf(a, side);
+        const is = named(a, names);
+        for (const z of ZONES) {
+            if (notIn.includes(z)) continue;
+            const card = (p[z] || []).find(is);
+            if (card) return { card, zone: z };
+        }
+        return null;
+    }
+    const zonesOf = (args) => [].concat(args.zone || 'field');
+    const onField = (a, side, names) => (sideOf(a, side).field || []).find(named(a, names)) || null;
+
     // A predicate may have skip(ctx, app): what Skip this step does before moving on, so
     // the board is where the following steps expect it.
     const until = {
@@ -129,7 +155,17 @@ window.DojoTour = (function () {
         },
         inkedThisTurn: { test: () => (turnActs().inked || []).length > 0 },
         cardPlayed: { test: () => ((turnActs().played || []).length + (turnActs().shifted || []).length) > 0 },
-        quested: { test: () => (turnActs().quested || []).length > 0 },
+        // Someone quested; with args.card, that character did (Skip quests with it).
+        quested: {
+            test: (c, a) => {
+                const q = turnActs().quested || [];
+                return c.args && c.args.card ? q.some((id) => named(a, c.args.card)({ cardId: id })) : q.length > 0;
+            },
+            skip: (c, a) => {
+                const f = c.args && c.args.card && onField(a, 'you', c.args.card);
+                if (f && !f.exerted) a.quest(f.instanceId);
+            }
+        },
         // The other player's opening hand is settled and one of their cards inked.
         settledAndInked: {
             test: (c, a) => !a.state.mulliganPending && (turnActs().inked || []).length > 0,
@@ -180,7 +216,54 @@ window.DojoTour = (function () {
                 return !!(r && !r.hidden && /Duels\.ink/.test(r.textContent || ''));
             }
         },
-        scratchOpen: { test: (c, a) => !!(a._sharedView && a._sharedView.kind === 'tour' && !visible('setup-modal')) }
+        scratchOpen: { test: (c, a) => !!(a._sharedView && a._sharedView.kind === 'tour' && !visible('setup-modal')) },
+
+        // ---- With args (see the header). Skip does the move the step asked for. ----
+        // A card is in one of the zones (its top card, in play). args: { card, zone, side }.
+        cardIn: {
+            test: (c, a) => zonesOf(c.args).some((z) => (sideOf(a, c.args.side)[z] || []).some(named(a, c.args.card))),
+            skip: (c, a) => {
+                const zones = zonesOf(c.args);
+                const f = findOn(a, c.args.side, c.args.card, zones);
+                if (!f) return;
+                const to = zones[0], id = f.card.instanceId;
+                if (to === 'field' && f.zone === 'hand') a.playCard(id);
+                else if (to === 'discard') a.banish(id);
+                else if (to === 'hand' && f.zone === 'field') a.returnToHand(id);
+            }
+        },
+        // A card in play is exerted. args: { card, side }.
+        cardExerted: {
+            test: (c, a) => { const f = onField(a, c.args.side, c.args.card); return !!(f && f.exerted); },
+            skip: (c, a) => { const f = onField(a, c.args.side, c.args.card); if (f && !f.exerted) a.toggleExert(f.instanceId); }
+        },
+        // The player to play drew a card: the deck click, or a drag off the deck.
+        drew: {
+            init: (c, a) => { c.n = (turnActs().drawn || []).length; c.deck = activeP(a).deck.length; },
+            test: (c, a) => (turnActs().drawn || []).length > c.n || activeP(a).deck.length < c.deck,
+            skip: (c, a) => a.drawCard(a.state.activePlayer)
+        },
+        // args.card is in play with a card under it (shifted onto args.onto).
+        shifted: {
+            test: (c, a) => { const f = onField(a, 'you', c.args.card); return !!(f && f.stackedCards && f.stackedCards.length); },
+            skip: (c, a) => {
+                const top = findOn(a, 'you', c.args.card, ['field']);
+                const under = onField(a, 'you', c.args.onto);
+                if (top && top.zone === 'hand' && under) a.shiftOnto(top.card.instanceId, under.instanceId);
+            }
+        },
+        // args.target (theirs) took damage from a challenge, or is gone to the discard.
+        challenged: {
+            init: (c, a) => { const t = onField(a, 'them', c.args.target); c.dmg = t ? (t.damage || 0) : 0; },
+            test: (c, a) => {
+                const t = onField(a, 'them', c.args.target);
+                return t ? (t.damage || 0) > c.dmg : (sideOf(a, 'them').discard || []).some(named(a, c.args.target));
+            },
+            skip: (c, a) => {
+                const me = onField(a, 'you', c.args.card), t = onField(a, 'them', c.args.target);
+                if (me && t) a.performChallenge(me.instanceId, t.instanceId);
+            }
+        }
     };
 
     // ---------- Running ----------
@@ -209,9 +292,10 @@ window.DojoTour = (function () {
         if (!run || !step || !a) return;
         if (run.i !== i) {
             run.i = i;
-            run.ctx = {};
+            run.ctx = { args: step.args || {} };
             run.since = Date.now();
             run.hinted = false;
+            run.wrong = false;
             const p = step.until && until[step.until];
             if (p && p.init) try { p.init(run.ctx, a); } catch (e) { console.warn('DojoTour', e); }
         }
@@ -219,7 +303,8 @@ window.DojoTour = (function () {
         if (step.until && !pred) console.warn(`DojoTour: no predicate "${step.until}"`);
         let text = pick(step.text);
         const hint = pick(step.hint);
-        if (run.hinted && hint) text = `${text} ${hint}`;
+        if (run.wrong && step.wrong) text = pick(step.wrong.text);
+        else if (run.hinted && hint) text = `${text} ${hint}`;
 
         const buttons = [];
         const backTo = previousReadOnly(i);
@@ -271,7 +356,7 @@ window.DojoTour = (function () {
         const step = list[i];
         const pred = step.until && until[step.until];
         if (pred && i > run.i && !pred.init) {
-            try { if (pred.test(run.ctx || {}, app())) { run.i = i; go(i + 1); return; } } catch (e) { }
+            try { if (pred.test({ args: step.args || {} }, app())) { run.i = i; go(i + 1); return; } } catch (e) { }
         }
         show(i);
     }
@@ -303,6 +388,13 @@ window.DojoTour = (function () {
             try { ok = !!pred.test(run.ctx, a); } catch (e) { ok = false; }
             // Move on after a beat, unless something (Skip, Back) already moved the tour.
             if (ok) { const at = run.i; run.busy = true; setTimeout(() => { if (!run) return; run.busy = false; if (run.i === at) go(at + 1); }, 250); return; }
+            // The wrong move (step.wrong): say so while it stands; Undo puts the step's own text back.
+            const wp = step.wrong && until[step.wrong.until];
+            if (wp) {
+                let bad = false;
+                try { bad = !!wp.test({ args: step.wrong.args || {} }, a); } catch (e) { bad = false; }
+                if (bad !== run.wrong) { run.wrong = bad; show(run.i); return; }
+            }
             if (!run.hinted && step.hint && Date.now() - run.since > HINT_MS) { run.hinted = true; show(run.i); return; }
         }
         if (step.also && effectiveTarget(step) !== run.shownTarget) show(run.i);

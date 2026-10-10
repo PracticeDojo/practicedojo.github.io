@@ -536,6 +536,8 @@ Each tour has desktop and phone wording and targets where they differ (`text: { 
 
 **Predicates** (`DojoTour.until`, each reads `App.state` or the DOM and returns true or false): `mulliganSettled`, `inkedThisTurn`, `cardPlayed`, `cardExerted`, `quested`, `challenged`, `turnEnded`, `undone`, `drawerOpen`, `multiverseOpen`, `nodeSelected`, `playedFromNode`, `turnSaved`, `plotView`, `importRead`. They're checked after every render (the render hook, §11) and on a 400 ms timer while a step waits. New predicates are added as tours need them.
 
+**Arguments and wrong moves** *(v3.12.0, the `referee` tour)*. A step's `args` object reaches its predicate as `ctx.args`, so one predicate serves many steps: `cardIn { card, zone, side }`, `cardExerted { card, side }`, `quested { card }`, `drew`, `shifted { card, onto }`, `challenged { card, target }`. `card` is a full card name or a list of them; `zone` one zone or a list; `side` is `you` (the player to play, the default) or `them`. Each has a `skip` that makes the move, so later steps find the board they expect. `wrong: { until, args, text }` shows `text` instead of the step's own while its predicate holds (the Dojo let the player do something the card doesn't allow), and goes back when they undo it. New lessons on a practice board need only JSON.
+
 ### 8.4 The practice board
 
 A tour must never change the player's library or their match.

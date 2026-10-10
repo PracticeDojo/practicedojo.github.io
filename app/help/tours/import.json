@@ -1,7 +1,7 @@
 {
   "id": "import",
   "title": "Study a Duels.ink game",
-  "order": 3,
+  "order": 4,
   "minutes": 2,
   "start": {
     "screen": "home"
