@@ -8,7 +8,8 @@ This file provides system instructions and context for AI agents working in this
 3. **`docs/ARCH-accounts-and-library.md`**: The agreed architecture for the deck and session library, share links, and optional accounts. Follow its phases and decision log.
 4. **`docs/TODO-accounts-and-library.md`**: The checklist of what's done and what's left in that plan. Tick items (with how they were verified) when they reach `main`, and add new work to it.
 5. **`app/index.html`**: Where the tool lives and where the user is going to be asking for changes. Treat it with respect. Don't change anything that isn't specifically asked for.
-6. **`docs/DESIGN-field-unit.md`**: The "Field Unit" design system the app's look follows (colours, type, components, do's and don'ts). Read it before any visual change, and style new UI with its tokens. The Field Unit tokens, themes and component styles live in `app/css/field-unit.css`; put visual changes there.
+6. **`docs/ARCH-help-and-tour.md`** and **`docs/TODO-help-and-tour.md`**: the plan for the in-app user manual, its search and the guided tours, split into milestones that can be built in parallel. Claim a milestone in the TODO before starting it.
+7. **`docs/DESIGN-field-unit.md`**: The "Field Unit" design system the app's look follows (colours, type, components, do's and don'ts). Read it before any visual change, and style new UI with its tokens. The Field Unit tokens, themes and component styles live in `app/css/field-unit.css`; put visual changes there.
 
 ## Repository layout
 

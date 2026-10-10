@@ -700,6 +700,34 @@ Implements version 2 of `docs/DESIGN-field-unit.md` (Kiln dark mode, signal fami
 - **Signal family.** By day the signal is Ember `#E4572E`; on Kiln it is Radio `#E86B2A` with dark text on the key. Tweaks → Accent offers only the approved swaps: **Signal** (the theme's own), **Coral**, **Olive** (its lore numeral lifts to `#C6C45A` on the well) and **Trace**. Each carries the text colour that sits on it. The old Amber / Rose / Emerald / Violet / Azure accents were ink colours, so a saved pick of one falls back to Signal.
 - **CSS file.** The Field Unit tokens, themes, palettes and component styles moved from the inline `<style>` to `app/css/field-unit.css`, loaded right after it (pixel-identical move). The older inline rules stay put.
 
+## Feature 58: Guided tours for first-time players (planned)
+
+### User Story
+- As a new player, I want to be offered a short tour that shows me the real controls on a practice board and lets me try each one, so I can play my first turn without reading anything first.
+- As a player who doesn't want a tour, I want to say no once and never be asked again.
+
+### Details
+Planned in `docs/ARCH-help-and-tour.md` (§8); checklist in `docs/TODO-help-and-tour.md`.
+- **Opt in.** New players see one quiet strip on the home screen (*New here? Take the 3-minute tour · Not now*). No pop-up, no auto-start. The tours are always listed in Help.
+- **Three short tours:** *Your first turn* (mulligan, ink, play, end turn, undo), *The Multiverse* (nodes, play from here, branching, saving a turn, plot) and *Study a Duels.ink game*.
+- **Point and try.** Each step lights the real control and, where it teaches an action, waits for the player to do it. Desktop and phone get their own wording and targets.
+- **Never touches your things.** Tours run on a practice board that isn't saved (like an unsaved shared session); a match in progress is kept as it was.
+
+## Feature 57: User manual with fuzzy search, for desktop and phone (planned)
+
+### User Story
+- As a player with a question about how the Dojo works, I want to type it in my own words and land on the answer, even if I misspell it or use another game's words ("mana", "attack", "rewind").
+- As a player on a phone, I want instructions for the phone (tap, the card drawer, thumb keys), not for a mouse and keyboard, and the other way round.
+- As a player reading about a control, I want the app to show me where it is.
+
+### Details
+Planned in `docs/ARCH-help-and-tour.md` (§4–§7, §10); checklist in `docs/TODO-help-and-tour.md`.
+- **About 60 short articles** in ten sections (Getting started, Playing a turn, Cards and decks, The Multiverse, Importing games, Library and sharing, Account, Settings, Help and fixes, Reference), written once in Markdown under `app/help/articles/`.
+- **Device-aware.** Articles carry desktop and phone variants; the manual shows the device in use and can switch to the other.
+- **Fuzzy search** (Fuse.js, already loaded) over each article's sections, with player words mapped to Dojo words.
+- **Show me** lights the real control on the board. Small `?` links on panels open the right article. `?` opens help on desktop; phones have it in the ⋯ menu.
+- Works offline and signed out; no tracking.
+
 ## Patch: Mulligan card stays up after a hold (v3.9.1)
 
 ### Details
@@ -1040,3 +1068,5 @@ The public page (`index.html`) follows Field Unit too, as `docs/DESIGN-field-uni
 - [x] Feature 55: Step through the cards in play in the card drawer
 - [x] Feature 56: Multiverse on phones — thumb keys, the key on top, the plot first
 - [x] Patch: Mulligan card stays up after a hold
+- [ ] Feature 57: User manual with fuzzy search, for desktop and phone
+- [ ] Feature 58: Guided tours for first-time players
