@@ -3,9 +3,13 @@
 //
 //   node tools/help.mjs           validate the sources and write app/help/manual.json
 //   node tools/help.mjs --check   validate, and exit 1 if anything is broken or manual.json is stale
+//   node tools/help.mjs --test    run the golden search queries (tools/help-golden.json) against
+//                                 the manual built from the current sources; exit 1 if any fails
+//       --manual <dir|file.json>  build from another help folder, or test a built manual.json
+//       --verbose                 print every query, not only the failures
 //
-// Coming with later milestones (§12): --test (golden search queries, M2),
-// --live (every target visible in the running app, M4), shots (screenshots, M3).
+// Coming with later milestones (§12): --live (every target visible in the running app, M4),
+// shots (screenshots, M3).
 //
 // Sources, all under app/help/:
 //   sections.json             section ids, titles and folders, in order
@@ -14,17 +18,26 @@
 //   synonyms.json             player words -> Dojo words
 //   tours/<id>.json           guided tours (M6)
 // plus tools/help-golden.json (checked here, run by --test).
-import { readFileSync, writeFileSync, readdirSync, existsSync } from 'node:fs';
+import { readFileSync, writeFileSync, readdirSync, existsSync, statSync, mkdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { dirname, join, relative } from 'node:path';
+import { dirname, join, relative, resolve } from 'node:path';
+import { execFileSync } from 'node:child_process';
+import { runInThisContext } from 'node:vm';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
-const HELP = join(ROOT, 'app/help');
-const OUT = join(HELP, 'manual.json');
 const args = process.argv.slice(2);
 const check = args.includes('--check');
+const test = args.includes('--test');
+const manualArg = args.includes('--manual') ? args[args.indexOf('--manual') + 1] : null;
+if (args.includes('--manual') && !manualArg) { console.error('--manual needs a help folder or a manual.json'); process.exit(2); }
+const manualIsDir = manualArg && statSync(manualArg).isDirectory();
+const HELP = manualIsDir ? resolve(manualArg) : join(ROOT, 'app/help');
+const OUT = join(HELP, 'manual.json');
+if (test && manualArg && !manualIsDir) {
+    await runTests(JSON.parse(readFileSync(manualArg, 'utf8')));
+}
 
-const later = { '--test': 'M2 (search)', '--live': 'M4 (spotlight)', shots: 'M3 (content)' };
+const later = { '--live': 'M4 (spotlight)', shots: 'M3 (content)' };
 for (const [flag, ms] of Object.entries(later)) {
     if (args.includes(flag)) {
         console.error(`${flag} isn't built yet: it arrives with ${ms}. See docs/ARCH-help-and-tour.md §10 and §12.`);
@@ -285,6 +298,7 @@ if (errors.length) {
     console.error(`\n${errors.length} error${errors.length === 1 ? '' : 's'}; app/help/manual.json not ${check ? 'checked' : 'written'}.`);
     process.exit(1);
 }
+if (test) await runTests(bundle);
 const current = existsSync(OUT) ? readFileSync(OUT, 'utf8') : '';
 if (check) {
     if (current !== json) {
@@ -297,4 +311,66 @@ if (check) {
 } else {
     writeFileSync(OUT, json);
     console.log(`app/help/manual.json written: ${summary}.`);
+}
+
+// ---- --test: the golden search queries (§10) ----
+// Fuse 6.6.2 is fetched once into tools/.cache/ (git-ignored): no package.json, no node_modules.
+async function loadFuse() {
+    const file = join(ROOT, 'tools/.cache/fuse-6.6.2.js');
+    const url = 'https://cdn.jsdelivr.net/npm/fuse.js@6.6.2/dist/fuse.js';
+    if (!existsSync(file)) {
+        mkdirSync(dirname(file), { recursive: true });
+        let src = null;
+        try {
+            const r = await fetch(url, { signal: AbortSignal.timeout(15000) });
+            if (r.ok) src = await r.text();
+        } catch { /* behind a proxy Node's fetch may fail; curl uses HTTPS_PROXY */ }
+        if (!src) {
+            try { src = execFileSync('curl', ['-sSfL', '--max-time', '30', url], { encoding: 'utf8' }); }
+            catch (e) { console.error(`Couldn't download ${url} (${e.message.split('\n')[0]}). Save it as ${relative(ROOT, file)} and run again.`); process.exit(2); }
+        }
+        if (!src.includes('Fuse.js v6.6.2')) { console.error(`${url} didn't look like Fuse 6.6.2.`); process.exit(2); }
+        writeFileSync(file, src);
+    }
+    const m = { exports: {} };
+    runInThisContext(`(function (module, exports) {${readFileSync(file, 'utf8')}\n})`, { filename: file })(m, m.exports);
+    return m.exports;
+}
+
+async function runTests(manual) {
+    const Fuse = await loadFuse();
+    const file = join(ROOT, 'app/js/help-search.js');
+    const win = {};
+    runInThisContext(`(function (window) {${readFileSync(file, 'utf8')}\n})`, { filename: file })(win);
+    const S = win.DojoHelpSearch;
+    let t = performance.now();
+    const index = S.build(manual, { Fuse });
+    const buildMs = performance.now() - t;
+    const golden = JSON.parse(readFileSync(join(ROOT, 'tools/help-golden.json'), 'utf8')).queries;
+    const verbose = args.includes('--verbose');
+    const known = new Set(manual.articles.map(a => a.id));
+    let pass = 0, max = 0, total = 0, runs = 0;
+    const lines = [];
+    for (const g of golden) {
+        const device = g.device || 'desktop';
+        const res = S.query(index, g.q, { device, limit: 12 });
+        t = performance.now();
+        for (let i = 0; i < 20; i++) S.query(index, g.q, { device, limit: 12 });
+        const ms = (performance.now() - t) / 20;
+        total += ms; runs++; max = Math.max(max, ms);
+        const rank = res.findIndex(r => r.article === g.article) + 1;
+        const ok = rank >= 1 && rank <= 3;
+        if (ok) pass++;
+        if (!ok || verbose) {
+            const top = res.slice(0, 3).map(r => `${r.id} ${r.score.toFixed(2)}`).join(' | ') || '(no results)';
+            lines.push(`${ok ? 'pass' : 'FAIL'}  ${JSON.stringify(g.q).padEnd(30)} ${(device === 'phone' ? '[phone] ' : '') + g.article.padEnd(22)} rank ${rank || '-'}`.padEnd(84) +
+                `  top 3: ${top}${!ok && !known.has(g.article) ? '  (no such article)' : ''}`);
+        }
+    }
+    lines.forEach(l => console.log(l));
+    const todo = manual.articles.filter(a => a.todo).length;
+    console.log(`\n${pass}/${golden.length} golden queries find their article in the top 3 ` +
+        `(${manual.articles.length} articles, ${todo} still TODO, ${index.records.length} records).`);
+    console.log(`Timing: build ${buildMs.toFixed(1)} ms; query ${(total / runs).toFixed(2)} ms average, ${max.toFixed(2)} ms slowest.`);
+    process.exit(pass === golden.length ? 0 : 1);
 }
