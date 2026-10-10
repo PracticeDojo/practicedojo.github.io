@@ -7,6 +7,8 @@ The working checklist for [`ARCH-help-and-tour.md`](ARCH-help-and-tour.md). The 
 **(you)** need a decision or a hands-on test from the owner. New work found along the way goes
 into the right milestone, or into *Parked* if it's outside the plan.
 
+**Now (D7):** everything is being built on `claude/feat-57-help-and-tours` by one session with sub-agents; the owner tests that branch before it goes to `main`.
+
 **Working in parallel:** claim a milestone by putting your branch name after its heading before you start, so two agents don't take the same one. M0 goes first; after it, M1, M2, M3a–e and M4 can all run at once.
 
 *Last updated: 2026-10-10 · live: v3.9.1 · next up: M1, M2, M3a–e and M4 in parallel*
@@ -15,10 +17,10 @@ into the right milestone, or into *Parked* if it's outside the plan.
 |---|---|
 | Review of the proposal | ✅ Done: all six as proposed (D1–D6) |
 | M0 · Contracts and scaffolding | 🟡 Built on `claude/chore-help-scaffolding`, waiting to merge |
-| M1 · Manual viewer | ⬜ |
-| M2 · Search | ⬜ |
-| M3a–e · Content | ⬜ |
-| M4 · Spotlight | ⬜ |
+| M1 · Manual viewer | 🔨 Agent on `wip/m1-viewer` |
+| M2 · Search | 🔨 Agent on `wip/m2-search` |
+| M3a–e · Content | 🔨 Five agents on `wip/m3a-content` … `wip/m3e-content` |
+| M4 · Spotlight | 🔨 Agent on `wip/m4-spotlight` |
 | M5 · Tour engine and scratch view | ⬜ |
 | M6 · Tour content | ⬜ |
 | M7 · Entry points and help in context | ⬜ |
