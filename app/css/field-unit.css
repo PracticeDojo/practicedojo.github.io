@@ -7929,22 +7929,33 @@ body.help-open #btn-help i {
 
 
 /* Tour mode (owner testing): a tour step must never read as part of the app, so tours wear
-   Trace, the key family's teal (never the signal, never an ink): the callout is a Trace
-   panel, the ring is Trace, the screen gets a Trace frame and the Practice banner turns Trace.
-   A step that replaces an open one glides there and pulses when it lands. */
+   Olive, from the key family (never the signal, never an ink): the callout is an Olive panel,
+   the ring is Olive, the screen gets an Olive frame and the Practice banner turns Olive.
+   A step that replaces an open one glides there and pulses when it lands.
+   --tour / --tour-ink: one place to change the tour colour. Kiln lifts Olive as the Library does. */
+:root {
+    --tour: var(--key-olive);
+    --tour-ink: var(--key-olive-ink);
+    --tour-key-text: #F4F0E8;
+}
+
+:root[data-theme="night"] {
+    --tour: #9C9A34;
+}
+
 .spot[data-tone="tour"] {
-    --spot-ring: var(--key-trace);
+    --spot-ring: var(--tour);
 }
 
 .spot[data-tone="tour"] .spot-hole {
     border-width: 3px;
-    border-color: var(--key-trace); /* direct: the night and on-glass ring rules set the variable */
+    border-color: var(--tour); /* direct: the night and on-glass ring rules set the variable */
 }
 
 .spot[data-tone="tour"] .spot-callout {
-    background: var(--key-trace);
-    border: 1px solid color-mix(in oklch, var(--key-trace) 70%, #000);
-    color: var(--key-trace-ink);
+    background: var(--tour);
+    border: 1px solid color-mix(in oklch, var(--tour) 70%, #000);
+    color: var(--tour-ink);
     box-shadow: 0 12px 32px rgb(0 0 0 / 0.38);
 }
 
@@ -7953,35 +7964,35 @@ body.help-open #btn-help i {
 .spot[data-tone="tour"] .spot-note,
 .spot[data-tone="tour"] .spot-text strong,
 .spot[data-tone="tour"] .spot-x {
-    color: var(--key-trace-ink);
+    color: var(--tour-ink);
 }
 
 .spot[data-tone="tour"] .spot-step {
-    color: color-mix(in oklch, var(--key-trace-ink) 70%, transparent);
+    color: color-mix(in oklch, var(--tour-ink) 70%, transparent);
 }
 
 .spot[data-tone="tour"] .spot-actions .btn {
     background: transparent;
-    border: 1px solid color-mix(in oklch, var(--key-trace-ink) 35%, transparent);
-    color: var(--key-trace-ink);
+    border: 1px solid color-mix(in oklch, var(--tour-ink) 35%, transparent);
+    color: var(--tour-ink);
 }
 
 .spot[data-tone="tour"] .spot-actions .btn:hover {
-    background: color-mix(in oklch, var(--key-trace-ink) 10%, transparent);
+    background: color-mix(in oklch, var(--tour-ink) 10%, transparent);
 }
 
 .spot[data-tone="tour"] .spot-actions .btn-primary {
-    background: var(--key-trace-ink);
-    border-color: var(--key-trace-ink);
-    color: #E6F4F2;
+    background: var(--tour-ink);
+    border-color: var(--tour-ink);
+    color: var(--tour-key-text);
 }
 
 .spot[data-tone="tour"] .spot-actions .btn-primary:hover {
-    background: color-mix(in oklch, var(--key-trace-ink) 85%, var(--key-trace));
+    background: color-mix(in oklch, var(--tour-ink) 85%, var(--tour));
 }
 
 .spot[data-tone="tour"] .spot-actions .btn:focus-visible {
-    outline-color: var(--key-trace-ink);
+    outline-color: var(--tour-ink);
 }
 
 /* Between steps: the callout and the cut-out glide to the new place... */
@@ -7993,13 +8004,13 @@ body.help-open #btn-help i {
 
 /* ...and pulse when they land, so the eye finds them. */
 @keyframes spot-ring-arrive {
-    0% { box-shadow: 0 0 0 0 color-mix(in oklch, var(--key-trace) 70%, transparent), 0 0 0 200vmax var(--spot-dim); }
-    100% { box-shadow: 0 0 0 16px color-mix(in oklch, var(--key-trace) 0%, transparent), 0 0 0 200vmax var(--spot-dim); }
+    0% { box-shadow: 0 0 0 0 color-mix(in oklch, var(--tour) 70%, transparent), 0 0 0 200vmax var(--spot-dim); }
+    100% { box-shadow: 0 0 0 16px color-mix(in oklch, var(--tour) 0%, transparent), 0 0 0 200vmax var(--spot-dim); }
 }
 
 @keyframes spot-callout-arrive {
-    0% { box-shadow: 0 0 0 0 color-mix(in oklch, var(--key-trace) 75%, transparent), 0 12px 32px rgb(0 0 0 / 0.38); }
-    100% { box-shadow: 0 0 0 14px color-mix(in oklch, var(--key-trace) 0%, transparent), 0 12px 32px rgb(0 0 0 / 0.38); }
+    0% { box-shadow: 0 0 0 0 color-mix(in oklch, var(--tour) 75%, transparent), 0 12px 32px rgb(0 0 0 / 0.38); }
+    100% { box-shadow: 0 0 0 14px color-mix(in oklch, var(--tour) 0%, transparent), 0 12px 32px rgb(0 0 0 / 0.38); }
 }
 
 .spot.is-arrive[data-tone="tour"] .spot-hole {
@@ -8016,26 +8027,26 @@ body.is-touring::after {
     position: fixed;
     inset: 0;
     z-index: 1090;
-    border: 3px solid var(--key-trace);
+    border: 3px solid var(--tour);
     pointer-events: none;
 }
 
-/* The Practice banner (a tour's board) in Trace. */
+/* The Practice banner (a tour's board) in Olive. */
 .shared-banner.is-practice {
-    background: var(--key-trace);
-    border-color: color-mix(in oklch, var(--key-trace) 70%, #000);
-    color: var(--key-trace-ink);
+    background: var(--tour);
+    border-color: color-mix(in oklch, var(--tour) 70%, #000);
+    color: var(--tour-ink);
 }
 
 .shared-banner.is-practice > i,
 .shared-banner.is-practice .sb-note {
-    color: var(--key-trace-ink);
+    color: var(--tour-ink);
     opacity: 0.85;
 }
 
 .shared-banner.is-practice .btn.btn-primary {
-    background: var(--key-trace-ink);
-    color: #E6F4F2;
+    background: var(--tour-ink);
+    color: var(--tour-key-text);
 }
 
 @media (prefers-reduced-motion: reduce) {

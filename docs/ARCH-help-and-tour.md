@@ -472,7 +472,7 @@ When the UI moves, one line changes. `tools/help.mjs --check` fails if a target'
 ### 7.2 What the spotlight does
 
 - **Dims the page** except the target: one fixed element with a large `box-shadow` spread around a cut-out the size of the target (+6px), radius matching the target.
-- **Rings the target**: 2px, ink on the chassis, paper on glass. *(Tours, since owner testing: the `tone: 'tour'` option paints the callout and a 3px ring in Trace, frames the screen in Trace and turns the Practice banner Trace; a step that replaces an open one glides there and pulses, so the eye follows it.)* **Not the signal**: the signal already means *End turn*, *live lore* and *the branch you're on*, and the target is often one of those.
+- **Rings the target**: 2px, ink on the chassis, paper on glass. *(Tours, since owner testing: the `tone: 'tour'` option paints the callout and a 3px ring in Olive (`--tour`, first Trace, switched by the owner), frames the screen in Olive and turns the Practice banner Olive; a step that replaces an open one glides there and pulses, so the eye follows it.)* **Not the signal**: the signal already means *End turn*, *live lore* and *the branch you're on*, and the target is often one of those.
 - **Callout**: a paper module beside the target (below if there's room, else above; on phones docked to the screen edge away from the target), with the text, a step count in mono mute for tours, and the buttons.
 - **Follows the target** on resize, scroll and render (a `ResizeObserver` plus the render hook). If the target disappears (a dialog closed it), the callout centres and says so.
 - **Scrolls the target into view** first (the multiverse canvas, a long discard list).
