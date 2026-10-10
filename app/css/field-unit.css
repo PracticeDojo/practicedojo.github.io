@@ -8018,6 +8018,12 @@ body.is-touring::after {
     pointer-events: none;
 }
 
+/* A card menu the player opens during a tour sits over the spotlight: it can reach
+   past the cut-out (Return to Hand under a card in play), and must stay clickable. */
+body.is-touring #context-menu {
+    z-index: 1085;
+}
+
 /* The Practice banner (a tour's board) in Olive. */
 .shared-banner.is-practice {
     background: var(--tour);

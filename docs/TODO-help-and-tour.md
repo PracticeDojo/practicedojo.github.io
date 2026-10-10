@@ -148,6 +148,7 @@ into the right milestone, or into *Parked* if it's outside the plan.
 ## After release
 - [ ] Tour *You're the referee* (Feature 59, v3.12.0, `claude/feat-59-referee-tour`): card effects are the player's to carry out (The Horseman Strikes!, Magical Maneuvers, shift, challenge, lore by hand). Step `args` and `wrong` in the engine. *Walked through by its own instructions in Chromium at 1440 (real drags for the shift and the challenge) and 390, day and night, including a wrong banish and its Undo*
 - [ ] **(you)** Walk *You're the referee* on a real phone: the shift and the challenge are drags
+- [x] Owner: at step 11 the right-click menu opened below the lit area, so **Return to Hand** couldn't be clicked. *During a tour the card menu now sits over the spotlight (`body.is-touring #context-menu`, field-unit.css), lit and clickable wherever it opens; this covers every "right-click and choose" step. Checked in Chromium at 1440 with real right-clicks on steps 7 (Quest) and 11 (Return to Hand)*
 
 ## Found while building (not fixed; outside this plan)
 App bugs the writers noticed while checking articles. The manual describes today's behaviour.
