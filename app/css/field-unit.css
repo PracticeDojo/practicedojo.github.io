@@ -3246,9 +3246,9 @@ button.ctx-item:focus-visible {
     padding: 0 22px;
 }
 
-/* Press and hold (touch): the card large over the whole window while the
-   finger is down. It never takes the touch, so lifting the finger ends it.
-   The card is as large as the window allows, from its width and height. */
+/* Press and hold (touch): the card large over the whole window. It stays
+   after the finger lifts and takes touches only from then (.is-stay), so the
+   next touch anywhere closes it. As large as the window allows. */
 .mull-peek {
     position: fixed;
     inset: 0;
@@ -3268,6 +3268,10 @@ button.ctx-item:focus-visible {
 
 .mull-peek[hidden] {
     display: none;
+}
+
+.mull-peek.is-stay {
+    pointer-events: auto;
 }
 
 .mull-peek .mull-lbl {
