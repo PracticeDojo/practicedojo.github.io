@@ -1434,3 +1434,25 @@ Desktop only (hidden at ≤760px; phones will get their own multiverse navigatio
   time would call any board saved.
 * Cost: one `JSON.stringify` of the state per `render()`. A step (restore + render) measured 25–48ms on the
   Set 13 demo.
+
+## **26\. Features 57–58: Help, search and guided tours (v3.11.0)**
+
+Plan, formats and decisions: `docs/ARCH-help-and-tour.md` (§5.7 is the as-built contract). Built by one session with parallel sub-agents on one integration branch (D7).
+
+### 26.1 Content is data, built by a tool
+* Articles are Markdown with front matter in `app/help/articles/<NN-section>/<id>.md`; targets, synonyms, sections and tours sit beside them. `node tools/help.mjs` validates everything (ids, links, `:::` device blocks, gestures, targets against `app/index.html`, tours, golden queries) and writes `app/help/manual.json`, the only file the app fetches. Commit it; `--check` fails when it's stale. Never hand-merge `manual.json`: re-run the tool.
+* Heading slugs are made by the tool and shipped in `headings`; the viewer and search never compute their own.
+* Extensions: `:::desktop|phone|mouse|touch` blocks (all tags must match; `:::desktop touch` is a tablet), `{key:X}`, `{gesture:long-press}`, `[Show me](show:<target>)`, `[text](help:<id>#<slug>)`.
+
+### 26.2 Four modules, one global each
+* `help-search.js` (`DojoHelpSearch`): pure, no DOM, so `--test` runs it in Node. Records are an article's lead plus each `##`. Query words match the manual's own vocabulary (Fuse only on that word list, for speed), weighted by field and idf; synonym groups fold player words into Dojo words at build time; an exact alias match ranks first. Snippet ranges are `[start, end)`.
+* `help.js` (`DojoHelp`): drawer (desktop, non-modal) or sheet (phone), contents, article render (`marked` + DOMPurify), deep links `#help/<id>/<slug>`, `[data-help]` links, `onKey` from the global keydown.
+* `spotlight.js` (`DojoSpotlight`): dim + ring + callout over a named target, re-resolved every ~250ms because `render()` replaces the board's DOM. Owns Esc in the capture phase while open. `passThrough` lets the cut-out take input (a press that starts there lifts the blockers until it ends, so drags work).
+* `tour.js` (`DojoTour`): steps are read-only or wait on a named predicate checked from `render()` and a 400ms timer. Its `onKey` runs before help's.
+
+### 26.3 The scratch view
+* `_sharedView` has a `kind`: `shared` (a share link) or `tour`. `App.openScratch(data, {kind, title})` puts a board up with no library session behind it: no autosave, no Continue. `holdPlaceForScratch()` flushes and remembers where the player was; `closeScratch()` puts it back without writing to the library. The import tour sets `_scratchImports` so *Study this game* lands on a practice board.
+
+### 26.4 Keeping it true
+* `node tools/help.mjs --test`: 128 golden queries must land in the top three. `--live`: every target visible on its devices in the running app (some screens are skipped).
+* `AGENTS.md` · *Keeping the manual current*: after a visible change, update the articles that name it, their `verified`, and `targets.json`; give new controls an `id`.

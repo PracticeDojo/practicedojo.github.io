@@ -51,6 +51,9 @@ Options
   --wait 1500            Extra settle time in ms after load / demo.
   --toasts               Keep toasts ("Opened your copy of …"); hidden by default so
                          they don't cover the top bar.
+  --first-visit          Shoot as a brand-new visitor: the tour welcome on the home screen
+                         and the breathing Help key. By default the browser starts as a
+                         returning player (welcome answered, Help seen), so neither shows.
 Files are named <prefix><shot>-<width>-<theme>.png; the default shot is called "page".
 `;
 
@@ -61,6 +64,7 @@ function parseArgs(argv) {
         if (a === '--help' || a === '-h') { console.log(HELP); process.exit(0); }
         if (a === '--demo') { o.demo = true; continue; }
         if (a === '--toasts') { o.toasts = true; continue; }
+        if (a === '--first-visit') { o.firstVisit = true; continue; }
         if (!a.startsWith('--')) throw new Error(`Unexpected argument: ${a}`);
         const key = a.slice(2);
         const val = argv[++i];
@@ -172,6 +176,15 @@ async function main() {
             const ctx = await browser.newContext({
                 viewport: { width, height: phone ? 844 : o.height },
                 deviceScaleFactor: o.scale, isMobile: phone, hasTouch: phone,
+            });
+            // A returning player unless --first-visit: the tour welcome would cover the home
+            // screen (and --demo's click), and the Help key breathes until Help is opened.
+            if (!o.firstVisit) await ctx.addInitScript(() => {
+                try {
+                    if (!localStorage.getItem('lorcana_dojo_help')) {
+                        localStorage.setItem('lorcana_dojo_help', JSON.stringify({ offer: 'dismissed', toldAboutHelp: true, helpSeen: true }));
+                    }
+                } catch (e) { /* storage off */ }
             });
             const page = await ctx.newPage();
             page.on('pageerror', e => console.log(`[${width}] page error: ${e.message}`));

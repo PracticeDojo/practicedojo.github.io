@@ -6770,3 +6770,1469 @@ body.palette-competition .tree-node.tn-p2::before {
 .dlg-note-input::placeholder {
     color: var(--fu-glass-mute);
 }
+
+/* =====================================================================
+   Help & tours (Features 57–58, docs/ARCH-help-and-tour.md)
+   One slot per milestone, so PRs built in parallel append in different
+   places. Keep each milestone's rules inside its own slot.
+   ===================================================================== */
+
+/* ---- M1 · Manual viewer: drawer (desktop), sheet (phone), contents, article ---- */
+/* Desktop: a non-modal drawer docked under the top bar (on the home screen, from the
+   top), the board live behind it. Phones: a full-screen sheet framed like the board.
+   Below the styled dialogs (1100) and toasts (1050). Also the results list and the
+   ? links in context (M1 owns their markup). */
+.help-drawer {
+    position: fixed;
+    z-index: 960;
+    display: flex;
+    background: var(--bg);
+    color: var(--text);
+    animation: help-in var(--dur) var(--ease);
+}
+
+.help-drawer[hidden] {
+    display: none;
+}
+
+/* Steps aside while "Show me" lights a control the drawer covers. */
+.help-drawer.is-away {
+    visibility: hidden;
+}
+
+@keyframes help-in {
+    from {
+        opacity: 0;
+    }
+}
+
+@media (min-width: 761px) {
+    .help-drawer {
+        top: var(--topbar-h);
+        right: 0;
+        bottom: 0;
+        width: 400px;
+        padding: 8px;
+        border-left: 1px solid var(--border);
+        box-shadow: var(--shadow-3);
+    }
+
+    body:has(#setup-modal:not(.hidden)) .help-drawer {
+        top: 0;
+    }
+}
+
+@media (max-width: 760px) {
+    .help-drawer {
+        inset: 0;
+        padding: calc(8px + env(safe-area-inset-top)) calc(8px + env(safe-area-inset-right)) calc(8px + env(safe-area-inset-bottom)) calc(8px + env(safe-area-inset-left));
+    }
+
+    .help-drawer .help-mod {
+        border-radius: var(--radius-well);
+    }
+
+    .help-search .help-q-input {
+        font-size: 16px;
+    }
+
+    .help-search .help-slash,
+    #btn-help {
+        display: none;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .help-drawer {
+        animation: none;
+    }
+}
+
+.help-mod {
+    flex: 1;
+    min-width: 0;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    background: var(--surface);
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius);
+    overflow: hidden;
+}
+
+.help-mod:focus {
+    outline: none;
+}
+
+.help-hd {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 12px 8px;
+}
+
+.help-hd .help-lbl {
+    flex: 1;
+}
+
+.help-lbl {
+    display: block;
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 500;
+    line-height: 1.3;
+    letter-spacing: var(--label-track);
+    text-transform: uppercase;
+    color: var(--text-dim);
+}
+
+.help-x {
+    width: 28px;
+    height: 28px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: none;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--surface);
+    color: var(--text);
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.help-x:hover {
+    background: var(--surface-2);
+}
+
+/* Search: a paper input with a hairline, the glass and a / keycap on desktop. */
+.help-search {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    height: 34px;
+    margin: 0 12px 6px;
+    padding: 0 8px 0 10px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--surface);
+}
+
+.help-search:focus-within {
+    border-color: var(--text);
+}
+
+.help-search-ico {
+    font-size: 11px;
+    color: var(--text-dim);
+}
+
+.help-q-input {
+    flex: 1;
+    min-width: 0;
+    height: 100%;
+    border: 0;
+    outline: none;
+    background: transparent;
+    color: var(--text);
+    font-family: var(--font-sans);
+    font-size: 13px;
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+.help-q-input::placeholder {
+    color: var(--text-faint);
+}
+
+.help-q-input::-webkit-search-cancel-button {
+    -webkit-appearance: none;
+}
+
+.help-search:focus-within .help-slash {
+    visibility: hidden;
+}
+
+.help-body {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 4px 12px 20px;
+}
+
+/* Contents: label/sm section heads, rows on hairline rules. */
+.help-grp {
+    margin-top: 14px;
+}
+
+.help-grp .help-lbl,
+.help-rel .help-lbl,
+.help-none .help-lbl {
+    margin-bottom: 4px;
+}
+
+.help-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.help-list > li + li {
+    border-top: 1px solid var(--fu-row-rule);
+}
+
+.help-row {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    width: calc(100% + 12px);
+    margin: 0 -6px;
+    padding: 7px 6px;
+    border: 0;
+    border-radius: 6px;
+    background: none;
+    color: var(--text);
+    text-align: left;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.help-row:hover {
+    background: var(--surface-2);
+}
+
+.help-row:disabled {
+    cursor: default;
+    color: var(--text-faint);
+}
+
+.help-tour {
+    flex-direction: row;
+    align-items: baseline;
+    justify-content: space-between;
+}
+
+.help-row-t {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 2px 8px;
+    font-size: 13px;
+    font-weight: 560;
+    line-height: 1.3;
+}
+
+.help-row-m {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 400;
+    color: var(--text-dim);
+}
+
+.help-row-s {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    font-size: 12px;
+    line-height: 1.35;
+    color: var(--text-2);
+}
+
+.help-row.is-todo .help-row-t,
+.help-row.is-todo .help-row-s {
+    color: var(--text-faint);
+}
+
+.help-done {
+    font-size: 12px;
+    color: var(--text-dim);
+}
+
+.help-tag {
+    display: inline-flex;
+    align-items: center;
+    height: 16px;
+    padding: 0 5px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    font-family: var(--font-mono);
+    font-size: 9px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    white-space: nowrap;
+}
+
+.help-note {
+    margin: 12px 0;
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--text-2);
+}
+
+/* Article: ‹ SECTION, the title, prose, Related. */
+.help-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 8px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: var(--label-track);
+    text-transform: uppercase;
+    color: var(--text-dim);
+    text-decoration: none;
+}
+
+.help-back:hover {
+    color: var(--text);
+}
+
+.help-back i {
+    font-size: 9px;
+}
+
+.help-art-t {
+    margin: 8px 0 10px;
+    font-family: var(--font-display);
+    font-size: 20px;
+    font-weight: 560;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    color: var(--text);
+}
+
+.help-art-t:focus {
+    outline: none;
+}
+
+.help-only {
+    margin: -4px 0 10px;
+}
+
+/* Reading prose: Inter 14 / 1.5 in body tone (the one place the app sets it). */
+.help-prose {
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--text-2);
+}
+
+.help-prose > :first-child {
+    margin-top: 0;
+}
+
+.help-prose p,
+.help-prose ul,
+.help-prose ol,
+.help-prose table,
+.help-prose blockquote,
+.help-prose pre {
+    margin: 0 0 10px;
+}
+
+.help-prose h2,
+.help-prose h3 {
+    margin: 20px -6px 6px;
+    padding: 2px 6px;
+    border-radius: 6px;
+    font-size: 16px;
+    font-weight: 560;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+    color: var(--text);
+    transition: background-color 600ms var(--ease);
+}
+
+.help-prose h3 {
+    margin-top: 14px;
+    font-size: 13.5px;
+    font-weight: 600;
+    letter-spacing: 0;
+}
+
+.help-prose .is-lit {
+    background: var(--surface-3);
+    transition: none;
+}
+
+.help-prose strong {
+    font-weight: 600;
+    color: var(--text);
+}
+
+.help-prose ul {
+    padding: 0;
+    list-style: none;
+}
+
+.help-prose ul > li {
+    padding: 5px 0;
+    border-top: 1px solid var(--fu-row-rule);
+}
+
+.help-prose ul > li:last-child {
+    border-bottom: 1px solid var(--fu-row-rule);
+}
+
+.help-prose ol {
+    padding-left: 22px;
+    list-style: decimal;
+}
+
+.help-prose ol > li {
+    padding: 2px 0;
+}
+
+.help-prose ol > li::marker {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-dim);
+}
+
+.help-prose a {
+    color: var(--text);
+    text-decoration: underline;
+    text-decoration-color: var(--border-strong);
+    text-underline-offset: 2px;
+}
+
+.help-prose a:hover {
+    text-decoration-color: var(--text);
+}
+
+.help-prose code {
+    padding: 1px 4px;
+    border-radius: 4px;
+    background: var(--surface-2);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--text);
+}
+
+.help-prose table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+.help-prose th,
+.help-prose td {
+    padding: 6px 8px 6px 0;
+    border-bottom: 1px solid var(--fu-row-rule);
+    text-align: left;
+    vertical-align: top;
+}
+
+.help-prose th {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: var(--label-track);
+    text-transform: uppercase;
+    color: var(--text-dim);
+}
+
+.help-prose blockquote {
+    padding-left: 10px;
+    border-left: 2px solid var(--border);
+    color: var(--text-dim);
+}
+
+.help-prose img {
+    display: block;
+    max-width: 100%;
+    height: auto;
+    margin: 4px 0 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+}
+
+/* img/<name>-{theme}.webp: the viewer adds both; show the one for the theme. */
+.help-prose img.help-img-night,
+:root[data-theme="night"] .help-prose img.help-img-day {
+    display: none;
+}
+
+:root[data-theme="night"] .help-prose img.help-img-night {
+    display: block;
+}
+
+/* Keycaps: the neutral function key (Bone), mono 11px, a 2px darker foot. Never an ink. */
+.help-keys {
+    white-space: nowrap;
+}
+
+.help-key {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 20px;
+    height: 20px;
+    margin: 0 1px;
+    padding: 0 5px 2px;
+    border-radius: 5px;
+    background: var(--key-bone);
+    box-shadow: inset 0 -2px 0 var(--key-edge);
+    color: var(--key-bone-ink);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    line-height: 1;
+    vertical-align: 1px;
+}
+
+.help-gest {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    height: 20px;
+    padding: 0 7px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text);
+    white-space: nowrap;
+    vertical-align: 1px;
+}
+
+.help-gest i {
+    font-size: 9px;
+    color: var(--text-dim);
+}
+
+/* "Show me": a paper tool. */
+.help-show {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 26px;
+    padding: 0 10px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--surface);
+    color: var(--text);
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 1;
+    cursor: pointer;
+    vertical-align: middle;
+}
+
+.help-show:hover {
+    background: var(--surface-2);
+}
+
+.help-show i {
+    font-size: 11px;
+    color: var(--text-2);
+}
+
+.help-other {
+    margin: 0 0 10px;
+    font-size: 12px;
+    color: var(--text-dim);
+}
+
+.help-other-go,
+.help-browse {
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--text);
+    font: inherit;
+    text-decoration: underline;
+    text-decoration-color: var(--border-strong);
+    text-underline-offset: 2px;
+    cursor: pointer;
+}
+
+.help-browse {
+    margin-top: 12px;
+    font-size: 13px;
+}
+
+.help-rel {
+    margin-top: 22px;
+}
+
+/* Search results: path, heading, a snippet with the match in ink weight. */
+.help-results {
+    margin: 8px 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.help-res {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin: 0 -6px;
+    padding: 7px 6px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.help-res + .help-res {
+    border-top: 1px solid var(--fu-row-rule);
+}
+
+.help-res:hover,
+.help-res.is-active {
+    background: var(--surface-2);
+}
+
+.help-res.is-active {
+    box-shadow: inset 2px 0 0 var(--text);
+}
+
+.help-res-path {
+    font-family: var(--font-mono);
+    font-size: 9.5px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+}
+
+.help-res-h {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 560;
+    color: var(--text);
+}
+
+.help-res-s {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    font-size: 12px;
+    line-height: 1.35;
+    color: var(--text-2);
+}
+
+.help-res-s mark {
+    background: none;
+    color: var(--text);
+    font-weight: 650;
+}
+
+.help-drawer :is(a, button):focus-visible {
+    outline: 2px solid var(--text);
+    outline-offset: 1px;
+}
+
+/* The top bar's Help tool inverts to glass while help is open, like Tweaks. */
+body.help-open #btn-help {
+    background: var(--fu-glass);
+    border-color: var(--fu-glass);
+    color: var(--fu-light);
+}
+
+body.help-open #btn-help i {
+    color: var(--fu-light);
+}
+
+:root[data-theme="night"] body.help-open #btn-help {
+    box-shadow: inset 0 0 0 1px var(--fu-line);
+}
+
+/* Help in context: a small mute ? paper tool on a panel's head. Never signal. */
+.help-q {
+    width: 20px;
+    height: 20px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: none;
+    padding: 0;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--surface);
+    color: var(--text-dim);
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 500;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.help-q:hover {
+    color: var(--text);
+    border-color: var(--border-strong);
+}
+
+.help-q:focus-visible {
+    outline: 2px solid var(--text);
+    outline-offset: 1px;
+}
+
+.lib-hd .help-q,
+.tweaks-head .help-q {
+    margin-left: auto;
+    margin-right: 8px;
+}
+
+.mull-head-figs .help-q {
+    align-self: flex-start;
+}
+
+.prob-pane.is-collapsed .prob-head .help-q {
+    display: none;
+}
+
+/* Contents, v2 (owner testing): tours read as things to do, the manual as numbered sections.
+   Tours sit in a glass well like the board's; sections are indexed rows (signal mono, as the
+   landing page's spec rows) that open and close. */
+.help-lbl-n {
+    margin-left: 8px;
+    font-weight: 400;
+    letter-spacing: 0.08em;
+    color: var(--text-faint);
+}
+
+.help-tours .help-lbl {
+    margin-bottom: 6px;
+}
+
+.help-tour-list {
+    margin: 0;
+    padding: 4px;
+    list-style: none;
+    background: var(--fu-glass);
+    border-radius: var(--radius-inset, 10px);
+}
+
+.help-tour-list > li + li {
+    border-top: 1px solid var(--fu-glass-line);
+}
+
+.help-tour {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 10px 10px;
+    border: 0;
+    border-radius: 7px;
+    background: none;
+    color: var(--fu-light);
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+.help-tour:hover,
+.help-tour:focus-visible {
+    background: var(--fu-glass-raised);
+}
+
+.help-tour:disabled {
+    cursor: default;
+    opacity: 0.5;
+}
+
+.help-tour-play {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    border: 1px solid var(--fu-glass-line);
+    border-radius: 6px;
+    font-size: 8px;
+    color: var(--fu-glass-2);
+}
+
+.help-tour:hover .help-tour-play {
+    border-color: var(--accent);
+    color: var(--accent);
+}
+
+.help-tour-t {
+    flex: 1 1 auto;
+    min-width: 0;
+    font-size: 13px;
+    font-weight: 560;
+}
+
+.help-tour-m,
+.help-tour-go {
+    flex: none;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--fu-glass-mute);
+}
+
+.help-tour-go {
+    min-width: 56px;
+    text-align: right;
+    color: var(--fu-glass-2);
+}
+
+.help-tour:hover .help-tour-go {
+    color: var(--accent);
+}
+
+.help-tour.is-done .help-tour-go {
+    color: var(--fu-glass-mute);
+}
+
+.help-man-lbl {
+    margin: 20px 0 4px;
+}
+
+.help-sec {
+    border-top: 1px solid var(--fu-row-rule);
+}
+
+.help-sec:last-child {
+    border-bottom: 1px solid var(--fu-row-rule);
+}
+
+.help-sec-h {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 11px 4px;
+    border: 0;
+    background: none;
+    color: var(--text);
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+.help-sec-h:hover .help-sec-t {
+    text-decoration: underline;
+    text-decoration-color: var(--border-strong);
+    text-underline-offset: 3px;
+}
+
+.help-sec-n {
+    flex: none;
+    width: 18px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--accent);
+}
+
+.help-sec-t {
+    flex: 1 1 auto;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+}
+
+.help-sec-c {
+    flex: none;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-dim);
+}
+
+.help-sec-chev {
+    flex: none;
+    width: 12px;
+    font-size: 10px;
+    color: var(--text-dim);
+    transition: transform 120ms ease-out;
+}
+
+.help-sec.is-open .help-sec-chev {
+    transform: rotate(180deg);
+}
+
+.help-sec-list {
+    margin: 0 0 10px 13px;
+    padding-left: 15px;
+    border-left: 1px solid var(--border);
+}
+
+.help-sec-list[hidden] {
+    display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .help-sec-chev {
+        transition: none;
+    }
+}
+
+/* Links to other articles: the signal. By day it is deepened toward ink so 13px text keeps AA
+   on paper (Ember on paper is about 3.7:1); the underline stays the pure signal. */
+.help-prose a,
+.help-rel .help-row-t {
+    color: color-mix(in oklch, var(--accent) 74%, var(--text));
+    text-decoration: underline;
+    text-decoration-color: var(--accent);
+    text-decoration-thickness: 1px;
+    text-underline-offset: 3px;
+}
+
+.help-prose a:hover,
+.help-rel .help-row:hover .help-row-t {
+    text-decoration-thickness: 2px;
+}
+
+:root[data-theme="night"] .help-prose a,
+:root[data-theme="night"] .help-rel .help-row-t {
+    color: var(--accent);
+}
+
+.help-rel .help-row-t {
+    text-decoration: none;
+}
+
+.help-rel .help-row:hover .help-row-t {
+    text-decoration: underline;
+}
+
+.help-rel .help-row-t::after {
+    content: '→';
+    margin-left: 2px;
+}
+
+/* ---- M2 · Search: result rows, highlights, no-results ---- */
+
+/* ---- M4 · Spotlight: dimmer, ring, callout ---- */
+/* app/js/spotlight.js. Over the help drawer, the Multiverse, modals and toasts;
+   under the styled dialogs (.dlg-backdrop, 1100). The cut-out's huge shadow is
+   the dimmer: the chassis ink at 55% by day, black at 60% on Kiln. Its 2px ring
+   is ink on the chassis and paper on glass, never the signal (§7.2). */
+.spot {
+    --spot-dim: rgb(22 21 19 / 0.55);
+    --spot-ring: var(--fu-dark);
+    position: fixed;
+    inset: 0;
+    z-index: 1080;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity var(--dur) var(--ease);
+}
+
+:root[data-theme="night"] .spot {
+    --spot-dim: oklch(0 0 0 / 0.6);
+    --spot-ring: var(--fu-light);
+}
+
+.spot.is-on-glass {
+    --spot-ring: var(--fu-light);
+}
+
+.spot.is-open {
+    opacity: 1;
+}
+
+.spot[hidden] {
+    display: none;
+}
+
+.spot-hole {
+    position: fixed;
+    box-sizing: border-box;
+    border: 2px solid var(--spot-ring);
+    box-shadow: 0 0 0 200vmax var(--spot-dim);
+    pointer-events: none;
+}
+
+/* The target is gone: dim it all and centre the callout. */
+.spot-dim {
+    position: fixed;
+    inset: 0;
+    display: none;
+    background: var(--spot-dim);
+}
+
+.spot.is-lost .spot-dim {
+    display: block;
+}
+
+.spot.is-lost .spot-hole {
+    display: none;
+}
+
+/* Blockers: everything outside the cut-out (or everything, when clicks end it).
+   A press that starts in the cut-out lifts them until it ends, so drags land. */
+.spot-block {
+    position: fixed;
+    pointer-events: auto;
+}
+
+.spot.is-through .spot-block {
+    pointer-events: none;
+}
+
+.spot-callout {
+    position: fixed;
+    box-sizing: border-box;
+    max-width: calc(100vw - 16px);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 12px;
+    background: var(--surface);
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-3);
+    color: var(--text);
+    font-family: var(--font-sans);
+    pointer-events: auto;
+}
+
+.spot-callout:focus {
+    outline: none;
+}
+
+.spot-step {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    line-height: 1.3;
+    letter-spacing: var(--label-track);
+    color: var(--text-dim);
+    font-variant-numeric: tabular-nums;
+}
+
+.spot-title {
+    font-size: 16px;
+    font-weight: 560;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+}
+
+.spot-text,
+.spot-note {
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.45;
+    color: var(--text-2);
+}
+
+.spot-text strong {
+    color: var(--text);
+    font-weight: 600;
+}
+
+.spot-note {
+    color: var(--text-dim);
+}
+
+.spot-step[hidden],
+.spot-title[hidden],
+.spot-text[hidden],
+.spot-note[hidden] {
+    display: none;
+}
+
+.spot-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 6px;
+}
+
+.spot-actions .btn {
+    min-height: 32px;
+    padding: 0 12px;
+    justify-content: center;
+}
+
+.spot-actions .btn-primary {
+    min-height: 32px;
+    padding: 0 16px;
+}
+
+.spot-actions .btn:focus-visible {
+    outline: 2px solid var(--text);
+    outline-offset: 2px;
+}
+
+/* Phones: docked to the edge away from the target, 16px gutters, over the safe area. */
+.spot.is-phone .spot-callout {
+    left: 16px;
+    max-width: none;
+}
+
+.spot[data-dock="bottom"] .spot-callout {
+    top: auto;
+    bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+}
+
+.spot[data-dock="top"] .spot-callout {
+    top: calc(16px + env(safe-area-inset-top, 0px));
+    bottom: auto;
+}
+
+.spot.is-phone .spot-actions .btn {
+    min-height: 40px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .spot {
+        transition: none;
+    }
+}
+
+/* ---- M5 · Tours: callout steps, practice banner ---- */
+
+/* The callout's ✕ (End tour): a small mute paper tool in the corner, never signal. */
+.spot-x {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 24px;
+    height: 24px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--text-dim);
+    font-size: 12px;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.spot-x[hidden] {
+    display: none;
+}
+
+.spot-x:hover {
+    background: var(--surface-2);
+    color: var(--text);
+}
+
+.spot-x:focus-visible {
+    outline: 2px solid var(--text);
+    outline-offset: 1px;
+}
+
+/* Leave room for the ✕ beside the step counter and title. */
+.spot-callout:has(.spot-x:not([hidden])) .spot-step,
+.spot-callout:has(.spot-x:not([hidden])) .spot-title {
+    padding-right: 28px;
+}
+
+.spot.is-phone .spot-x {
+    width: 32px;
+    height: 32px;
+    top: 6px;
+    right: 6px;
+}
+
+/* The practice board's banner: the same paper strip as a shared session. */
+.shared-banner #shared-banner-name[hidden] {
+    display: none;
+}
+
+
+/* Tour mode (owner testing): a tour step must never read as part of the app, so tours wear
+   Olive, from the key family (never the signal, never an ink): the callout is an Olive panel,
+   the ring is Olive, the screen gets an Olive frame and the Practice banner turns Olive.
+   Steps change in place, without moving or resizing animations (owner testing).
+   --tour / --tour-ink: one place to change the tour colour. Kiln lifts Olive as the Library does. */
+:root {
+    --tour: var(--key-olive);
+    --tour-ink: var(--key-olive-ink);
+    --tour-key-text: #F4F0E8;
+}
+
+:root[data-theme="night"] {
+    --tour: #9C9A34;
+}
+
+.spot[data-tone="tour"] {
+    --spot-ring: var(--tour);
+}
+
+.spot[data-tone="tour"] .spot-hole {
+    border-width: 3px;
+    border-color: var(--tour); /* direct: the night and on-glass ring rules set the variable */
+}
+
+.spot[data-tone="tour"] .spot-callout {
+    background: var(--tour);
+    border: 1px solid color-mix(in oklch, var(--tour) 70%, #000);
+    color: var(--tour-ink);
+    box-shadow: 0 12px 32px rgb(0 0 0 / 0.38);
+}
+
+.spot[data-tone="tour"] .spot-title,
+.spot[data-tone="tour"] .spot-text,
+.spot[data-tone="tour"] .spot-note,
+.spot[data-tone="tour"] .spot-text strong,
+.spot[data-tone="tour"] .spot-x {
+    color: var(--tour-ink);
+}
+
+.spot[data-tone="tour"] .spot-step {
+    color: color-mix(in oklch, var(--tour-ink) 70%, transparent);
+}
+
+.spot[data-tone="tour"] .spot-actions .btn {
+    background: transparent;
+    border: 1px solid color-mix(in oklch, var(--tour-ink) 35%, transparent);
+    color: var(--tour-ink);
+}
+
+.spot[data-tone="tour"] .spot-actions .btn:hover {
+    background: color-mix(in oklch, var(--tour-ink) 10%, transparent);
+}
+
+.spot[data-tone="tour"] .spot-actions .btn-primary {
+    background: var(--tour-ink);
+    border-color: var(--tour-ink);
+    color: var(--tour-key-text);
+}
+
+.spot[data-tone="tour"] .spot-actions .btn-primary:hover {
+    background: color-mix(in oklch, var(--tour-ink) 85%, var(--tour));
+}
+
+.spot[data-tone="tour"] .spot-actions .btn:focus-visible {
+    outline-color: var(--tour-ink);
+}
+
+/* The whole screen is framed while a tour runs. */
+body.is-touring::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 1090;
+    border: 3px solid var(--tour);
+    pointer-events: none;
+}
+
+/* The Practice banner (a tour's board) in Olive. */
+.shared-banner.is-practice {
+    background: var(--tour);
+    border-color: color-mix(in oklch, var(--tour) 70%, #000);
+    color: var(--tour-ink);
+}
+
+.shared-banner.is-practice > i,
+.shared-banner.is-practice .sb-note {
+    color: var(--tour-ink);
+    opacity: 0.85;
+}
+
+.shared-banner.is-practice .btn.btn-primary {
+    background: var(--tour-ink);
+    color: var(--tour-key-text);
+}
+
+
+/* ---- M7 · Help in context: the ? links, the home tour strip ---- */
+
+/* The welcome (ARCH §8.2): shown once to a new player over the home screen. A paper
+   module on the dimmed chassis; Start the tour is the view's one signal key. */
+.tour-welcome {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background: oklch(0.2 0.01 80 / 0.42);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+}
+
+.tour-welcome[hidden] {
+    display: none;
+}
+
+/* It belongs to the home screen: never over the board (e.g. a demo opened by a link or a script). */
+body:has(#setup-modal.hidden) .tour-welcome {
+    display: none;
+}
+
+.tw-card {
+    width: min(540px, 100%);
+    max-height: 100%;
+    overflow-y: auto;
+    padding: 28px 28px 22px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    box-shadow: var(--shadow-3);
+    color: var(--text);
+}
+
+.tw-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 18px;
+}
+
+.tw-mark {
+    width: 30px;
+    height: 30px;
+    flex: none;
+}
+
+.tw-kicker {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text-2);
+}
+
+.tw-card h2 {
+    margin: 0 0 12px;
+    font-family: var(--font-display);
+    font-size: 30px;
+    font-weight: 520;
+    line-height: 1.05;
+    letter-spacing: -0.035em;
+}
+
+.tw-card h2 .mute {
+    display: block;
+    color: var(--text-dim);
+}
+
+.tw-lede {
+    margin: 0 0 16px;
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--text-2);
+}
+
+.tw-list {
+    margin: 0 0 20px;
+    padding: 0;
+    list-style: none;
+    border-top: 1px solid var(--fu-row-rule, var(--border-soft));
+}
+
+.tw-list li {
+    display: flex;
+    gap: 12px;
+    align-items: baseline;
+    padding: 9px 0;
+    border-bottom: 1px solid var(--fu-row-rule, var(--border-soft));
+    font-size: 13.5px;
+}
+
+.tw-list li b {
+    flex: none;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--accent);
+}
+
+.tw-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+}
+
+.tw-actions .btn {
+    min-height: 40px;
+    padding: 0 20px;
+    border-radius: 999px;
+    font-size: 14px;
+    white-space: nowrap;
+}
+
+.tw-actions .btn:not(.btn-primary) {
+    background: var(--surface);
+    color: var(--text);
+    border: 1px solid var(--border);
+}
+
+.tw-actions .btn:not(.btn-primary):hover {
+    background: var(--surface-2);
+}
+
+.tw-foot {
+    margin: 16px 0 0;
+    font-size: 12px;
+    color: var(--text-dim);
+}
+
+@media (max-width: 760px) {
+    .tour-welcome {
+        align-items: flex-end;
+        padding: 12px 12px calc(12px + env(safe-area-inset-bottom));
+    }
+
+    .tw-card {
+        padding: 22px 20px 18px;
+    }
+
+    .tw-card h2 {
+        font-size: 26px;
+    }
+
+    .tw-actions .btn {
+        flex: 1 1 100%;
+        min-height: 44px;
+    }
+}
+
+/* The Help keys breathe in the signal until Help is first opened (tour.js: body.help-breathe).
+   Not during a tour. Phones: Help lives in the ⋯ menu, so the ⋯ key breathes. */
+@keyframes help-breathe {
+    0%, 100% { box-shadow: 0 0 0 0 color-mix(in oklch, var(--accent) 0%, transparent); }
+    50% { box-shadow: 0 0 0 6px color-mix(in oklch, var(--accent) 30%, transparent); }
+}
+
+body.help-breathe:not(.is-touring) #btn-help,
+body.help-breathe:not(.is-touring) #btn-home-help {
+    border-color: var(--accent);
+    color: var(--accent);
+    animation: help-breathe 2.4s ease-in-out infinite;
+}
+
+body.help-breathe:not(.is-touring) #btn-help i,
+body.help-breathe:not(.is-touring) #btn-home-help i,
+body.help-breathe #menu-help i {
+    color: var(--accent) !important;
+}
+
+@media (max-width: 760px) {
+    body.help-breathe:not(.is-touring) #btn-topbar-more {
+        border-color: var(--accent);
+        color: var(--accent);
+        animation: help-breathe 2.4s ease-in-out infinite;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    body.help-breathe:not(.is-touring) #btn-help,
+    body.help-breathe:not(.is-touring) #btn-home-help,
+    body.help-breathe:not(.is-touring) #btn-topbar-more {
+        animation: none;
+        box-shadow: 0 0 0 2px color-mix(in oklch, var(--accent) 45%, transparent);
+    }
+}
+
+/* A small ? on a dialog's head (Share, Sign in). */
+.dlg-head .help-q {
+    margin-left: auto;
+    align-self: center;
+}
+

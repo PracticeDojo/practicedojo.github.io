@@ -43,6 +43,12 @@
     <!-- Mini Multiverse: the tree as lines in the sidebar, and its step moves -->
     <script src="js/mini-multiverse.js"></script>
 
+    <!-- Help (Features 57-58): manual search, the manual, "Show me", guided tours. app/help/ holds the content -->
+    <script src="js/help-search.js"></script>
+    <script src="js/help.js"></script>
+    <script src="js/spotlight.js"></script>
+    <script src="js/tour.js"></script>
+
     <!-- Base styles (the original stylesheet), then the Field Unit design system on top -->
     <link rel="stylesheet" href="css/base.css">
     <link rel="stylesheet" href="css/field-unit.css">
@@ -108,7 +114,7 @@
         <div class="topbar-left">
             <button id="mobile-menu-btn" class="icon-btn" onclick="App.toggleSidebar()" title="Menu"
                 aria-label="Open menu"><i class="fa-solid fa-bars"></i></button>
-            <button class="tb-home" onclick="App.confirmShowSetup()" title="Leave to the dojo (your match stays saved)"
+            <button class="tb-home" id="btn-home" onclick="App.confirmShowSetup()" title="Leave to the dojo (your match stays saved)"
                 aria-label="Leave to the dojo"><i class="fa-solid fa-chevron-left"></i><span
                     class="brand-mark"></span><span class="tb-home-label">Dojo</span></button>
             <div class="divider-v tb-home-rule"></div>
@@ -121,7 +127,7 @@
                 <button class="icon-btn ghost" id="btn-session-save" onclick="App.saveSessionNow()"
                     title="Save to this device" aria-label="Save session"><i
                         class="fa-solid fa-floppy-disk"></i></button>
-                <button class="icon-btn ghost session-copy" onclick="App.saveSessionAsCopy()" title="Save as copy"
+                <button class="icon-btn ghost session-copy" id="btn-session-copy" onclick="App.saveSessionAsCopy()" title="Save as copy"
                     aria-label="Save session as a copy"><i class="fa-regular fa-copy"></i></button>
                 <button class="icon-btn ghost" id="btn-session-share" onclick="App.shareCurrentSession()"
                     title="Share a link to this session" aria-label="Share session"><i
@@ -150,6 +156,8 @@
             <button class="icon-btn" id="btn-tweaks"
                 onclick="document.getElementById('tweaks-panel').classList.toggle('is-open')" title="Tweaks"
                 aria-label="Tweaks"><i class="fa-solid fa-sliders"></i></button>
+            <button class="icon-btn" id="btn-help" onclick="DojoHelp.toggle()" title="Help (?)" aria-label="Help"
+                aria-expanded="false"><i class="fa-regular fa-circle-question"></i></button>
             <button class="icon-btn" id="btn-topbar-more" onclick="App.toggleTopbarMenu(event)" title="More"
                 aria-label="More" aria-haspopup="menu" aria-expanded="false" aria-controls="topbar-menu"><i
                     class="fa-solid fa-ellipsis"></i></button>
@@ -164,6 +172,8 @@
                     class="fa-regular fa-copy"></i>Save as copy</span></button>
         <button class="ctx-item" role="menuitem" onclick="App.closeTopbarMenu(); App.shareCurrentSession()"><span><i
                     class="fa-solid fa-share-nodes"></i>Share link</span></button>
+        <button class="ctx-item" role="menuitem" id="menu-help" onclick="App.closeTopbarMenu(); DojoHelp.open()"><span><i
+                    class="fa-regular fa-circle-question"></i>Help &amp; tours</span></button>
         <button class="ctx-item" role="menuitem"
             onclick="App.closeTopbarMenu(); document.getElementById('tweaks-panel').classList.toggle('is-open')"><span><i
                     class="fa-solid fa-sliders"></i>Tweaks</span></button>
@@ -172,11 +182,13 @@
                     class="fa-solid fa-arrow-right-from-bracket"></i>Leave to the dojo</span></button>
     </div>
 
-    <!-- Viewing someone else's shared session: nothing saves until you keep a copy -->
+    <!-- A scratch view: someone else's shared session, or a guided tour's practice
+         board. Nothing saves until you keep a copy. -->
     <div class="shared-banner hidden" id="shared-banner" role="status">
-        <i class="fa-solid fa-share-nodes"></i>
-        <span class="sb-text">Shared · <b id="shared-banner-title"></b></span>
-        <span class="sb-note">not saved yet</span>
+        <i class="fa-solid fa-share-nodes" id="shared-banner-icon"></i>
+        <span class="sb-text"><span id="shared-banner-kind">Shared</span><span id="shared-banner-name"> · <b
+                    id="shared-banner-title"></b></span></span>
+        <span class="sb-note" id="shared-banner-note">not saved yet</span>
         <button class="btn btn-primary" onclick="App.saveSharedCopy()">Save a copy</button>
     </div>
 
@@ -212,6 +224,8 @@
                 <button class="btn btn-ghost" id="btn-open-library" onclick="App.openLibrary('sessions')">
                     <i class="fa-solid fa-book-bookmark"></i> Library <span class="lib-figs" id="home-lib-figs"></span>
                 </button>
+                <button class="btn btn-ghost" id="btn-home-help" onclick="DojoHelp.toggle()" aria-expanded="false"
+                    title="Help (?)"><i class="fa-regular fa-circle-question"></i> Help</button>
             </header>
 
             <section class="home-lede">
@@ -229,12 +243,12 @@
                         <span class="hint">Nothing to paste? Try an example:</span>
                         <button class="btn btn-ghost" id="btn-example-deck" onclick="App.intakeExample('deck')"><i
                                 class="fa-solid fa-layer-group"></i> A decklist</button>
-                        <button class="btn btn-ghost" onclick="App.intakeExample('log')"><i
+                        <button class="btn btn-ghost" id="btn-example-log" onclick="App.intakeExample('log')"><i
                                 class="fa-solid fa-film"></i> A Duels.ink log</button>
                         <input type="file" id="intake-file" class="hidden"
                             accept=".json,.gz,.txt,.md,.log,.replay,application/json,application/gzip,text/plain"
                             onchange="App.onIntakeFile(event)">
-                        <button class="btn" onclick="document.getElementById('intake-file').click()"><i
+                        <button class="btn" id="btn-intake-file" onclick="document.getElementById('intake-file').click()"><i
                                 class="fa-solid fa-file-arrow-up"></i> Choose a file</button>
                     </div>
                 </div>
@@ -257,11 +271,37 @@
                 </section>
                 <section class="home-box" aria-labelledby="home-recent-title">
                     <h3 id="home-recent-title">Pick up again
-                        <button class="link-btn" onclick="App.openLibrary('sessions')">All sessions</button>
+                        <button class="link-btn" id="btn-all-sessions" onclick="App.openLibrary('sessions')">All sessions</button>
                     </h3>
                     <div id="home-recent"></div>
                 </section>
             </div>
+        </div>
+    </div>
+
+    <!-- Guided tours (Feature 58): the welcome, shown once to a new player on the home
+         screen (no sessions yet, not arriving by a share link). DojoTour shows it. -->
+    <div class="tour-welcome" id="tour-welcome" role="dialog" aria-modal="true" aria-labelledby="tw-title"
+        aria-describedby="tw-lede" hidden>
+        <div class="tw-card">
+            <div class="tw-brand"><span class="brand-mark tw-mark" aria-hidden="true"></span>
+                <span class="tw-kicker">Welcome to the Practice Dojo</span></div>
+            <h2 id="tw-title">New here? <span class="mute">Take the 3-minute tour.</span></h2>
+            <p class="tw-lede" id="tw-lede">The Dojo is a Lorcana sandbox: you play both sides, rewind any turn and
+                try another line. The tour walks you through a first turn on a practice board, pointing at each
+                control as you use it. Nothing you do in it is saved.</p>
+            <ol class="tw-list">
+                <li><b>01</b><span>Your opening hand: look, send cards back, mulligan</span></li>
+                <li><b>02</b><span>Ink, play a card and end the turn</span></li>
+                <li><b>03</b><span>Play the other side, Undo, and where the Multiverse is</span></li>
+            </ol>
+            <div class="tw-actions">
+                <button class="btn btn-primary" id="btn-tour-start" onclick="DojoTour.takeOffer()">Start the
+                    tour <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></button>
+                <button class="btn" id="btn-tour-later" onclick="DojoTour.dismissOffer()">Explore on my own</button>
+            </div>
+            <p class="tw-foot"><i class="fa-regular fa-circle-question" aria-hidden="true"></i> Help and two more
+                tours are always under <b>Help</b>.</p>
         </div>
     </div>
 
@@ -272,6 +312,7 @@
         hidden>
         <div class="lib-hd">
             <h2 id="library-title">Library</h2>
+            <button type="button" class="help-q" data-help="library" aria-label="Help: the Library">?</button>
             <button class="icon-btn ghost" onclick="App.closeLibrary()" aria-label="Close library">&times;</button>
         </div>
         <div class="home-tabs" role="tablist" aria-label="Library">
@@ -290,7 +331,7 @@
             <div class="lib-toolbar is-end">
                 <input type="file" id="setup-import-file" class="hidden"
                     accept=".json,.gz,application/json,application/gzip" onchange="App.importTimelines(event)">
-                <button class="btn btn-ghost" onclick="document.getElementById('setup-import-file').click()">
+                <button class="btn btn-ghost" id="btn-lib-import" onclick="document.getElementById('setup-import-file').click()">
                     <i class="fa-solid fa-file-import"></i> Import file
                 </button>
             </div>
@@ -299,17 +340,17 @@
 
         <section class="lib-panel" id="lib-panel-decks" role="tabpanel" aria-labelledby="lib-tab-decks" hidden>
             <div class="lib-toolbar">
-                <button class="btn btn-ghost" onclick="App.openDeckEditor(null)">
+                <button class="btn btn-ghost" id="btn-deck-new" onclick="App.openDeckEditor(null)">
                     <i class="fa-solid fa-plus"></i> New deck
                 </button>
                 <input type="file" id="deck-import-txt" class="hidden" accept=".txt,text/plain"
                     onchange="App.importDeckTxt(event)">
-                <button class="btn btn-ghost" onclick="document.getElementById('deck-import-txt').click()">
+                <button class="btn btn-ghost" id="btn-deck-import-txt" onclick="document.getElementById('deck-import-txt').click()">
                     <i class="fa-solid fa-file-lines"></i> Import .txt
                 </button>
                 <input type="file" id="deck-import-replay" class="hidden" accept=".json,.replay,.gz"
                     onchange="App.importDeckFromReplay(event)">
-                <button class="btn btn-ghost" onclick="document.getElementById('deck-import-replay').click()"
+                <button class="btn btn-ghost" id="btn-deck-from-replay" onclick="document.getElementById('deck-import-replay').click()"
                     title="Use your exact decklist from a Duels.ink replay file">
                     <i class="fa-solid fa-film"></i> From a replay
                 </button>
@@ -344,7 +385,7 @@
     <!-- Mulligan Modal (Feature 54: mulligan mode) -->
     <div id="mulligan-modal" role="dialog" aria-modal="true" aria-labelledby="mulligan-title"
         class="modal-backdrop mull-modal fixed inset-0 flex items-center justify-center hidden" style="z-index:90">
-        <div class="mull-dlg">
+        <div class="mull-dlg" id="mulligan-dialog">
             <div class="mull-head">
                 <div class="mull-head-main">
                     <div class="mull-lbl" id="mulligan-context">Opening hand</div>
@@ -361,6 +402,7 @@
                         <div class="mull-lbl">Deck</div>
                         <div class="mull-fig" id="mulligan-deck-count">0</div>
                     </div>
+                    <button type="button" class="help-q" data-help="mulligan" aria-label="Help: mulligan">?</button>
                 </div>
             </div>
             <div class="mull-body">
@@ -399,7 +441,7 @@
             </div>
             <div class="mull-foot">
                 <div class="mull-lbl mull-hint mull-long" id="mulligan-hint"></div>
-                <button class="btn btn-ghost mull-craft" onclick="App.openCraftHand()"
+                <button class="btn btn-ghost mull-craft" id="mulligan-craft" onclick="App.openCraftHand()"
                     title="Pick your seven from the whole deck instead"><i class="fa-solid fa-wand-magic-sparkles"></i>
                     <span class="mull-long">Craft hand</span><span class="mull-short">Craft</span></button>
                 <button class="btn btn-primary" id="mulligan-confirm" onclick="App.confirmMulligan()">Keep hand</button>
@@ -550,21 +592,22 @@
             <div class="flex items-center gap-2">
                 <input type="file" id="import-file" class="hidden"
                     accept=".json,.gz,application/json,application/gzip" onchange="App.importTimelines(event)">
-                <button class="tree-tool" onclick="document.getElementById('import-file').click()"
+                <button class="tree-tool" id="tree-import" onclick="document.getElementById('import-file').click()"
                     title="Import a session file"><i class="fa-solid fa-file-import"></i><span>Import</span></button>
-                <button class="tree-tool" onclick="App.exportTimelines()" title="Export this session as a file"><i
+                <button class="tree-tool" id="tree-export" onclick="App.exportTimelines()" title="Export this session as a file"><i
                         class="fa-solid fa-file-export"></i><span>Export</span></button>
-                <button class="tree-tool" onclick="App.openImportLogModal()"
+                <button class="tree-tool" id="tree-log" onclick="App.openImportLogModal()"
                     title="Import a Duels.ink log or replay"><i class="fa-solid fa-file-lines"></i><span>Log</span></button>
                 <div class="divider-v tree-head-rule"></div>
                 <button class="tree-tool" id="tree-view-toggle" onclick="App.toggleTreeView()" aria-pressed="false"
                     title="Show the tree as a plot: every saved turn a dot"><i class="fa-solid fa-braille"></i><span>Plot</span></button>
+                <button type="button" class="help-q" data-help="multiverse" aria-label="Help: the Multiverse">?</button>
                 <button onclick="App.toggleTreePanelSide()" class="close tree-dock-toggle" id="tree-dock-toggle"
                     title="Move the panel to the left" aria-label="Move the panel to the left"><i
                         class="fa-solid fa-table-columns"></i></button>
-                <button onclick="App.resetTreeZoom()" class="close tree-zoom-reset" title="Reset Zoom" aria-label="Reset zoom"><i
+                <button onclick="App.resetTreeZoom()" class="close tree-zoom-reset" id="tree-zoom-reset" title="Reset Zoom" aria-label="Reset zoom"><i
                         class="fa-solid fa-compress"></i></button>
-                <button onclick="App.closeTreeModal()" class="close" aria-label="Close multiverse view"><i
+                <button onclick="App.closeTreeModal()" class="close" id="tree-close" aria-label="Close multiverse view"><i
                         class="fa-solid fa-times"></i></button>
             </div>
         </div>
@@ -637,12 +680,12 @@
     <div id="app" class="app hidden">
 
         <!-- SIDEBAR -->
-        <aside class="sidebar">
+        <aside class="sidebar" id="sidebar">
             <div class="sidebar-section">
                 <div class="section-head">
                     <h3>Players</h3><span class="hint" id="app-version-sidebar"></span>
                 </div>
-                <div class="player-rows">
+                <div class="player-rows" id="player-rows">
                     <div class="player-row is-p1 is-active" id="p0-badge">
                         <span class="deck-icon is-p1"></span>
                         <span class="player-name">Player 1 (You)</span>
@@ -673,7 +716,7 @@
                         save the turn you're in (T).</div>
                     <div class="mmv-cap" id="mmv-cap"></div>
                 </div>
-                <div class="mmv-ctl" role="group" aria-label="Step through the multiverse">
+                <div class="mmv-ctl" id="mmv-ctl" role="group" aria-label="Step through the multiverse">
                     <button class="icon-btn" data-mmv="forkBack" onclick="App.mmvStep('forkBack')"
                         title="Back to the last branch point, or the start (Home)"
                         aria-label="Back to the last branch point or the start"><i
@@ -695,7 +738,7 @@
             </section>
 
             <!-- Hover details: the card on a glass inset -->
-            <div class="hover-module">
+            <div class="hover-module" id="card-preview">
                 <!-- Card Preview Panel -->
                 <div class="preview-pane">
                     <span id="sidebar-preview-placeholder" class="preview-placeholder">Hover a card for details</span>
@@ -722,7 +765,7 @@
             <div class="log-pane" id="game-log"><!-- Log entries injected here --></div>
 
             <div class="sidebar-foot">
-                <div class="toggle-row">
+                <div class="toggle-row" id="auto-save-row">
                     <span class="toggle-label"
                         title="Automatically save the game state to the Multiverse Tree before ending each turn">Auto-save
                         every turn</span>
@@ -733,7 +776,7 @@
                     </label>
                 </div>
                 <div class="action-row tri">
-                    <button class="btn" onclick="App.questWithAll()" title="Quest with all available characters">
+                    <button class="btn" id="btn-quest-all" onclick="App.questWithAll()" title="Quest with all available characters">
                         <i class="fa-solid fa-diamond" style="color:var(--lvi)"></i> Quest <span class="mono dim"
                             id="quest-count">0</span>
                     </button>
@@ -743,7 +786,7 @@
                         aria-label="Multiverse"><i class="fa-solid fa-code-branch"></i></button>
                     <button class="icon-btn" onclick="App.undo()" title="Undo last action"><i
                             class="fa-solid fa-rotate-left"></i></button>
-                    <button class="btn btn-p1 btn-block" onclick="App.endTurn()">End turn &rarr;</button>
+                    <button class="btn btn-p1 btn-block" id="btn-end-turn" onclick="App.endTurn()">End turn &rarr;</button>
                 </div>
             </div>
 
@@ -758,7 +801,7 @@
             <!-- TOP (opponent) half -->
             <div class="board-half top is-p2" id="top-board">
                 <div class="board-bg-letter" id="top-player-bg-text">P2</div>
-                <div class="lore-badge is-p2">
+                <div class="lore-badge is-p2" id="top-lore-badge">
                     <div class="lore-row">
                         <button class="minus" onclick="App.changeLore(App.state.inactivePlayer, -1)"
                             title="Decrease Lore">&minus;</button>
@@ -771,7 +814,7 @@
 
                 <!-- hand row -->
                 <div class="hand-wrap">
-                    <button class="peek-toggle" onmousedown="App.setHandReveal(true)"
+                    <button class="peek-toggle" id="top-peek" onmousedown="App.setHandReveal(true)"
                         onmouseup="App.setHandReveal(false)" onmouseleave="App.setHandReveal(false)"
                         ontouchstart="App.togglePeek(event)" title="Tap (or hold on desktop) to peek opponent hand">
                         <i id="reveal-icon" class="fa-solid fa-eye"></i> <span id="reveal-text">Hold to Reveal
@@ -786,7 +829,7 @@
                 <!-- pile row (ink + discard + deck) -->
                 <div class="pile-row">
                     <!-- Phones: lore lives in the bar (the floating badge is hidden there). -->
-                    <div class="lore-chip">
+                    <div id="top-lore-bar" class="lore-chip">
                         <span class="lore-chip-label">Lore</span>
                         <span class="lore-chip-value" id="top-lore-chip">0</span>
                         <div class="lore-chip-btns">
@@ -796,7 +839,7 @@
                                 title="Increase Lore">+</button>
                         </div>
                     </div>
-                    <div class="ink-cluster is-counter drop-zone" ondragover="App.allowDrop(event)"
+                    <div id="top-ink-bar" class="ink-cluster is-counter drop-zone" ondragover="App.allowDrop(event)"
                         ondragenter="App.dragEnter(event)" ondragleave="App.dragLeave(event)"
                         ondrop="App.drop(event, 'inkwell', 'top')" role="button" tabindex="0" aria-haspopup="dialog"
                         title="Inkwell — click to manage, drop a card to ink it"
@@ -818,7 +861,7 @@
                                 onclick="event.stopPropagation(); App.inspectDiscard(App.state.inactivePlayer)"><i
                                     class="fa-solid fa-magnifying-glass"></i></button>
                         </div>
-                        <div class="pile deck drop-zone" draggable="true"
+                        <div class="pile deck drop-zone" id="top-deck" draggable="true"
                             onclick="App.drawCard(App.state.inactivePlayer)"
                             ondragstart="App.dragStartTopCard(event, 'top')" ondragover="App.allowDrop(event)"
                             ondragenter="App.dragEnter(event)" ondragleave="App.dragLeave(event)"
@@ -858,14 +901,14 @@
             <div class="board-half bottom is-p1" id="bottom-board">
                 <div class="board-bg-letter" id="bottom-player-bg-text">P1</div>
 
-                <div class="notes-panel">
+                <div class="notes-panel" id="turn-notes">
                     <div class="notes-head"><i class="fa-solid fa-book-open"></i><span>Turn <span
                                 id="turn-comment-header-num">1</span> notes</span></div>
                     <textarea id="active-turn-comment" placeholder="Add notes for this turn… (saves on blur)"
                         onblur="App.updateTurnComment(App.state.turn, App.state.activePlayer, this.value)"></textarea>
                 </div>
 
-                <div class="lore-badge is-p1">
+                <div class="lore-badge is-p1" id="bottom-lore-badge">
                     <div class="lore-row">
                         <button class="minus" onclick="App.changeLore(App.state.activePlayer, -1)"
                             title="Decrease Lore">&minus;</button>
@@ -886,7 +929,7 @@
                 <!-- pile row -->
                 <div class="pile-row">
                     <!-- Phones: lore lives in the bar (the floating badge is hidden there). -->
-                    <div class="lore-chip">
+                    <div id="bottom-lore-bar" class="lore-chip">
                         <span class="lore-chip-label">Lore</span>
                         <span class="lore-chip-value" id="bottom-lore-chip">0</span>
                         <div class="lore-chip-btns">
@@ -896,7 +939,7 @@
                                 title="Increase Lore">+</button>
                         </div>
                     </div>
-                    <div class="ink-cluster is-counter drop-zone" ondragover="App.allowDrop(event)"
+                    <div id="bottom-ink-bar" class="ink-cluster is-counter drop-zone" ondragover="App.allowDrop(event)"
                         ondragenter="App.dragEnter(event)" ondragleave="App.dragLeave(event)"
                         ondrop="App.drop(event, 'inkwell', 'bottom')" role="button" tabindex="0" aria-haspopup="dialog"
                         title="Inkwell — click to manage, drop a card to ink it"
@@ -919,7 +962,7 @@
                                 onclick="event.stopPropagation(); App.inspectDiscard(App.state.activePlayer)"><i
                                     class="fa-solid fa-magnifying-glass"></i></button>
                         </div>
-                        <div class="pile deck drop-zone" draggable="true" onclick="App.drawCard(App.state.activePlayer)"
+                        <div class="pile deck drop-zone" id="bottom-deck" draggable="true" onclick="App.drawCard(App.state.activePlayer)"
                             ondragstart="App.dragStartTopCard(event, 'bottom')" ondragover="App.allowDrop(event)"
                             ondragenter="App.dragEnter(event)" ondragleave="App.dragLeave(event)"
                             ondrop="App.drop(event, 'deck', 'bottom')"
@@ -949,13 +992,13 @@
                     <!-- Mobile-only quick actions: the two most-used current-player actions
                      (Quest with all, End turn), in the hand tray. Hidden on desktop. -->
                     <div class="mobile-quick-actions" id="mobile-quick-actions">
-                        <button class="btn mqa-btn mqa-quest" onclick="App.questWithAll()"
+                        <button class="btn mqa-btn mqa-quest" id="btn-quest-all-mobile" onclick="App.questWithAll()"
                             title="Quest with all available characters">
                             <i class="fa-solid fa-diamond" style="color:var(--lvi)"></i>
                             <span class="mqa-label">Quest</span>
                             <span class="mqa-count" id="quest-count-mobile">0</span>
                         </button>
-                        <button class="btn btn-p1 mqa-btn mqa-end" onclick="App.endTurn()" title="End turn">
+                        <button class="btn btn-p1 mqa-btn mqa-end" id="btn-end-turn-mobile" onclick="App.endTurn()" title="End turn">
                             <span class="mqa-label">End turn</span>
                             <i class="fa-solid fa-arrow-right"></i>
                         </button>
@@ -972,6 +1015,7 @@
         <aside class="prob-pane" id="prob-pane">
             <div class="prob-head">
                 <h3>Draw Odds <span class="mono dim" id="prob-deck-count"></span></h3>
+                <button type="button" class="help-q" data-help="draw-odds" aria-label="Help: draw odds">?</button>
                 <button class="prob-toggle" id="prob-toggle" onclick="App.toggleProbPane()"
                     title="Collapse / expand draw odds">
                     <i class="fa-solid fa-angles-right" id="prob-toggle-icon"></i>
@@ -1020,6 +1064,7 @@
     <div class="tweaks-panel" id="tweaks-panel">
         <div class="tweaks-head">
             <h3>Tweaks</h3>
+            <button type="button" class="help-q" data-help="tweaks" aria-label="Help: Tweaks">?</button>
             <button class="close" id="tweaks-close">&times;</button>
         </div>
         <div class="tweaks-body">
@@ -1081,7 +1126,7 @@
     <script>
         let cardFuse = null;
 
-        const APP_VERSION = "v3.9.2"; // Centralized version string (v3: Field Unit)
+        const APP_VERSION = "v3.11.0"; // Centralized version string (v3: Field Unit)
 
         // Tweaks panel accent presets (hue values for the OKLCH accent ramp)
         // Tweaks → Accent: the approved Field Unit signals only (design.md ·
@@ -1343,7 +1388,8 @@
                 const title = this.session ? this.session.title : (this._sharedView ? this._sharedView.title : '');
                 if (el && document.activeElement !== el) el.value = title;
                 document.title = this.session ? `${title} · Practice Dojo`
-                    : this._sharedView ? `Shared · ${title} · Practice Dojo` : 'Lorcana Practice Dojo';
+                    : this._sharedView ? (this._sharedView.kind === 'tour' ? 'Practice · Practice Dojo' : `Shared · ${title} · Practice Dojo`)
+                    : 'Lorcana Practice Dojo';
             },
 
             // "Amethyst/Ruby vs Amber/Steel", or the player names a Duels.ink import carries.
@@ -2082,6 +2128,9 @@
                     // otherwise the home screen, which re-reads the library.
                     if (!(await this.openShareFromUrl())) this.showSetup();
 
+                    // Help deep links: #help, #help/<id>, #help/<id>/<slug> (Feature 57).
+                    if (window.DojoHelp && DojoHelp.openFromHash) DojoHelp.openFromHash();
+
                     // Optional account: does nothing (and loads nothing) unless this
                     // browser is signed in or just came back from signing in.
                     this.initAccount();
@@ -2415,6 +2464,8 @@
                 if (back) back.classList.toggle('hidden', !liveMatch);
 
                 this.renderSeats();
+                // Guided tours (Feature 58): the offer strip for new players, or the one-time note.
+                if (window.DojoTour && DojoTour.onHome) DojoTour.onHome();
                 // The lists must show the match on the board as it is right now.
                 this.flushDeviceSave().then(() => {
                     this.renderRecent();
@@ -2451,6 +2502,7 @@
 
             // The match on the board is already in the library, so leaving it loses nothing.
             confirmShowSetup() {
+                if (window.DojoHelp && DojoHelp.close) DojoHelp.close();
                 this.showSetup();
             },
 
@@ -2961,7 +3013,7 @@
 
             async showShareLink(url, what) {
                 const ok = await this.dialog({
-                    title: 'Link ready', icon: 'fa-share-nodes',
+                    title: 'Link ready', icon: 'fa-share-nodes', help: 'share-links',
                     message: `Anyone with this link can open ${what}. It's a snapshot: later changes aren't included, so share again for a new link. Your links are listed in Library → Links.`,
                     prompt: true, readOnly: true, value: url, confirmText: 'Copy link', cancelText: 'Done'
                 });
@@ -3044,7 +3096,7 @@
                     this._applySessionData(file.data);
                     // The link stays in the address bar so a reload reopens it,
                     // until a copy is saved.
-                    this._sharedView = { slug, title: String(row.title || 'Shared session') };
+                    this._sharedView = { kind: 'shared', slug, title: String(row.title || 'Shared session') };
                     this.syncSessionTitle();
                     this.renderSharedBanner();
                     done();
@@ -3063,9 +3115,73 @@
                 const on = !!(this._sharedView && !this.session);
                 b.classList.toggle('hidden', !on);
                 if (on) {
+                    const tour = this._sharedView.kind === 'tour';
+                    b.classList.toggle('is-practice', tour);
+                    document.getElementById('shared-banner-kind').textContent = tour ? 'Practice' : 'Shared';
+                    document.getElementById('shared-banner-name').hidden = tour;
                     document.getElementById('shared-banner-title').textContent = this._sharedView.title;
-                    b.title = `${this._sharedView.title}: changes aren't saved until you save a copy`;
+                    document.getElementById('shared-banner-note').textContent = tour ? '· not saved' : 'not saved yet';
+                    document.getElementById('shared-banner-icon').className = tour ? 'fa-solid fa-graduation-cap' : 'fa-solid fa-share-nodes';
+                    b.title = tour ? "A practice board: nothing here is saved unless you save a copy"
+                        : `${this._sharedView.title}: changes aren't saved until you save a copy`;
                 }
+            },
+
+            // A scratch view (docs/ARCH-help-and-tour.md §8.4): a board that belongs to no
+            // library session. kind 'shared' (a share link) or 'tour' (a guided tour's
+            // practice board). No autosave, no Continue entry; Save offers Save a copy.
+            openScratch(data, opts = {}) {
+                this._applySessionData(data); // detaches the session on the board
+                this._sharedView = { kind: opts.kind || 'tour', slug: opts.slug || null, title: String(opts.title || 'Practice') };
+                this.syncSessionTitle();
+                this.renderSharedBanner();
+            },
+
+            // Before a tour: the match on the board is written to the device, and where
+            // the player is (home or board, which session) is remembered in memory.
+            async holdPlaceForScratch() {
+                await this.flushDeviceSave();
+                const home = !document.getElementById('setup-modal').classList.contains('hidden');
+                const live = !!(this.state && this.state.players && (this.session || this._sharedView));
+                this._scratchReturn = {
+                    home,
+                    data: live ? this.buildSessionData() : null,
+                    session: this.session ? { ...this.session } : null,
+                    shared: this._sharedView ? { ...this._sharedView } : null,
+                    treeView: this.treeView
+                };
+            },
+
+            // Ends a tour's scratch view and puts back what holdPlaceForScratch() kept,
+            // without writing to the library. opts.home: show the home screen after.
+            closeScratch(opts = {}) {
+                const back = this._scratchReturn;
+                this._scratchReturn = null;
+                this._scratchImports = false;
+                if (this._sheetIid) this.closeCardSheet();
+                if (!document.getElementById('tree-modal').classList.contains('hidden')) this.closeTreeModal();
+                if (back && back.treeView && back.treeView !== this.treeView) {
+                    this.treeView = back.treeView;
+                    const t = this.loadTweaks();
+                    t.treeView = this.treeView;
+                    this.saveTweaks(t);
+                    this.updateTreeViewToggle();
+                }
+                const scratch = !!(this._sharedView && this._sharedView.kind === 'tour');
+                if (!back) { if (scratch) this.endSharedView(); return; }
+                if (back.data && (scratch || !this.session)) {
+                    try {
+                        this._applySessionData(back.data);
+                        this.session = back.session;
+                        this._sessionDirty = false;
+                        this._sharedView = back.shared;
+                        if (back.shared && back.shared.slug) history.replaceState(null, '', `${location.pathname}?s=${encodeURIComponent(back.shared.slug)}${location.hash}`);
+                        this.syncSessionTitle();
+                        this.renderSharedBanner();
+                    } catch (e) { console.warn('Could not put the board back after the tour', e); }
+                } else if (scratch) this.endSharedView();
+                if (back.home || opts.home || !back.data) this.showSetup();
+                else this.leaveSetup();
             },
 
             endSharedView() {
@@ -3219,7 +3335,7 @@
                     const NAMES = { discord: 'Discord', google: 'Google' };
                     const providers = await DojoCloud.enabledProviders();
                     const provider = await this.dialog({
-                        title: 'Sign in (optional)', icon: 'fa-user',
+                        title: 'Sign in (optional)', icon: 'fa-user', help: 'account',
                         message: "Signing in keeps your decks and sessions in your account, so they're on every device you use. Everything in the Dojo works without it.",
                         choices: providers.map(p => ({ label: `Continue with ${NAMES[p] || p}`, value: p, kind: 'primary', icon: `fa-brands fa-${p}` }))
                             .concat([{ label: 'Not now', value: null }])
@@ -4208,7 +4324,16 @@
                 return array;
             },
 
-            startGame() {
+            startGame(opts = {}) {
+                // Feature 58: a player's first match asks once whether to take the tour first.
+                // The match starts either way; the tour comes back to it when it ends.
+                if (!opts.asked && window.DojoTour && DojoTour.shouldAskFirstMatch && DojoTour.shouldAskFirstMatch()) {
+                    DojoTour.askFirstMatch().then((tour) => {
+                        this.startGame({ asked: true });
+                        if (tour) DojoTour.start('basics');
+                    });
+                    return;
+                }
                 const deck1Str = this.seats[1] ? this.seats[1].decklist : '';
                 const deck2Str = this.seats[2] ? this.seats[2].decklist : '';
 
@@ -5566,6 +5691,11 @@
             // The result becomes a new device session automatically.
             _loadSessionIntoApp(session, turnCount) {
                 const { _turnCount, ...data } = session; // importer bookkeeping, not session data
+                if (this._scratchImports) { // the import tour: studied, never saved
+                    this.openScratch({ ...data, autoSaves: [], history: [] }, { kind: 'tour', title: 'Duels.ink game' });
+                    this.showToast(`Log Imported: ${turnCount} turns loaded!`);
+                    return;
+                }
                 this._applySessionData({ ...data, autoSaves: [], history: [] });
                 this._startNewSession(`${this.defaultSessionTitle()} (Duels.ink)`);
                 this.showToast(`Log Imported: ${turnCount} turns loaded!`);
@@ -7219,6 +7349,19 @@
                         backdrop.remove();
                         resolve(val);
                     };
+
+                    // opts.help: a help article id. A small ? on the head opens it (help.js
+                    // handles [data-help]) and closes the dialog as Cancel would.
+                    if (opts.help) {
+                        const q = document.createElement('button');
+                        q.type = 'button';
+                        q.className = 'help-q';
+                        q.dataset.help = opts.help;
+                        q.setAttribute('aria-label', `Help: ${opts.title || 'this'}`);
+                        q.textContent = '?';
+                        q.addEventListener('click', () => done(null));
+                        head.appendChild(q);
+                    }
 
                     // opts.choices: [{ label, value, kind: 'primary' | 'danger' | 'ghost', icon }]
                     // resolves with the chosen value; Escape / backdrop resolve null.
@@ -11473,6 +11616,9 @@
 
                 // Feature 37: keep the open overlays in step with the new state.
                 this.renderFeature37Overlays();
+
+                // Guided tours (Feature 58): a step waiting on the player checks here.
+                if (window.DojoTour && DojoTour.onRender) DojoTour.onRender();
             },
 
             renderFeature37Overlays() {
@@ -11867,6 +12013,11 @@
             // Never hijack browser shortcuts, and stay quiet while a styled dialog is up
             if (e.ctrlKey || e.metaKey || e.altKey) return;
             if (document.querySelector('.dlg-backdrop')) return;
+
+            // A guided tour (Feature 58) sees keys first: Esc ends it.
+            if (window.DojoTour && DojoTour.onKey && DojoTour.onKey(e)) return;
+            // Help (Feature 57): ? toggles it; while it's open, Esc and / go to it first.
+            if (window.DojoHelp && DojoHelp.onKey && DojoHelp.onKey(e)) return;
 
             // Escape: close the context menu first, then whichever modal is open
             if (e.key === 'Escape') {

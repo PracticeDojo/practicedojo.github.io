@@ -1,0 +1,54 @@
+{
+  "sections": [
+    {
+      "id": "start",
+      "dir": "01-start",
+      "title": "Getting started"
+    },
+    {
+      "id": "turn",
+      "dir": "02-turn",
+      "title": "Playing a turn"
+    },
+    {
+      "id": "cards",
+      "dir": "03-cards",
+      "title": "Cards and decks"
+    },
+    {
+      "id": "multiverse",
+      "dir": "04-multiverse",
+      "title": "The Multiverse"
+    },
+    {
+      "id": "import",
+      "dir": "05-import",
+      "title": "Importing games"
+    },
+    {
+      "id": "library",
+      "dir": "06-library",
+      "title": "Sessions, library and sharing"
+    },
+    {
+      "id": "account",
+      "dir": "07-account",
+      "title": "Your account (optional)"
+    },
+    {
+      "id": "settings",
+      "dir": "08-settings",
+      "title": "Settings"
+    },
+    {
+      "id": "faq",
+      "dir": "09-faq",
+      "title": "Help and fixes"
+    },
+    {
+      "id": "reference",
+      "dir": "10-reference",
+      "title": "Reference"
+    }
+  ]
+}

@@ -342,7 +342,7 @@ The app's front door, on the chassis. Two columns: the brand on the left (the ma
 ## Do's and don'ts
 
 - Do keep the live readings. A Field Unit board that drops the discard, the log, the odds, or the node recap is wrong.
-- Do use the approved signal only for End turn / Launch, live lore, the active branch, the multiverse cursor, auto-save on, and a new-card pip.
+- Do use the approved signal only for End turn / Launch, live lore, the active branch, the multiverse cursor, auto-save on, a new-card pip, the Help key until Help is first opened (it breathes: a signal halo, never a fill), and links between Help articles (by day deepened toward ink so 13px text keeps AA on paper; the underline is the pure signal).
 - Do use Ember `#E4572E` by day and Radio `#E86B2A` on Kiln, unless a theme explicitly picks Coral, Olive, or Trace.
 - Do keep Kiln paper at `#221F1B` and the well at `#0C0C0C`. Do not grey the night chassis.
 - Do use ink colors only as player ticks and cost pips.
@@ -359,3 +359,4 @@ The app's front door, on the chassis. Two columns: the brand on the left (the ma
 - Don't make a second filled button on the board or the shell. Challenge, Undo, Multiverse, and Save a copy stay paper tools. The card drawer is the exception: it is a panel of function keys (see Function keys).
 - Don't put an ink colour on a function key, and don't invent a key colour outside Coral, Olive, Trace, Graphite and Bone.
 - Don't colour a place (this device, your account, public links) with anything but its key colour, and don't wash a row or panel in it.
+- Guided tours wear Olive (`#8C8A2E`, lifted to `#9C9A34` on Kiln), so a tour never reads as part of the app: the tour callout is an Olive panel with Olive-ink text (`#141311`; its primary key is that ink with paper text), the spotlight ring is 3px Olive, the screen gets a 3px Olive frame while a tour runs, and the Practice banner turns Olive. Steps change in place: no glide, pulse or resize animation. In tour text the call to action is bold as a whole phrase (**Tap Start turn**, **Press and hold a card**). "Show me" from the manual stays paper. The tokens are `--tour` / `--tour-ink`.
