@@ -182,11 +182,13 @@
                     class="fa-solid fa-arrow-right-from-bracket"></i>Leave to the dojo</span></button>
     </div>
 
-    <!-- Viewing someone else's shared session: nothing saves until you keep a copy -->
+    <!-- A scratch view: someone else's shared session, or a guided tour's practice
+         board. Nothing saves until you keep a copy. -->
     <div class="shared-banner hidden" id="shared-banner" role="status">
-        <i class="fa-solid fa-share-nodes"></i>
-        <span class="sb-text">Shared · <b id="shared-banner-title"></b></span>
-        <span class="sb-note">not saved yet</span>
+        <i class="fa-solid fa-share-nodes" id="shared-banner-icon"></i>
+        <span class="sb-text"><span id="shared-banner-kind">Shared</span><span id="shared-banner-name"> · <b
+                    id="shared-banner-title"></b></span></span>
+        <span class="sb-note" id="shared-banner-note">not saved yet</span>
         <button class="btn btn-primary" onclick="App.saveSharedCopy()">Save a copy</button>
     </div>
 
@@ -230,6 +232,13 @@
                 <h2>Paste a decklist <span class="mute">or a Duels.ink game.</span></h2>
                 <p>Or drop a saved session anywhere on this page. The Dojo works out what it is.</p>
             </section>
+
+            <!-- Guided tours (Feature 58): offered once to new players. DojoTour shows it. -->
+            <div class="tour-offer" id="tour-offer" hidden>
+                <span class="to-text">New here? <span class="mute">Take the 3-minute tour.</span></span>
+                <button class="btn btn-primary" id="btn-tour-start" onclick="DojoTour.takeOffer()">Start tour</button>
+                <button class="btn" id="btn-tour-later" onclick="DojoTour.dismissOffer()">Not now</button>
+            </div>
 
             <div class="well is-idle" id="well">
                 <div class="well-in">
@@ -1360,7 +1369,8 @@
                 const title = this.session ? this.session.title : (this._sharedView ? this._sharedView.title : '');
                 if (el && document.activeElement !== el) el.value = title;
                 document.title = this.session ? `${title} · Practice Dojo`
-                    : this._sharedView ? `Shared · ${title} · Practice Dojo` : 'Lorcana Practice Dojo';
+                    : this._sharedView ? (this._sharedView.kind === 'tour' ? 'Practice · Practice Dojo' : `Shared · ${title} · Practice Dojo`)
+                    : 'Lorcana Practice Dojo';
             },
 
             // "Amethyst/Ruby vs Amber/Steel", or the player names a Duels.ink import carries.
@@ -2435,6 +2445,8 @@
                 if (back) back.classList.toggle('hidden', !liveMatch);
 
                 this.renderSeats();
+                // Guided tours (Feature 58): the offer strip for new players, or the one-time note.
+                if (window.DojoTour && DojoTour.onHome) DojoTour.onHome();
                 // The lists must show the match on the board as it is right now.
                 this.flushDeviceSave().then(() => {
                     this.renderRecent();
@@ -2982,7 +2994,7 @@
 
             async showShareLink(url, what) {
                 const ok = await this.dialog({
-                    title: 'Link ready', icon: 'fa-share-nodes',
+                    title: 'Link ready', icon: 'fa-share-nodes', help: 'share-links',
                     message: `Anyone with this link can open ${what}. It's a snapshot: later changes aren't included, so share again for a new link. Your links are listed in Library → Links.`,
                     prompt: true, readOnly: true, value: url, confirmText: 'Copy link', cancelText: 'Done'
                 });
@@ -3065,7 +3077,7 @@
                     this._applySessionData(file.data);
                     // The link stays in the address bar so a reload reopens it,
                     // until a copy is saved.
-                    this._sharedView = { slug, title: String(row.title || 'Shared session') };
+                    this._sharedView = { kind: 'shared', slug, title: String(row.title || 'Shared session') };
                     this.syncSessionTitle();
                     this.renderSharedBanner();
                     done();
@@ -3084,9 +3096,72 @@
                 const on = !!(this._sharedView && !this.session);
                 b.classList.toggle('hidden', !on);
                 if (on) {
+                    const tour = this._sharedView.kind === 'tour';
+                    document.getElementById('shared-banner-kind').textContent = tour ? 'Practice' : 'Shared';
+                    document.getElementById('shared-banner-name').hidden = tour;
                     document.getElementById('shared-banner-title').textContent = this._sharedView.title;
-                    b.title = `${this._sharedView.title}: changes aren't saved until you save a copy`;
+                    document.getElementById('shared-banner-note').textContent = tour ? '· not saved' : 'not saved yet';
+                    document.getElementById('shared-banner-icon').className = tour ? 'fa-solid fa-graduation-cap' : 'fa-solid fa-share-nodes';
+                    b.title = tour ? "A practice board: nothing here is saved unless you save a copy"
+                        : `${this._sharedView.title}: changes aren't saved until you save a copy`;
                 }
+            },
+
+            // A scratch view (docs/ARCH-help-and-tour.md §8.4): a board that belongs to no
+            // library session. kind 'shared' (a share link) or 'tour' (a guided tour's
+            // practice board). No autosave, no Continue entry; Save offers Save a copy.
+            openScratch(data, opts = {}) {
+                this._applySessionData(data); // detaches the session on the board
+                this._sharedView = { kind: opts.kind || 'tour', slug: opts.slug || null, title: String(opts.title || 'Practice') };
+                this.syncSessionTitle();
+                this.renderSharedBanner();
+            },
+
+            // Before a tour: the match on the board is written to the device, and where
+            // the player is (home or board, which session) is remembered in memory.
+            async holdPlaceForScratch() {
+                await this.flushDeviceSave();
+                const home = !document.getElementById('setup-modal').classList.contains('hidden');
+                const live = !!(this.state && this.state.players && (this.session || this._sharedView));
+                this._scratchReturn = {
+                    home,
+                    data: live ? this.buildSessionData() : null,
+                    session: this.session ? { ...this.session } : null,
+                    shared: this._sharedView ? { ...this._sharedView } : null,
+                    treeView: this.treeView
+                };
+            },
+
+            // Ends a tour's scratch view and puts back what holdPlaceForScratch() kept,
+            // without writing to the library. opts.home: show the home screen after.
+            closeScratch(opts = {}) {
+                const back = this._scratchReturn;
+                this._scratchReturn = null;
+                this._scratchImports = false;
+                if (this._sheetIid) this.closeCardSheet();
+                if (!document.getElementById('tree-modal').classList.contains('hidden')) this.closeTreeModal();
+                if (back && back.treeView && back.treeView !== this.treeView) {
+                    this.treeView = back.treeView;
+                    const t = this.loadTweaks();
+                    t.treeView = this.treeView;
+                    this.saveTweaks(t);
+                    this.updateTreeViewToggle();
+                }
+                const scratch = !!(this._sharedView && this._sharedView.kind === 'tour');
+                if (!back) { if (scratch) this.endSharedView(); return; }
+                if (back.data && (scratch || !this.session)) {
+                    try {
+                        this._applySessionData(back.data);
+                        this.session = back.session;
+                        this._sessionDirty = false;
+                        this._sharedView = back.shared;
+                        if (back.shared && back.shared.slug) history.replaceState(null, '', `${location.pathname}?s=${encodeURIComponent(back.shared.slug)}${location.hash}`);
+                        this.syncSessionTitle();
+                        this.renderSharedBanner();
+                    } catch (e) { console.warn('Could not put the board back after the tour', e); }
+                } else if (scratch) this.endSharedView();
+                if (back.home || opts.home || !back.data) this.showSetup();
+                else this.leaveSetup();
             },
 
             endSharedView() {
@@ -3240,7 +3315,7 @@
                     const NAMES = { discord: 'Discord', google: 'Google' };
                     const providers = await DojoCloud.enabledProviders();
                     const provider = await this.dialog({
-                        title: 'Sign in (optional)', icon: 'fa-user',
+                        title: 'Sign in (optional)', icon: 'fa-user', help: 'account',
                         message: "Signing in keeps your decks and sessions in your account, so they're on every device you use. Everything in the Dojo works without it.",
                         choices: providers.map(p => ({ label: `Continue with ${NAMES[p] || p}`, value: p, kind: 'primary', icon: `fa-brands fa-${p}` }))
                             .concat([{ label: 'Not now', value: null }])
@@ -5587,6 +5662,11 @@
             // The result becomes a new device session automatically.
             _loadSessionIntoApp(session, turnCount) {
                 const { _turnCount, ...data } = session; // importer bookkeeping, not session data
+                if (this._scratchImports) { // the import tour: studied, never saved
+                    this.openScratch({ ...data, autoSaves: [], history: [] }, { kind: 'tour', title: 'Duels.ink game' });
+                    this.showToast(`Log Imported: ${turnCount} turns loaded!`);
+                    return;
+                }
                 this._applySessionData({ ...data, autoSaves: [], history: [] });
                 this._startNewSession(`${this.defaultSessionTitle()} (Duels.ink)`);
                 this.showToast(`Log Imported: ${turnCount} turns loaded!`);
@@ -7232,6 +7312,19 @@
                         backdrop.remove();
                         resolve(val);
                     };
+
+                    // opts.help: a help article id. A small ? on the head opens it (help.js
+                    // handles [data-help]) and closes the dialog as Cancel would.
+                    if (opts.help) {
+                        const q = document.createElement('button');
+                        q.type = 'button';
+                        q.className = 'help-q';
+                        q.dataset.help = opts.help;
+                        q.setAttribute('aria-label', `Help: ${opts.title || 'this'}`);
+                        q.textContent = '?';
+                        q.addEventListener('click', () => done(null));
+                        head.appendChild(q);
+                    }
 
                     // opts.choices: [{ label, value, kind: 'primary' | 'danger' | 'ghost', icon }]
                     // resolves with the chosen value; Escape / backdrop resolve null.
@@ -11486,6 +11579,9 @@
 
                 // Feature 37: keep the open overlays in step with the new state.
                 this.renderFeature37Overlays();
+
+                // Guided tours (Feature 58): a step waiting on the player checks here.
+                if (window.DojoTour && DojoTour.onRender) DojoTour.onRender();
             },
 
             renderFeature37Overlays() {
@@ -11881,6 +11977,8 @@
             if (e.ctrlKey || e.metaKey || e.altKey) return;
             if (document.querySelector('.dlg-backdrop')) return;
 
+            // A guided tour (Feature 58) sees keys first: Esc ends it.
+            if (window.DojoTour && DojoTour.onKey && DojoTour.onKey(e)) return;
             // Help (Feature 57): ? toggles it; while it's open, Esc and / go to it first.
             if (window.DojoHelp && DojoHelp.onKey && DojoHelp.onKey(e)) return;
 

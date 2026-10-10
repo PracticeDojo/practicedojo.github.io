@@ -240,17 +240,41 @@
     "desktop",
     "phone"
    ],
-   "aliases": [],
+   "aliases": [
+    "tour",
+    "tutorial",
+    "walkthrough",
+    "guide",
+    "onboarding",
+    "how do I start",
+    "show me around"
+   ],
    "targets": [],
    "related": [
     "first-match",
     "multiverse",
     "import-overview"
    ],
-   "verified": "none",
-   "todo": true,
-   "headings": [],
-   "body": "TODO: write this article (M3a). The summary above is its scope. How to write it: docs/ARCH-help-and-tour.md §5.\n"
+   "verified": "v3.9.1",
+   "todo": false,
+   "headings": [
+    {
+     "level": 2,
+     "text": "Start a tour",
+     "slug": "start-a-tour"
+    },
+    {
+     "level": 2,
+     "text": "During a tour",
+     "slug": "during-a-tour"
+    },
+    {
+     "level": 2,
+     "text": "Good to know",
+     "slug": "good-to-know"
+    }
+   ],
+   "body": "A guided tour points at the real controls one at a time and waits while you try each one. There are three, a few minutes each:\n\n- **Your first turn**: the mulligan, the board, inking and playing a card, reading a card, ending the turn, playing the other side, [Undo](help:undo) and where the [Multiverse](help:multiverse) is.\n- **The Multiverse**: on a copy of the Set 13 demo. Open it, read and select a node, **Play from here**, branches, saving the turn you're in, the plot view, and the mini map (desktop) or the thumb keys (phone).\n- **Study a Duels.ink game**: the paste field, the example log, the readout, **Study this game** and the imported turns in the Multiverse.\n\n## Start a tour\n\n:::desktop\nOpen Help (the **?** in the top bar, or {key:?}). The tours are at the top of the list; a ✓ marks the ones you've finished.\n:::\n\n:::phone\nOpen Help from the **⋯** menu, or **Help** on the home screen. The tours are at the top of the list; a ✓ marks the ones you've finished.\n:::\n\nNew players also see **Start tour** under the headline on the home screen. **Not now** hides it for good.\n\n## During a tour\n\n- Each step names the control to use. Steps that wait for you have **Skip this step**; the others have **Next** and **Back**.\n- **Learn more** opens the article for that step. Close Help and the tour carries on.\n\n:::desktop\nLeave any time with the **✕** on the tour card, or {key:Esc}.\n:::\n\n:::phone\nLeave any time with the **✕** on the tour card.\n:::\n\n## Good to know\n\n- A tour plays on a practice board, marked **Practice · not saved**. Nothing you do there goes in your library, and the match you had open is waiting, as it was, when the tour ends.\n- Want to keep the practice board? **Save a copy** in its banner makes it a session of your own, and ends the tour.\n- Reloading the page ends a tour. Start it again from Help.\n"
   },
   {
    "id": "mulligan",
@@ -2611,5 +2635,313 @@
    "percentage"
   ]
  ],
- "tours": []
+ "tours": [
+  {
+   "id": "basics",
+   "title": "Your first turn",
+   "minutes": 3,
+   "order": 1,
+   "start": {
+    "scenario": "basics.dojo.json.gz"
+   },
+   "steps": [
+    {
+     "id": "welcome",
+     "text": {
+      "desktop": "This is a practice board with two Set 13 decks. Nothing you do here is saved. Leave any time with **✕** or Esc.",
+      "phone": "This is a practice board with two Set 13 decks. Nothing you do here is saved. Leave any time with **✕**."
+     }
+    },
+    {
+     "id": "mulligan",
+     "target": {
+      "desktop": "mulligan-dialog",
+      "phone": "mulligan-confirm"
+     },
+     "until": "mulliganSettled",
+     "text": {
+      "desktop": "First, your opening hand. Click cards to send them to the bottom and press **Mulligan**, or press **Keep hand**.",
+      "phone": "First, your opening hand. It's a good one: tap **Keep hand**. (Another time, tap cards first to send them to the bottom.)"
+     },
+     "learn": "mulligan"
+    },
+    {
+     "id": "board",
+     "target": "your-board",
+     "text": "The bottom half is the player whose turn it is: the hand, the play area and the inkwell. The other player's side is at the top.",
+     "learn": "screen-at-a-glance"
+    },
+    {
+     "id": "ink",
+     "target": {
+      "desktop": "your-board",
+      "phone": "hand"
+     },
+     "also": [
+      "card-drawer"
+     ],
+     "until": "inkedThisTurn",
+     "text": {
+      "desktop": "Put a card in your inkwell: drag it from your hand onto the inkwell, or hover it and press **INK**.",
+      "phone": "Put a card in your inkwell: tap a card in your hand, then **Ink**."
+     },
+     "hint": {
+      "desktop": "Only inkable cards have **INK**.",
+      "phone": "Only inkable cards can be inked; the others say **No ink**."
+     },
+     "learn": "ink-a-card"
+    },
+    {
+     "id": "play",
+     "target": {
+      "desktop": "your-board",
+      "phone": "hand"
+     },
+     "also": [
+      "card-drawer"
+     ],
+     "until": "cardPlayed",
+     "text": {
+      "desktop": "Now play a card: drag a 1-cost character onto your play area, or hover it and press **PLAY**.",
+      "phone": "Now play a card: tap a 1-cost character, then **Play**."
+     },
+     "hint": "The cost is the number in the card's top-left corner.",
+     "learn": "play-a-card"
+    },
+    {
+     "id": "read-card",
+     "device": "desktop",
+     "target": "card-preview",
+     "text": "Hover any card on the board to read it here, full size: cost, strength, willpower, lore and text.",
+     "learn": "card-preview"
+    },
+    {
+     "id": "read-card-phone",
+     "device": "phone",
+     "target": "hand",
+     "also": [
+      "card-drawer"
+     ],
+     "until": "drawerRead",
+     "text": "Tap a card in your hand to open its drawer: the card full size, and what you can do with it. Close it when you've read it.",
+     "learn": "card-actions"
+    },
+    {
+     "id": "end-turn",
+     "target": "end-turn",
+     "until": "turnEnded",
+     "focus": false,
+     "text": {
+      "desktop": "Done for this turn? Press **End turn**, or the Space bar.",
+      "phone": "Done for this turn? Tap **End turn**."
+     },
+     "learn": "end-turn"
+    },
+    {
+     "id": "both-sides",
+     "target": {
+      "desktop": "your-board",
+      "phone": "hand"
+     },
+     "also": {
+      "desktop": [
+       "mulligan-dialog",
+       "card-drawer"
+      ],
+      "phone": [
+       "mulligan-confirm",
+       "card-drawer"
+      ]
+     },
+     "until": "settledAndInked",
+     "text": "Now you're Player 2: the board turns round, so their side is at the bottom. Settle their opening hand, then ink one of their cards.",
+     "learn": "you-play-both-sides"
+    },
+    {
+     "id": "undo",
+     "target": "undo",
+     "until": "undone",
+     "text": {
+      "desktop": "Changed your mind? **Undo** takes back the last thing you did. Press it now to take that ink back.",
+      "phone": "Changed your mind? **Undo** takes back the last thing you did. Tap it now to take that ink back."
+     },
+     "learn": "undo"
+    },
+    {
+     "id": "multiverse",
+     "device": "desktop",
+     "target": "mini-multiverse",
+     "text": "Every turn you end is kept as a node in the **Multiverse**. The mini map shows them here; **Multiverse** (or M) opens the whole tree.",
+     "learn": "mini-multiverse"
+    },
+    {
+     "id": "multiverse-phone",
+     "device": "phone",
+     "target": "multiverse",
+     "text": "Every turn you end is kept as a node in the **Multiverse**. This button opens the whole tree.",
+     "learn": "multiverse"
+    }
+   ]
+  },
+  {
+   "id": "multiverse",
+   "title": "The Multiverse",
+   "minutes": 3,
+   "order": 2,
+   "start": {
+    "demo": "s13-amber-amethyst-vs-amethyst-ruby"
+   },
+   "steps": [
+    {
+     "id": "welcome",
+     "text": "A practice copy of the Set 13 demo: a whole game, with the other ways it could have gone. Nothing you do here is saved."
+    },
+    {
+     "id": "open",
+     "target": "multiverse",
+     "until": "multiverseOpen",
+     "focus": false,
+     "text": {
+      "desktop": "Open the **Multiverse**: press it, or M.",
+      "phone": "Open the **Multiverse**: tap it."
+     },
+     "learn": "multiverse"
+    },
+    {
+     "id": "read",
+     "target": "tree-canvas",
+     "text": "Every node is a saved turn: whose it was, the lore, what they played. Turns run left to right; where a line forks, the game went another way.",
+     "learn": "nodes"
+    },
+    {
+     "id": "select",
+     "target": "tree-canvas",
+     "until": "nodeSelected",
+     "text": {
+      "desktop": "Click a node to select it. The arrow keys step through the tree too.",
+      "phone": "Tap a node to select it."
+     },
+     "learn": "multiverse-navigate"
+    },
+    {
+     "id": "play-from-here",
+     "target": "selected-node",
+     "until": "playedFromNode",
+     "text": "The panel shows the selected node. **Play from here** puts that board back on the table.",
+     "hint": {
+      "desktop": "Double-clicking a node, or Enter, does the same."
+     },
+     "learn": "multiverse-panel"
+    },
+    {
+     "id": "branch",
+     "target": "your-board",
+     "text": "Now play it differently: a new card, another challenge. When you end the turn, the Multiverse keeps both lines. That fork is a branch.",
+     "learn": "branches"
+    },
+    {
+     "id": "save-turn",
+     "target": "multiverse",
+     "also": [
+      "tree-panel"
+     ],
+     "until": "turnSaved",
+     "focus": false,
+     "text": {
+      "desktop": "To keep a turn before it's over, press T (or **Save current unfinished turn** in the Multiverse), then **Save node**.",
+      "phone": "To keep a turn before it's over, open the **Multiverse**, tap **Save current unfinished turn**, then **Save node**."
+     },
+     "learn": "save-unfinished-turn"
+    },
+    {
+     "id": "plot",
+     "target": "plot-toggle",
+     "until": "plotView",
+     "text": {
+      "desktop": "**Plot** shows every saved turn as a dot, so a long game fits on one screen. Press it.",
+      "phone": "**Plot** switches between dots and cards. Tap it."
+     },
+     "learn": "multiverse-views"
+    },
+    {
+     "id": "thumb-keys",
+     "device": "phone",
+     "target": "tree-keys",
+     "text": "The thumb keys step through the tree: ◀ ▶ the turn before and after, ▲ ▼ the line above and below, the circle back to where you are.",
+     "learn": "multiverse-navigate"
+    },
+    {
+     "id": "close",
+     "device": "desktop",
+     "target": "tree-close",
+     "until": "multiverseClosed",
+     "text": "Close the Multiverse with **✕** to go back to the board.",
+     "learn": "multiverse"
+    },
+    {
+     "id": "mini-map",
+     "device": "desktop",
+     "target": "mini-multiverse",
+     "text": "On the board, the mini map keeps the tree in view: click a dot to go there, or step with its keys.",
+     "learn": "mini-multiverse"
+    }
+   ]
+  },
+  {
+   "id": "import",
+   "title": "Study a Duels.ink game",
+   "minutes": 2,
+   "order": 3,
+   "start": {
+    "screen": "home"
+   },
+   "steps": [
+    {
+     "id": "intake",
+     "target": "intake",
+     "text": "Paste a Duels.ink log or replay into this field, or drop the file on the page. The Dojo works out what it is.",
+     "learn": "import-overview"
+    },
+    {
+     "id": "example",
+     "target": "example-log",
+     "until": "importRead",
+     "text": {
+      "desktop": "No game to hand? Press **A Duels.ink log** for an example.",
+      "phone": "No game to hand? Tap **A Duels.ink log** for an example."
+     }
+    },
+    {
+     "id": "readout",
+     "target": "readout",
+     "text": "The readout says what it found: a Duels.ink log and how many turns it has.",
+     "learn": "import-log"
+    },
+    {
+     "id": "study",
+     "target": "readout",
+     "until": "scratchOpen",
+     "text": {
+      "desktop": "Press **Study this game**. In the tour it opens as a practice board, so nothing goes in your library.",
+      "phone": "Tap **Study this game**. In the tour it opens as a practice board, so nothing goes in your library."
+     },
+     "learn": "import-log"
+    },
+    {
+     "id": "open",
+     "target": "multiverse",
+     "until": "multiverseOpen",
+     "focus": false,
+     "text": "Every turn of the game is now a node. Open the **Multiverse** to see them.",
+     "learn": "multiverse"
+    },
+    {
+     "id": "turns",
+     "target": "tree-canvas",
+     "text": "Here's the game turn by turn. Select a node and **Play from here** to replay it. Cards the log never names stay unknown until you fill them in.",
+     "learn": "hidden-information"
+    }
+   ]
+  }
+ ]
 }

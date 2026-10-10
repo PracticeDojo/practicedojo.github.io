@@ -22,6 +22,8 @@
 //     With no buttons, one paper **Got it**. `primary: true` is the signal key; Enter on
 //     the callout presses it, and focus starts on it (else on the first button).
 //   - options.focus: false leaves focus where it is (a tour step that waits for a hotkey).
+//   - options.dismiss: 'End tour' adds a ✕ in the callout's corner (that label is its
+//     name); pressing it closes with onClose('escape').
 //   - onClose(reason) is called once: 'button', 'escape', 'click' (outside, passThrough
 //     off), 'replaced' (another show()), 'hide' (hide() was called).
 //   - passThrough: the cut-out lets clicks and drags through; outside it, clicks are blocked.
@@ -131,6 +133,7 @@ window.DojoSpotlight = (function () {
             '<div class="spot-block" data-side="b" aria-hidden="true"></div>' +
             '<div class="spot-block" data-side="l" aria-hidden="true"></div>' +
             '<div class="spot-callout fu-paper" role="dialog">' +
+            '<button type="button" class="spot-x" hidden>\u2715</button>' +
             '<div class="spot-step"></div>' +
             '<div class="spot-title"></div>' +
             '<p class="spot-text"></p>' +
@@ -142,7 +145,7 @@ window.DojoSpotlight = (function () {
         els = {
             dim: q('.spot-dim'), hole: q('.spot-hole'), callout: q('.spot-callout'),
             step: q('.spot-step'), title: q('.spot-title'), text: q('.spot-text'),
-            note: q('.spot-note'), actions: q('.spot-actions'),
+            note: q('.spot-note'), actions: q('.spot-actions'), x: q('.spot-x'),
             blocks: [...root.querySelectorAll('.spot-block')]
         };
         const n = ++textIdSeq;
@@ -159,6 +162,8 @@ window.DojoSpotlight = (function () {
             b.addEventListener('contextmenu', (e) => { swallow(e); if (cur && !cur.opts.passThrough) close('click'); });
             b.addEventListener('click', (e) => { swallow(e); if (cur && !cur.opts.passThrough) close('click'); });
         }
+        // The optional ✕ (options.dismiss): closes as Escape would.
+        els.x.addEventListener('click', (e) => { e.stopPropagation(); if (cur) close('escape'); });
         // Clicks on the callout stay on the callout.
         ['pointerdown', 'mousedown', 'touchstart', 'click', 'contextmenu'].forEach(t =>
             els.callout.addEventListener(t, (e) => e.stopPropagation()));
@@ -180,6 +185,8 @@ window.DojoSpotlight = (function () {
         els.text.innerHTML = prose(o.text || '');
         els.text.hidden = !o.text;
         els.note.hidden = true;
+        els.x.hidden = !o.dismiss;
+        if (o.dismiss) { els.x.setAttribute('aria-label', o.dismiss); els.x.title = o.dismiss; }
         const c = els.callout;
         if (o.title) { c.setAttribute('aria-labelledby', els.title.id); c.removeAttribute('aria-label'); }
         else { c.removeAttribute('aria-labelledby'); c.setAttribute('aria-label', label ? cap(label) : 'Tip'); }
@@ -259,7 +266,7 @@ window.DojoSpotlight = (function () {
         const lost = !el;
         root.classList.toggle('is-lost', lost);
         root.classList.toggle('is-phone', isPhone());
-        els.note.hidden = !lost;
+        els.note.hidden = !lost || !cur.wanted; // no target asked for: a plain centred card
         let hole = null;
 
         if (!lost) {
@@ -523,7 +530,7 @@ window.DojoSpotlight = (function () {
             if (!el.isConnected) el = null;
         }
 
-        cur = { id, name: byName ? target : null, el: null, ringEl: null, opts, returnFocus, closed: false };
+        cur = { id, name: byName ? target : null, wanted: target != null, el: null, ringEl: null, opts, returnFocus, closed: false };
         clearTimeout(fadeTimer);
         fill(opts, label);
         els.note.textContent = `${cap(label || 'that control')} isn't on screen right now.`;

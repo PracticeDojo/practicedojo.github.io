@@ -7659,4 +7659,128 @@ body.help-open #btn-help i {
 
 /* ---- M5 · Tours: callout steps, practice banner ---- */
 
+/* The callout's ✕ (End tour): a small mute paper tool in the corner, never signal. */
+.spot-x {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 24px;
+    height: 24px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--text-dim);
+    font-size: 12px;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.spot-x[hidden] {
+    display: none;
+}
+
+.spot-x:hover {
+    background: var(--surface-2);
+    color: var(--text);
+}
+
+.spot-x:focus-visible {
+    outline: 2px solid var(--text);
+    outline-offset: 1px;
+}
+
+/* Leave room for the ✕ beside the step counter and title. */
+.spot-callout:has(.spot-x:not([hidden])) .spot-step,
+.spot-callout:has(.spot-x:not([hidden])) .spot-title {
+    padding-right: 28px;
+}
+
+.spot.is-phone .spot-x {
+    width: 32px;
+    height: 32px;
+    top: 6px;
+    right: 6px;
+}
+
+/* The practice board's banner: the same paper strip as a shared session. */
+.shared-banner #shared-banner-name[hidden] {
+    display: none;
+}
+
+
 /* ---- M7 · Help in context: the ? links, the home tour strip ---- */
+
+/* The tour offer (ARCH §8.2): one paper strip under the home headline.
+   Start tour is the view's one signal key; Not now is a paper tool. */
+.tour-offer {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 8px 8px 14px;
+    background: var(--surface);
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-1);
+    color: var(--text);
+    font-size: 13px;
+}
+
+.tour-offer[hidden] {
+    display: none;
+}
+
+.tour-offer .to-text {
+    flex: 1 1 auto;
+    min-width: 0;
+    font-weight: 560;
+}
+
+.tour-offer .to-text .mute {
+    color: var(--text-2);
+    font-weight: 400;
+}
+
+.tour-offer .btn {
+    flex: none;
+    min-height: 32px;
+    padding: 0 14px;
+    border-radius: 999px;
+    font-size: 12.5px;
+    white-space: nowrap;
+}
+
+.tour-offer .btn:not(.btn-primary) {
+    background: var(--surface);
+    color: var(--text);
+    border: 1px solid var(--border);
+}
+
+.tour-offer .btn:not(.btn-primary):hover {
+    background: var(--surface-2);
+}
+
+@media (max-width: 760px) {
+    .tour-offer {
+        flex-wrap: wrap;
+        padding: 10px 10px 10px 12px;
+    }
+
+    .tour-offer .to-text {
+        flex-basis: 100%;
+    }
+
+    .tour-offer .btn {
+        min-height: 36px;
+    }
+}
+
+/* A small ? on a dialog's head (Share, Sign in). */
+.dlg-head .help-q {
+    margin-left: auto;
+    align-self: center;
+}
+

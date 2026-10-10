@@ -1,0 +1,98 @@
+{
+  "id": "multiverse",
+  "title": "The Multiverse",
+  "order": 2,
+  "minutes": 3,
+  "start": { "demo": "s13-amber-amethyst-vs-amethyst-ruby" },
+  "steps": [
+    {
+      "id": "welcome",
+      "text": "A practice copy of the Set 13 demo: a whole game, with the other ways it could have gone. Nothing you do here is saved."
+    },
+    {
+      "id": "open",
+      "target": "multiverse",
+      "until": "multiverseOpen",
+      "focus": false,
+      "text": {
+        "desktop": "Open the **Multiverse**: press it, or M.",
+        "phone": "Open the **Multiverse**: tap it."
+      },
+      "learn": "multiverse"
+    },
+    {
+      "id": "read",
+      "target": "tree-canvas",
+      "text": "Every node is a saved turn: whose it was, the lore, what they played. Turns run left to right; where a line forks, the game went another way.",
+      "learn": "nodes"
+    },
+    {
+      "id": "select",
+      "target": "tree-canvas",
+      "until": "nodeSelected",
+      "text": {
+        "desktop": "Click a node to select it. The arrow keys step through the tree too.",
+        "phone": "Tap a node to select it."
+      },
+      "learn": "multiverse-navigate"
+    },
+    {
+      "id": "play-from-here",
+      "target": "selected-node",
+      "until": "playedFromNode",
+      "text": "The panel shows the selected node. **Play from here** puts that board back on the table.",
+      "hint": { "desktop": "Double-clicking a node, or Enter, does the same." },
+      "learn": "multiverse-panel"
+    },
+    {
+      "id": "branch",
+      "target": "your-board",
+      "text": "Now play it differently: a new card, another challenge. When you end the turn, the Multiverse keeps both lines. That fork is a branch.",
+      "learn": "branches"
+    },
+    {
+      "id": "save-turn",
+      "target": "multiverse",
+      "also": ["tree-panel"],
+      "until": "turnSaved",
+      "focus": false,
+      "text": {
+        "desktop": "To keep a turn before it's over, press T (or **Save current unfinished turn** in the Multiverse), then **Save node**.",
+        "phone": "To keep a turn before it's over, open the **Multiverse**, tap **Save current unfinished turn**, then **Save node**."
+      },
+      "learn": "save-unfinished-turn"
+    },
+    {
+      "id": "plot",
+      "target": "plot-toggle",
+      "until": "plotView",
+      "text": {
+        "desktop": "**Plot** shows every saved turn as a dot, so a long game fits on one screen. Press it.",
+        "phone": "**Plot** switches between dots and cards. Tap it."
+      },
+      "learn": "multiverse-views"
+    },
+    {
+      "id": "thumb-keys",
+      "device": "phone",
+      "target": "tree-keys",
+      "text": "The thumb keys step through the tree: ◀ ▶ the turn before and after, ▲ ▼ the line above and below, the circle back to where you are.",
+      "learn": "multiverse-navigate"
+    },
+    {
+      "id": "close",
+      "device": "desktop",
+      "target": "tree-close",
+      "until": "multiverseClosed",
+      "text": "Close the Multiverse with **✕** to go back to the board.",
+      "learn": "multiverse"
+    },
+    {
+      "id": "mini-map",
+      "device": "desktop",
+      "target": "mini-multiverse",
+      "text": "On the board, the mini map keeps the tree in view: click a dot to go there, or step with its keys.",
+      "learn": "mini-multiverse"
+    }
+  ]
+}
