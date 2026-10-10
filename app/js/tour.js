@@ -22,8 +22,11 @@
 //     Leaving to the home screen ends the tour; saving a copy ends it and keeps the board.
 //   - Progress: localStorage['lorcana_dojo_help'] = { offer, done: { id: ts }, toldAboutHelp }.
 //     Nothing about a running tour is stored: a reload ends it.
-//   - Home: DojoTour.onHome() (from App.showSetup) shows the offer strip (#tour-offer) to new
-//     players, or once tells existing players where help is. takeOffer() / dismissOffer().
+//   - Home: DojoTour.onHome() (from App.showSetup) shows the welcome (#tour-welcome) to new
+//     players, or once tells existing players where help is. takeOffer() / dismissOffer();
+//     dismissing points the spotlight at Help.
+//   - Until Help has been opened once, body.help-breathe makes the Help keys breathe in the
+//     signal colour (paused during a tour). DojoTour.helpSeen() ends it (help.js calls it on open).
 window.DojoTour = (function () {
     'use strict';
 
@@ -415,6 +418,11 @@ window.DojoTour = (function () {
     }
 
     function onKey(e) {
+        // The welcome is modal: Esc means Explore on my own; other keys stay out of the app.
+        if (offerOpen()) {
+            if (e.key === 'Escape') { e.preventDefault(); dismissOffer(); }
+            return e.key !== 'Tab' && e.key !== 'Enter' && e.key !== ' ';
+        }
         if (!run || run.paused) return false;
         if (e.key === 'Escape' && !(S() && S().isOpen())) { e.preventDefault(); stop(); return true; }
         return false;
@@ -422,12 +430,35 @@ window.DojoTour = (function () {
 
     // ---------- The offer (§8.2) ----------
     function hideOffer() {
-        const el = document.getElementById('tour-offer');
-        if (el) el.hidden = true;
+        const el = document.getElementById('tour-welcome');
+        if (!el || el.hidden) return;
+        el.hidden = true;
+        document.body.classList.remove('tour-welcome-open');
+    }
+    const offerOpen = () => { const el = document.getElementById('tour-welcome'); return !!(el && !el.hidden); };
+
+    function showOffer() {
+        const el = document.getElementById('tour-welcome');
+        if (!el) return;
+        el.hidden = false;
+        document.body.classList.add('tour-welcome-open');
+        const b = document.getElementById('btn-tour-start');
+        if (b) setTimeout(() => b.focus({ preventScroll: true }), 30);
     }
 
+    // ---------- The Help keys breathe until Help is first used ----------
+    function syncBreath() {
+        document.body.classList.toggle('help-breathe', !readStore().helpSeen);
+    }
+    function helpSeen() {
+        if (!readStore().helpSeen) writeStore({ helpSeen: true });
+        syncBreath();
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', syncBreath);
+    else syncBreath();
+
     async function onHome() {
-        const el = document.getElementById('tour-offer');
+        const el = document.getElementById('tour-welcome');
         if (!el || run) { hideOffer(); return; }
         const st = readStore();
         if (st.offer || ARRIVED_BY_LINK) {
@@ -438,8 +469,8 @@ window.DojoTour = (function () {
         try { n = (await DojoLibrary.listSessions()).length; } catch (e) { n = 0; }
         if (run) return;
         const show = !st.offer && !ARRIVED_BY_LINK && n === 0;
-        el.hidden = !show;
-        if (show) { writeStore({ toldAboutHelp: true }); return; }
+        if (show) { showOffer(); writeStore({ toldAboutHelp: true }); return; }
+        hideOffer();
         // Existing players: say once where help and the tours live.
         if (n > 0 && !st.toldAboutHelp && !readStore().toldAboutHelp) {
             writeStore({ toldAboutHelp: true });
@@ -454,9 +485,18 @@ window.DojoTour = (function () {
         start('basics');
     }
 
+    // Explore on my own: then show where Help lives, so it can be found later.
     function dismissOffer() {
         writeStore({ offer: 'dismissed' });
         hideOffer();
+        const sp = S();
+        if (!sp || run) return;
+        const target = visible('setup-modal') ? 'home-help' : 'help-button';
+        sp.show(target, {
+            title: 'Help is here',
+            text: 'The manual and the guided tours, whenever you want them. It breathes until you first open it.',
+            buttons: [{ label: 'Got it', primary: true }]
+        });
     }
 
     return {
@@ -467,6 +507,7 @@ window.DojoTour = (function () {
         onRender,
         onKey,
         onHome,
+        helpSeen,
         takeOffer,
         dismissOffer
     };

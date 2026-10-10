@@ -500,10 +500,11 @@ Each tour has desktop and phone wording and targets where they differ (`text: { 
 
 ### 8.2 The offer (opt in)
 
-- **New players:** the home screen shows one strip under the headline, paper on the chassis: *New here? Take the 3-minute tour.* **Start tour** · **Not now**. Shown when the player has never dismissed it, has no sessions in the device library, and didn't arrive through a share link. *Not now* (or starting the tour) hides it for good.
+- **New players:** a welcome dialog over the home screen (paper on the dimmed chassis; a bottom sheet on phones): *New here? Take the 3-minute tour.*, what the Dojo is, the tour's three parts, **Start the tour** (signal key) · **Explore on my own**. Shown when the player has never answered it, has no sessions in the device library, and didn't arrive through a share link. Either answer is remembered; Esc counts as Explore on my own, which then points the spotlight at Help. *(v0.3, owner testing: the first version was a strip under the headline and went unnoticed.)*
+- **The Help keys breathe** in the signal colour (a 6px halo, 2.4 s) until Help is first opened, for every player: the desktop top bar's **?**, the home screen's **Help**, and on phones the **⋯** key (Help lives in its menu, whose Help item is signal too). Paused during a tour; a steady ring under *prefers-reduced-motion*.
 - **Everyone:** Help lists the tours at the top of its contents, with ✓ on finished ones. The *Guided tours* article lists them too.
 - **No pop-ups, no auto-start, no "you haven't finished the tour" nags.**
-- **Existing players** see no strip. When Feature 57 ships, a one-time toast (*New: Help and guided tours · press ?*; on phones *in the ⋯ menu*) says where it lives. Shown once, then remembered.
+- **Existing players** see no welcome. When Feature 57 ships, a one-time toast (*New: Help and guided tours · press ?*; on phones *in the ⋯ menu*) says where it lives. Shown once, then remembered.
 
 ### 8.3 Tour file
 

@@ -172,7 +172,7 @@
                     class="fa-regular fa-copy"></i>Save as copy</span></button>
         <button class="ctx-item" role="menuitem" onclick="App.closeTopbarMenu(); App.shareCurrentSession()"><span><i
                     class="fa-solid fa-share-nodes"></i>Share link</span></button>
-        <button class="ctx-item" role="menuitem" onclick="App.closeTopbarMenu(); DojoHelp.open()"><span><i
+        <button class="ctx-item" role="menuitem" id="menu-help" onclick="App.closeTopbarMenu(); DojoHelp.open()"><span><i
                     class="fa-regular fa-circle-question"></i>Help &amp; tours</span></button>
         <button class="ctx-item" role="menuitem"
             onclick="App.closeTopbarMenu(); document.getElementById('tweaks-panel').classList.toggle('is-open')"><span><i
@@ -233,13 +233,6 @@
                 <p>Or drop a saved session anywhere on this page. The Dojo works out what it is.</p>
             </section>
 
-            <!-- Guided tours (Feature 58): offered once to new players. DojoTour shows it. -->
-            <div class="tour-offer" id="tour-offer" hidden>
-                <span class="to-text">New here? <span class="mute">Take the 3-minute tour.</span></span>
-                <button class="btn btn-primary" id="btn-tour-start" onclick="DojoTour.takeOffer()">Start tour</button>
-                <button class="btn" id="btn-tour-later" onclick="DojoTour.dismissOffer()">Not now</button>
-            </div>
-
             <div class="well is-idle" id="well">
                 <div class="well-in">
                     <textarea id="intake" spellcheck="false" aria-describedby="readout"
@@ -283,6 +276,32 @@
                     <div id="home-recent"></div>
                 </section>
             </div>
+        </div>
+    </div>
+
+    <!-- Guided tours (Feature 58): the welcome, shown once to a new player on the home
+         screen (no sessions yet, not arriving by a share link). DojoTour shows it. -->
+    <div class="tour-welcome" id="tour-welcome" role="dialog" aria-modal="true" aria-labelledby="tw-title"
+        aria-describedby="tw-lede" hidden>
+        <div class="tw-card">
+            <div class="tw-brand"><span class="brand-mark tw-mark" aria-hidden="true"></span>
+                <span class="tw-kicker">Welcome to the Practice Dojo</span></div>
+            <h2 id="tw-title">New here? <span class="mute">Take the 3-minute tour.</span></h2>
+            <p class="tw-lede" id="tw-lede">The Dojo is a Lorcana sandbox: you play both sides, rewind any turn and
+                try another line. The tour walks you through a first turn on a practice board, pointing at each
+                control as you use it. Nothing you do in it is saved.</p>
+            <ol class="tw-list">
+                <li><b>01</b><span>Your opening hand: look, send cards back, mulligan</span></li>
+                <li><b>02</b><span>Ink, play a card and end the turn</span></li>
+                <li><b>03</b><span>Play the other side, Undo, and where the Multiverse is</span></li>
+            </ol>
+            <div class="tw-actions">
+                <button class="btn btn-primary" id="btn-tour-start" onclick="DojoTour.takeOffer()">Start the
+                    tour <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></button>
+                <button class="btn" id="btn-tour-later" onclick="DojoTour.dismissOffer()">Explore on my own</button>
+            </div>
+            <p class="tw-foot"><i class="fa-regular fa-circle-question" aria-hidden="true"></i> Help and two more
+                tours are always under <b>Help</b>.</p>
         </div>
     </div>
 

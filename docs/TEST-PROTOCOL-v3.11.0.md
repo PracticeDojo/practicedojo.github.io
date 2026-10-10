@@ -36,9 +36,10 @@ Scope: **Feature 57 · Help (manual, search, Show me)** and **Feature 58 · Guid
 ## D — Tours
 | # | Step | Expected |
 |---|------|----------|
-| D.1 | Private window, home screen | Strip: *New here? Take the 3-minute tour.* **Start tour** · **Not now** |
-| D.2 | **Not now**, reload | The strip stays gone |
-| D.3 | A browser that already has sessions | No strip; one toast says where Help is, once |
+| D.1 | Private window, home screen | A welcome dialog: *New here? Take the 3-minute tour.* **Start the tour** · **Explore on my own** (a bottom sheet on a phone) |
+| D.2 | **Explore on my own** (or Esc), then reload | The spotlight points at **Help**; after the reload the welcome stays gone |
+| D.3 | A browser that already has sessions | No welcome; one toast says where Help is, once |
+| D.3b | Before opening Help | The **?** (desktop), **Help** (home) and **⋯** (phone) keys breathe in orange; not during a tour; once Help has been opened they stop for good |
 | D.4 | Open a share link (`?s=…`) in a private window | No tour strip |
 | D.5 | Help → *Your first turn*, follow it on desktop | Banner *Practice · not saved*; each step lights a real control; waiting steps continue when you do the action; Space works on the end-turn step; ends on a closing card |
 | D.6 | Same tour on a phone | Steps use the card drawer and the phone's controls; nothing hidden behind the callout |

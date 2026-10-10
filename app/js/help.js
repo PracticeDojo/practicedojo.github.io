@@ -183,6 +183,8 @@ window.DojoHelp = (function () {
     // ---------- Open / close ----------
     function open(id, slug) {
         ensureDom();
+        // The Help keys stop breathing once Help has been used (tour.js owns that state).
+        try { if (window.DojoTour && DojoTour.helpSeen) DojoTour.helpSeen(); } catch (e) { /* ignore */ }
         if (!dev) { dev = device(); syncSwitch(); }
         const wasOpen = openFlag;
         if (!wasOpen) {

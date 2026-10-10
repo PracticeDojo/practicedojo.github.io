@@ -47,6 +47,12 @@ node $K/shoot.mjs --page landing --widths 1280,390 --clip full --out $OUT
 Files are named `<--name prefix><shot>-<width>-<theme>.png`; a plain run's
 shot is called `page`. The script prints every path it wrote.
 
+## First visit: `--first-visit`
+
+The browser starts as a returning player, so the tour welcome (which covers the home
+screen) and the breathing Help key stay out of the shots. Pass `--first-visit` to shoot
+what a brand-new visitor sees. Don't combine it with `--demo`: the welcome is modal.
+
 ## Driving the page: `--steps`
 
 To open a panel, click through a flow, or take several shots per width,
