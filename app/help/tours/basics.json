@@ -85,8 +85,8 @@
       ],
       "until": "inkedThisTurn",
       "text": {
-        "desktop": "Put a card in your inkwell: **drag it from your hand onto the inkwell**, or **hover it and press INK**.",
-        "phone": "Put a card in your inkwell: **tap a card in your hand, then Ink**."
+        "desktop": "Put a card in your inkwell: **drag it from your hand onto the inkwell**, or **click it and press Add to the Inkwell**.",
+        "phone": "Put a card in your inkwell: **drag it from your hand onto the inkwell**, or **tap a card in your hand, then Ink**."
       },
       "hint": {
         "desktop": "Only inkable cards have **INK**.",
@@ -105,8 +105,8 @@
       ],
       "until": "cardPlayed",
       "text": {
-        "desktop": "Now play a card: **drag a 1-cost character onto your play area**, or **hover it and press PLAY**.",
-        "phone": "Now play a card: **tap a 1-cost character, then Play**."
+        "desktop": "Now play a card: **drag a 1-cost character onto your play area**, or **click it and press Play Card**.",
+        "phone": "Now play a card: **drag a 1-cost character onto your play area**, or **tap a 1-cost character, then Play**."
       },
       "hint": "The cost is the number in the card's top-left corner.",
       "learn": "play-a-card"

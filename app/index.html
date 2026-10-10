@@ -114,9 +114,10 @@
         <div class="topbar-left">
             <button id="mobile-menu-btn" class="icon-btn" onclick="App.toggleSidebar()" title="Menu"
                 aria-label="Open menu"><i class="fa-solid fa-bars"></i></button>
-            <button class="tb-home" id="btn-home" onclick="App.confirmShowSetup()" title="Leave to the dojo (your match stays saved)"
-                aria-label="Leave to the dojo"><i class="fa-solid fa-chevron-left"></i><span
-                    class="brand-mark"></span><span class="tb-home-label">Dojo</span></button>
+            <button class="tb-home" id="btn-home" onclick="App.confirmShowSetup()"
+                title="Leave to the dojo (your match stays saved)" aria-label="Leave to the dojo"><i
+                    class="fa-solid fa-chevron-left"></i><span class="brand-mark"></span><span
+                    class="tb-home-label">Dojo</span></button>
             <div class="divider-v tb-home-rule"></div>
             <!-- The live session: rename in place; Save / Save as copy write to the device library -->
             <div class="session-ctl">
@@ -127,8 +128,8 @@
                 <button class="icon-btn ghost" id="btn-session-save" onclick="App.saveSessionNow()"
                     title="Save to this device" aria-label="Save session"><i
                         class="fa-solid fa-floppy-disk"></i></button>
-                <button class="icon-btn ghost session-copy" id="btn-session-copy" onclick="App.saveSessionAsCopy()" title="Save as copy"
-                    aria-label="Save session as a copy"><i class="fa-regular fa-copy"></i></button>
+                <button class="icon-btn ghost session-copy" id="btn-session-copy" onclick="App.saveSessionAsCopy()"
+                    title="Save as copy" aria-label="Save session as a copy"><i class="fa-regular fa-copy"></i></button>
                 <button class="icon-btn ghost" id="btn-session-share" onclick="App.shareCurrentSession()"
                     title="Share a link to this session" aria-label="Share session"><i
                         class="fa-solid fa-share-nodes"></i></button>
@@ -172,8 +173,9 @@
                     class="fa-regular fa-copy"></i>Save as copy</span></button>
         <button class="ctx-item" role="menuitem" onclick="App.closeTopbarMenu(); App.shareCurrentSession()"><span><i
                     class="fa-solid fa-share-nodes"></i>Share link</span></button>
-        <button class="ctx-item" role="menuitem" id="menu-help" onclick="App.closeTopbarMenu(); DojoHelp.open()"><span><i
-                    class="fa-regular fa-circle-question"></i>Help &amp; tours</span></button>
+        <button class="ctx-item" role="menuitem" id="menu-help"
+            onclick="App.closeTopbarMenu(); DojoHelp.open()"><span><i class="fa-regular fa-circle-question"></i>Help
+                &amp; tours</span></button>
         <button class="ctx-item" role="menuitem"
             onclick="App.closeTopbarMenu(); document.getElementById('tweaks-panel').classList.toggle('is-open')"><span><i
                     class="fa-solid fa-sliders"></i>Tweaks</span></button>
@@ -248,7 +250,8 @@
                         <input type="file" id="intake-file" class="hidden"
                             accept=".json,.gz,.txt,.md,.log,.replay,application/json,application/gzip,text/plain"
                             onchange="App.onIntakeFile(event)">
-                        <button class="btn" id="btn-intake-file" onclick="document.getElementById('intake-file').click()"><i
+                        <button class="btn" id="btn-intake-file"
+                            onclick="document.getElementById('intake-file').click()"><i
                                 class="fa-solid fa-file-arrow-up"></i> Choose a file</button>
                     </div>
                 </div>
@@ -271,7 +274,8 @@
                 </section>
                 <section class="home-box" aria-labelledby="home-recent-title">
                     <h3 id="home-recent-title">Pick up again
-                        <button class="link-btn" id="btn-all-sessions" onclick="App.openLibrary('sessions')">All sessions</button>
+                        <button class="link-btn" id="btn-all-sessions" onclick="App.openLibrary('sessions')">All
+                            sessions</button>
                     </h3>
                     <div id="home-recent"></div>
                 </section>
@@ -285,10 +289,14 @@
         aria-describedby="tw-lede" hidden>
         <div class="tw-card">
             <div class="tw-brand"><span class="brand-mark tw-mark" aria-hidden="true"></span>
-                <span class="tw-kicker">Welcome to the Practice Dojo</span></div>
+                <span class="tw-kicker">Welcome to the Practice Dojo</span>
+            </div>
             <h2 id="tw-title">New here? <span class="mute">Take the 3-minute tour.</span></h2>
-            <p class="tw-lede" id="tw-lede">The Dojo is a Lorcana sandbox: you play both sides, rewind any turn and
-                try another line. The tour walks you through a first turn on a practice board, pointing at each
+            <p class="tw-lede" id="tw-lede">The Dojo is a Lorcana <b class="mute">sandbox</b> not a <b
+                    class="mute">simulator</b>:
+                you play both sides, rewind any turn and try another line.
+                You are responsible for tracking what each card effect does, like if you were playing in real life.
+                The tour walks you through a first turn on a practice board, pointing at each
                 control as you use it. Nothing you do in it is saved.</p>
             <ol class="tw-list">
                 <li><b>01</b><span>Your opening hand: look, send cards back, mulligan</span></li>
@@ -331,7 +339,8 @@
             <div class="lib-toolbar is-end">
                 <input type="file" id="setup-import-file" class="hidden"
                     accept=".json,.gz,application/json,application/gzip" onchange="App.importTimelines(event)">
-                <button class="btn btn-ghost" id="btn-lib-import" onclick="document.getElementById('setup-import-file').click()">
+                <button class="btn btn-ghost" id="btn-lib-import"
+                    onclick="document.getElementById('setup-import-file').click()">
                     <i class="fa-solid fa-file-import"></i> Import file
                 </button>
             </div>
@@ -345,12 +354,14 @@
                 </button>
                 <input type="file" id="deck-import-txt" class="hidden" accept=".txt,text/plain"
                     onchange="App.importDeckTxt(event)">
-                <button class="btn btn-ghost" id="btn-deck-import-txt" onclick="document.getElementById('deck-import-txt').click()">
+                <button class="btn btn-ghost" id="btn-deck-import-txt"
+                    onclick="document.getElementById('deck-import-txt').click()">
                     <i class="fa-solid fa-file-lines"></i> Import .txt
                 </button>
                 <input type="file" id="deck-import-replay" class="hidden" accept=".json,.replay,.gz"
                     onchange="App.importDeckFromReplay(event)">
-                <button class="btn btn-ghost" id="btn-deck-from-replay" onclick="document.getElementById('deck-import-replay').click()"
+                <button class="btn btn-ghost" id="btn-deck-from-replay"
+                    onclick="document.getElementById('deck-import-replay').click()"
                     title="Use your exact decklist from a Duels.ink replay file">
                     <i class="fa-solid fa-film"></i> From a replay
                 </button>
@@ -390,8 +401,10 @@
                 <div class="mull-head-main">
                     <div class="mull-lbl" id="mulligan-context">Opening hand</div>
                     <h2 class="mull-title"><span class="deck-icon" id="mulligan-deck-icon"></span><span
-                            id="mulligan-title">Player</span><em class="mull-long" id="mulligan-title-tail">· keep it, or
-                            send cards back</em><em class="mull-short" id="mulligan-title-tail-short">· mulligan</em></h2>
+                            id="mulligan-title">Player</span><em class="mull-long" id="mulligan-title-tail">· keep it,
+                            or
+                            send cards back</em><em class="mull-short" id="mulligan-title-tail-short">· mulligan</em>
+                    </h2>
                 </div>
                 <div class="mull-head-figs">
                     <div class="mull-long">
@@ -437,7 +450,8 @@
                         <div class="prob-list" id="mulligan-prob"></div>
                     </div>
                 </div>
-                <div class="mull-lbl mull-hint mull-short" id="mulligan-hint-short">Tap to mark · hold to look closer</div>
+                <div class="mull-lbl mull-hint mull-short" id="mulligan-hint-short">Tap to mark · hold to look closer
+                </div>
             </div>
             <div class="mull-foot">
                 <div class="mull-lbl mull-hint mull-long" id="mulligan-hint"></div>
@@ -590,25 +604,28 @@
                     Drag to pan, scroll to zoom.</span>
             </h2>
             <div class="flex items-center gap-2">
-                <input type="file" id="import-file" class="hidden"
-                    accept=".json,.gz,application/json,application/gzip" onchange="App.importTimelines(event)">
+                <input type="file" id="import-file" class="hidden" accept=".json,.gz,application/json,application/gzip"
+                    onchange="App.importTimelines(event)">
                 <button class="tree-tool" id="tree-import" onclick="document.getElementById('import-file').click()"
                     title="Import a session file"><i class="fa-solid fa-file-import"></i><span>Import</span></button>
-                <button class="tree-tool" id="tree-export" onclick="App.exportTimelines()" title="Export this session as a file"><i
+                <button class="tree-tool" id="tree-export" onclick="App.exportTimelines()"
+                    title="Export this session as a file"><i
                         class="fa-solid fa-file-export"></i><span>Export</span></button>
                 <button class="tree-tool" id="tree-log" onclick="App.openImportLogModal()"
-                    title="Import a Duels.ink log or replay"><i class="fa-solid fa-file-lines"></i><span>Log</span></button>
+                    title="Import a Duels.ink log or replay"><i
+                        class="fa-solid fa-file-lines"></i><span>Log</span></button>
                 <div class="divider-v tree-head-rule"></div>
                 <button class="tree-tool" id="tree-view-toggle" onclick="App.toggleTreeView()" aria-pressed="false"
-                    title="Show the tree as a plot: every saved turn a dot"><i class="fa-solid fa-braille"></i><span>Plot</span></button>
+                    title="Show the tree as a plot: every saved turn a dot"><i
+                        class="fa-solid fa-braille"></i><span>Plot</span></button>
                 <button type="button" class="help-q" data-help="multiverse" aria-label="Help: the Multiverse">?</button>
                 <button onclick="App.toggleTreePanelSide()" class="close tree-dock-toggle" id="tree-dock-toggle"
                     title="Move the panel to the left" aria-label="Move the panel to the left"><i
                         class="fa-solid fa-table-columns"></i></button>
-                <button onclick="App.resetTreeZoom()" class="close tree-zoom-reset" id="tree-zoom-reset" title="Reset Zoom" aria-label="Reset zoom"><i
-                        class="fa-solid fa-compress"></i></button>
-                <button onclick="App.closeTreeModal()" class="close" id="tree-close" aria-label="Close multiverse view"><i
-                        class="fa-solid fa-times"></i></button>
+                <button onclick="App.resetTreeZoom()" class="close tree-zoom-reset" id="tree-zoom-reset"
+                    title="Reset Zoom" aria-label="Reset zoom"><i class="fa-solid fa-compress"></i></button>
+                <button onclick="App.closeTreeModal()" class="close" id="tree-close"
+                    aria-label="Close multiverse view"><i class="fa-solid fa-times"></i></button>
             </div>
         </div>
 
@@ -634,8 +651,9 @@
                     <button class="tree-key tk-up" data-tk="up" title="Line above" aria-label="Line above"><i
                             class="fa-solid fa-caret-up"></i></button>
                     <button class="tree-key tk-here" data-tk="here" title="Back to where you are"
-                        aria-label="Back to where you are"><svg viewBox="-8 -8 16 16" aria-hidden="true"><circle
-                                r="5.5" /></svg></button>
+                        aria-label="Back to where you are"><svg viewBox="-8 -8 16 16" aria-hidden="true">
+                            <circle r="5.5" />
+                        </svg></button>
                     <button class="tree-key tk-back" data-tk="back" title="Turn before" aria-label="Turn before"><i
                             class="fa-solid fa-caret-left"></i></button>
                     <button class="tree-key tk-down" data-tk="down" title="Line below" aria-label="Line below"><i
@@ -721,8 +739,8 @@
                         title="Back to the last branch point, or the start (Home)"
                         aria-label="Back to the last branch point or the start"><i
                             class="fa-solid fa-backward-step"></i></button>
-                    <button class="icon-btn" data-mmv="back" onclick="App.mmvStep('back')"
-                        title="Previous turn (←)" aria-label="Previous turn"><i class="fa-solid fa-chevron-left"></i></button>
+                    <button class="icon-btn" data-mmv="back" onclick="App.mmvStep('back')" title="Previous turn (←)"
+                        aria-label="Previous turn"><i class="fa-solid fa-chevron-left"></i></button>
                     <button class="icon-btn" data-mmv="fwd" onclick="App.mmvStep('fwd')"
                         title="Next turn on this line (→)" aria-label="Next turn"><i
                             class="fa-solid fa-chevron-right"></i></button>
@@ -776,7 +794,8 @@
                     </label>
                 </div>
                 <div class="action-row tri">
-                    <button class="btn" id="btn-quest-all" onclick="App.questWithAll()" title="Quest with all available characters">
+                    <button class="btn" id="btn-quest-all" onclick="App.questWithAll()"
+                        title="Quest with all available characters">
                         <i class="fa-solid fa-diamond" style="color:var(--lvi)"></i> Quest <span class="mono dim"
                             id="quest-count">0</span>
                     </button>
@@ -786,7 +805,8 @@
                         aria-label="Multiverse"><i class="fa-solid fa-code-branch"></i></button>
                     <button class="icon-btn" onclick="App.undo()" title="Undo last action"><i
                             class="fa-solid fa-rotate-left"></i></button>
-                    <button class="btn btn-p1 btn-block" id="btn-end-turn" onclick="App.endTurn()">End turn &rarr;</button>
+                    <button class="btn btn-p1 btn-block" id="btn-end-turn" onclick="App.endTurn()">End turn
+                        &rarr;</button>
                 </div>
             </div>
 
@@ -962,7 +982,8 @@
                                 onclick="event.stopPropagation(); App.inspectDiscard(App.state.activePlayer)"><i
                                     class="fa-solid fa-magnifying-glass"></i></button>
                         </div>
-                        <div class="pile deck drop-zone" id="bottom-deck" draggable="true" onclick="App.drawCard(App.state.activePlayer)"
+                        <div class="pile deck drop-zone" id="bottom-deck" draggable="true"
+                            onclick="App.drawCard(App.state.activePlayer)"
                             ondragstart="App.dragStartTopCard(event, 'bottom')" ondragover="App.allowDrop(event)"
                             ondragenter="App.dragEnter(event)" ondragleave="App.dragLeave(event)"
                             ondrop="App.drop(event, 'deck', 'bottom')"
@@ -998,7 +1019,8 @@
                             <span class="mqa-label">Quest</span>
                             <span class="mqa-count" id="quest-count-mobile">0</span>
                         </button>
-                        <button class="btn btn-p1 mqa-btn mqa-end" id="btn-end-turn-mobile" onclick="App.endTurn()" title="End turn">
+                        <button class="btn btn-p1 mqa-btn mqa-end" id="btn-end-turn-mobile" onclick="App.endTurn()"
+                            title="End turn">
                             <span class="mqa-label">End turn</span>
                             <i class="fa-solid fa-arrow-right"></i>
                         </button>
@@ -1389,7 +1411,7 @@
                 if (el && document.activeElement !== el) el.value = title;
                 document.title = this.session ? `${title} · Practice Dojo`
                     : this._sharedView ? (this._sharedView.kind === 'tour' ? 'Practice · Practice Dojo' : `Shared · ${title} · Practice Dojo`)
-                    : 'Lorcana Practice Dojo';
+                        : 'Lorcana Practice Dojo';
             },
 
             // "Amethyst/Ruby vs Amber/Steel", or the player names a Duels.ink import carries.
@@ -2317,13 +2339,15 @@
                     letGo();
                     held = false;
                     if (!b || b.disabled || !['back', 'fwd', 'up', 'down'].includes(b.dataset.tk)) return;
-                    const h = hold = { wait: setTimeout(() => {
-                        h.beat = setInterval(() => {
-                            held = true;
-                            this.treeKey(b.dataset.tk);
-                            if (b.disabled) letGo();
-                        }, 110);
-                    }, 400) };
+                    const h = hold = {
+                        wait: setTimeout(() => {
+                            h.beat = setInterval(() => {
+                                held = true;
+                                this.treeKey(b.dataset.tk);
+                                if (b.disabled) letGo();
+                            }, 110);
+                        }, 400)
+                    };
                 });
                 ['pointerup', 'pointercancel', 'pointerleave'].forEach(ev => keys.addEventListener(ev, letGo));
                 keys.addEventListener('contextmenu', (e) => e.preventDefault());
@@ -2948,8 +2972,8 @@
                     const bars = (...places) => `<span class="rec-bars" aria-hidden="true">${places.map(p => `<i class="is-${p}"></i>`).join('')}</span>`;
                     const parts = this.account
                         ? [both && `<span>${bars('device', 'account')}${both} in your account</span>`,
-                            here && `<span>${bars('device')}${here} only on this device</span>`,
-                            there && `<span>${bars('account')}${there} only in your account</span>`].filter(Boolean)
+                        here && `<span>${bars('device')}${here} only on this device</span>`,
+                        there && `<span>${bars('account')}${there} only in your account</span>`].filter(Boolean)
                         : [`<span>${bars('device')}All on this device only</span>`,
                             `<button type="button" class="link-btn" data-act="sign-in">Sign in to keep them in an account</button>`];
                     html += `<div class="rec-sum" data-id="sum">${parts.join('')}</div>`;
@@ -3641,8 +3665,8 @@
                 return `<div class="row-more">
                     <button type="button" class="icon-btn ghost" data-act="more" aria-haspopup="menu" aria-expanded="false" title="More" aria-label="More for ${esc(label)}"><i class="fa-solid fa-ellipsis"></i></button>
                     <div class="row-menu" role="menu" aria-label="${esc(label)}" hidden>${items.map(it => it === '-'
-                        ? '<span class="row-menu-rule" role="separator"></span>'
-                        : `<button type="button" role="menuitem" tabindex="-1" data-act="${it[0]}"${it[3] ? ' class="is-danger"' : ''}><i class="${it[1]}"></i>${it[2]}</button>`).join('')}</div>
+                    ? '<span class="row-menu-rule" role="separator"></span>'
+                    : `<button type="button" role="menuitem" tabindex="-1" data-act="${it[0]}"${it[3] ? ' class="is-danger"' : ''}><i class="${it[1]}"></i>${it[2]}</button>`).join('')}</div>
                 </div>`;
             },
 
@@ -3742,10 +3766,10 @@
                         <div class="lib-top">
                             <div class="lib-title">${esc(r.title)}</div>
                             <div class="lib-actions"><button class="btn btn-ghost" data-act="open-account">Download &amp; open</button>${this.rowMenuHtml(r.title, [
-                        ['pull', 'fa-solid fa-arrow-down', 'Download to this device'],
-                        '-',
-                        ['delete-account', 'fa-solid fa-trash', 'Delete from your account', true]
-                    ])}</div>
+                    ['pull', 'fa-solid fa-arrow-down', 'Download to this device'],
+                    '-',
+                    ['delete-account', 'fa-solid fa-trash', 'Delete from your account', true]
+                ])}</div>
                         </div>
                         <div class="lib-meta">${this.sessionMetaHtml(r.summary, Date.parse(r.updated_at))}</div>
                     </div>`;
@@ -3933,12 +3957,12 @@
                 const dirty = linked && d.accountDirty;
                 const menu = this.rowMenuHtml(d.name, mine
                     ? [...(this.account && !linked ? [['push', 'fa-solid fa-arrow-up', 'Save to account'], '-'] : []),
-                        ['edit', 'fa-solid fa-pen', 'Edit'],
-                        ['share', 'fa-solid fa-share-nodes', 'Share a link'],
+                    ['edit', 'fa-solid fa-pen', 'Edit'],
+                    ['share', 'fa-solid fa-share-nodes', 'Share a link'],
                         '-',
-                        ['delete', 'fa-solid fa-trash', 'Delete…', true]]
+                    ['delete', 'fa-solid fa-trash', 'Delete…', true]]
                     : [['edit', 'fa-regular fa-copy', 'Copy to my decks and edit'],
-                        ['share', 'fa-solid fa-share-nodes', 'Share a link']]);
+                    ['share', 'fa-solid fa-share-nodes', 'Share a link']]);
                 return `
                     <div class="lib-row" data-id="${esc(d.id)}">
                         <div class="lib-top">
@@ -6163,8 +6187,8 @@
                 // The well's width too: a map first drawn while the rail was hidden
                 // (or before a resize) has to be framed again.
                 const key = [document.getElementById('mmv-view').clientWidth, here, this._mmvEdited, this._mmvTrail.join(','),
-                    this.bookmarks.map(b => `${b.id}<${b.parentId || ''}:${b.name}`).join(','),
-                    (this.autoSaves || []).map(a => a.id).join(',')].join('|');
+                this.bookmarks.map(b => `${b.id}<${b.parentId || ''}:${b.name}`).join(','),
+                (this.autoSaves || []).map(a => a.id).join(',')].join('|');
                 if (key !== this._mmvKey) {
                     this._mmvKey = key;
                     this._mmv = MiniVerse.build(this.mmvItems(), here, this._mmvTrail);
@@ -6179,8 +6203,8 @@
                 const it = this._mmv && this._mmv.byId[id];
                 if (!it) return '';
                 return [`T${it.turn == null ? '?' : it.turn}`,
-                    it.p === 0 || it.p === 1 ? `P${it.p + 1}` : null,
-                    it.lore ? `${it.lore[0]}–${it.lore[1]}` : null].filter(Boolean).join(' · ');
+                it.p === 0 || it.p === 1 ? `P${it.p + 1}` : null,
+                it.lore ? `${it.lore[0]}–${it.lore[1]}` : null].filter(Boolean).join(' · ');
             },
 
             // The readout (the node you're on, or the dot under the pointer), the
@@ -6742,8 +6766,10 @@
                 items.forEach(it => {
                     if (it.auto) return;
                     const b = it.node, win = this.isVictoryNode(b);
-                    info[it.id] = { ...this.treeTurnInfo(b), win, name: b.name,
-                        p: win ? this.victoryWinner(b) : this.bookmarkPlayerIndex(b) };
+                    info[it.id] = {
+                        ...this.treeTurnInfo(b), win, name: b.name,
+                        p: win ? this.victoryWinner(b) : this.bookmarkPlayerIndex(b)
+                    };
                 });
 
                 const rows = Math.ceil(maxR), W = maxC * CELL, H = rows * CELL;
