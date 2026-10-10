@@ -25,9 +25,6 @@ To try another line, go back to an earlier node and play on from it. The new tur
 
 The path to the node you're on is highlighted; the other lines are grey. Select nodes on each line and compare their **Lore race to 20** and **Turn recap** in the panel. The plot shows the whole game at once (see [Cards and plot](help:multiverse-views)).
 
-## Go back to the first line
-
-Select any node on it and press **Play from here**.
 
 ## Good to know
 
