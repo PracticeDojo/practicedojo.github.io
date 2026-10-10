@@ -2110,15 +2110,15 @@
    "timeline",
    "timelines",
    "tree",
-   "history",
-   "what if"
+   "history"
   ],
   [
    "branch",
    "branches",
    "fork",
    "alternate line",
-   "variation"
+   "variation",
+   "what if"
   ],
   [
    "node",
@@ -2175,7 +2175,10 @@
    "log in",
    "login",
    "account",
-   "sync"
+   "sync",
+   "other devices",
+   "another device",
+   "every device"
   ],
   [
    "shortcut",
@@ -2197,6 +2200,21 @@
    "opponent",
    "enemy",
    "other player"
+  ],
+  [
+   "art",
+   "picture",
+   "pictures",
+   "image",
+   "images"
+  ],
+  [
+   "odds",
+   "probability",
+   "chance",
+   "chances",
+   "percent",
+   "percentage"
   ]
  ],
  "tours": []

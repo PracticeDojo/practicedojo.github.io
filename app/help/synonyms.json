@@ -11,8 +11,8 @@
     ["lore", "points", "score", "victory points", "life"],
     ["quest", "score points", "gain lore"],
     ["undo", "rewind", "take back", "go back", "oops", "revert"],
-    ["multiverse", "timeline", "timelines", "tree", "history", "what if"],
-    ["branch", "branches", "fork", "alternate line", "variation"],
+    ["multiverse", "timeline", "timelines", "tree", "history"],
+    ["branch", "branches", "fork", "alternate line", "variation", "what if"],
     ["node", "snapshot", "checkpoint", "save point"],
     ["mulligan", "redraw", "opening hand", "starting hand", "keep"],
     ["deck", "decklist", "list"],
@@ -21,10 +21,12 @@
     ["share", "send", "link", "url"],
     ["export", "download", "backup", "back up"],
     ["import", "upload", "load", "open file"],
-    ["sign in", "log in", "login", "account", "sync"],
+    ["sign in", "log in", "login", "account", "sync", "other devices", "another device", "every device"],
     ["shortcut", "hotkey", "hotkeys", "keyboard", "key"],
     ["drawer", "card menu", "actions"],
     ["shift", "evolve"],
-    ["opponent", "enemy", "other player"]
+    ["opponent", "enemy", "other player"],
+    ["art", "picture", "pictures", "image", "images"],
+    ["odds", "probability", "chance", "chances", "percent", "percentage"]
   ]
 }
