@@ -568,7 +568,11 @@
     "spend ink",
     "exert ink",
     "ink count",
-    "mana pool"
+    "mana pool",
+    "ink drops",
+    "inkdrops",
+    "drops",
+    "hyperia city"
    ],
    "targets": [
     "ink-bar",
@@ -579,7 +583,7 @@
     "ink-a-card",
     "play-a-card"
    ],
-   "verified": "v3.11.0",
+   "verified": "v3.13.0",
    "todo": false,
    "headings": [
     {
@@ -599,11 +603,16 @@
     },
     {
      "level": 2,
+     "text": "Ink drops",
+     "slug": "ink-drops"
+    },
+    {
+     "level": 2,
      "text": "Good to know",
      "slug": "good-to-know"
     }
    ],
-   "body": "Your inkwell shows how much ink you have ready out of how much you have. Playing a card spends ink for you; these controls are for everything else, like an ability that costs ink.\n\n## Read your ink\n\n:::desktop\nThe ink bar reads `4 /7 READY`: four ready of seven. Spent ink cards are dimmed and turned. The ink cards sit on the right of the bar, overlapping once they don't fit.\n:::\n\n:::phone\nYour player bar shows `4/7` and a pip for each ink, dimmed when spent.\n:::\n\n[Show me](show:ink-bar)\n\n## Spend or ready ink\n\n:::desktop\nOn the ink bar, **−** spends one ink, **+** readies one, and **Ready all** readies the lot.\n:::\n\n:::phone\nTap the ink count to open the inkwell. **−** spends one, **+** readies one, **Ready all** readies the lot. **×** or a tap outside closes it.\n:::\n\n## Act on one ink card\n\n:::desktop\nClick an ink card. It opens in place with **Exert** (or **Ready**), **To hand** and **Discard**. Click it again, click elsewhere or press {key:Esc} to put it down.\n:::\n\n:::phone\nIn the inkwell, tap an ink card, then **Exert** (or **Ready**), **To hand** or **Discard** in the bar underneath.\n:::\n\n[Show me](show:ink-panel)\n\n## Good to know\n\n- Both players' inkwells work the same way, so you can fix the waiting player's ink too.\n- Ink readies by itself at the start of that player's turn.\n- If you play a card you can't afford, no ink is spent. Spend it by hand with **−** if you need to.\n"
+   "body": "Your inkwell shows how much ink you have ready out of how much you have. Playing a card spends ink for you; these controls are for everything else, like an ability that costs ink.\n\n## Read your ink\n\n:::desktop\nThe ink bar reads `4 /7 READY`: four ready of seven. Spent ink cards are dimmed and turned. The ink cards sit on the right of the bar, overlapping once they don't fit.\n:::\n\n:::phone\nYour player bar shows `4/7` and a pip for each ink, dimmed when spent.\n:::\n\n[Show me](show:ink-bar)\n\n## Spend or ready ink\n\n:::desktop\nOn the ink bar, **−** spends one ink, **+** readies one, and **Ready all** readies the lot.\n:::\n\n:::phone\nTap the ink count to open the inkwell. **−** spends one, **+** readies one, **Ready all** readies the lot. **×** or a tap outside closes it.\n:::\n\n## Act on one ink card\n\n:::desktop\nClick an ink card. It opens in place with **Exert** (or **Ready**), **To hand** and **Discard**. Click it again, click elsewhere or press {key:Esc} to put it down.\n:::\n\n:::phone\nIn the inkwell, tap an ink card, then **Exert** (or **Ready**), **To hand** or **Discard** in the bar underneath.\n:::\n\n[Show me](show:ink-panel)\n\n## Ink drops\n\nWhen a card in either deck mentions ink drops (Hyperia City), each player gets an ink drops counter, kept apart from their ink. Without such a card it doesn't show.\n\n:::desktop\nThe **Ink drops** box sits in the ink bar, just left of the deck. **−** and **+** change the count.\n:::\n\n:::phone\nThe teardrop count sits in your player bar, between your ink and your piles. **−** and **+** change it. The ink pips hide to make room; your `ready/total` stays.\n:::\n\n## Good to know\n\n- Both players' inkwells work the same way, so you can fix the waiting player's ink too.\n- Ink readies by itself at the start of that player's turn.\n- If you play a card you can't afford, no ink is spent. Spend it by hand with **−** if you need to.\n"
   },
   {
    "id": "play-a-card",

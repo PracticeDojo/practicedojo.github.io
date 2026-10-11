@@ -869,6 +869,19 @@
                                 class="ink-new" id="top-ink-new" hidden>+1</span></div>
                         <div class="inkwell is-counter" id="top-inkwell-cards"></div>
                     </div>
+                    <!-- Ink drops (Hyperia City): shown only when a card in either deck mentions them. -->
+                    <div id="top-ink-drops-box" class="lore-chip ink-drops" title="Ink drops" role="group"
+                        aria-label="Ink drops">
+                        <span class="lore-chip-label">Ink drops</span>
+                        <span class="lore-chip-value"><i class="fa-solid fa-droplet" aria-hidden="true"></i><span
+                                id="top-ink-drops">0</span></span>
+                        <div class="lore-chip-btns">
+                            <button class="minus" onclick="App.changeInkDrops(App.state.inactivePlayer, -1)"
+                                title="Decrease ink drops">&minus;</button>
+                            <button class="plus" onclick="App.changeInkDrops(App.state.inactivePlayer, 1)"
+                                title="Increase ink drops">+</button>
+                        </div>
+                    </div>
                     <div class="pile-cluster">
                         <div class="pile drop-zone" id="top-discard" ondragover="App.allowDrop(event)"
                             ondragenter="App.dragEnter(event)" ondragleave="App.dragLeave(event)"
@@ -968,6 +981,19 @@
                         <div class="ink-readout"><span class="ink-icon"></span><span id="bottom-ink">0/0</span><span
                                 class="ink-new" id="bottom-ink-new" hidden>+1</span></div>
                         <div class="inkwell is-counter" id="bottom-inkwell-cards"></div>
+                    </div>
+                    <!-- Ink drops (Hyperia City): shown only when a card in either deck mentions them. -->
+                    <div id="bottom-ink-drops-box" class="lore-chip ink-drops" title="Ink drops" role="group"
+                        aria-label="Ink drops">
+                        <span class="lore-chip-label">Ink drops</span>
+                        <span class="lore-chip-value"><i class="fa-solid fa-droplet" aria-hidden="true"></i><span
+                                id="bottom-ink-drops">0</span></span>
+                        <div class="lore-chip-btns">
+                            <button class="minus" onclick="App.changeInkDrops(App.state.activePlayer, -1)"
+                                title="Decrease ink drops">&minus;</button>
+                            <button class="plus" onclick="App.changeInkDrops(App.state.activePlayer, 1)"
+                                title="Increase ink drops">+</button>
+                        </div>
                     </div>
                     <div class="pile-cluster">
                         <div class="pile drop-zone" id="bottom-discard" ondragover="App.allowDrop(event)"
@@ -1148,7 +1174,7 @@
     <script>
         let cardFuse = null;
 
-        const APP_VERSION = "v3.12.1"; // Centralized version string (v3: Field Unit)
+        const APP_VERSION = "v3.13.0"; // Centralized version string (v3: Field Unit)
 
         // Tweaks panel accent presets (hue values for the OKLCH accent ramp)
         // Tweaks → Accent: the approved Field Unit signals only (design.md ·
@@ -1262,6 +1288,7 @@
                         inkTotal: p.inkTotal,
                         inkReady: p.inkReady,
                         hasMulliganed: p.hasMulliganed,
+                        ...(p.inkDrops ? { inkDrops: p.inkDrops } : {}),
                         deck: p.deck.map(c => this.compressCard(c)),
                         hand: p.hand.map(c => this.compressCard(c)),
                         field: p.field.map(c => this.compressCard(c)),
@@ -1303,6 +1330,7 @@
                         inkTotal: p.inkTotal || 0,
                         inkReady: p.inkReady || 0,
                         hasMulliganed: p.hasMulliganed || false,
+                        inkDrops: p.inkDrops || 0,
                         deck: (p.deck || []).map(c => this.decompressCard(c)),
                         hand: (p.hand || []).map(c => this.decompressCard(c)),
                         field: (p.field || []).map(c => this.decompressCard(c)),
@@ -1653,6 +1681,35 @@
                     this.render();
                     this.checkBranchOver();
                 }
+            },
+
+            // Ink drops (Hyperia City), counted apart from ink. Their counter only
+            // shows when a card in either deck mentions them, or a player has some.
+            changeInkDrops(playerId, amount) {
+                this.saveState();
+                const p = this.state.players[playerId];
+                const old = p.inkDrops || 0;
+                p.inkDrops = Math.max(0, old + amount);
+                if (p.inkDrops !== old) {
+                    const diff = p.inkDrops - old;
+                    this.logAction(`${p.id === this.state.activePlayer ? 'You' : 'Opponent'} adjusted ink drops by ${diff > 0 ? '+' : ''}${diff}.`);
+                    this.render();
+                }
+            },
+
+            inkDropsInPlay() {
+                const cache = this._inkDropCards || (this._inkDropCards = new Map());
+                const mentions = (c) => {
+                    if (!cache.has(c.cardId)) {
+                        const db = this.cardDB[c.cardId];
+                        const text = db ? (db.fullText || (db.abilities || []).map(a => a.fullText || a.effect || '').join(' ')) : '';
+                        if (db) cache.set(c.cardId, /ink\s?drops?/i.test(text));
+                        else return false;
+                    }
+                    return cache.get(c.cardId);
+                };
+                return this.state.players.some(p => p.inkDrops > 0 ||
+                    ['deck', 'hand', 'field', 'inkwell', 'discard'].some(z => (p[z] || []).some(mentions)));
             },
 
             uuid() {
@@ -11601,6 +11658,8 @@
                 document.getElementById('top-player-bg-text').innerHTML = `<span class="deck-icon is-p${ip.id + 1}"></span>P${ip.id + 1}`;
                 document.getElementById('top-lore').innerText = ip.lore;
                 document.getElementById('top-lore-chip').innerText = ip.lore;
+                document.body.classList.toggle('ink-drops-on', this.inkDropsInPlay());
+                document.getElementById('top-ink-drops').innerText = ip.inkDrops || 0;
                 document.getElementById('top-ink').innerText = `${ip.inkReady}/${ip.inkTotal}`;
                 document.getElementById('top-deck-count').innerText = ip.deck.length;
                 document.getElementById('top-discard-count').innerText = ip.discard.length;
@@ -11649,6 +11708,7 @@
                 document.getElementById('bottom-player-bg-text').innerHTML = `<span class="deck-icon is-p${ap.id + 1}"></span>P${ap.id + 1}`;
                 document.getElementById('bottom-lore').innerText = ap.lore;
                 document.getElementById('bottom-lore-chip').innerText = ap.lore;
+                document.getElementById('bottom-ink-drops').innerText = ap.inkDrops || 0;
                 document.getElementById('bottom-ink').innerText = `${ap.inkReady}/${ap.inkTotal}`;
                 document.getElementById('bottom-deck-count').innerText = ap.deck.length;
                 document.getElementById('bottom-discard-count').innerText = ap.discard.length;

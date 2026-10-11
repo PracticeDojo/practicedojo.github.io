@@ -700,6 +700,17 @@ Implements version 2 of `docs/DESIGN-field-unit.md` (Kiln dark mode, signal fami
 - **Signal family.** By day the signal is Ember `#E4572E`; on Kiln it is Radio `#E86B2A` with dark text on the key. Tweaks → Accent offers only the approved swaps: **Signal** (the theme's own), **Coral**, **Olive** (its lore numeral lifts to `#C6C45A` on the well) and **Trace**. Each carries the text colour that sits on it. The old Amber / Rose / Emerald / Violet / Azure accents were ink colours, so a saved pick of one falls back to Signal.
 - **CSS file.** The Field Unit tokens, themes, palettes and component styles moved from the inline `<style>` to `app/css/field-unit.css`, loaded right after it (pixel-identical move). The older inline rules stay put.
 
+## Feature 60: Ink drops counter (Hyperia City) (v3.13.0)
+
+### User Story
+- As a player with Hyperia City cards, I want to keep count of each player's ink drops apart from their ink, so the new mechanic has a place on the board.
+
+### Details
+- **Only when it matters.** The counter shows for both players when a card in either deck (any zone) mentions ink drops, or a player already has some. Otherwise the board is unchanged.
+- **Desktop**: an *Ink drops* box in the ink row, just left of the deck, built like the lore box: label, **−** / **+**, and the count beside a teardrop.
+- **Phone**: a chip in the player bar between the ink count and the piles: teardrop, count, **−** / **+**. To make room, the ink pips hide (the `ready/total` readout stays).
+- Changes are logged and undoable, saved with the board (`inkDrops`, written only when above 0), and kept per timeline in the Multiverse.
+
 ## Feature 59: "You're the referee" tour — card effects are yours to carry out (v3.12.0)
 
 ### User Story
@@ -1091,3 +1102,4 @@ The public page (`index.html`) follows Field Unit too, as `docs/DESIGN-field-uni
 - [x] Feature 57: User manual with fuzzy search, for desktop and phone
 - [x] Feature 58: Guided tours for first-time players
 - [x] Feature 59: "You're the referee" tour — card effects are yours to carry out
+- [x] Feature 60: Ink drops counter (Hyperia City)

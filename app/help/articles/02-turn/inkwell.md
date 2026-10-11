@@ -3,11 +3,11 @@ id: inkwell
 title: Your inkwell: ready, spend, ready all
 summary: Read your ready ink, spend or ready it by hand, and act on a single ink card.
 devices: [desktop, phone]
-aliases: [ink, ready ink, spend ink, exert ink, ink count, mana pool]
+aliases: [ink, ready ink, spend ink, exert ink, ink count, mana pool, ink drops, inkdrops, drops, hyperia city]
 targets: [ink-bar, inkwell-cards, ink-panel]
 related: [ink-a-card, play-a-card]
 order: 50
-verified: v3.11.0
+verified: v3.13.0
 ---
 
 Your inkwell shows how much ink you have ready out of how much you have. Playing a card spends ink for you; these controls are for everything else, like an ability that costs ink.
@@ -45,6 +45,18 @@ In the inkwell, tap an ink card, then **Exert** (or **Ready**), **To hand** or *
 :::
 
 [Show me](show:ink-panel)
+
+## Ink drops
+
+When a card in either deck mentions ink drops (Hyperia City), each player gets an ink drops counter, kept apart from their ink. Without such a card it doesn't show.
+
+:::desktop
+The **Ink drops** box sits in the ink bar, just left of the deck. **−** and **+** change the count.
+:::
+
+:::phone
+The teardrop count sits in your player bar, between your ink and your piles. **−** and **+** change it. The ink pips hide to make room; your `ready/total` stays.
+:::
 
 ## Good to know
 
