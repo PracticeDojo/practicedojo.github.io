@@ -2259,6 +2259,83 @@ body.cards-text .ink-tile.is-back {
         color: var(--fu-mute);
     }
 
+    /* Ink drops sit in the ink row, just left of the deck, built like the lore box. */
+    .board-half .lore-chip.ink-drops {
+        --drops-w: 84px;
+        grid-area: ink;
+        justify-self: end;
+        align-self: center;
+        position: relative;
+        z-index: 1;
+        width: var(--drops-w);
+        height: var(--deck-h);
+        margin-right: calc(var(--deck-w) + 19px);
+        padding: 6px 7px;
+        display: grid;
+        grid-template-columns: 18px 1fr 18px;
+        grid-template-areas:
+            "label label label"
+            "minus value plus";
+        align-items: center;
+        justify-items: center;
+        background: var(--fu-glass-raised);
+        border: 1px solid var(--fu-glass-line);
+        border-radius: var(--radius-inset);
+    }
+
+    body.ink-drops-on .board-half .ink-cluster {
+        padding-right: calc(var(--deck-w) + 22px + 84px + 10px);
+    }
+
+    .board-half .ink-drops .lore-chip-label {
+        grid-area: label;
+        font-family: var(--font-mono);
+        font-size: 10px;
+        font-weight: 500;
+        letter-spacing: var(--label-track);
+        text-transform: uppercase;
+        white-space: nowrap;
+        color: var(--fu-glass-mute);
+    }
+
+    .board-half .ink-drops .lore-chip-value {
+        grid-area: value;
+        font-family: var(--font-display);
+        font-size: 24px;
+        font-weight: 520;
+        line-height: 1;
+        letter-spacing: -0.04em;
+        font-variant-numeric: tabular-nums;
+        color: var(--accent-num);
+    }
+
+    .board-half .ink-drops .lore-chip-btns {
+        display: contents;
+    }
+
+    .board-half .ink-drops .lore-chip-btns .minus { grid-area: minus; }
+    .board-half .ink-drops .lore-chip-btns .plus { grid-area: plus; }
+
+    .board-half .ink-drops .lore-chip-btns button {
+        width: 18px;
+        height: 18px;
+        padding: 0;
+        display: inline-grid;
+        place-items: center;
+        background: transparent;
+        border: 1px solid var(--fu-glass-line);
+        border-radius: 6px;
+        color: var(--fu-glass-2);
+        font-size: 11px;
+        line-height: 1;
+        cursor: pointer;
+    }
+
+    .board-half .ink-drops .lore-chip-btns button:hover {
+        background: var(--surface-3);
+        color: var(--fu-light);
+    }
+
     /* Desktop deck: click anywhere to draw; the two corner tools inspect and
        shuffle. The phone keeps its single ⋮ button (.pile-inspect). */
     .board-half .pile.deck .pile-inspect {
@@ -6458,6 +6535,36 @@ body.palette-competition .tree-node.tn-p2::before {
         color: var(--fu-glass-2);
     }
 
+    /* Ink drops: a lore-style chip between the ink counter and the piles. */
+    .lore-chip.ink-drops {
+        padding: 0 0 0 10px;
+        border-left: 1px solid var(--fu-glass-line);
+    }
+
+    /* No room for the words on a phone: the teardrop says it. */
+    .lore-chip.ink-drops {
+        grid-template-areas: "value btns";
+        column-gap: 6px;
+    }
+
+    .lore-chip.ink-drops .lore-chip-label {
+        display: none;
+    }
+
+    /* No room for the ink pips beside it: the `ready/total` readout stays. */
+    body.ink-drops-on .pile-row .inkwell.is-counter {
+        display: none;
+    }
+
+    body.ink-drops-on .pile-row .ink-cluster.is-counter .ink-readout,
+    .lore-chip.ink-drops .lore-chip-value {
+        font-size: 20px;
+    }
+
+    body.ink-drops-on .pile-row .ink-readout .ink-icon {
+        display: none;
+    }
+
     .pile-row .pile {
         border-style: solid;
     }
@@ -8242,3 +8349,14 @@ body.help-breathe #menu-help i {
     align-self: center;
 }
 
+
+/* ----- Ink drops (Hyperia City): hidden unless a card in either deck mentions them ----- */
+body:not(.ink-drops-on) .ink-drops {
+    display: none !important;
+}
+
+.ink-drops .lore-chip-value i {
+    font-size: 0.55em;
+    margin-right: 4px;
+    color: var(--fu-glass-2);
+}
