@@ -1148,7 +1148,7 @@
     <script>
         let cardFuse = null;
 
-        const APP_VERSION = "v3.12.0"; // Centralized version string (v3: Field Unit)
+        const APP_VERSION = "v3.12.1"; // Centralized version string (v3: Field Unit)
 
         // Tweaks panel accent presets (hue values for the OKLCH accent ramp)
         // Tweaks → Accent: the approved Field Unit signals only (design.md ·
@@ -2003,8 +2003,19 @@
             // fetched and stored: keeping a copy here means a reload with no
             // connection still boots into a playable session, and a warm start
             // skips the download entirely.
-            CARD_DB_URL: 'https://cdn.jsdelivr.net/gh/heavenideas/similcana@main/database/allCards.json',
+            // raw.githubusercontent is revalidated every 5 minutes and sends CORS;
+            // jsDelivr's @main is edge-cached for 12 h and browser-cached for 7
+            // days, so it is only the fallback.
+            CARD_DB_URLS: [
+                'https://raw.githubusercontent.com/heavenideas/similcana/main/database/allCards.json',
+                'https://cdn.jsdelivr.net/gh/heavenideas/similcana@main/database/allCards.json'
+            ],
             CARD_DB_CACHE_KEY: 'allCardsText',
+            CARD_DB_VERSION_KEY: 'allCardsVersion',
+            // Bump this (any new string) whenever similcana's allCards.json
+            // changes and the app is deployed: everyone re-downloads once on
+            // their next load. There is no automatic checking between bumps.
+            CARD_DB_VERSION: '2026-10-11',
 
             _openCacheDb() {
                 if (!this._cacheDbPromise) {
@@ -2047,32 +2058,54 @@
                 }
             },
 
-            // Cached copy wins for startup speed and offline; a background refresh
-            // keeps the next launch current. Falls back to the cache if the network
-            // fetch fails, so a cold start with no connection still has a shot.
+            // The stored copy is used as-is (fast start, works offline, no network)
+            // while its version stamp matches CARD_DB_VERSION. A different stamp
+            // means the app was deployed with newer card data: fetch it once,
+            // bypassing the browser's HTTP cache, and keep the old copy only as an
+            // offline fallback if that fetch fails.
             async loadCardDatabase() {
                 // Stored as text: strings clone in and out of IndexedDB far faster
                 // than a 9 MB object graph does.
-                const refresh = () => fetch(this.CARD_DB_URL)
-                    .then(r => (r.ok ? r.text() : null))
-                    .then(text => { if (text) this.idbSet(this.CARD_DB_CACHE_KEY, text); return text; });
+                const download = async () => {
+                    for (const url of this.CARD_DB_URLS) {
+                        try {
+                            const r = await fetch(url, { cache: 'no-cache' });
+                            if (!r.ok) continue;
+                            const text = await r.text();
+                            if (text) return text;
+                        } catch (e) { /* try the next source */ }
+                    }
+                    return null;
+                };
 
                 const cached = await this.idbGet(this.CARD_DB_CACHE_KEY);
+                const cachedVersion = await this.idbGet(this.CARD_DB_VERSION_KEY);
+                let cachedData = null;
                 if (cached) {
                     try {
-                        const data = JSON.parse(cached);
-                        if (data && data.cards) {
-                            refresh().catch(() => { }); // offline here is harmless — we already booted
-                            return data;
-                        }
+                        cachedData = JSON.parse(cached);
+                        if (!(cachedData && cachedData.cards)) cachedData = null;
                     } catch (e) {
                         console.warn('Cached card DB was unreadable, refetching', e);
                     }
                 }
+                if (cachedData && cachedVersion === this.CARD_DB_VERSION) return cachedData;
 
-                const text = await refresh();
-                if (!text) throw new Error('Card database unavailable');
-                return JSON.parse(text);
+                const text = await download();
+                if (text) {
+                    try {
+                        const data = JSON.parse(text);
+                        if (data && data.cards) {
+                            this.idbSet(this.CARD_DB_CACHE_KEY, text);
+                            this.idbSet(this.CARD_DB_VERSION_KEY, this.CARD_DB_VERSION);
+                            return data;
+                        }
+                    } catch (e) {
+                        console.warn('Downloaded card DB was unreadable', e);
+                    }
+                }
+                if (cachedData) return cachedData; // offline: the old copy beats nothing
+                throw new Error('Card database unavailable');
             },
 
             async init() {

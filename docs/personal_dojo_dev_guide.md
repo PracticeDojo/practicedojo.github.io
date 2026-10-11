@@ -1456,3 +1456,13 @@ Plan, formats and decisions: `docs/ARCH-help-and-tour.md` (§5.7 is the as-built
 ### 26.4 Keeping it true
 * `node tools/help.mjs --test`: 128 golden queries must land in the top three. `--live`: every target visible on its devices in the running app (some screens are skipped).
 * `AGENTS.md` · *Keeping the manual current*: after a visible change, update the articles that name it, their `verified`, and `targets.json`; give new controls an `id`.
+
+## 27. Card database freshness
+
+### 27.1 Why the old copy stuck
+* `allCards.json` comes from the similcana repo. jsDelivr's `@main` is edge-cached for 12 h and sent with `max-age=604800` (7 days) to browsers, and the app used its IndexedDB copy first, so new cards (Set 14) never arrived.
+
+### 27.2 How it works now
+* `App.CARD_DB_VERSION` (in `app/index.html`) is a hand-bumped stamp stored beside the cached copy. Same stamp: boot from IndexedDB with no network. Different stamp: download once with `cache: 'no-cache'` and store it. No periodic checking.
+* Sources: `raw.githubusercontent.com` first (5 min cache, CORS on), jsDelivr as fallback. If the download fails, the old copy is used.
+* **When similcana changes:** push it, wait a few minutes, change `CARD_DB_VERSION` to a new string, deploy. Everyone gets the new file on their next load.
