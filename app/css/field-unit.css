@@ -8681,9 +8681,13 @@ body:not(.ink-drops-on) .ink-drops {
 
 /* =====================================================================
    Feature 61 — card modifiers
-   Pills on the card's left edge, one per modifier. The style says how
-   long it lasts: glass = this turn, glass with a dashed paper line =
-   until my next turn, paper = always. A minus reads in danger red.
+   Pills on the card's left edge, one per modifier. Its signal-family
+   colour says how long it lasts, with the ink each fill is approved for:
+   Coral = this turn, Trace = until my next turn, Olive = always. Coral
+   fills in its deeper "coloured words" tone (#C23315) so the 9px label
+   clears 4.5:1; Trace and Olive clear it as they are.
+   A plus is a filled pill; a minus is hollow (glass, coloured edge and
+   the colour's lifted "coloured words" tone), so it reads at a glance.
    ===================================================================== */
 .mod-pills {
     position: absolute;
@@ -8699,20 +8703,23 @@ body:not(.ink-drops-on) .ink-drops {
 }
 
 .mod-pill {
+    --mod-fill: #C23315;
+    --mod-ink: #FFF8F4;
+    --mod-word: #F26446;
     display: inline-flex;
     align-items: center;
     gap: 3px;
     padding: calc(2px * var(--badge-scale, 1)) calc(4px * var(--badge-scale, 1));
-    border: 1px solid transparent;
+    border: 1px solid var(--mod-fill);
     border-radius: 4px;
-    background: oklch(0.13 0 0 / 0.92);
-    color: var(--fu-light);
-    font: 700 calc(8.5px * var(--badge-scale, 1)) / 1 var(--font-mono);
+    background: var(--mod-fill);
+    color: var(--mod-ink);
+    font: 700 calc(9px * var(--badge-scale, 1)) / 1 var(--font-mono);
     letter-spacing: 0.04em;
     font-variant-numeric: tabular-nums;
     text-transform: uppercase;
     white-space: nowrap;
-    box-shadow: 0 2px 6px -2px oklch(0 0 0 / 0.7);
+    box-shadow: 0 0 0 1px oklch(0 0 0 / 0.55), 0 2px 6px -2px oklch(0 0 0 / 0.7);
 }
 
 .mod-pills .mod-pill {
@@ -8720,30 +8727,40 @@ body:not(.ink-drops-on) .ink-drops {
     cursor: pointer;
 }
 
-.mod-pill.is-next {
-    border: 1px dashed var(--fu-light);
+/* Coral: this turn (the hot one, gone soonest). */
+.mod-pill.is-turn {
+    --mod-fill: #C23315;
+    --mod-ink: #FFF8F4;
+    --mod-word: #F26446;
 }
 
+/* Trace: until my next turn. */
+.mod-pill.is-next {
+    --mod-fill: #2F9E96;
+    --mod-ink: #041413;
+    --mod-word: #3DB2A9;
+}
+
+/* Olive: always. */
 .mod-pill.is-always {
-    background: var(--fu-light);
-    color: var(--fu-dark);
-    border-color: var(--fu-light);
+    --mod-fill: #8C8A2E;
+    --mod-ink: #141311;
+    --mod-word: #C6C45A;
 }
 
 .mod-pill.is-neg {
-    color: oklch(0.74 0.15 24.5);
+    background: oklch(0.13 0 0 / 0.94);
+    border-width: 1.5px;
+    color: var(--mod-word);
 }
 
-.mod-pill.is-always.is-neg {
-    color: var(--danger);
-}
-
-/* Desktop: a pill under the pointer turns into its own remove key. */
+/* Desktop: a pill under the pointer turns into its own remove key, the
+   Banish key's graphite with the label in danger red, struck through. */
 @media (hover: hover) {
     .mod-pills .mod-pill:hover {
-        background: var(--danger);
+        background: #2B2925;
         border-color: var(--danger);
-        color: #FFF8F4;
+        color: oklch(0.72 0.17 24.5);
         text-decoration: line-through;
     }
 }
@@ -8855,10 +8872,6 @@ body:not(.ink-drops-on) .ink-drops {
     box-shadow: none;
 }
 
-/* A glass pill on the selected (glass) key needs its edge to show. */
-.mod-pop .mp-until .mod-pill.is-turn {
-    border-color: var(--fu-glass-mute);
-}
 
 .mod-pop .mp-seg button.on {
     background: var(--fu-glass);

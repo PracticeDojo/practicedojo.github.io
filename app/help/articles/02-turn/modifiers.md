@@ -40,13 +40,13 @@ The log lists each one as it ends. A card that leaves play loses its modifiers; 
 
 ## On the card
 
-Each modifier is a pill on the card's left edge, such as `+2 STR`, `RES +1` or `CHAL +3`. The card keeps its printed numbers, so you can still do the maths in your head; the pills show what's added. The pill's look says how long it lasts:
+Each modifier is a pill on the card's left edge, such as `+2 STR`, `RES +1` or `CHAL +3`. The card keeps its printed numbers, so you can still do the maths in your head; the pills show what's added. The pill's colour says how long it lasts:
 
-- dark: this turn
-- dark with a dashed edge: until my next turn
-- light: always
+- red-orange: this turn
+- teal: until my next turn
+- olive: always
 
-A minus is red.
+A plus is a filled pill; a minus is hollow, with a coloured edge and text. The same colours mark the choices in the picker.
 
 ## Remove a modifier
 
