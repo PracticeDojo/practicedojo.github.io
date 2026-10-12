@@ -43,6 +43,9 @@
     <!-- Mini Multiverse: the tree as lines in the sidebar, and its step moves -->
     <script src="js/mini-multiverse.js"></script>
 
+    <!-- Card modifiers (Feature 61): +/- stats, Challenger / Resist, and when they end -->
+    <script src="js/modifiers.js"></script>
+
     <!-- Help (Features 57-58): manual search, the manual, "Show me", guided tours. app/help/ holds the content -->
     <script src="js/help-search.js"></script>
     <script src="js/help.js"></script>
@@ -1164,7 +1167,7 @@
     <script>
         let cardFuse = null;
 
-        const APP_VERSION = "v3.13.2"; // Centralized version string (v3: Field Unit)
+        const APP_VERSION = "v3.14.0"; // Centralized version string (v3: Field Unit)
 
         // Tweaks panel accent presets (hue values for the OKLCH accent ramp)
         // Tweaks → Accent: the approved Field Unit signals only (design.md ·
@@ -1244,6 +1247,7 @@
                 if (c.faceUp) compressed.faceUp = true;
                 if (c.locationId) compressed.locationId = c.locationId;
                 if (c.drying) compressed.drying = true;
+                if (c.mods && c.mods.length) compressed.mods = c.mods.map(m => ({ ...m }));
                 if (c.stackedCards && c.stackedCards.length > 0) compressed.stackedCards = c.stackedCards.map(sc => this.compressCard(sc));
                 return compressed;
             },
@@ -1257,6 +1261,7 @@
                     faceUp: c.faceUp || false,
                     locationId: c.locationId || null,
                     drying: c.drying || false,
+                    ...(c.mods && c.mods.length ? { mods: c.mods.map(m => ({ ...m })) } : {}),
                     stackedCards: (c.stackedCards || []).map(sc => this.decompressCard(sc))
                 };
             },
@@ -4530,6 +4535,8 @@
                 if (this.state.mulliganPending) return; // the opening hand comes first (Feature 54)
                 this.saveState();
 
+                this.expireModifiers('end'); // Feature 61: "this turn" ends with the turn
+
                 this.state.activePlayer = this.state.inactivePlayer;
                 this.state.inactivePlayer = 1 - this.state.activePlayer;
                 this.state.opponentHandRevealed = false; // Hide hand again when perspectives flip
@@ -4549,6 +4556,8 @@
                 const p = this.state.players[this.state.activePlayer];
 
                 this.logAction(`--- Turn ${this.state.turn} Begins ---`, true);
+                // Feature 61: this player's "until my next turn" modifiers end now.
+                this.expireModifiers('start', this.state.activePlayer);
                 this.logAction(`Ready step: characters and items readied`, true);
 
                 // Ready Characters and Items (Not Locations)
@@ -8398,7 +8407,7 @@
                 const dbCard = this.cardDB[found.card.cardId];
 
                 found.card.exerted = true;
-                const loreVal = dbCard.lore || 0;
+                const loreVal = this.statOf(found.card, 'lore'); // Feature 61: with modifiers
                 found.player.lore += loreVal;
                 this.markFx(instanceId, 'quest', `+${loreVal}`); // Feature 37
 
@@ -8416,10 +8425,11 @@
                 p.field.forEach(c => {
                     const dbCard = this.cardDB[c.cardId];
                     // Only quest if the character is NOT exerted, NOT drying, and has lore
-                    if (!c.exerted && !c.drying && dbCard.lore > 0) {
+                    const lore = this.statOf(c, 'lore'); // Feature 61: with modifiers
+                    if (!c.exerted && !c.drying && lore > 0) {
                         c.exerted = true;
-                        this.markFx(c.instanceId, 'quest', `+${dbCard.lore}`); // Feature 37
-                        totalLore += dbCard.lore;
+                        this.markFx(c.instanceId, 'quest', `+${lore}`); // Feature 37
+                        totalLore += lore;
                         count++;
                         this._trackAction('quested', c.cardId);
                     }
@@ -8486,6 +8496,120 @@
                 return m ? parseInt(m[1]) : 0;
             },
 
+            // Feature 61: a card's stat with its modifiers (card.mods) added. The
+            // card face keeps the printed number; challenges, quests and the lethal
+            // check read this. stat: strength | willpower | lore | challenger | resist.
+            statOf(card, stat) {
+                const db = card && this.cardDB[card.cardId];
+                if (!db) return 0;
+                const printed = stat === 'challenger' ? this.getKeywordBonus(db, 'Challenger')
+                    : stat === 'resist' ? this.getKeywordBonus(db, 'Resist')
+                    : (db[stat] || 0);
+                return Math.max(0, printed + Mods.total(card, stat));
+            },
+            // A challenger's strength in a challenge: printed strength, its strength
+            // modifiers and Challenger are added together first, and only the total
+            // is floored at 0 (printed 0, −2 strength, Challenger +2 → 0, not 2).
+            challengeStrength(card) {
+                const db = card && this.cardDB[card.cardId];
+                if (!db) return 0;
+                return Math.max(0, (db.strength || 0) + Mods.total(card, 'strength') + this.statOf(card, 'challenger'));
+            },
+
+            // --- Feature 61: modifiers ------------------------------------------
+            openModPicker(instanceId, anchorRect) {
+                const f = this.findCard(instanceId);
+                if (!f || f.loc !== 'field') return;
+                const db = this.cardDB[f.card.cardId] || {};
+                const isChar = db.type === 'Character';
+                const chars = f.player.field.filter(c => (this.cardDB[c.cardId] || {}).type === 'Character');
+                const pNo = this.state.players.indexOf(f.player) + 1;
+                const recent = this.getRecentMods();
+                if (!anchorRect) {
+                    const w = this.fieldWrap(instanceId);
+                    anchorRect = w ? w.getBoundingClientRect() : null;
+                }
+                Mods.openPicker({
+                    anchor: anchorRect,
+                    cardName: db.name || 'Card',
+                    allLabel: isChar && chars.length > 1 ? `All of P${pNo}'s characters (${chars.length})` : '',
+                    recent,
+                    last: recent[0],
+                    onAdd: (m) => this.addModifier(instanceId, m)
+                });
+            },
+            getRecentMods() {
+                try {
+                    const r = JSON.parse(localStorage.getItem('lorcana_dojo_recent_mods'));
+                    return Array.isArray(r) ? r.slice(0, 4) : [];
+                } catch (e) { return []; }
+            },
+            rememberMod(m) {
+                const key = (x) => `${x.stat}|${x.value}|${x.until}`;
+                const list = [{ stat: m.stat, value: m.value, until: m.until }]
+                    .concat(this.getRecentMods().filter(x => key(x) !== key(m))).slice(0, 4);
+                try { localStorage.setItem('lorcana_dojo_recent_mods', JSON.stringify(list)); } catch (e) { }
+            },
+            addModifier(instanceId, m) {
+                const f = this.findCard(instanceId);
+                if (!f || f.loc !== 'field') return;
+                this.saveState();
+                const targets = m.all
+                    ? f.player.field.filter(c => (this.cardDB[c.cardId] || {}).type === 'Character')
+                    : [f.card];
+                const by = this.state.activePlayer;
+                targets.forEach(c => {
+                    (c.mods || (c.mods = [])).push(Mods.make(m.stat, m.value, m.until, by));
+                    this.markFx(c.instanceId, 'info', Mods.label(m));
+                });
+                this.rememberMod(m);
+                const who = m.all ? `all of ${f.player.name}'s characters` : (this.cardDB[f.card.cardId] || {}).name;
+                this.logAction(`${who} got ${Mods.title(m)}.`);
+                this.render();
+            },
+            removeModifier(instanceId, modId) {
+                const f = this.findCard(instanceId);
+                if (!f || !f.card.mods) return;
+                const m = f.card.mods.find(x => x.id === modId);
+                if (!m) return;
+                this.saveState();
+                f.card.mods = f.card.mods.filter(x => x.id !== modId);
+                if (!f.card.mods.length) delete f.card.mods;
+                this.logAction(`Removed ${Mods.title(m)} from ${(this.cardDB[f.card.cardId] || {}).name}.`);
+                this.render();
+            },
+            // The turn is changing: "this turn" modifiers end, then the new active
+            // player's "until my next turn" ones. Logged as one step line each.
+            expireModifiers(phase, player) {
+                const cards = this.state.players.flatMap(p => p.field);
+                const gone = Mods.expire(cards, phase, player);
+                if (!gone.length) return;
+                const names = gone.map(g => `${Mods.full(g.mod)} (${(this.cardDB[g.card.cardId] || {}).name})`);
+                this.logAction(`Modifiers ended: ${names.join(', ')}`, true);
+            },
+            // Pills along the card's left edge: one per modifier, its style says how
+            // long it lasts. Clicking one removes it (touch: the card drawer does).
+            buildModPills(c) {
+                if (!c.mods || !c.mods.length) return null;
+                const box = document.createElement('div');
+                box.className = 'mod-pills';
+                c.mods.forEach(m => {
+                    const b = document.createElement('button');
+                    b.type = 'button';
+                    b.className = `mod-pill is-${m.until}${m.value < 0 ? ' is-neg' : ''}`;
+                    b.textContent = Mods.label(m);
+                    b.title = `${Mods.title(m)} — click to remove`;
+                    b.setAttribute('aria-label', `${Mods.title(m)}. Remove`);
+                    b.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        if (this.isTouchUI()) { this.openCardSheet(c.instanceId); return; }
+                        this.removeModifier(c.instanceId, m.id);
+                    });
+                    box.appendChild(b);
+                });
+                return box;
+            },
+
             // Feature 19: Draws a temporary SVG arrow from challenger rect to defender rect
             showChallengeArrow(startRect, endRect) {
                 const svg = document.getElementById('challenge-arrow-svg');
@@ -8516,10 +8640,11 @@
                 const dDb = this.cardDB[df.card.cardId];
                 if (!cDb || !dDb) return;
 
-                const cStr = (cDb.strength || 0) + this.getKeywordBonus(cDb, 'Challenger');
-                const dStr = dDb.strength || 0;
-                const cResist = this.getKeywordBonus(cDb, 'Resist');
-                const dResist = this.getKeywordBonus(dDb, 'Resist');
+                // Feature 61: strength, Challenger and Resist with modifiers.
+                const cStr = this.challengeStrength(cf.card);
+                const dStr = this.statOf(df.card, 'strength');
+                const cResist = this.statOf(cf.card, 'resist');
+                const dResist = this.statOf(df.card, 'resist');
 
                 const dmgToDefender = Math.max(0, cStr - dResist);
                 const dmgToChallenger = Math.max(0, dStr - cResist);
@@ -8530,8 +8655,8 @@
                 df.card.damage = (df.card.damage || 0) + dmgToDefender;
                 cf.card.exerted = true;
 
-                const cWp = cDb.willpower || 0;
-                const dWp = dDb.willpower || 0;
+                const cWp = this.statOf(cf.card, 'willpower');
+                const dWp = this.statOf(df.card, 'willpower');
 
                 const logParts = [
                     `${cDb.name} challenged ${dDb.name}!`,
@@ -8550,7 +8675,7 @@
                     const df2 = this.findCard(defenderInstanceId);
                     if (df2 && df2.loc === 'field') {
                         const dDb2 = this.cardDB[df2.card.cardId];
-                        const dWp2 = dDb2.willpower || 0;
+                        const dWp2 = this.statOf(df2.card, 'willpower');
                         if (dWp2 > 0 && df2.card.damage >= dWp2) {
                             const idx = df2.player.field.findIndex(c => c.instanceId === defenderInstanceId);
                             if (idx !== -1) {
@@ -8568,7 +8693,7 @@
                     const cf2 = this.findCard(challengerInstanceId);
                     if (cf2 && cf2.loc === 'field') {
                         const cDb2 = this.cardDB[cf2.card.cardId];
-                        const cWp2 = cDb2.willpower || 0;
+                        const cWp2 = this.statOf(cf2.card, 'willpower');
                         if (cWp2 > 0 && cf2.card.damage >= cWp2) {
                             const idx = cf2.player.field.findIndex(c => c.instanceId === challengerInstanceId);
                             if (idx !== -1) {
@@ -8775,6 +8900,9 @@
                 draggedFound.card.exerted = targetFound.card.exerted;
                 draggedFound.card.damage = targetFound.card.damage;
                 draggedFound.card.drying = targetFound.card.drying;
+                // Feature 61: the shifted character keeps the effects on it.
+                if (targetFound.card.mods) draggedFound.card.mods = targetFound.card.mods;
+                else delete draggedFound.card.mods;
                 draggedFound.card.locationId = targetFound.card.locationId;
                 draggedFound.card.faceUp = targetFound.card.faceUp;
 
@@ -9165,6 +9293,7 @@
             // Challenge and banish have no art file, so they stay stroked paths.
             VERB_ICONS: {
                 challenge: 'M4 20l9-9M14 4h6v6M20 4l-9 9M6 14l4 4M3 21l3-3',
+                modify: 'M5 8h6M8 5v6M14 16h6', // Feature 61: a plus and a minus
                 banish: 'M6 6l12 12M18 6L6 18'
             },
             VERB_GAME_ICONS: {
@@ -9407,9 +9536,10 @@
                 const aDb = this.cardDB[a.card.cardId], dDb = this.cardDB[d.card.cardId];
                 if (!aDb || !dDb) return null;
                 // Same arithmetic as performChallenge.
-                const toDef = Math.max(0, (aDb.strength || 0) + this.getKeywordBonus(aDb, 'Challenger') - this.getKeywordBonus(dDb, 'Resist'));
-                const toAtt = Math.max(0, (dDb.strength || 0) - this.getKeywordBonus(aDb, 'Resist'));
-                const aW = aDb.willpower || 0, dW = dDb.willpower || 0;
+                // Feature 61: with each card's modifiers.
+                const toDef = Math.max(0, this.challengeStrength(a.card) - this.statOf(d.card, 'resist'));
+                const toAtt = Math.max(0, this.statOf(d.card, 'strength') - this.statOf(a.card, 'resist'));
+                const aW = this.statOf(a.card, 'willpower'), dW = this.statOf(d.card, 'willpower');
                 const aDmg = a.card.damage || 0, dDmg = d.card.damage || 0;
                 const notes = [];
                 if (a.card.exerted) notes.push(`${aDb.name} is exerted`);
@@ -9602,7 +9732,7 @@
                 const sh = document.getElementById('card-sheet');
                 const mine = f.player.id === this.state.activePlayer;
                 const isChar = db.type === 'Character';
-                const wp = db.willpower || 0, dmg = f.card.damage || 0;
+                const wp = this.statOf(f.card, 'willpower'), dmg = f.card.damage || 0; // Feature 61: with modifiers
                 const esc = (s) => this._esc(s);
                 // The text card below carries the name, type and stats, so the head
                 // is just whose card it is and its state on the board.
@@ -9641,12 +9771,17 @@
                         <div class="cs-row"><button class="cs-btn key big" data-set="${dmg - 1}" aria-label="Remove 1 damage">− 1</button>
                         <button class="cs-btn key big" data-set="${dmg + 1}" aria-label="Add 1 damage">+ 1</button></div>`);
                 }
-                const canQuest = mine && isChar && !f.card.exerted && !f.card.drying && (db.lore || 0) > 0;
+                const canQuest = mine && isChar && !f.card.exerted && !f.card.drying && this.statOf(f.card, 'lore') > 0;
                 add(`<div class="cs-acts">
                     <button class="cs-btn key key-coral" data-act="challenge" ${mine && isChar ? '' : 'disabled'}>Challenge</button>
                     <button class="cs-btn key key-olive" data-act="quest" ${canQuest ? '' : 'disabled'}>Quest</button>
                     <button class="cs-btn key key-trace" data-act="exert">${f.card.exerted ? 'Ready' : 'Exert'}</button>
                     <button class="cs-btn key key-graphite" data-act="banish">Banish</button></div>`);
+                // Feature 61: the card's modifiers, each with a remove key, then Add.
+                const mods = (f.card.mods || []).map(m =>
+                    `<button class="cs-mod mod-pill is-${m.until}${m.value < 0 ? ' is-neg' : ''}" data-mod="${esc(m.id)}" aria-label="Remove ${esc(Mods.title(m))}" title="${esc(Mods.title(m))}">${esc(Mods.label(m))}<i class="fa-solid fa-xmark" aria-hidden="true"></i></button>`).join('');
+                add(`<div class="cs-label"><span>Modifiers${mods ? ' · tap to remove' : ''}</span></div>
+                    <div class="cs-mods">${mods}<button class="cs-btn key" data-act="modify">+ Add modifier</button></div>`);
                 let more = `<button class="cs-btn key" data-act="hand">To hand</button>
                     <button class="cs-btn key" data-act="top">Deck top</button>
                     <button class="cs-btn key" data-act="bottom">Deck bottom</button>`;
@@ -9662,11 +9797,13 @@
                     if (!b || b.disabled) return;
                     if (b.dataset.step) { this.cycleCardSheet(Number(b.dataset.step)); return; }
                     if (b.dataset.set !== undefined) { this.setDamage(id, Number(b.dataset.set)); return; }
+                    if (b.dataset.mod) { this.removeModifier(id, b.dataset.mod); return; }
                     const act = b.dataset.act;
                     const close = (fn) => { this.closeCardSheet(); fn(); };
                     if (act === 'close') this.closeCardSheet();
                     else if (act === 'challenge') close(() => this.enterChallengeMode(id));
                     else if (act === 'quest') this.quest(id);
+                    else if (act === 'modify') this.openModPicker(id, null);
                     else if (act === 'exert') this.toggleExert(id);
                     else if (act === 'banish') close(() => this.banishAnimated(id));
                     else if (act === 'hand') close(() => this.returnToHand(id));
@@ -10095,7 +10232,8 @@
                 const owner = onField ? this.findCard(c.instanceId) : null;
                 const isMine = !!(owner && owner.player.id === this.state.activePlayer);
                 const isChar = !!(dbCard && dbCard.type === 'Character');
-                const wp = (dbCard && dbCard.willpower) || 0;
+                // Feature 61: willpower with modifiers, for the lethal check and track.
+                const wp = onField && owner ? this.statOf(c, 'willpower') : ((dbCard && dbCard.willpower) || 0);
                 if (onField && owner) {
                     wrap.dataset.iid = c.instanceId;
                     if (this._hoverIid === c.instanceId) wrap.classList.add('is-hovered');
@@ -10175,11 +10313,15 @@
                         verbs.appendChild(b);
                     };
                     if (isMine && isChar) verb('challenge', 'Challenge — pick a target (C)', () => this.enterChallengeMode(c.instanceId), 'is-challenge');
-                    if (isMine && isChar && !c.exerted && !c.drying && (dbCard.lore || 0) > 0) verb('quest', `Quest for ${dbCard.lore} lore`, () => this.quest(c.instanceId));
+                    const loreNow = this.statOf(c, 'lore');
+                    if (isMine && isChar && !c.exerted && !c.drying && loreNow > 0) verb('quest', `Quest for ${loreNow} lore`, () => this.quest(c.instanceId));
                     if (!isLocation) verb(c.exerted ? 'ready' : 'exert', c.exerted ? 'Ready (E)' : 'Exert (E)', () => this.toggleExert(c.instanceId));
+                    verb('modify', 'Modify — add a modifier', () => this.openModPicker(c.instanceId)); // Feature 61
                     verb('banish', 'Banish (B)', () => this.banishAnimated(c.instanceId), 'is-danger');
                     ctrl.appendChild(verbs);
                     wrap.appendChild(ctrl);
+                    const pills = this.buildModPills(c); // Feature 61
+                    if (pills) wrap.appendChild(pills);
                     if (wp > 0) {
                         wrap.appendChild(this.buildDamageTrack(c, wp));
                         if ((c.damage || 0) >= wp) {
@@ -10585,13 +10727,19 @@
                     }
                     addOption(found.card.exerted ? 'Ready' : 'Exert', () => this.toggleExert(instanceId), 'E');
                     // Prevent individual questing if the character is drying
-                    if (isActivePlayerOwned && !found.card.exerted && !found.card.drying && dbCard.lore > 0) {
-                        addOption(`Quest (+${dbCard.lore} Lore)`, () => this.quest(instanceId));
+                    const loreNow = this.statOf(found.card, 'lore'); // Feature 61: with modifiers
+                    if (isActivePlayerOwned && !found.card.exerted && !found.card.drying && loreNow > 0) {
+                        addOption(`Quest (+${loreNow} Lore)`, () => this.quest(instanceId));
                     }
                     if (isActivePlayerOwned && isChar) {
                         addOption('Challenge…', () => this.enterChallengeMode(instanceId), 'C');
                     }
-                    addDamageRow((dbCard && dbCard.willpower) || 0);
+                    addDamageRow(this.statOf(found.card, 'willpower'));
+                    // Feature 61: add a modifier, or remove one the card has.
+                    addSection('Modifiers');
+                    const at = { left: e.clientX, right: e.clientX, top: e.clientY };
+                    addOption('Add Modifier…', () => this.openModPicker(instanceId, at));
+                    (found.card.mods || []).forEach(m => addOption(`Remove ${Mods.title(m)}`, () => this.removeModifier(instanceId, m.id)));
                     addSection('Move');
                     addOption('Banish (To Discard)', () => this.banishAnimated(instanceId), 'B', 'is-danger');
                     addOption('Return to Hand', () => this.returnToHand(instanceId));
@@ -11606,6 +11754,12 @@
                 const ap = this.state.players[this.state.activePlayer];
                 const ip = this.state.players[this.state.inactivePlayer];
 
+                // Feature 61: modifiers only live on cards in play. A card that left
+                // (banished, returned, put in the deck or inkwell) drops them.
+                this.state.players.forEach(p => ['hand', 'deck', 'discard', 'inkwell'].forEach(z => {
+                    (p[z] || []).forEach(c => { if (c.mods) delete c.mods; });
+                }));
+
                 // Feature 37: an attacker that left the field / changed sides is dropped
                 // before the cards are built (they read it for their challenge styling).
                 if (this.challengePick) {
@@ -11635,7 +11789,7 @@
                 // Quest Count
                 let readyLoreChars = 0;
                 // Update quest counter to exclude drying characters
-                ap.field.forEach(c => { const db = this.cardDB[c.cardId]; if (!c.exerted && !c.drying && db && db.lore > 0) readyLoreChars++; });
+                ap.field.forEach(c => { if (!c.exerted && !c.drying && this.statOf(c, 'lore') > 0) readyLoreChars++; });
                 document.getElementById('quest-count').innerText = readyLoreChars;
                 const questCountMobile = document.getElementById('quest-count-mobile');
                 if (questCountMobile) questCountMobile.innerText = readyLoreChars;
@@ -12232,6 +12386,8 @@
 
             // Game hotkeys never act on the board hidden behind the home screen.
             if (!document.getElementById('setup-modal').classList.contains('hidden')) return;
+            // Feature 61: the modifier picker takes its own keys (Space presses its buttons).
+            if (document.getElementById('mod-pop')) return;
 
             // A card in the drawer: ← / → step through the hand or the cards in play.
             if (App._sheetIid && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) {

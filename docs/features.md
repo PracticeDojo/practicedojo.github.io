@@ -700,6 +700,19 @@ Implements version 2 of `docs/DESIGN-field-unit.md` (Kiln dark mode, signal fami
 - **Signal family.** By day the signal is Ember `#E4572E`; on Kiln it is Radio `#E86B2A` with dark text on the key. Tweaks → Accent offers only the approved swaps: **Signal** (the theme's own), **Coral**, **Olive** (its lore numeral lifts to `#C6C45A` on the well) and **Trace**. Each carries the text colour that sits on it. The old Amber / Rose / Emerald / Violet / Azure accents were ink colours, so a saved pick of one falls back to Signal.
 - **CSS file.** The Field Unit tokens, themes, palettes and component styles moved from the inline `<style>` to `app/css/field-unit.css`, loaded right after it (pixel-identical move). The older inline rules stay put.
 
+## Feature 61: Card modifiers (v3.14.0)
+
+### User Story
+- As a player, I want to give a card in play a modifier (+/− strength, willpower or lore, Challenger +X, Resist +X) for as long as the effect lasts, so challenges and quests use the right numbers and the modifier goes away on its own.
+
+### Details
+- **Add one** from a card in play: the Modify button in its hover controls, **Add Modifier…** in its right-click menu, or **+ Add modifier** in the card drawer (touch). A picker opens beside the card (a sheet along the bottom on phones): the stat, the amount (−/+; Challenger and Resist only go up), how long it lasts, an *All of P1's characters* box for effects like songs, and the last four modifiers used as one-tap presets. It opens on the last one used.
+- **How long**: *This turn* ends when the turn ends. *Until my next turn* lasts through the opponent's turn and ends when the player who added it starts their next turn. *Always* stays until removed. Expired modifiers are listed in the log.
+- **On the card**: one pill per modifier on the card's left edge (`+2 STR`, `RES +1`, `CHAL +1`). The card keeps its printed numbers; only the pills show the change. The pill's signal-family colour says how long it lasts: Coral (in its deeper `#C23315` tone, so the label clears 4.5:1) this turn, Trace until your next turn, Olive always. A plus is filled; a minus is hollow (glass, coloured edge and text). Click a pill to remove it (desktop), or tap it in the card drawer (touch). The right-click menu lists them too.
+- **Counted in**: the challenge result and forecast (printed strength + strength modifiers + Challenger summed first and only the total floored at 0, then Resist; damage back; banish), quests and Quest all, the Quest count, and the lethal check and damage track (willpower).
+- Modifiers live on cards in play only: a card that leaves play drops them; a shift keeps them. Logged, undoable, saved with the board (`mods` on a card) and kept per timeline in the Multiverse.
+- Code: `app/js/modifiers.js` (the rules and the picker), `App.statOf()` for a card's stat with its modifiers.
+
 ## Feature 60: Ink drops counter (Hyperia City) (v3.13.0)
 
 ### User Story

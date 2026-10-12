@@ -5,12 +5,12 @@ summary: Challenge an opposing card by dragging or tapping, with a forecast of w
 devices: [desktop, phone]
 aliases: [attack, fight, challenge mode, combat, block]
 targets: [challenge-mode, challenge-banner, field, opponent-field]
-related: [forecast, card-actions]
+related: [forecast, card-actions, modifiers]
 order: 90
-verified: v3.13.2
+verified: v3.14.0
 ---
 
-In a challenge, your character and the opposing card deal their strength to each other as damage. The Dojo works out the damage, exerts your character and banishes anything that ends up with damage equal to its willpower.
+In a challenge, your character and the opposing card deal their strength to each other as damage. The Dojo works out the damage, exerts your character and banishes anything that ends up with damage equal to its willpower. [Modifiers](help:modifiers) on either card (+strength, Challenger, Resist, willpower) are counted.
 
 ## Challenge mode
 

@@ -5,9 +5,9 @@ summary: Quest with one character or all of them, and change lore by hand.
 devices: [desktop, phone]
 aliases: [quest all, gain lore, score, points, lore counter, add lore]
 targets: [quest-all, lore]
-related: [winning, card-actions]
+related: [winning, card-actions, modifiers]
 order: 80
-verified: v3.13.1
+verified: v3.14.0
 ---
 
 Questing exerts a character and adds its lore to its player's score. The first to 20 lore wins.
@@ -46,7 +46,7 @@ Press **−** or **+** beside a player's **Lore** to take one off or add one. Us
 
 ## Good to know
 
-- Quest uses the lore printed on the card. Bonuses from abilities aren't added; add them with **+**.
+- Quest uses the lore printed on the card plus any lore [modifiers](help:modifiers) on it. For other bonuses from abilities, add the lore with **+**.
 - The Dojo doesn't check quest restrictions on cards; it's up to you.
 - Hand changes to lore are noted in the log, and **Undo** takes any of it back.
 - At 20 lore the Dojo tells you who won. See [Winning a game](help:winning).
