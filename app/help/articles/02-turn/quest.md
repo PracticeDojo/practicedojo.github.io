@@ -7,7 +7,7 @@ aliases: [quest all, gain lore, score, points, lore counter, add lore]
 targets: [quest-all, lore]
 related: [winning, card-actions]
 order: 80
-verified: v3.13.1
+verified: v3.11.0
 ---
 
 Questing exerts a character and adds its lore to its player's score. The first to 20 lore wins.
@@ -15,7 +15,7 @@ Questing exerts a character and adds its lore to its player's score. The first t
 ## Quest with one character
 
 :::desktop
-Hover the character and press the quest button (the lore gem), or click it and choose **Quest (+2 Lore)**.
+Hover the character and press the quest button (the diamond), or click it and choose **Quest (+2 Lore)**.
 :::
 
 :::touch

@@ -764,8 +764,18 @@
                     <div id="sidebar-preview" class="preview-image opacity-0"
                         style="background-size:100% auto;background-position:bottom center;pointer-events:none"></div>
                     <div id="preview-ink-container" class="opacity-0"
-                        style="position:absolute;bottom:10px;right:10px;display:flex;align-items:center;justify-content:center;pointer-events:none;transition:opacity .2s ease;filter:drop-shadow(0 3px 7px rgba(0,0,0,.55))">
-                        <span id="preview-ink-gem" class="cost-gem is-inkable"><span id="preview-ink-cost"></span></span>
+                        style="position:absolute;bottom:10px;right:10px;width:46px;height:46px;display:flex;align-items:center;justify-content:center;pointer-events:none;transition:opacity .2s ease;filter:drop-shadow(0 3px 7px rgba(0,0,0,.55))">
+                        <svg id="preview-ink-hex" class="hidden" viewBox="0 0 100 100"
+                            style="position:absolute;inset:0;width:100%;height:100%">
+                            <polygon points="50,5 95,25 95,75 50,95 5,75 5,25" fill="#222" stroke="#666"
+                                stroke-width="4" />
+                        </svg>
+                        <svg id="preview-ink-circle" class="hidden" viewBox="0 0 100 100"
+                            style="position:absolute;inset:0;width:100%;height:100%">
+                            <circle cx="50" cy="50" r="45" fill="#D4AF37" stroke="#FFF" stroke-width="4" />
+                        </svg>
+                        <span id="preview-ink-cost"
+                            style="position:relative;z-index:1;font-weight:700;font-size:18px"></span>
                     </div>
                 </div>
             </div>
@@ -786,7 +796,7 @@
                 <div class="action-row tri">
                     <button class="btn" id="btn-quest-all" onclick="App.questWithAll()"
                         title="Quest with all available characters">
-                        <span class="gi gi-lore" aria-hidden="true"></span> Quest <span class="mono dim"
+                        <i class="fa-solid fa-diamond" style="color:var(--lvi)"></i> Quest <span class="mono dim"
                             id="quest-count">0</span>
                     </button>
                 </div>
@@ -815,7 +825,7 @@
                     <div class="lore-row">
                         <button class="minus" onclick="App.changeLore(App.state.inactivePlayer, -1)"
                             title="Decrease Lore">&minus;</button>
-                        <span class="lore-label"><span class="gi gi-lore" aria-hidden="true"></span>Lore</span>
+                        <span class="lore-label">Lore</span>
                         <button class="plus" onclick="App.changeLore(App.state.inactivePlayer, 1)"
                             title="Increase Lore">+</button>
                     </div>
@@ -840,7 +850,7 @@
                 <div class="pile-row">
                     <!-- Phones: lore lives in the bar (the floating badge is hidden there). -->
                     <div id="top-lore-bar" class="lore-chip">
-                        <span class="lore-chip-label"><span class="gi gi-lore" aria-hidden="true"></span>Lore</span>
+                        <span class="lore-chip-label">Lore</span>
                         <span class="lore-chip-value" id="top-lore-chip">0</span>
                         <div class="lore-chip-btns">
                             <button class="minus" onclick="App.changeLore(App.state.inactivePlayer, -1)"
@@ -935,7 +945,7 @@
                     <div class="lore-row">
                         <button class="minus" onclick="App.changeLore(App.state.activePlayer, -1)"
                             title="Decrease Lore">&minus;</button>
-                        <span class="lore-label"><span class="gi gi-lore" aria-hidden="true"></span>Lore</span>
+                        <span class="lore-label">Lore</span>
                         <button class="plus" onclick="App.changeLore(App.state.activePlayer, 1)"
                             title="Increase Lore">+</button>
                     </div>
@@ -953,7 +963,7 @@
                 <div class="pile-row">
                     <!-- Phones: lore lives in the bar (the floating badge is hidden there). -->
                     <div id="bottom-lore-bar" class="lore-chip">
-                        <span class="lore-chip-label"><span class="gi gi-lore" aria-hidden="true"></span>Lore</span>
+                        <span class="lore-chip-label">Lore</span>
                         <span class="lore-chip-value" id="bottom-lore-chip">0</span>
                         <div class="lore-chip-btns">
                             <button class="minus" onclick="App.changeLore(App.state.activePlayer, -1)"
@@ -1031,7 +1041,7 @@
                     <div class="mobile-quick-actions" id="mobile-quick-actions">
                         <button class="btn mqa-btn mqa-quest" id="btn-quest-all-mobile" onclick="App.questWithAll()"
                             title="Quest with all available characters">
-                            <span class="gi gi-lore" aria-hidden="true"></span>
+                            <i class="fa-solid fa-diamond" style="color:var(--lvi)"></i>
                             <span class="mqa-label">Quest</span>
                             <span class="mqa-count" id="quest-count-mobile">0</span>
                         </button>
@@ -1164,7 +1174,7 @@
     <script>
         let cardFuse = null;
 
-        const APP_VERSION = "v3.13.1"; // Centralized version string (v3: Field Unit)
+        const APP_VERSION = "v3.13.0"; // Centralized version string (v3: Field Unit)
 
         // Tweaks panel accent presets (hue values for the OKLCH accent ramp)
         // Tweaks → Accent: the approved Field Unit signals only (design.md ·
@@ -7776,7 +7786,7 @@
                         <div class="mull-curve">${cols}</div>
                     </div>
                     <div class="mull-read-cell">
-                        <div class="mull-lbl"><span class="gi gi-inkable" aria-hidden="true"></span>Inkable</div>
+                        <div class="mull-lbl">Inkable</div>
                         <div class="mull-pips">${pips}<span>${inkable}<small>/ ${kept.length}</small></span></div>
                     </div>
                     <div class="mull-read-cell mull-plan">${plan}</div>`;
@@ -7870,7 +7880,7 @@
                 box.appendChild(face);
                 box.insertAdjacentHTML('beforeend', db
                     ? `<div class="mull-peek-name">${esc(db.name)}${db.version ? ` <span>· ${esc(db.version)}</span>` : ''}</div>
-                       <div class="mull-peek-meta">Cost ${esc(db.cost)} · <span class="gi ${db.inkwell ? 'gi-inkable' : 'gi-uninkable'}" aria-hidden="true"></span> ${db.inkwell ? 'inkable' : 'not inkable'}${db.type ? ` · ${esc(db.type)}` : ''}</div>`
+                       <div class="mull-peek-meta">Cost ${esc(db.cost)} · ${db.inkwell ? 'inkable' : 'not inkable'}${db.type ? ` · ${esc(db.type)}` : ''}</div>`
                     : `<div class="mull-peek-name">Unknown card</div>`);
                 box.insertAdjacentHTML('beforeend', '<div class="mull-lbl mull-peek-hint">Tap anywhere to close</div>');
                 box.classList.remove('is-stay');
@@ -8400,7 +8410,7 @@
                 found.card.exerted = true;
                 const loreVal = dbCard.lore || 0;
                 found.player.lore += loreVal;
-                this.markFx(instanceId, 'quest', `+${loreVal}`); // Feature 37
+                this.markFx(instanceId, 'quest', `+${loreVal} ◆`); // Feature 37
 
                 this.logAction(`You quested with ${dbCard.name} for ${loreVal} lore.`);
                 this._trackAction('quested', found.card.cardId);
@@ -8418,7 +8428,7 @@
                     // Only quest if the character is NOT exerted, NOT drying, and has lore
                     if (!c.exerted && !c.drying && dbCard.lore > 0) {
                         c.exerted = true;
-                        this.markFx(c.instanceId, 'quest', `+${dbCard.lore}`); // Feature 37
+                        this.markFx(c.instanceId, 'quest', `+${dbCard.lore} ◆`); // Feature 37
                         totalLore += dbCard.lore;
                         count++;
                         this._trackAction('quested', c.cardId);
@@ -9043,7 +9053,7 @@
                 if (dbCard && dbCard.cost !== undefined && dbCard.cost !== null) {
                     const cost = document.createElement('span');
                     const inkable = !!dbCard.inkwell;
-                    cost.className = 'cf-cost cost-gem ' + (inkable ? 'is-inkable' : 'is-uninkable');
+                    cost.className = 'cf-cost ' + (inkable ? 'is-inkable' : 'is-uninkable');
                     cost.textContent = dbCard.cost;
                     cost.title = `Cost ${dbCard.cost} (${inkable ? 'inkable' : 'not inkable'})`;
                     box.appendChild(cost);
@@ -9159,17 +9169,12 @@
             // mutate → render); this block only decides *how* they're reached.
             // =====================================================================
             // Stroke icons for the field-card verbs (inline SVG — no font dependency).
-            // Hover-verb glyphs. Quest, exert and ready use the game art's icons
-            // (img/*.svg via .gi): quest = lore, ready = exert turned the other way.
-            // Challenge and banish have no art file, so they stay stroked paths.
             VERB_ICONS: {
                 challenge: 'M4 20l9-9M14 4h6v6M20 4l-9 9M6 14l4 4M3 21l3-3',
+                quest: 'M12 3l7 9-7 9-7-9z',
+                exert: 'M20 12a8 8 0 1 1-2.34-5.66M20 4v5h-5',
+                ready: 'M4 12a8 8 0 1 0 2.34-5.66M4 4v5h5',
                 banish: 'M6 6l12 12M18 6L6 18'
-            },
-            VERB_GAME_ICONS: {
-                quest: 'gi-lore',
-                exert: 'gi-exert',
-                ready: 'gi-exert gi-flip'
             },
             isTouchUI() { return !!(window.matchMedia && window.matchMedia('(hover: none)').matches); },
             isPhoneUI() { return !!(window.matchMedia && window.matchMedia('(max-width: 760px)').matches); },
@@ -9207,10 +9212,6 @@
                     const f = document.createElement('span');
                     f.className = 'fx-float is-' + fx.kind;
                     f.textContent = fx.text;
-                    if (fx.kind === 'quest') {
-                        f.appendChild(document.createTextNode(' '));
-                        f.appendChild(Object.assign(document.createElement('span'), { className: 'gi gi-lore' }));
-                    }
                     f.setAttribute('aria-hidden', 'true');
                     wrap.appendChild(f);
                 }
@@ -9995,7 +9996,7 @@
                 text.appendChild(this.buildSheetTextView(db, false));
                 sh.appendChild(text);
                 if (n > 1) this.bindSwipeStep(text, (step) => this.cycleCardSheet(step));
-                add(`<div class="cs-label"><span>Cost ${cost} · <span class="gi ${db.inkwell ? 'gi-inkable' : 'gi-uninkable'}" aria-hidden="true"></span> ${db.inkwell ? 'inkable' : 'not inkable'}</span><b class="${short ? 'is-short' : ''}">${ready} ink ready</b></div>
+                add(`<div class="cs-label"><span>Cost ${cost} · ${db.inkwell ? 'inkable' : 'not inkable'}</span><b class="${short ? 'is-short' : ''}">${ready} ink ready</b></div>
                     <div class="cs-acts">
                         <button class="cs-btn key ${short ? 'key-signal-hollow' : 'key-signal'} is-wide" data-act="play">${short ? `Play anyway · ${cost - ready} short` : `Play · −${cost} ink`}</button>
                         <button class="cs-btn key key-olive" data-act="ink" ${db.inkwell ? '' : 'disabled'}>${db.inkwell ? 'Ink' : 'No ink'}</button>
@@ -10165,9 +10166,7 @@
                         const b = document.createElement('button');
                         b.type = 'button';
                         b.className = 'chip' + (cls ? ' ' + cls : '');
-                        b.innerHTML = this.VERB_GAME_ICONS[icon]
-                            ? `<span class="gi ${this.VERB_GAME_ICONS[icon]}" aria-hidden="true"></span>`
-                            : `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="${this.VERB_ICONS[icon]}"/></svg>`;
+                        b.innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="${this.VERB_ICONS[icon]}"/></svg>`;
                         b.title = title;
                         b.setAttribute('aria-label', title);
                         b.addEventListener('click', (e) => { e.stopPropagation(); fn(); });
@@ -10218,27 +10217,36 @@
             // --- Offline text card -------------------------------------------
             // Lorcana prints its symbols as characters that a lot of system fonts
             // don't carry (⬡ ink, ⟳ exert, ⛉ willpower all tofu somewhere), so
-            // every one is swapped for an icon that inherits currentColor. Exert,
-            // strength, willpower and lore are the game art's own (img/<icon>.svg,
-            // drawn by .gi in field-unit.css); ink has no art file yet, so it stays
-            // an inline SVG.
+            // every one is swapped for an inline SVG that inherits currentColor.
             LORCANA_SYMBOLS: {
                 '⬡': { // ink
                     label: 'ink',
                     svg: '<svg viewBox="0 0 24 24" aria-hidden="true"><polygon points="12,2.5 20.5,7.2 20.5,16.8 12,21.5 3.5,16.8 3.5,7.2" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/></svg>'
                 },
-                '⟳': { label: 'exert', icon: 'exert' },
-                '¤': { label: 'strength', icon: 'strength' },
-                '⛉': { label: 'willpower', icon: 'willpower' },
-                '◊': { label: 'lore', icon: 'lore' }
+                '⟳': { // exert
+                    label: 'exert',
+                    svg: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.2 12a8.2 8.2 0 1 1-2.7-6.1" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"/><path d="M20.4 3.2v5.2h-5.2" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+                },
+                '¤': { // strength
+                    label: 'strength',
+                    svg: '<svg viewBox="0 0 24 24" aria-hidden="true"><polygon points="12,1.5 14.6,9.4 22.5,12 14.6,14.6 12,22.5 9.4,14.6 1.5,12 9.4,9.4" fill="currentColor"/></svg>'
+                },
+                '⛉': { // willpower
+                    label: 'willpower',
+                    svg: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 1.8l8.4 3.1v6.9c0 5.2-3.5 8.9-8.4 10.4-4.9-1.5-8.4-5.2-8.4-10.4V4.9z" fill="currentColor"/></svg>'
+                },
+                '◊': { // lore
+                    label: 'lore',
+                    svg: '<svg viewBox="0 0 24 24" aria-hidden="true"><polygon points="12,1.8 19.4,12 12,22.2 4.6,12" fill="currentColor"/></svg>'
+                }
             },
 
             makeSymbol(ch) {
                 const def = this.LORCANA_SYMBOLS[ch];
                 if (!def) return null;
                 const span = document.createElement('span');
-                span.className = def.icon ? `lsym gi gi-${def.icon}` : 'lsym';
-                if (def.svg) span.innerHTML = def.svg; // constant markup from the table above
+                span.className = 'lsym';
+                span.innerHTML = def.svg; // constant markup from the table above
                 span.setAttribute('role', 'img');
                 span.setAttribute('aria-label', def.label);
                 return span;
@@ -10286,7 +10294,7 @@
                 // --- Header: cost badge + name/version
                 const head = this.el('div', 'ctv-head');
                 if (dbCard.cost !== undefined && dbCard.cost !== null) {
-                    const cost = this.el('span', 'ctv-cost cost-gem ' + (dbCard.inkwell ? 'is-inkable' : 'is-uninkable'));
+                    const cost = this.el('span', 'ctv-cost ' + (dbCard.inkwell ? 'is-inkable' : 'is-uninkable'));
                     cost.textContent = dbCard.cost;
                     cost.title = dbCard.inkwell ? 'Cost (inkable)' : 'Cost (not inkable)';
                     head.appendChild(cost);
@@ -10456,7 +10464,8 @@
 
                 const badge = document.getElementById('preview-ink-container');
                 const cost = document.getElementById('preview-ink-cost');
-                const gem = document.getElementById('preview-ink-gem');
+                const hex = document.getElementById('preview-ink-hex');
+                const circle = document.getElementById('preview-ink-circle');
 
                 // The text card draws its own cost badge, so the floating one is
                 // only for image mode.
@@ -10464,9 +10473,20 @@
                     badge.classList.remove('opacity-0');
                     badge.classList.add('opacity-100');
                     cost.innerText = dbCard.cost;
-                    // The game's own frames: winged hexagon = inkable, plain hexagon = not.
-                    gem.classList.toggle('is-inkable', !!dbCard.inkwell);
-                    gem.classList.toggle('is-uninkable', !dbCard.inkwell);
+
+                    if (dbCard.inkwell) {
+                        // Inkable: Golden Circle, Black text
+                        hex.classList.add('hidden');
+                        circle.classList.remove('hidden');
+                        cost.classList.remove('text-white', 'drop-shadow-md');
+                        cost.classList.add('text-black');
+                    } else {
+                        // Uninkable: Dark Hexagon, White text with shadow
+                        hex.classList.remove('hidden');
+                        circle.classList.add('hidden');
+                        cost.classList.remove('text-black');
+                        cost.classList.add('text-white', 'drop-shadow-md');
+                    }
                 } else {
                     badge.classList.remove('opacity-100');
                     badge.classList.add('opacity-0');
