@@ -26,6 +26,7 @@
     "card-actions",
     "quest",
     "challenge",
+    "modifiers",
     "locations-and-stacks",
     "move-cards",
     "end-turn",
@@ -690,10 +691,11 @@
    "related": [
     "challenge",
     "quest",
+    "modifiers",
     "move-cards",
     "keyboard-shortcuts"
    ],
-   "verified": "v3.13.1",
+   "verified": "v3.14.0",
    "todo": false,
    "headings": [
     {
@@ -722,7 +724,7 @@
      "slug": "good-to-know"
     }
    ],
-   "body": "Every card in play, on either side of the board, can be exerted or readied, take or lose damage, and be banished. Pick whichever way suits your device.\n\n## Hover controls\n\n:::desktop\nPoint at a card in play. A damage stepper appears on top (**−** `0/3` **+**) and a column of icon buttons down its right edge (hover one for its name): **Challenge** and **Quest** (your characters, when they can), **Exert** or **Ready**, and **Banish**.\n\nUnder every card with willpower sits a track with one segment per point. Click a segment to set the damage exactly; click the lit end segment to take one off.\n:::\n\n## Hover hotkeys\n\n:::desktop\nWith the pointer over a card in play:\n\n| Key | Does |\n|---|---|\n| {key:+} / {key:-} | add / remove one damage |\n| {key:0} – {key:9} | set the damage to that number |\n| {key:E} | exert or ready |\n| {key:B} | banish |\n| {key:C} | challenge mode, with this character picked |\n:::\n\n## The card menu\n\n:::desktop\nRight-click (or click) a card in play for its menu. **Card**: **Exert** / **Ready**, **Quest (+2 Lore)**, **Challenge…**, **Leave Location**, and a **Damage** stepper that stays open while you click it. **Move**: **Banish (To Discard)**, **Return to Hand**, **Put on Top of Deck**, **Put on Bottom of Deck**. **Stack**: **Put Top Card of Deck Under**, **Separate Stacked Cards**. Only what applies to that card shows.\n:::\n\n## The card drawer\n\n:::touch\nTap a card in play to open the card drawer. The head says whose it is and its state (`P2 · exerted · 2 / 5`). Under the card's text:\n\n- **Damage**: tap a segment to set it, or **− 1** / **+ 1**.\n- **Challenge**, **Quest**, **Exert** (or **Ready**) and **Banish**. A key you can't use is hollow.\n- **Move to**: **To hand**, **Deck top**, **Deck bottom**, **Put under**, and **Leave location** or **Separate stack** when they apply.\n\nStep to the next card in play with **‹ ›** or a sideways {gesture:swipe} on the text. **×**, a tap outside or {key:Esc} closes it.\n:::\n\n[Show me](show:field)\n\n## Good to know\n\n- Once damage reaches willpower, the card pulses and shows a **LETHAL · BANISH** button under it (the drawer says `lethal`). The Dojo doesn't banish it until you do, except after a challenge.\n- A banished card goes to its owner's discard with any cards under it, its damage cleared.\n- The Dojo doesn't check card effects. Exert, ready or damage anything the cards say to.\n- Every change can be undone with **Undo**.\n"
+   "body": "Every card in play, on either side of the board, can be exerted or readied, take or lose damage, and be banished. Pick whichever way suits your device.\n\n## Hover controls\n\n:::desktop\nPoint at a card in play. A damage stepper appears on top (**−** `0/3` **+**) and a column of icon buttons down its right edge (hover one for its name): **Challenge** and **Quest** (your characters, when they can), **Exert** or **Ready**, **Modify** (add a [modifier](help:modifiers)), and **Banish**. On a small card they wrap into two columns.\n\nUnder every card with willpower sits a track with one segment per point. Click a segment to set the damage exactly; click the lit end segment to take one off.\n:::\n\n## Hover hotkeys\n\n:::desktop\nWith the pointer over a card in play:\n\n| Key | Does |\n|---|---|\n| {key:+} / {key:-} | add / remove one damage |\n| {key:0} – {key:9} | set the damage to that number |\n| {key:E} | exert or ready |\n| {key:B} | banish |\n| {key:C} | challenge mode, with this character picked |\n:::\n\n## The card menu\n\n:::desktop\nRight-click (or click) a card in play for its menu. **Card**: **Exert** / **Ready**, **Quest (+2 Lore)**, **Challenge…**, **Leave Location**, and a **Damage** stepper that stays open while you click it. **Modifiers**: **Add Modifier…**, and **Remove …** for each one the card has. **Move**: **Banish (To Discard)**, **Return to Hand**, **Put on Top of Deck**, **Put on Bottom of Deck**. **Stack**: **Put Top Card of Deck Under**, **Separate Stacked Cards**. Only what applies to that card shows.\n:::\n\n## The card drawer\n\n:::touch\nTap a card in play to open the card drawer. The head says whose it is and its state (`P2 · exerted · 2 / 5`). Under the card's text:\n\n- **Damage**: tap a segment to set it, or **− 1** / **+ 1**.\n- **Challenge**, **Quest**, **Exert** (or **Ready**) and **Banish**. A key you can't use is hollow.\n- **Modifiers**: the card's modifiers (tap one to remove it) and **+ Add modifier**. See [Modifiers](help:modifiers).\n- **Move to**: **To hand**, **Deck top**, **Deck bottom**, **Put under**, and **Leave location** or **Separate stack** when they apply.\n\nStep to the next card in play with **‹ ›** or a sideways {gesture:swipe} on the text. **×**, a tap outside or {key:Esc} closes it.\n:::\n\n[Show me](show:field)\n\n## Good to know\n\n- Once damage reaches willpower, the card pulses and shows a **LETHAL · BANISH** button under it (the drawer says `lethal`). The Dojo doesn't banish it until you do, except after a challenge.\n- A banished card goes to its owner's discard with any cards under it, its damage cleared.\n- The Dojo doesn't check card effects. Exert, ready or damage anything the cards say to.\n- Every change can be undone with **Undo**.\n"
   },
   {
    "id": "quest",
@@ -747,9 +749,10 @@
    ],
    "related": [
     "winning",
-    "card-actions"
+    "card-actions",
+    "modifiers"
    ],
-   "verified": "v3.13.1",
+   "verified": "v3.14.0",
    "todo": false,
    "headings": [
     {
@@ -773,7 +776,7 @@
      "slug": "good-to-know"
     }
    ],
-   "body": "Questing exerts a character and adds its lore to its player's score. The first to 20 lore wins.\n\n## Quest with one character\n\n:::desktop\nHover the character and press the quest button (the lore gem), or click it and choose **Quest (+2 Lore)**.\n:::\n\n:::touch\nTap the character, then **Quest** in the card drawer.\n:::\n\nYou can quest with a character of the player to play that's ready, not drying, and has lore.\n\n## Quest with everyone\n\nPress **Quest**: every ready, dry character with lore quests at once. The number beside it says how many will. {key:Q} does the same on a keyboard.\n\n:::desktop\n**Quest** sits at the foot of the left rail, above **End turn**.\n:::\n\n:::phone\n**Quest** sits in the hand tray, left of your hand.\n:::\n\n[Show me](show:quest-all)\n\n## Change lore by hand\n\nPress **−** or **+** beside a player's **Lore** to take one off or add one. Use it for lore from abilities and locations, or to fix a mistake. Lore never goes below 0.\n\n[Show me](show:lore)\n\n## Good to know\n\n- Quest uses the lore printed on the card. Bonuses from abilities aren't added; add them with **+**.\n- The Dojo doesn't check quest restrictions on cards; it's up to you.\n- Hand changes to lore are noted in the log, and **Undo** takes any of it back.\n- At 20 lore the Dojo tells you who won. See [Winning a game](help:winning).\n"
+   "body": "Questing exerts a character and adds its lore to its player's score. The first to 20 lore wins.\n\n## Quest with one character\n\n:::desktop\nHover the character and press the quest button (the lore gem), or click it and choose **Quest (+2 Lore)**.\n:::\n\n:::touch\nTap the character, then **Quest** in the card drawer.\n:::\n\nYou can quest with a character of the player to play that's ready, not drying, and has lore.\n\n## Quest with everyone\n\nPress **Quest**: every ready, dry character with lore quests at once. The number beside it says how many will. {key:Q} does the same on a keyboard.\n\n:::desktop\n**Quest** sits at the foot of the left rail, above **End turn**.\n:::\n\n:::phone\n**Quest** sits in the hand tray, left of your hand.\n:::\n\n[Show me](show:quest-all)\n\n## Change lore by hand\n\nPress **−** or **+** beside a player's **Lore** to take one off or add one. Use it for lore from abilities and locations, or to fix a mistake. Lore never goes below 0.\n\n[Show me](show:lore)\n\n## Good to know\n\n- Quest uses the lore printed on the card plus any lore [modifiers](help:modifiers) on it. For other bonuses from abilities, add the lore with **+**.\n- The Dojo doesn't check quest restrictions on cards; it's up to you.\n- Hand changes to lore are noted in the log, and **Undo** takes any of it back.\n- At 20 lore the Dojo tells you who won. See [Winning a game](help:winning).\n"
   },
   {
    "id": "challenge",
@@ -799,9 +802,10 @@
    ],
    "related": [
     "forecast",
-    "card-actions"
+    "card-actions",
+    "modifiers"
    ],
-   "verified": "v3.13.2",
+   "verified": "v3.14.0",
    "todo": false,
    "headings": [
     {
@@ -825,7 +829,70 @@
      "slug": "good-to-know"
     }
    ],
-   "body": "In a challenge, your character and the opposing card deal their strength to each other as damage. The Dojo works out the damage, exerts your character and banishes anything that ends up with damage equal to its willpower.\n\n## Challenge mode\n\nPress **Challenge** in the top bar (or {key:C}). A bar across the board reads **CHALLENGE MODE**. Then:\n\n:::desktop\nDrag one of your characters onto an opposing card. Or click your character, then click the target. With a character picked, hovering a target shows the forecast.\n:::\n\n:::touch\nTap one of your characters, then tap an opposing card. Once you've picked, every opposing card shows a badge with the outcome. Dragging works too.\n:::\n\nYou stay in the mode to challenge again. Press **Done · Esc** to leave. {key:Esc} first drops the picked character, then leaves. Ending the turn leaves it too.\n\n[Show me](show:challenge-mode)\n\n## Start from a character\n\n:::desktop\nHover your character and press its challenge button, or right-click it and choose **Challenge…**. Challenge mode opens with it picked. You can also drag your character onto an opposing card without entering the mode. That works on a character standing at a location and on the location itself.\n:::\n\n:::touch\nTap your character and press **Challenge** in the card drawer. Challenge mode opens with it picked; tap the target.\n:::\n\n## The forecast\n\nBefore you commit, the Dojo shows what would happen: each card's damage after the challenge and whether it's banished (**✕ Banishes …**, **⇄ Trade**). Choose how much it shows with **Off**, **Light** or **Full** in the challenge bar. See [Challenge forecast](help:forecast).\n\n## Good to know\n\n- Damage is strength, plus **Challenger +N** on the challenger, minus **Resist +N** on the card taking it. Other abilities aren't applied: fix damage by hand afterwards.\n- The Dojo doesn't stop an exerted or drying challenger, or a ready target. It allows them and notes it in the log.\n- Bodyguard, Evasive and the like aren't checked: you're the referee.\n- One **Undo** takes back the whole challenge.\n"
+   "body": "In a challenge, your character and the opposing card deal their strength to each other as damage. The Dojo works out the damage, exerts your character and banishes anything that ends up with damage equal to its willpower. [Modifiers](help:modifiers) on either card (+strength, Challenger, Resist, willpower) are counted.\n\n## Challenge mode\n\nPress **Challenge** in the top bar (or {key:C}). A bar across the board reads **CHALLENGE MODE**. Then:\n\n:::desktop\nDrag one of your characters onto an opposing card. Or click your character, then click the target. With a character picked, hovering a target shows the forecast.\n:::\n\n:::touch\nTap one of your characters, then tap an opposing card. Once you've picked, every opposing card shows a badge with the outcome. Dragging works too.\n:::\n\nYou stay in the mode to challenge again. Press **Done · Esc** to leave. {key:Esc} first drops the picked character, then leaves. Ending the turn leaves it too.\n\n[Show me](show:challenge-mode)\n\n## Start from a character\n\n:::desktop\nHover your character and press its challenge button, or right-click it and choose **Challenge…**. Challenge mode opens with it picked. You can also drag your character onto an opposing card without entering the mode. That works on a character standing at a location and on the location itself.\n:::\n\n:::touch\nTap your character and press **Challenge** in the card drawer. Challenge mode opens with it picked; tap the target.\n:::\n\n## The forecast\n\nBefore you commit, the Dojo shows what would happen: each card's damage after the challenge and whether it's banished (**✕ Banishes …**, **⇄ Trade**). Choose how much it shows with **Off**, **Light** or **Full** in the challenge bar. See [Challenge forecast](help:forecast).\n\n## Good to know\n\n- Damage is strength, plus **Challenger +N** on the challenger, minus **Resist +N** on the card taking it. Other abilities aren't applied: fix damage by hand afterwards.\n- The Dojo doesn't stop an exerted or drying challenger, or a ready target. It allows them and notes it in the log.\n- Bodyguard, Evasive and the like aren't checked: you're the referee.\n- One **Undo** takes back the whole challenge.\n"
+  },
+  {
+   "id": "modifiers",
+   "section": "turn",
+   "title": "Modifiers (+strength, Challenger, Resist)",
+   "summary": "Give a card in play +/− strength, willpower or lore, Challenger +X or Resist +X, for this turn, until your next turn, or for good.",
+   "devices": [
+    "desktop",
+    "phone"
+   ],
+   "aliases": [
+    "modifier",
+    "buff",
+    "debuff",
+    "boost strength",
+    "plus strength",
+    "minus strength",
+    "challenger",
+    "resist",
+    "until end of turn",
+    "until your next turn",
+    "temporary",
+    "effect"
+   ],
+   "targets": [
+    "field",
+    "card-drawer"
+   ],
+   "related": [
+    "challenge",
+    "quest",
+    "card-actions"
+   ],
+   "verified": "v3.14.0",
+   "todo": false,
+   "headings": [
+    {
+     "level": 2,
+     "text": "Add a modifier",
+     "slug": "add-a-modifier"
+    },
+    {
+     "level": 2,
+     "text": "How long it lasts",
+     "slug": "how-long-it-lasts"
+    },
+    {
+     "level": 2,
+     "text": "On the card",
+     "slug": "on-the-card"
+    },
+    {
+     "level": 2,
+     "text": "Remove a modifier",
+     "slug": "remove-a-modifier"
+    },
+    {
+     "level": 2,
+     "text": "What they change",
+     "slug": "what-they-change"
+    }
+   ],
+   "body": "Card effects often change a character for a while: \"+2 strength this turn\", \"gains Resist +1 until the start of your next turn\", \"Challenger +3\". Add these as modifiers and the Dojo counts them in challenges and quests, then takes them off when they end.\n\n## Add a modifier\n\n:::desktop\nPoint at a card in play and press its **Modify** button (the plus and minus icon), or right-click it and choose **Add Modifier…**.\n:::\n\n:::touch\nTap a card in play and press **+ Add modifier** in the card drawer.\n:::\n\nIn the picker, choose:\n\n1. **Stat**: **STR**, **WP**, **LORE**, **Challenger** or **Resist**.\n2. **Amount** with **−** / **+**. Strength, willpower and lore can go down; Challenger and Resist only go up.\n3. **Lasts**: **This turn**, **Until my next turn** or **Always**.\n\nPress **Add** (or {key:Enter}). Tick **All of P1's characters** to give every character that player has in play the same modifier, for songs and effects that hit them all. **Recent** keeps your last four modifiers as one-tap buttons, and the picker opens on the last one you used.\n\n## How long it lasts\n\n- **This turn**: ends when the turn ends.\n- **Until my next turn**: lasts through your opponent's whole turn and ends when your next turn starts. \"My\" is whoever's turn it was when you added it.\n- **Always**: stays until you remove it, or the card leaves play.\n\nThe log lists each one as it ends. A card that leaves play loses its modifiers; a character you shift onto keeps them.\n\n## On the card\n\nEach modifier is a pill on the card's left edge, such as `+2 STR`, `RES +1` or `CHAL +3`. The card keeps its printed numbers, so you can still do the maths in your head; the pills show what's added. The pill's look says how long it lasts:\n\n- dark: this turn\n- dark with a dashed edge: until my next turn\n- light: always\n\nA minus is red.\n\n## Remove a modifier\n\n:::desktop\nClick its pill on the card, or right-click the card and choose **Remove …** under **Modifiers**.\n:::\n\n:::touch\nOpen the card drawer and tap the pill under **Modifiers**.\n:::\n\nUndo brings it back.\n\n## What they change\n\n- **Challenges**: strength plus Challenger, minus the defender's Resist, and the damage back, in the result and the forecast. The card's own printed Challenger and Resist still count, and modifiers add to them.\n- **Quests**: the lore a quest and **Quest all** gain, and which characters count as able to quest.\n- **Willpower**: the damage track, the lethal warning, and banishing after a challenge.\n"
   },
   {
    "id": "locations-and-stacks",

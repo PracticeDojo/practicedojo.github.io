@@ -5,9 +5,9 @@ summary: Exert and ready, add or remove damage, banish, and the hover hotkeys fo
 devices: [desktop, phone]
 aliases: [exert, ready, damage, banish, tap, untap, kill, destroy, damage counter, card drawer, card menu]
 targets: [field, card-drawer]
-related: [challenge, quest, move-cards, keyboard-shortcuts]
+related: [challenge, quest, modifiers, move-cards, keyboard-shortcuts]
 order: 70
-verified: v3.13.1
+verified: v3.14.0
 ---
 
 Every card in play, on either side of the board, can be exerted or readied, take or lose damage, and be banished. Pick whichever way suits your device.
@@ -15,7 +15,7 @@ Every card in play, on either side of the board, can be exerted or readied, take
 ## Hover controls
 
 :::desktop
-Point at a card in play. A damage stepper appears on top (**−** `0/3` **+**) and a column of icon buttons down its right edge (hover one for its name): **Challenge** and **Quest** (your characters, when they can), **Exert** or **Ready**, and **Banish**.
+Point at a card in play. A damage stepper appears on top (**−** `0/3` **+**) and a column of icon buttons down its right edge (hover one for its name): **Challenge** and **Quest** (your characters, when they can), **Exert** or **Ready**, **Modify** (add a [modifier](help:modifiers)), and **Banish**. On a small card they wrap into two columns.
 
 Under every card with willpower sits a track with one segment per point. Click a segment to set the damage exactly; click the lit end segment to take one off.
 :::
@@ -37,7 +37,7 @@ With the pointer over a card in play:
 ## The card menu
 
 :::desktop
-Right-click (or click) a card in play for its menu. **Card**: **Exert** / **Ready**, **Quest (+2 Lore)**, **Challenge…**, **Leave Location**, and a **Damage** stepper that stays open while you click it. **Move**: **Banish (To Discard)**, **Return to Hand**, **Put on Top of Deck**, **Put on Bottom of Deck**. **Stack**: **Put Top Card of Deck Under**, **Separate Stacked Cards**. Only what applies to that card shows.
+Right-click (or click) a card in play for its menu. **Card**: **Exert** / **Ready**, **Quest (+2 Lore)**, **Challenge…**, **Leave Location**, and a **Damage** stepper that stays open while you click it. **Modifiers**: **Add Modifier…**, and **Remove …** for each one the card has. **Move**: **Banish (To Discard)**, **Return to Hand**, **Put on Top of Deck**, **Put on Bottom of Deck**. **Stack**: **Put Top Card of Deck Under**, **Separate Stacked Cards**. Only what applies to that card shows.
 :::
 
 ## The card drawer
@@ -47,6 +47,7 @@ Tap a card in play to open the card drawer. The head says whose it is and its st
 
 - **Damage**: tap a segment to set it, or **− 1** / **+ 1**.
 - **Challenge**, **Quest**, **Exert** (or **Ready**) and **Banish**. A key you can't use is hollow.
+- **Modifiers**: the card's modifiers (tap one to remove it) and **+ Add modifier**. See [Modifiers](help:modifiers).
 - **Move to**: **To hand**, **Deck top**, **Deck bottom**, **Put under**, and **Leave location** or **Separate stack** when they apply.
 
 Step to the next card in play with **‹ ›** or a sideways {gesture:swipe} on the text. **×**, a tap outside or {key:Esc} closes it.

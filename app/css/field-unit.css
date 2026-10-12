@@ -8678,3 +8678,316 @@ body:not(.ink-drops-on) .ink-drops {
 .card-fallback .cf-wp::after {
     content: none;
 }
+
+/* =====================================================================
+   Feature 61 — card modifiers
+   Pills on the card's left edge, one per modifier. The style says how
+   long it lasts: glass = this turn, glass with a dashed paper line =
+   until my next turn, paper = always. A minus reads in danger red.
+   ===================================================================== */
+.mod-pills {
+    position: absolute;
+    left: calc(3px * var(--badge-scale, 1));
+    bottom: calc(10px * var(--badge-scale, 1));
+    z-index: 23;
+    display: flex;
+    flex-direction: column-reverse;
+    align-items: flex-start;
+    gap: calc(2px * var(--badge-scale, 1));
+    max-width: calc(100% - 6px);
+    pointer-events: none;
+}
+
+.mod-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    padding: calc(2px * var(--badge-scale, 1)) calc(4px * var(--badge-scale, 1));
+    border: 1px solid transparent;
+    border-radius: 4px;
+    background: oklch(0.13 0 0 / 0.92);
+    color: var(--fu-light);
+    font: 700 calc(8.5px * var(--badge-scale, 1)) / 1 var(--font-mono);
+    letter-spacing: 0.04em;
+    font-variant-numeric: tabular-nums;
+    text-transform: uppercase;
+    white-space: nowrap;
+    box-shadow: 0 2px 6px -2px oklch(0 0 0 / 0.7);
+}
+
+.mod-pills .mod-pill {
+    pointer-events: auto;
+    cursor: pointer;
+}
+
+.mod-pill.is-next {
+    border: 1px dashed var(--fu-light);
+}
+
+.mod-pill.is-always {
+    background: var(--fu-light);
+    color: var(--fu-dark);
+    border-color: var(--fu-light);
+}
+
+.mod-pill.is-neg {
+    color: oklch(0.74 0.15 24.5);
+}
+
+.mod-pill.is-always.is-neg {
+    color: var(--danger);
+}
+
+/* Desktop: a pill under the pointer turns into its own remove key. */
+@media (hover: hover) {
+    .mod-pills .mod-pill:hover {
+        background: var(--danger);
+        border-color: var(--danger);
+        color: #FFF8F4;
+        text-decoration: line-through;
+    }
+}
+
+/* ----- The picker: a paper module beside the card ----- */
+.mod-pop {
+    position: fixed;
+    z-index: 1001;
+    width: 340px;
+    padding: 10px 12px 12px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: var(--surface);
+    color: var(--text);
+    box-shadow: 0 18px 40px -18px oklch(0 0 0 / 0.6);
+    font-family: var(--font-sans);
+}
+
+.mod-pop.is-sheet {
+    left: 8px;
+    right: 8px;
+    bottom: calc(8px + env(safe-area-inset-bottom, 0px));
+    width: auto;
+}
+
+.mod-pop .mp-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 4px;
+}
+
+.mod-pop .mp-key,
+.mod-pop .mp-label {
+    font: 500 10px/1.3 var(--font-mono);
+    letter-spacing: var(--label-track);
+    text-transform: uppercase;
+    color: var(--text-dim);
+}
+
+.mod-pop .mp-name {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font: 560 13px/1.2 var(--font-sans);
+    letter-spacing: -0.01em;
+}
+
+.mod-pop .mp-x {
+    width: 26px;
+    height: 26px;
+    border: 0;
+    border-radius: 8px;
+    background: none;
+    color: var(--text-dim);
+    cursor: pointer;
+}
+
+.mod-pop .mp-x:hover {
+    color: var(--text);
+    background: var(--border-soft);
+}
+
+.mod-pop .mp-label {
+    margin: 10px 0 5px;
+}
+
+.mod-pop .mp-seg {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+.mod-pop .mp-seg button,
+.mod-pop .mp-amt button {
+    min-height: 28px;
+    padding: 0 8px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface-hi, var(--surface));
+    color: var(--text);
+    font: 560 12px/1 var(--font-sans);
+    cursor: pointer;
+}
+
+.mod-pop .mp-stats button {
+    font: 600 11px/1 var(--font-mono);
+    letter-spacing: 0.04em;
+}
+
+.mod-pop .mp-until {
+    flex-direction: column;
+}
+
+.mod-pop .mp-until button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    text-align: left;
+}
+
+/* The duration keys carry a blank pill, so the legend is the control. */
+.mod-pop .mp-until .mod-pill {
+    width: 18px;
+    height: 10px;
+    padding: 0;
+    box-shadow: none;
+}
+
+/* A glass pill on the selected (glass) key needs its edge to show. */
+.mod-pop .mp-until .mod-pill.is-turn {
+    border-color: var(--fu-glass-mute);
+}
+
+.mod-pop .mp-seg button.on {
+    background: var(--fu-glass);
+    border-color: var(--fu-glass);
+    color: var(--fu-light);
+}
+
+.mod-pop .mp-seg button:focus-visible,
+.mod-pop .mp-amt button:focus-visible,
+.mod-pop .mp-add:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
+}
+
+.mod-pop .mp-amt {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.mod-pop .mp-amt button {
+    width: 34px;
+    padding: 0;
+    font: 600 15px/1 var(--font-mono);
+}
+
+.mod-pop .mp-amt button:disabled {
+    background: transparent;
+    color: var(--text-faint);
+    cursor: default;
+}
+
+.mod-pop .mp-amt output {
+    min-width: 44px;
+    text-align: center;
+    font: 520 22px/1 var(--font-display);
+    font-variant-numeric: tabular-nums;
+}
+
+.mod-pop .mp-all {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 10px;
+    font: 400 12px/1.35 var(--font-sans);
+    color: var(--text-body, var(--text));
+    cursor: pointer;
+}
+
+.mod-pop .mp-all input {
+    accent-color: var(--accent);
+}
+
+.mod-pop .mp-recent {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+.mod-pop .mp-recent .mod-pill {
+    font-size: 10px;
+    padding: 4px 6px;
+    cursor: pointer;
+}
+
+.mod-pop .mp-foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-top: 12px;
+    padding-top: 10px;
+    border-top: 1px solid var(--border-soft);
+}
+
+.mod-pop .mp-foot .mod-pill {
+    font-size: 11px;
+    padding: 4px 7px;
+}
+
+/* The view's primary confirm: the signal key. */
+.mod-pop .mp-add {
+    min-width: 84px;
+    height: 36px;
+    padding: 0 18px;
+    border: 0;
+    border-radius: 999px;
+    background: var(--accent);
+    color: var(--accent-ink);
+    font: 600 13px/1 var(--font-sans);
+    cursor: pointer;
+}
+
+.mod-pop .mp-add:hover {
+    background: var(--accent-hi);
+}
+
+/* ----- Card drawer: the card's modifiers, then Add ----- */
+.cs-mods {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+}
+
+.cs-mods .cs-mod {
+    min-height: 36px;
+    padding: 0 10px;
+    border-radius: 8px;
+    font-size: 12px;
+    gap: 6px;
+    cursor: pointer;
+}
+
+.cs-mods .cs-mod i {
+    opacity: 0.7;
+}
+
+.cs-mods .cs-btn.key {
+    min-height: 36px;
+    padding: 0 12px;
+    border-radius: 10px;
+    font: 600 12px/1.15 var(--font-sans);
+}
+
+/* Feature 61 added Modify to the field verbs. On a small card the column
+   would run past the card's foot, so it wraps into a second column inward. */
+.card-wrap:not(.exerted):not(.is-location) .card-verbs {
+    max-height: calc(100% - 38px * var(--badge-scale));
+    flex-wrap: wrap-reverse;
+    align-content: flex-start;
+}
