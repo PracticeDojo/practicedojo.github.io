@@ -1164,7 +1164,7 @@
     <script>
         let cardFuse = null;
 
-        const APP_VERSION = "v3.13.1"; // Centralized version string (v3: Field Unit)
+        const APP_VERSION = "v3.13.2"; // Centralized version string (v3: Field Unit)
 
         // Tweaks panel accent presets (hue values for the OKLCH accent ramp)
         // Tweaks → Accent: the approved Field Unit signals only (design.md ·
@@ -8670,7 +8670,8 @@
                     charFound.player = targetPlayer;
                 }
 
-                if (charFound.loc === 'field') {
+                // A character can only move to its own player's Location.
+                if (charFound.loc === 'field' && charFound.player === locFound.player) {
                     charFound.card.locationId = locInstanceId;
                     this.logAction(`Moved ${dbCard.name} to ${locDbCard.name}.`);
                     this.render();
@@ -11274,15 +11275,51 @@
                             // shadow and badges scale with it — see the CSS note.
                             const el = this.createCardElement(c, false, false, { atLocation: true });
                             el.style.pointerEvents = 'auto'; // Re-enable hover and drag for the characters
+                            if (isOpponent) this.makeChallengeDropTarget(el, c.instanceId, loc.instanceId);
                             charContainer.appendChild(el);
                         });
                         group.appendChild(charContainer);
                     }
 
                     const locEl = this.createCardElement(loc, false, false, { location: true });
+                    // Locations can be challenged too.
+                    if (isOpponent) this.makeChallengeDropTarget(locEl, loc.instanceId, loc.instanceId);
                     group.appendChild(locEl);
 
                     container.appendChild(group);
+                });
+            },
+
+            // A card on the opponent's Location group (a character standing there, or
+            // the Location itself) takes its own drop, so dragging your character onto
+            // it challenges that card instead of moving yours to their Location.
+            // Any other drop falls through to the Location's "move here" behaviour.
+            makeChallengeDropTarget(el, targetIid, locIid) {
+                const isChallenge = () => {
+                    const a = this._dragIid && this.findCard(this._dragIid);
+                    return !!(a && a.loc === 'field' && a.player.id === this.state.activePlayer
+                        && this._dragIid !== targetIid);
+                };
+                el.addEventListener('dragover', (e) => {
+                    if (!isChallenge()) return;
+                    e.preventDefault(); e.stopPropagation();
+                    el.classList.add('drop-target-challenge');
+                    this.dragForecast(targetIid);
+                });
+                el.addEventListener('dragleave', (e) => {
+                    if (el.contains(e.relatedTarget)) return;
+                    el.classList.remove('drop-target-challenge');
+                    this.hideForecast();
+                });
+                el.addEventListener('drop', (e) => {
+                    el.classList.remove('drop-target-challenge');
+                    if (!isChallenge()) return; // the Location group handles it
+                    e.preventDefault(); e.stopPropagation();
+                    const aIid = e.dataTransfer.getData('text/plain') || this._dragIid;
+                    const tf = this.findCard(targetIid);
+                    if (!tf || tf.player.id !== this.state.inactivePlayer) { this.dropToLocation(e, locIid); return; }
+                    const startRect = this._draggingEl ? this._draggingEl.getBoundingClientRect() : null;
+                    this.resolveChallenge(aIid, targetIid, { fromDrag: true, startRect, endRect: el.getBoundingClientRect() });
                 });
             },
 

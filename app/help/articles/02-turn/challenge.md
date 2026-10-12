@@ -7,7 +7,7 @@ aliases: [attack, fight, challenge mode, combat, block]
 targets: [challenge-mode, challenge-banner, field, opponent-field]
 related: [forecast, card-actions]
 order: 90
-verified: v3.11.0
+verified: v3.13.2
 ---
 
 In a challenge, your character and the opposing card deal their strength to each other as damage. The Dojo works out the damage, exerts your character and banishes anything that ends up with damage equal to its willpower.
@@ -31,7 +31,7 @@ You stay in the mode to challenge again. Press **Done · Esc** to leave. {key:Es
 ## Start from a character
 
 :::desktop
-Hover your character and press its challenge button, or right-click it and choose **Challenge…**. Challenge mode opens with it picked. You can also drag your character onto an opposing card without entering the mode.
+Hover your character and press its challenge button, or right-click it and choose **Challenge…**. Challenge mode opens with it picked. You can also drag your character onto an opposing card without entering the mode. That works on a character standing at a location and on the location itself.
 :::
 
 :::touch
