@@ -10278,7 +10278,6 @@
                     .map(c => this.inkColorMap[String(c).toLowerCase()])
                     .filter(Boolean);
                 if (inks.length) {
-                    view.style.setProperty('--ctv-ink-1', inks[0]);
                     view.style.setProperty('--ctv-ink', inks.length > 1
                         ? `linear-gradient(${inks[0]}, ${inks[1]})`
                         : `linear-gradient(${inks[0]}, ${inks[0]})`);

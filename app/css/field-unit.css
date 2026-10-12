@@ -8472,20 +8472,31 @@ body:not(.ink-drops-on) .ink-drops {
 }
 
 /* ----- Cost gems: the game's own cost frames -----
-   Winged hexagon = inkable, plain hexagon = not. The frame is a ring, so a
-   plate fills the hole (clip-path traced from the SVG) and keeps the number
-   readable over art. Colours come from --gem-ring / --gem-plate / --gem-num. */
+   Winged hexagon = inkable, plain hexagon = not. The element is a fixed slot
+   (the inkable icon's proportions) and the icon is centred in it, so the
+   hexagon, and the number in it, land on the same spot for both. --gem-k sizes
+   the plain hexagon to match the winged one's (its art fills the whole box).
+   The frame is a ring, so a plate fills the hole (clip-path traced from the
+   SVG) and keeps the number readable over art. Colours come from --gem-ring /
+   --gem-plate / --gem-num. */
+:root {
+    --gem-gold: #D8B988;
+}
+
 .cost-gem {
+    --gem-k: 1;
     position: relative;
     isolation: isolate;
     display: inline-grid;
     place-items: center;
     height: var(--gem-h, 2em);
     width: auto;
-    aspect-ratio: var(--gi-ar);
+    aspect-ratio: 112 / 98;
     font-family: var(--font-mono);
     font-weight: 700;
     line-height: 1;
+    font-variant-numeric: tabular-nums;
+    text-align: center;
     color: var(--gem-num, var(--fu-light));
 }
 
@@ -8493,7 +8504,11 @@ body:not(.ink-drops-on) .ink-drops {
 .cost-gem::after {
     content: '';
     position: absolute;
-    inset: 0;
+    left: 50%;
+    top: 50%;
+    height: calc(100% * var(--gem-k));
+    aspect-ratio: var(--gi-ar);
+    transform: translate(calc(-50% + var(--gem-dx, 0%)), calc(-50% + var(--gem-dy, 0%)));
     z-index: -1;
 }
 
@@ -8508,36 +8523,46 @@ body:not(.ink-drops-on) .ink-drops {
     clip-path: var(--gem-hole);
 }
 
+/* dx / dy: the hexagon's own centre sits a hair off its icon's centre (49.7% /
+   49.5%), so nudge the icon until the hexagon is dead centre in the slot. */
 .cost-gem.is-inkable {
     --gi-src: url("../../img/inkable.svg");
     --gi-ar: 112 / 98;
+    --gem-dx: 0.29%;
+    --gem-dy: 0.3%;
     --gem-hole: polygon(49.7% 19.4%, 72.7% 34.5%, 72.7% 64.8%, 49.7% 80%, 26.8% 64.8%, 26.8% 34.5%);
 }
 
 .cost-gem.is-uninkable {
     --gi-src: url("../../img/uninkable.svg");
     --gi-ar: 85 / 98;
+    --gem-k: 0.706;
+    --gem-dx: 0.48%;
+    --gem-dy: 0.4%;
     --gem-hole: polygon(49.5% 6.6%, 92.4% 28.1%, 92.4% 71.1%, 49.5% 92.5%, 6.6% 71.1%, 6.6% 28.1%);
-}
-
-.cost-gem.is-uninkable {
     --gem-ring: var(--fu-glass-mute);
     --gem-num: var(--fu-glass-2);
 }
 
+/* Card preview (the art's badge and the text card): the art's own gold on black,
+   inkable or not. */
+#preview-ink-gem,
+.ctv-cost.cost-gem {
+    --gem-ring: var(--gem-gold);
+    --gem-plate: oklch(0.14 0 0);
+    --gem-num: #fff;
+    color: var(--gem-num);
+}
+
 /* Floating badge over the card art in the preview */
 #preview-ink-gem {
-    --gem-h: 46px;
+    --gem-h: 56px;
     font-size: 17px;
 }
 
-/* Text card in the preview: on the dark glass, in the card's own ink */
+/* Text card in the preview, on the dark glass */
 .ctv-cost.cost-gem {
-    --gem-h: 30px;
-    --gem-ring: var(--ctv-ink-1, var(--fu-light));
-    --gem-plate: var(--fu-glass-raised);
-    --gem-num: var(--fu-light);
-    color: var(--gem-num);
+    --gem-h: 34px;
     width: auto;
     height: var(--gem-h);
     background: none;
@@ -8549,21 +8574,15 @@ body:not(.ink-drops-on) .ink-drops {
     margin-top: -2px;
 }
 
-.ctv-cost.cost-gem.is-uninkable {
-    --gem-ring: var(--fu-glass-mute);
-    --gem-num: var(--fu-glass-2);
-    color: var(--gem-num);
-}
-
 /* Offline card face: on paper, in the card's own ink */
 .card-fallback .cf-cost.cost-gem {
-    --gem-h: 2.2em;
+    --gem-h: 2.4em;
     --gem-ring: var(--cf-ink-1, var(--fu-ink));
     --gem-plate: var(--fu-paper);
     --gem-num: var(--fu-ink);
     color: var(--gem-num);
-    top: 3%;
-    left: 6%;
+    top: 2%;
+    left: 4%;
     width: auto;
     height: var(--gem-h);
     background: none;
@@ -8581,7 +8600,17 @@ body:not(.ink-drops-on) .ink-drops {
     color: var(--gem-num);
 }
 
-/* ----- Offline card face: strength, lore and willpower in the art's own frames ----- */
+/* ----- Offline card face: strength, lore and willpower in the art's own frames -----
+   Strength left, lore in the middle, willpower right, each in its own column so
+   a card with only some of them keeps their places. Frames are sized to hold a
+   two-digit number. */
+.card-fallback .cf-stats {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: end;
+    gap: 0.25em;
+}
+
 .card-fallback .cf-str,
 .card-fallback .cf-lore,
 .card-fallback .cf-wp {
@@ -8590,12 +8619,14 @@ body:not(.ink-drops-on) .ink-drops {
     display: inline-grid;
     place-items: center;
     width: auto;
-    height: 2em;
+    height: var(--fig-h, 2.8em);
     aspect-ratio: var(--gi-ar);
     border-radius: 0;
     background: none;
-    font-size: 0.85em;
+    font-size: 0.9em;
+    font-weight: 700;
     line-height: 1;
+    font-variant-numeric: tabular-nums;
 }
 
 .card-fallback .cf-str::before,
@@ -8614,23 +8645,32 @@ body:not(.ink-drops-on) .ink-drops {
     --gi-src: url("../../img/strength.svg");
     --gi-ar: 1;
     --fig-bg: var(--fu-ink);
+    grid-column: 1;
+    justify-self: start;
     color: var(--fu-paper);
 }
 
+/* The gem is narrow and only wide low down, so it is the tallest and the
+   number sits in its widest part. */
 .card-fallback .cf-lore {
     --gi-src: url("../../img/lore.svg");
     --gi-ar: 70 / 98;
+    --fig-h: 3.4em;
     --fig-bg: var(--accent);
+    grid-column: 2;
+    justify-self: center;
     color: var(--accent-ink);
-    padding-top: 0.3em;
+    padding-top: 0.55em;
 }
 
 .card-fallback .cf-wp {
     --gi-src: url("../../img/willpower.svg");
     --gi-ar: 80 / 98;
     --fig-bg: var(--fu-body);
+    grid-column: 3;
+    justify-self: end;
+    margin-left: 0;
     color: var(--fu-paper);
-    margin-left: auto;
 }
 
 /* The icons say which figure is which; no letter tags any more. */
