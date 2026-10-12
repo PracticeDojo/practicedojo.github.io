@@ -8360,3 +8360,281 @@ body:not(.ink-drops-on) .ink-drops {
     margin-right: 4px;
     color: var(--fu-glass-2);
 }
+
+
+/* ----- Game icons (img/exert, lore, strength, willpower, inkable, uninkable .svg) -----
+   The art's own symbols, solid black silhouettes. They are drawn as a mask over
+   currentColor, so any text colour, theme or state tints them. .gi sets the
+   height (1em unless you say otherwise) and the width follows the icon's own
+   proportions. Don't draw these by hand again: add a class here instead. */
+.gi {
+    display: inline-block;
+    flex: none;
+    height: 1em;
+    width: auto;
+    aspect-ratio: var(--gi-ar, 1);
+    vertical-align: -0.14em;
+    background: currentColor;
+    -webkit-mask: var(--gi-src) center / 100% 100% no-repeat;
+    mask: var(--gi-src) center / 100% 100% no-repeat;
+}
+
+.gi-exert {
+    --gi-src: url("../../img/exert.svg");
+    --gi-ar: 84 / 98;
+}
+
+.gi-lore {
+    --gi-src: url("../../img/lore.svg");
+    --gi-ar: 70 / 98;
+}
+
+.gi-willpower {
+    --gi-src: url("../../img/willpower.svg");
+    --gi-ar: 80 / 98;
+}
+
+.gi-strength {
+    --gi-src: url("../../img/strength.svg");
+    --gi-ar: 1;
+}
+
+.gi-inkable {
+    --gi-src: url("../../img/inkable.svg");
+    --gi-ar: 112 / 98;
+}
+
+.gi-uninkable {
+    --gi-src: url("../../img/uninkable.svg");
+    --gi-ar: 85 / 98;
+}
+
+/* Ready is exert turned the other way. */
+.gi-flip {
+    transform: scaleX(-1);
+}
+
+/* Symbols inside card text ("{E}: …", "3 {S}") sit on the text line. */
+.lsym.gi {
+    width: auto;
+    height: 1em;
+}
+
+.ctv-stat .lsym.gi {
+    height: 1.15em;
+    opacity: 0.85;
+}
+
+/* Beside a label or a number: a little air. */
+.lore-label,
+.lore-chip-label {
+    display: inline-flex;
+    align-items: center;
+    white-space: nowrap;
+}
+
+.lore-label .gi,
+.lore-chip-label .gi,
+.mull-lbl .gi,
+.cs-label .gi,
+.mull-peek-meta .gi {
+    height: 1.05em;
+    margin-right: 0.35em;
+    vertical-align: -0.16em;
+}
+
+.cs-label .gi,
+.mull-peek-meta .gi {
+    margin: 0 0.1em 0 0.15em;
+}
+
+.fx-float .gi {
+    height: 0.95em;
+    vertical-align: -0.1em;
+}
+
+/* Hover verbs and the quest-all keys */
+.card-verbs .chip .gi {
+    height: calc(13px * var(--badge-scale));
+    vertical-align: 0;
+    background: currentColor;
+}
+
+#btn-quest-all .gi,
+.mqa-quest .gi {
+    height: 1.1em;
+    color: var(--lvi);
+    vertical-align: -0.2em;
+}
+
+.mobile-quick-actions .mqa-quest .gi {
+    color: var(--fu-glass-2);
+}
+
+/* ----- Cost gems: the game's own cost frames -----
+   Winged hexagon = inkable, plain hexagon = not. The frame is a ring, so a
+   plate fills the hole (clip-path traced from the SVG) and keeps the number
+   readable over art. Colours come from --gem-ring / --gem-plate / --gem-num. */
+.cost-gem {
+    position: relative;
+    isolation: isolate;
+    display: inline-grid;
+    place-items: center;
+    height: var(--gem-h, 2em);
+    width: auto;
+    aspect-ratio: var(--gi-ar);
+    font-family: var(--font-mono);
+    font-weight: 700;
+    line-height: 1;
+    color: var(--gem-num, var(--fu-light));
+}
+
+.cost-gem::before,
+.cost-gem::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+}
+
+.cost-gem::before {
+    background: var(--gem-ring, var(--fu-light));
+    -webkit-mask: var(--gi-src) center / 100% 100% no-repeat;
+    mask: var(--gi-src) center / 100% 100% no-repeat;
+}
+
+.cost-gem::after {
+    background: var(--gem-plate, var(--fu-glass));
+    clip-path: var(--gem-hole);
+}
+
+.cost-gem.is-inkable {
+    --gi-src: url("../../img/inkable.svg");
+    --gi-ar: 112 / 98;
+    --gem-hole: polygon(49.7% 19.4%, 72.7% 34.5%, 72.7% 64.8%, 49.7% 80%, 26.8% 64.8%, 26.8% 34.5%);
+}
+
+.cost-gem.is-uninkable {
+    --gi-src: url("../../img/uninkable.svg");
+    --gi-ar: 85 / 98;
+    --gem-hole: polygon(49.5% 6.6%, 92.4% 28.1%, 92.4% 71.1%, 49.5% 92.5%, 6.6% 71.1%, 6.6% 28.1%);
+}
+
+.cost-gem.is-uninkable {
+    --gem-ring: var(--fu-glass-mute);
+    --gem-num: var(--fu-glass-2);
+}
+
+/* Floating badge over the card art in the preview */
+#preview-ink-gem {
+    --gem-h: 46px;
+    font-size: 17px;
+}
+
+/* Text card in the preview: on the dark glass, in the card's own ink */
+.ctv-cost.cost-gem {
+    --gem-h: 30px;
+    --gem-ring: var(--ctv-ink-1, var(--fu-light));
+    --gem-plate: var(--fu-glass-raised);
+    --gem-num: var(--fu-light);
+    color: var(--gem-num);
+    width: auto;
+    height: var(--gem-h);
+    background: none;
+    box-shadow: none;
+    border-radius: 0;
+    clip-path: none;
+    font-size: 12px;
+    font-weight: 700;
+    margin-top: -2px;
+}
+
+.ctv-cost.cost-gem.is-uninkable {
+    --gem-ring: var(--fu-glass-mute);
+    --gem-num: var(--fu-glass-2);
+    color: var(--gem-num);
+}
+
+/* Offline card face: on paper, in the card's own ink */
+.card-fallback .cf-cost.cost-gem {
+    --gem-h: 2.2em;
+    --gem-ring: var(--cf-ink-1, var(--fu-ink));
+    --gem-plate: var(--fu-paper);
+    --gem-num: var(--fu-ink);
+    color: var(--gem-num);
+    top: 3%;
+    left: 6%;
+    width: auto;
+    height: var(--gem-h);
+    background: none;
+    box-shadow: none;
+    border-radius: 0;
+    clip-path: none;
+    font-size: 0.95em;
+    font-weight: 700;
+}
+
+.card-fallback .cf-cost.cost-gem.is-uninkable {
+    --gem-ring: var(--fu-mute);
+    --gem-plate: var(--fu-paper-sunk);
+    --gem-num: var(--fu-body);
+    color: var(--gem-num);
+}
+
+/* ----- Offline card face: strength, lore and willpower in the art's own frames ----- */
+.card-fallback .cf-str,
+.card-fallback .cf-lore,
+.card-fallback .cf-wp {
+    position: relative;
+    isolation: isolate;
+    display: inline-grid;
+    place-items: center;
+    width: auto;
+    height: 2em;
+    aspect-ratio: var(--gi-ar);
+    border-radius: 0;
+    background: none;
+    font-size: 0.85em;
+    line-height: 1;
+}
+
+.card-fallback .cf-str::before,
+.card-fallback .cf-lore::before,
+.card-fallback .cf-wp::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: var(--fig-bg);
+    -webkit-mask: var(--gi-src) center / 100% 100% no-repeat;
+    mask: var(--gi-src) center / 100% 100% no-repeat;
+}
+
+.card-fallback .cf-str {
+    --gi-src: url("../../img/strength.svg");
+    --gi-ar: 1;
+    --fig-bg: var(--fu-ink);
+    color: var(--fu-paper);
+}
+
+.card-fallback .cf-lore {
+    --gi-src: url("../../img/lore.svg");
+    --gi-ar: 70 / 98;
+    --fig-bg: var(--accent);
+    color: var(--accent-ink);
+    padding-top: 0.3em;
+}
+
+.card-fallback .cf-wp {
+    --gi-src: url("../../img/willpower.svg");
+    --gi-ar: 80 / 98;
+    --fig-bg: var(--fu-body);
+    color: var(--fu-paper);
+    margin-left: auto;
+}
+
+/* The icons say which figure is which; no letter tags any more. */
+.card-fallback .cf-str::after,
+.card-fallback .cf-wp::after {
+    content: none;
+}

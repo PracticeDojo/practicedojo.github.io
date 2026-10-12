@@ -267,7 +267,10 @@ Glass raised, 1px `#2A2A2A`, 10px radius. Label `label/sm` mute between − and 
 
 ### Card
 
-Paper, 7–8px radius, 104×118 on the board, padding 6px. Name 11px weight 600. Subtitle 9px mute. Three pips: cost in the card's ink color, strength in `#E0DBD1`, lore in signal. Pip is 18px circle, 10px figure. Do not redraw card art. Do not add a gold frame. A "new" pip is signal, 8px type, only on cards that entered this turn.
+Paper, 7–8px radius, 104×118 on the board, padding 6px. Name 11px weight 600. Subtitle 9px mute. Three figures, each in the game's own frame (see Game icons): cost in the card's ink color, strength in ink, lore in signal, willpower in body. Do not redraw card art. Do not add a gold frame. A "new" pip is signal, 8px type, only on cards that entered this turn.
+
+### Game icons
+Exert, lore, strength, willpower, inkable and uninkable are the game art's own symbols (`img/exert.svg`, `lore.svg`, `strength.svg`, `willpower.svg`, `inkable.svg`, `uninkable.svg`). Never redraw them. `.gi` + `.gi-<name>` in `field-unit.css` draws one as a mask over `currentColor`, so it takes the surrounding text colour in either theme. A cost is a `.cost-gem` (winged hexagon = inkable, plain hexagon = not) with the number in the hole; strength, lore and willpower on a text card sit in their own frames. Quest uses the lore gem; ready is exert, flipped. Challenge, banish and ink have no art file and stay line icons.
 
 ### Deck
 

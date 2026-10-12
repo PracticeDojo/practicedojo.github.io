@@ -693,7 +693,7 @@
     "move-cards",
     "keyboard-shortcuts"
    ],
-   "verified": "v3.11.0",
+   "verified": "v3.13.1",
    "todo": false,
    "headings": [
     {
@@ -749,7 +749,7 @@
     "winning",
     "card-actions"
    ],
-   "verified": "v3.11.0",
+   "verified": "v3.13.1",
    "todo": false,
    "headings": [
     {
@@ -773,7 +773,7 @@
      "slug": "good-to-know"
     }
    ],
-   "body": "Questing exerts a character and adds its lore to its player's score. The first to 20 lore wins.\n\n## Quest with one character\n\n:::desktop\nHover the character and press the quest button (the diamond), or click it and choose **Quest (+2 Lore)**.\n:::\n\n:::touch\nTap the character, then **Quest** in the card drawer.\n:::\n\nYou can quest with a character of the player to play that's ready, not drying, and has lore.\n\n## Quest with everyone\n\nPress **Quest**: every ready, dry character with lore quests at once. The number beside it says how many will. {key:Q} does the same on a keyboard.\n\n:::desktop\n**Quest** sits at the foot of the left rail, above **End turn**.\n:::\n\n:::phone\n**Quest** sits in the hand tray, left of your hand.\n:::\n\n[Show me](show:quest-all)\n\n## Change lore by hand\n\nPress **−** or **+** beside a player's **Lore** to take one off or add one. Use it for lore from abilities and locations, or to fix a mistake. Lore never goes below 0.\n\n[Show me](show:lore)\n\n## Good to know\n\n- Quest uses the lore printed on the card. Bonuses from abilities aren't added; add them with **+**.\n- The Dojo doesn't check quest restrictions on cards; it's up to you.\n- Hand changes to lore are noted in the log, and **Undo** takes any of it back.\n- At 20 lore the Dojo tells you who won. See [Winning a game](help:winning).\n"
+   "body": "Questing exerts a character and adds its lore to its player's score. The first to 20 lore wins.\n\n## Quest with one character\n\n:::desktop\nHover the character and press the quest button (the lore gem), or click it and choose **Quest (+2 Lore)**.\n:::\n\n:::touch\nTap the character, then **Quest** in the card drawer.\n:::\n\nYou can quest with a character of the player to play that's ready, not drying, and has lore.\n\n## Quest with everyone\n\nPress **Quest**: every ready, dry character with lore quests at once. The number beside it says how many will. {key:Q} does the same on a keyboard.\n\n:::desktop\n**Quest** sits at the foot of the left rail, above **End turn**.\n:::\n\n:::phone\n**Quest** sits in the hand tray, left of your hand.\n:::\n\n[Show me](show:quest-all)\n\n## Change lore by hand\n\nPress **−** or **+** beside a player's **Lore** to take one off or add one. Use it for lore from abilities and locations, or to fix a mistake. Lore never goes below 0.\n\n[Show me](show:lore)\n\n## Good to know\n\n- Quest uses the lore printed on the card. Bonuses from abilities aren't added; add them with **+**.\n- The Dojo doesn't check quest restrictions on cards; it's up to you.\n- Hand changes to lore are noted in the log, and **Undo** takes any of it back.\n- At 20 lore the Dojo tells you who won. See [Winning a game](help:winning).\n"
   },
   {
    "id": "challenge",
@@ -1150,7 +1150,7 @@
     "card-display",
     "offline"
    ],
-   "verified": "v3.11.0",
+   "verified": "v3.13.1",
    "todo": false,
    "headings": [
     {
@@ -1169,7 +1169,7 @@
      "slug": "good-to-know"
     }
    ],
-   "body": "Cards on the board are small. The preview shows one big enough to read, with all its abilities.\n\n## See a card big\n\n:::desktop\nPoint at any card: on the board, in a hand, in the discard column, in the draw odds or in a deck or discard grid. It shows in the preview in the side rail, under the mini multiverse. The last card you pointed at stays there until you point at another.\n:::\n\n:::phone\nTap a card in play or in your hand. The card drawer opens with the card's full text and a small picture of it. Step to the next card with ‹ ›, or swipe sideways on the text.\n\nFor other cards (the discard, the other player's hand), tap the card and choose **Preview Card**. The ☰ side panel opens with the card in it.\n:::\n\n[Show me](show:card-preview)\n\n## Text mode\n\nTurn on **Text** under **Card display** in Tweaks to show every card as text instead of art: the board, the hands, the grids and the preview. The text card has the cost (a gold disc if it can be inked, a dark hexagon if not), name, type line, every ability and the stats. See [Card size and Art / Text](help:card-display).\n\n## Good to know\n\n- Locations always show as text in the preview, so they aren't cropped.\n- If a card's art can't load (offline, for example), the preview falls back to its text by itself.\n- On a tablet, tapping a card in play opens the card drawer; a hand card's menu has **Preview Card**.\n"
+   "body": "Cards on the board are small. The preview shows one big enough to read, with all its abilities.\n\n## See a card big\n\n:::desktop\nPoint at any card: on the board, in a hand, in the discard column, in the draw odds or in a deck or discard grid. It shows in the preview in the side rail, under the mini multiverse. The last card you pointed at stays there until you point at another.\n:::\n\n:::phone\nTap a card in play or in your hand. The card drawer opens with the card's full text and a small picture of it. Step to the next card with ‹ ›, or swipe sideways on the text.\n\nFor other cards (the discard, the other player's hand), tap the card and choose **Preview Card**. The ☰ side panel opens with the card in it.\n:::\n\n[Show me](show:card-preview)\n\n## Text mode\n\nTurn on **Text** under **Card display** in Tweaks to show every card as text instead of art: the board, the hands, the grids and the preview. The text card has the cost (in a winged hexagon if it can be inked, a plain hexagon if not), name, type line, every ability and the stats. See [Card size and Art / Text](help:card-display).\n\n## Good to know\n\n- Locations always show as text in the preview, so they aren't cropped.\n- If a card's art can't load (offline, for example), the preview falls back to its text by itself.\n- On a tablet, tapping a card in play opens the card drawer; a hand card's menu has **Preview Card**.\n"
   },
   {
    "id": "inspect-deck",
@@ -2820,7 +2820,7 @@
     "offline",
     "tweaks"
    ],
-   "verified": "v3.11.0",
+   "verified": "v3.13.1",
    "todo": false,
    "headings": [
     {
@@ -2839,7 +2839,7 @@
      "slug": "good-to-know"
     }
    ],
-   "body": "Two settings in [Tweaks](help:tweaks) change how cards look: **Card size** and **Card display**.\n\n## Card size\n\nDrag the **Card size** slider. It goes from 0.70× to 1.40×, and the value shows beside the label. It starts at 1.00×, or 0.80× on a touch screen so the board fits a phone.\n\n[Show me](show:tweak-card-size)\n\nWhen the play area fills up, cards in play still shrink to fit, whatever the setting.\n\n## Art or Text\n\n**Card display** has two choices:\n\n- **Art** shows the card pictures. A card whose picture can't be fetched shows as text instead.\n- **Text** shows every card as text: name, version, cost, stats and rules. No card pictures are loaded at all.\n\n[Show me](show:tweak-card-display)\n\nIt applies everywhere at once: the board, your hand, the inkwell, the discard, every card grid and the card preview. On a text card, a gold disc means inkable and a dark hexagon means not inkable.\n\n## Good to know\n\n- **Text** is handy on a slow or no connection, since it needs no pictures. See [Playing offline](help:offline).\n- Both settings are kept in this browser.\n"
+   "body": "Two settings in [Tweaks](help:tweaks) change how cards look: **Card size** and **Card display**.\n\n## Card size\n\nDrag the **Card size** slider. It goes from 0.70× to 1.40×, and the value shows beside the label. It starts at 1.00×, or 0.80× on a touch screen so the board fits a phone.\n\n[Show me](show:tweak-card-size)\n\nWhen the play area fills up, cards in play still shrink to fit, whatever the setting.\n\n## Art or Text\n\n**Card display** has two choices:\n\n- **Art** shows the card pictures. A card whose picture can't be fetched shows as text instead.\n- **Text** shows every card as text: name, version, cost, stats and rules. No card pictures are loaded at all.\n\n[Show me](show:tweak-card-display)\n\nIt applies everywhere at once: the board, your hand, the inkwell, the discard, every card grid and the card preview. On a text card, the cost sits in the game's own frame: a winged hexagon means inkable and a plain hexagon means not inkable. Strength, lore and willpower use the game's own symbols too.\n\n## Good to know\n\n- **Text** is handy on a slow or no connection, since it needs no pictures. See [Playing offline](help:offline).\n- Both settings are kept in this browser.\n"
   },
   {
    "id": "palette",
@@ -4305,7 +4305,7 @@
       "card": "Luisa Madrigal - Pushing Through"
      },
      "text": {
-      "desktop": "**Quest with Luisa Madrigal: hover her and press the quest diamond**, or right-click her and choose Quest.",
+      "desktop": "**Quest with Luisa Madrigal: hover her and press the quest lore gem**, or right-click her and choose Quest.",
       "phone": "**Quest with Luisa Madrigal: tap her, then Quest.**"
      },
      "learn": "quest"

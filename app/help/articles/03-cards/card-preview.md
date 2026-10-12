@@ -7,7 +7,7 @@ aliases: [zoom card, card details, enlarge card, card text, hover card, read car
 targets: [card-preview, card-drawer]
 related: [card-display, offline]
 order: 10
-verified: v3.11.0
+verified: v3.13.1
 ---
 
 Cards on the board are small. The preview shows one big enough to read, with all its abilities.
@@ -28,7 +28,7 @@ For other cards (the discard, the other player's hand), tap the card and choose 
 
 ## Text mode
 
-Turn on **Text** under **Card display** in Tweaks to show every card as text instead of art: the board, the hands, the grids and the preview. The text card has the cost (a gold disc if it can be inked, a dark hexagon if not), name, type line, every ability and the stats. See [Card size and Art / Text](help:card-display).
+Turn on **Text** under **Card display** in Tweaks to show every card as text instead of art: the board, the hands, the grids and the preview. The text card has the cost (in a winged hexagon if it can be inked, a plain hexagon if not), name, type line, every ability and the stats. See [Card size and Art / Text](help:card-display).
 
 ## Good to know
 

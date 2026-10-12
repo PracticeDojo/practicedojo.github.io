@@ -7,7 +7,7 @@ aliases: [card size, bigger cards, smaller cards, zoom cards, text mode, text on
 targets: [tweak-card-size, tweak-card-display]
 related: [card-preview, offline, tweaks]
 order: 30
-verified: v3.11.0
+verified: v3.13.1
 ---
 
 Two settings in [Tweaks](help:tweaks) change how cards look: **Card size** and **Card display**.
@@ -29,7 +29,7 @@ When the play area fills up, cards in play still shrink to fit, whatever the set
 
 [Show me](show:tweak-card-display)
 
-It applies everywhere at once: the board, your hand, the inkwell, the discard, every card grid and the card preview. On a text card, a gold disc means inkable and a dark hexagon means not inkable.
+It applies everywhere at once: the board, your hand, the inkwell, the discard, every card grid and the card preview. On a text card, the cost sits in the game's own frame: a winged hexagon means inkable and a plain hexagon means not inkable. Strength, lore and willpower use the game's own symbols too.
 
 ## Good to know
 
