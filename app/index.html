@@ -8507,6 +8507,14 @@
                     : (db[stat] || 0);
                 return Math.max(0, printed + Mods.total(card, stat));
             },
+            // A challenger's strength in a challenge: printed strength, its strength
+            // modifiers and Challenger are added together first, and only the total
+            // is floored at 0 (printed 0, −2 strength, Challenger +2 → 0, not 2).
+            challengeStrength(card) {
+                const db = card && this.cardDB[card.cardId];
+                if (!db) return 0;
+                return Math.max(0, (db.strength || 0) + Mods.total(card, 'strength') + this.statOf(card, 'challenger'));
+            },
 
             // --- Feature 61: modifiers ------------------------------------------
             openModPicker(instanceId, anchorRect) {
@@ -8633,7 +8641,7 @@
                 if (!cDb || !dDb) return;
 
                 // Feature 61: strength, Challenger and Resist with modifiers.
-                const cStr = this.statOf(cf.card, 'strength') + this.statOf(cf.card, 'challenger');
+                const cStr = this.challengeStrength(cf.card);
                 const dStr = this.statOf(df.card, 'strength');
                 const cResist = this.statOf(cf.card, 'resist');
                 const dResist = this.statOf(df.card, 'resist');
@@ -9529,7 +9537,7 @@
                 if (!aDb || !dDb) return null;
                 // Same arithmetic as performChallenge.
                 // Feature 61: with each card's modifiers.
-                const toDef = Math.max(0, this.statOf(a.card, 'strength') + this.statOf(a.card, 'challenger') - this.statOf(d.card, 'resist'));
+                const toDef = Math.max(0, this.challengeStrength(a.card) - this.statOf(d.card, 'resist'));
                 const toAtt = Math.max(0, this.statOf(d.card, 'strength') - this.statOf(a.card, 'resist'));
                 const aW = this.statOf(a.card, 'willpower'), dW = this.statOf(d.card, 'willpower');
                 const aDmg = a.card.damage || 0, dDmg = d.card.damage || 0;

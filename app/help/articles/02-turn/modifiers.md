@@ -62,6 +62,6 @@ Undo brings it back.
 
 ## What they change
 
-- **Challenges**: strength plus Challenger, minus the defender's Resist, and the damage back, in the result and the forecast. The card's own printed Challenger and Resist still count, and modifiers add to them.
+- **Challenges**: the challenger's printed strength, its strength modifiers and Challenger are added up first, and only the total stops at 0. So a 0-strength character with −2 strength and Challenger +2 deals 0, not 2. The defender's Resist comes off that, and the damage back works the same way, in the result and the forecast. The card's own printed Challenger and Resist still count, and modifiers add to them.
 - **Quests**: the lore a quest and **Quest all** gain, and which characters count as able to quest.
 - **Willpower**: the damage track, the lethal warning, and banishing after a challenge.
