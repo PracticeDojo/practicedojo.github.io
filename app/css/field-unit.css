@@ -8360,3 +8360,321 @@ body:not(.ink-drops-on) .ink-drops {
     margin-right: 4px;
     color: var(--fu-glass-2);
 }
+
+
+/* ----- Game icons (img/exert, lore, strength, willpower, inkable, uninkable .svg) -----
+   The art's own symbols, solid black silhouettes. They are drawn as a mask over
+   currentColor, so any text colour, theme or state tints them. .gi sets the
+   height (1em unless you say otherwise) and the width follows the icon's own
+   proportions. Don't draw these by hand again: add a class here instead. */
+.gi {
+    display: inline-block;
+    flex: none;
+    height: 1em;
+    width: auto;
+    aspect-ratio: var(--gi-ar, 1);
+    vertical-align: -0.14em;
+    background: currentColor;
+    -webkit-mask: var(--gi-src) center / 100% 100% no-repeat;
+    mask: var(--gi-src) center / 100% 100% no-repeat;
+}
+
+.gi-exert {
+    --gi-src: url("../../img/exert.svg");
+    --gi-ar: 84 / 98;
+}
+
+.gi-lore {
+    --gi-src: url("../../img/lore.svg");
+    --gi-ar: 70 / 98;
+}
+
+.gi-willpower {
+    --gi-src: url("../../img/willpower.svg");
+    --gi-ar: 80 / 98;
+}
+
+.gi-strength {
+    --gi-src: url("../../img/strength.svg");
+    --gi-ar: 1;
+}
+
+.gi-inkable {
+    --gi-src: url("../../img/inkable.svg");
+    --gi-ar: 112 / 98;
+}
+
+.gi-uninkable {
+    --gi-src: url("../../img/uninkable.svg");
+    --gi-ar: 85 / 98;
+}
+
+/* Ready is exert turned the other way. */
+.gi-flip {
+    transform: scaleX(-1);
+}
+
+/* Symbols inside card text ("{E}: …", "3 {S}") sit on the text line. */
+.lsym.gi {
+    width: auto;
+    height: 1em;
+}
+
+.ctv-stat .lsym.gi {
+    height: 1.15em;
+    opacity: 0.85;
+}
+
+/* Beside a label or a number: a little air. */
+.lore-label,
+.lore-chip-label {
+    display: inline-flex;
+    align-items: center;
+    white-space: nowrap;
+}
+
+.lore-label .gi,
+.lore-chip-label .gi,
+.mull-lbl .gi,
+.cs-label .gi,
+.mull-peek-meta .gi {
+    height: 1.05em;
+    margin-right: 0.35em;
+    vertical-align: -0.16em;
+}
+
+.cs-label .gi,
+.mull-peek-meta .gi {
+    margin: 0 0.1em 0 0.15em;
+}
+
+.fx-float .gi {
+    height: 0.95em;
+    vertical-align: -0.1em;
+}
+
+/* Hover verbs and the quest-all keys */
+.card-verbs .chip .gi {
+    height: calc(13px * var(--badge-scale));
+    vertical-align: 0;
+    background: currentColor;
+}
+
+#btn-quest-all .gi,
+.mqa-quest .gi {
+    height: 1.1em;
+    color: var(--lvi);
+    vertical-align: -0.2em;
+}
+
+.mobile-quick-actions .mqa-quest .gi {
+    color: var(--fu-glass-2);
+}
+
+/* ----- Cost gems: the game's own cost frames -----
+   Winged hexagon = inkable, plain hexagon = not. The element is a fixed slot
+   (the inkable icon's proportions) and the icon is centred in it, so the
+   hexagon, and the number in it, land on the same spot for both. --gem-k sizes
+   the plain hexagon to match the winged one's (its art fills the whole box).
+   The frame is a ring, so a plate fills the hole (clip-path traced from the
+   SVG) and keeps the number readable over art. Colours come from --gem-ring /
+   --gem-plate / --gem-num. */
+:root {
+    --gem-gold: #D8B988;
+}
+
+.cost-gem {
+    --gem-k: 1;
+    position: relative;
+    isolation: isolate;
+    display: inline-grid;
+    place-items: center;
+    height: var(--gem-h, 2em);
+    width: auto;
+    aspect-ratio: 112 / 98;
+    font-family: var(--font-mono);
+    font-weight: 700;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+    text-align: center;
+    color: var(--gem-num, var(--fu-light));
+}
+
+.cost-gem::before,
+.cost-gem::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    height: calc(100% * var(--gem-k));
+    aspect-ratio: var(--gi-ar);
+    transform: translate(calc(-50% + var(--gem-dx, 0%)), calc(-50% + var(--gem-dy, 0%)));
+    z-index: -1;
+}
+
+.cost-gem::before {
+    background: var(--gem-ring, var(--fu-light));
+    -webkit-mask: var(--gi-src) center / 100% 100% no-repeat;
+    mask: var(--gi-src) center / 100% 100% no-repeat;
+}
+
+.cost-gem::after {
+    background: var(--gem-plate, var(--fu-glass));
+    clip-path: var(--gem-hole);
+}
+
+/* dx / dy: the hexagon's own centre sits a hair off its icon's centre (49.7% /
+   49.5%), so nudge the icon until the hexagon is dead centre in the slot. */
+.cost-gem.is-inkable {
+    --gi-src: url("../../img/inkable.svg");
+    --gi-ar: 112 / 98;
+    --gem-dx: 0.29%;
+    --gem-dy: 0.3%;
+    --gem-hole: polygon(49.7% 19.4%, 72.7% 34.5%, 72.7% 64.8%, 49.7% 80%, 26.8% 64.8%, 26.8% 34.5%);
+}
+
+.cost-gem.is-uninkable {
+    --gi-src: url("../../img/uninkable.svg");
+    --gi-ar: 85 / 98;
+    --gem-k: 0.706;
+    --gem-dx: 0.48%;
+    --gem-dy: 0.4%;
+    --gem-hole: polygon(49.5% 6.6%, 92.4% 28.1%, 92.4% 71.1%, 49.5% 92.5%, 6.6% 71.1%, 6.6% 28.1%);
+    --gem-ring: var(--fu-glass-mute);
+    --gem-num: var(--fu-glass-2);
+}
+
+/* Card preview (the art's badge and the text card): the art's own gold on black,
+   inkable or not. */
+#preview-ink-gem,
+.ctv-cost.cost-gem {
+    --gem-ring: var(--gem-gold);
+    --gem-plate: oklch(0.14 0 0);
+    --gem-num: #fff;
+    color: var(--gem-num);
+}
+
+/* Floating badge over the card art in the preview */
+#preview-ink-gem {
+    --gem-h: 56px;
+    font-size: 17px;
+}
+
+/* Text card in the preview, on the dark glass */
+.ctv-cost.cost-gem {
+    --gem-h: 34px;
+    width: auto;
+    height: var(--gem-h);
+    background: none;
+    box-shadow: none;
+    border-radius: 0;
+    clip-path: none;
+    font-size: 12px;
+    font-weight: 700;
+    margin-top: -2px;
+}
+
+/* Offline card face: on paper, in the card's own ink */
+.card-fallback .cf-cost.cost-gem {
+    --gem-h: 2.4em;
+    --gem-ring: var(--cf-ink-1, var(--fu-ink));
+    --gem-plate: var(--fu-paper);
+    --gem-num: var(--fu-ink);
+    color: var(--gem-num);
+    top: 2%;
+    left: 4%;
+    width: auto;
+    height: var(--gem-h);
+    background: none;
+    box-shadow: none;
+    border-radius: 0;
+    clip-path: none;
+    font-size: 0.95em;
+    font-weight: 700;
+}
+
+.card-fallback .cf-cost.cost-gem.is-uninkable {
+    --gem-ring: var(--fu-mute);
+    --gem-plate: var(--fu-paper-sunk);
+    --gem-num: var(--fu-body);
+    color: var(--gem-num);
+}
+
+/* ----- Offline card face: strength, lore and willpower in the art's own frames -----
+   Strength left, lore in the middle, willpower right, each in its own column so
+   a card with only some of them keeps their places. Frames are sized to hold a
+   two-digit number. */
+.card-fallback .cf-stats {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: end;
+    gap: 0.25em;
+}
+
+.card-fallback .cf-str,
+.card-fallback .cf-lore,
+.card-fallback .cf-wp {
+    position: relative;
+    isolation: isolate;
+    display: inline-grid;
+    place-items: center;
+    width: auto;
+    height: var(--fig-h, 2.8em);
+    aspect-ratio: var(--gi-ar);
+    border-radius: 0;
+    background: none;
+    font-size: 0.9em;
+    font-weight: 700;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+}
+
+.card-fallback .cf-str::before,
+.card-fallback .cf-lore::before,
+.card-fallback .cf-wp::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: var(--fig-bg);
+    -webkit-mask: var(--gi-src) center / 100% 100% no-repeat;
+    mask: var(--gi-src) center / 100% 100% no-repeat;
+}
+
+.card-fallback .cf-str {
+    --gi-src: url("../../img/strength.svg");
+    --gi-ar: 1;
+    --fig-bg: var(--fu-ink);
+    grid-column: 1;
+    justify-self: start;
+    color: var(--fu-paper);
+}
+
+/* The gem is narrow and only wide low down, so it is the tallest and the
+   number sits in its widest part. */
+.card-fallback .cf-lore {
+    --gi-src: url("../../img/lore.svg");
+    --gi-ar: 70 / 98;
+    --fig-h: 3.4em;
+    --fig-bg: var(--accent);
+    grid-column: 2;
+    justify-self: center;
+    color: var(--accent-ink);
+    padding-top: 0.55em;
+}
+
+.card-fallback .cf-wp {
+    --gi-src: url("../../img/willpower.svg");
+    --gi-ar: 80 / 98;
+    --fig-bg: var(--fu-body);
+    grid-column: 3;
+    justify-self: end;
+    margin-left: 0;
+    color: var(--fu-paper);
+}
+
+/* The icons say which figure is which; no letter tags any more. */
+.card-fallback .cf-str::after,
+.card-fallback .cf-wp::after {
+    content: none;
+}
