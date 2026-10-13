@@ -7,7 +7,7 @@ aliases: [modifier, buff, debuff, boost strength, plus strength, minus strength,
 targets: [field, card-drawer]
 related: [challenge, quest, card-actions]
 order: 95
-verified: v3.14.0
+verified: v3.17.1
 ---
 
 Card effects often change a character for a while: "+2 strength this turn", "gains Resist +1 until the start of your next turn", "Challenger +3". Add these as modifiers and the Dojo counts them in challenges and quests, then takes them off when they end.
@@ -29,6 +29,14 @@ In the picker, choose:
 3. **Lasts**: **This turn**, **Until my next turn** or **Always**.
 
 Press **Add** (or {key:Enter}). Tick **All of P1's characters** to give every character that player has in play the same modifier, for songs and effects that hit them all. **Recent** keeps your last four modifiers as one-tap buttons, and the picker opens on the last one you used.
+
+:::desktop
+The picker stays open after each add, so you can give a card several modifiers or move on to another card. Press {key:←} / {key:→} to move it to the next character or location in the same battlefield (it wraps round; items are skipped), and {key:↑} / {key:↓} to jump to your opponent's battlefield or yours. The card it points at is outlined. Your stat, amount and duration stay as they were. Click anywhere else, press the **×**, or press {key:Esc} to close it.
+:::
+
+:::touch
+On a phone the picker is a sheet that closes after each add.
+:::
 
 ## How long it lasts
 
