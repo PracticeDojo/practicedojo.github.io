@@ -38,7 +38,7 @@ export default async (page, { shot, phone, theme, wait }) => {
     // The Dumbo on the board (the discard list and the tree have one too).
     const dumbo = page.locator('.play .card.card-face[aria-label="Dumbo"]:visible').last();
     if (!phone) {
-        await dumbo.hover();
+        await dumbo.hover({ force: true });
         await wait(700);
         await toWebp(page, await shot('board'), `dojo_board_${theme}.webp`, 2400);
         await page.mouse.move(2, 2);
