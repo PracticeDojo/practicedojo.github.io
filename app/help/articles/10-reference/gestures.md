@@ -7,7 +7,7 @@ aliases: [touch, tap, long press, hold, swipe, drag, pinch, phone controls, tabl
 targets: [card-drawer, hand, ink-bar, turn-notes, tree-keys, peek]
 related: [screen-at-a-glance, card-actions, multiverse-navigate, keyboard-shortcuts]
 order: 20
-verified: v3.11.0
+verified: v3.15.0
 ---
 
 Everything you can do with a finger. Most of it is a tap that opens the card drawer; the rest are holds, swipes and drags.
@@ -36,6 +36,8 @@ On a tablet, a tap on a card in your hand opens its menu instead of the drawer.
 | {gesture:tap} **Challenge** | Turns challenge mode on |
 | {gesture:tap} your character, then an opponent's card | Challenges it |
 | {gesture:drag} your character onto an opponent's card | Challenges it too |
+| {gesture:tap} the arrow keys, then the fist | Picks your character, swaps to aim at a target, challenges it |
+| {gesture:tap} the bare battlefield | Leaves challenge mode |
 
 ## The board
 

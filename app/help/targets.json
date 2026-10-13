@@ -221,6 +221,11 @@
       "screen": "challenge",
       "any": "#challenge-banner"
     },
+    "challenge-keys": {
+      "label": "the challenge keys",
+      "screen": "challenge",
+      "phone": "#chal-keys"
+    },
     "shared-banner": {
       "label": "the shared session bar",
       "screen": "shared",
