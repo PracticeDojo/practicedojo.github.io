@@ -7,7 +7,7 @@ aliases: [new game, start game, play a deck, new match, decklist, seat a deck]
 targets: [intake, seats, deck-chips, start-match]
 related: [mulligan, decks, screen-at-a-glance]
 order: 20
-verified: v3.11.0
+verified: v3.16.2
 ---
 
 A match starts on the home screen: put a deck in each seat under **On the table**, then press **Start match**.
@@ -17,7 +17,7 @@ A match starts on the home screen: put a deck in each seat under **On the table*
 **On the table** has two seats: **You** (Player 1) and **Opponent** (Player 2).
 
 - **Pick a built-in or saved deck:** press one of the deck chips under the seats. It goes to the first open seat. With both seats taken, it replaces the opponent.
-- **Paste a decklist:** paste it into the big field at the top (one card per line, like `4 Tinker Bell - Giant Fairy`). The readout under it says how many cards it recognised. Press **Play it as you** or **Play against it**, or **Save to My decks** to keep it.
+- **Paste a decklist:** paste it into the big field at the top (one card per line, like `4 Tinker Bell - Giant Fairy`; a list copied from Duels.ink, with `(1-193)` after each name, works too). The readout under it says how many cards it recognised. Press **Play it as you** or **Play against it**, or **Save to My decks** to keep it.
 - **No list to hand?** Press **A decklist** under the field to try an example.
 
 [Show me](show:seats)

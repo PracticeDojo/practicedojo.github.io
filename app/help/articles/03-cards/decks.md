@@ -7,14 +7,14 @@ aliases: [decklist, deck builder, save deck, import deck, my decks, edit deck, t
 targets: [intake, library-button, deck-new, deck-import-txt, deck-from-replay]
 related: [default-decks, library, first-match]
 order: 70
-verified: v3.11.0
+verified: v3.16.2
 ---
 
 Keep the decks you play in **My decks**, so they're one tap away on the home screen.
 
 ## Paste a decklist
 
-Paste a list into the field on the home screen, one card per line, like `4 Tinker Bell - Giant Fairy`. The readout under it says what it understood: the inks, and how many of the 60 cards it recognised (and which lines it skipped). Then choose:
+Paste a list into the field on the home screen, one card per line, like `4 Tinker Bell - Giant Fairy`. Duels.ink's own export works as it is, with the printing at the end of each line (`4 Tinker Bell - Giant Fairy (1-193)`). The readout under it says what it understood: the inks, and how many of the 60 cards it recognised (and which lines it skipped). Then choose:
 
 - **Play it as you** or **Play against it** to seat it for the next match.
 - **Save to My decks** to keep it.

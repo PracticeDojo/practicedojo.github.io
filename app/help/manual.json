@@ -202,7 +202,7 @@
     "decks",
     "screen-at-a-glance"
    ],
-   "verified": "v3.11.0",
+   "verified": "v3.16.2",
    "todo": false,
    "headings": [
     {
@@ -221,7 +221,7 @@
      "slug": "good-to-know"
     }
    ],
-   "body": "A match starts on the home screen: put a deck in each seat under **On the table**, then press **Start match**.\n\n## Seat two decks\n\n**On the table** has two seats: **You** (Player 1) and **Opponent** (Player 2).\n\n- **Pick a built-in or saved deck:** press one of the deck chips under the seats. It goes to the first open seat. With both seats taken, it replaces the opponent.\n- **Paste a decklist:** paste it into the big field at the top (one card per line, like `4 Tinker Bell - Giant Fairy`). The readout under it says how many cards it recognised. Press **Play it as you** or **Play against it**, or **Save to My decks** to keep it.\n- **No list to hand?** Press **A decklist** under the field to try an example.\n\n[Show me](show:seats)\n\nEach seat shows the deck's name and card count. The count is marked when it isn't 60. Press **×** on a seat to empty it.\n\n## Start the match\n\nPress **Start match**. Both players draw seven, and Player 1's turn opens on the mulligan: keep the hand or send cards back. See [Mulligan and your opening hand](help:mulligan).\n\n[Show me](show:start-match)\n\n## Good to know\n\n- **You** is Player 1 and goes first. You play both sides; see [You play both sides](help:you-play-both-sides).\n- An empty seat plays 60 random cards.\n- Next time, the home screen seats the same saved decks again (a pasted list isn't kept unless you save it).\n- The match saves itself to this device as you play. Come back to it from **Pick up again** on the home screen.\n"
+   "body": "A match starts on the home screen: put a deck in each seat under **On the table**, then press **Start match**.\n\n## Seat two decks\n\n**On the table** has two seats: **You** (Player 1) and **Opponent** (Player 2).\n\n- **Pick a built-in or saved deck:** press one of the deck chips under the seats. It goes to the first open seat. With both seats taken, it replaces the opponent.\n- **Paste a decklist:** paste it into the big field at the top (one card per line, like `4 Tinker Bell - Giant Fairy`; a list copied from Duels.ink, with `(1-193)` after each name, works too). The readout under it says how many cards it recognised. Press **Play it as you** or **Play against it**, or **Save to My decks** to keep it.\n- **No list to hand?** Press **A decklist** under the field to try an example.\n\n[Show me](show:seats)\n\nEach seat shows the deck's name and card count. The count is marked when it isn't 60. Press **×** on a seat to empty it.\n\n## Start the match\n\nPress **Start match**. Both players draw seven, and Player 1's turn opens on the mulligan: keep the hand or send cards back. See [Mulligan and your opening hand](help:mulligan).\n\n[Show me](show:start-match)\n\n## Good to know\n\n- **You** is Player 1 and goes first. You play both sides; see [You play both sides](help:you-play-both-sides).\n- An empty seat plays 60 random cards.\n- Next time, the home screen seats the same saved decks again (a pasted list isn't kept unless you save it).\n- The match saves itself to this device as you play. Come back to it from **Pick up again** on the home screen.\n"
   },
   {
    "id": "screen-at-a-glance",
@@ -1512,7 +1512,7 @@
     "library",
     "first-match"
    ],
-   "verified": "v3.11.0",
+   "verified": "v3.16.2",
    "todo": false,
    "headings": [
     {
@@ -1536,7 +1536,7 @@
      "slug": "good-to-know"
     }
    ],
-   "body": "Keep the decks you play in **My decks**, so they're one tap away on the home screen.\n\n## Paste a decklist\n\nPaste a list into the field on the home screen, one card per line, like `4 Tinker Bell - Giant Fairy`. The readout under it says what it understood: the inks, and how many of the 60 cards it recognised (and which lines it skipped). Then choose:\n\n- **Play it as you** or **Play against it** to seat it for the next match.\n- **Save to My decks** to keep it.\n\n[Show me](show:intake)\n\n## Add a deck in the Library\n\nOpen **Library**, then **Decks**:\n\n- **New deck**: type a name, paste the list, add notes if you like, and press **Save deck**.\n- **Import .txt**: pick a text file with a decklist. It opens in the same form to check and save.\n- **From a replay**: pick a Duels.ink replay file (.json, .replay or .replay.gz). The form fills with your exact 60 from that game.\n\n[Show me](show:deck-new)\n\n## Edit, seat or delete\n\nEach deck has **You** and **Opponent** to seat it. Its **⋯** menu has **Edit**, **Share a link** and **Delete…**. Saving an edit updates a seat that holds that deck.\n\n## Good to know\n\n- The Dojo doesn't check deck rules. A list that isn't 60 cards plays with the cards it has, and the seat's count turns amber.\n- If no card is recognised, the deck is 60 random cards.\n- My decks live in this browser. Signing in keeps them in your account too: see [The Library](help:library).\n"
+   "body": "Keep the decks you play in **My decks**, so they're one tap away on the home screen.\n\n## Paste a decklist\n\nPaste a list into the field on the home screen, one card per line, like `4 Tinker Bell - Giant Fairy`. Duels.ink's own export works as it is, with the printing at the end of each line (`4 Tinker Bell - Giant Fairy (1-193)`). The readout under it says what it understood: the inks, and how many of the 60 cards it recognised (and which lines it skipped). Then choose:\n\n- **Play it as you** or **Play against it** to seat it for the next match.\n- **Save to My decks** to keep it.\n\n[Show me](show:intake)\n\n## Add a deck in the Library\n\nOpen **Library**, then **Decks**:\n\n- **New deck**: type a name, paste the list, add notes if you like, and press **Save deck**.\n- **Import .txt**: pick a text file with a decklist. It opens in the same form to check and save.\n- **From a replay**: pick a Duels.ink replay file (.json, .replay or .replay.gz). The form fills with your exact 60 from that game.\n\n[Show me](show:deck-new)\n\n## Edit, seat or delete\n\nEach deck has **You** and **Opponent** to seat it. Its **⋯** menu has **Edit**, **Share a link** and **Delete…**. Saving an edit updates a seat that holds that deck.\n\n## Good to know\n\n- The Dojo doesn't check deck rules. A list that isn't 60 cards plays with the cards it has, and the seat's count turns amber.\n- If no card is recognised, the deck is 60 random cards.\n- My decks live in this browser. Signing in keeps them in your account too: see [The Library](help:library).\n"
   },
   {
    "id": "default-decks",
