@@ -476,21 +476,30 @@
                 <h2><span id="craft-hand-title">Craft Starting Hand</span></h2>
                 <button class="close" onclick="App.backToMulligan()" title="Back to the mulligan">&times;</button>
             </div>
-            <div class="modal-body" style="display:flex;flex-direction:column;gap:12px;">
+            <div class="modal-body" id="craft-pick-view" style="display:flex;flex-direction:column;gap:12px;">
                 <p class="muted">Left-click a card to add a copy to your starting hand (7 total). Right-click to remove
                     a copy. You can only add as many copies as your deck contains.</p>
                 <div class="flex items-center justify-between">
                     <div style="font-size:13px;color:var(--text)">Selected: <span id="craft-hand-count"
                             style="color:var(--accent-hi);font-weight:700">0</span> / 7</div>
-                    <button class="btn btn-ghost" onclick="App.clearCraftHand()">Clear</button>
+                    <div class="craft-tools">
+                        <button class="btn btn-ghost" id="craft-from-saved" onclick="App.openCraftFromSaved()"><i
+                                class="fa-solid fa-clock-rotate-left"></i> From a saved game</button>
+                        <button class="btn btn-ghost" onclick="App.clearCraftHand()">Clear</button>
+                    </div>
                 </div>
                 <div id="craft-hand-grid" class="card-grid"
                     style="grid-template-columns:repeat(auto-fill,minmax(90px,1fr))">
                     <!-- Unique deck cards injected here -->
                 </div>
             </div>
+            <!-- Feature 64: copy an opening (hand + deck order) from a saved game -->
+            <div class="modal-body cfs" id="craft-saved-view" hidden>
+                <div class="cfs-crumb" id="craft-saved-crumb"></div>
+                <div class="cfs-list" id="craft-saved-list"></div>
+            </div>
             <div class="modal-foot">
-                <button class="btn btn-ghost" onclick="App.backToMulligan()">Back</button>
+                <button class="btn btn-ghost" onclick="App.craftBack()">Back</button>
                 <button class="btn btn-primary" id="craft-hand-confirm" onclick="App.confirmCraftHand()">Confirm
                     Hand</button>
             </div>
@@ -1185,7 +1194,7 @@
     <script>
         let cardFuse = null;
 
-        const APP_VERSION = "v3.16.2"; // Centralized version string (v3: Field Unit)
+        const APP_VERSION = "v3.17.0"; // Centralized version string (v3: Field Unit)
 
         // Tweaks panel accent presets (hue values for the OKLCH accent ramp)
         // Tweaks → Accent: the approved Field Unit signals only (design.md ·
@@ -1314,6 +1323,8 @@
                 if (stateObj.mulliganPending) compressed.mulliganPending = true;
                 if (stateObj.drawPending) compressed.drawPending = true;
                 if (stateObj.mulliganDrawn && stateObj.mulliganDrawn.length) compressed.mulliganDrawn = stateObj.mulliganDrawn.slice();
+                // Each seat's settled opening (Feature 64), for copying into another game.
+                if (stateObj.openings) compressed.openings = stateObj.openings;
                 if (includeLog) {
                     compressed.log = stateObj.log;
                 } else {
@@ -1335,6 +1346,7 @@
                     mulliganPending: !!compressed.mulliganPending,
                     drawPending: !!compressed.drawPending,
                     mulliganDrawn: Array.isArray(compressed.mulliganDrawn) ? compressed.mulliganDrawn.slice() : null,
+                    openings: compressed.openings || null,
                     log: compressed.log !== undefined ? [...compressed.log] : currentLog.slice(0, compressed.logLength || 0),
                     players: compressed.players.map(p => ({
                         id: p.id,
@@ -4459,6 +4471,7 @@
                     return Object.entries(counts).map(([n, c]) => c > 1 ? `${n} ×${c}` : n).join(', ');
                 };
                 const lines = [];
+                if (ta.opening) lines.push(`- **Opening:** copied from ${ta.opening}`);
                 const drawn = fmt(ta.drawn); if (drawn) lines.push(`- **Drew:** ${drawn}`);
                 const inked = fmt(ta.inked); if (inked) lines.push(`- **Inked:** ${inked}`);
                 const played = fmt(ta.played); if (played) lines.push(`- **Played:** ${played}`);
@@ -8004,6 +8017,7 @@
             // ends. The second player then gets the draw step and the auto-save that
             // endTurn() held back; the first player just plays.
             _finishMulligan() {
+                this._recordOpening();
                 const drawStep = this.state.drawPending;
                 this.state.mulliganPending = false;
                 this.state.drawPending = false;
@@ -8014,6 +8028,21 @@
                 }
                 this._captureTurnStartHand(this.state.activePlayer); // the settled hand is the real opener
                 this.render();
+            },
+
+            // Feature 64: keeps the active seat's settled opening (hand + deck order,
+            // before any draw step) on the board, so a later game can copy it exactly.
+            // `how` labels it in the picker: kept, mull N, crafted or copied.
+            _recordOpening() {
+                const idx = this.state.activePlayer;
+                const p = this.state.players[idx];
+                const n = (this.state.mulliganDrawn || []).length;
+                const how = this._openingHow || (n ? `mull ${n}` : 'kept');
+                this._openingHow = null;
+                this.state.openings = {
+                    ...(this.state.openings || {}),
+                    [idx]: { hand: p.hand.map(c => c.cardId), deck: p.deck.map(c => c.cardId), how }
+                };
             },
 
             // --- Craft Hand Handlers ---
@@ -8045,12 +8074,15 @@
                 this._collectAllCards(p).forEach(c => {
                     this.craftPoolCounts[c.cardId] = (this.craftPoolCounts[c.cardId] || 0) + 1;
                 });
+                this._cfs = null;
+                this._showCraftView(false);
                 this.renderCraftHand();
                 document.getElementById('craft-hand-modal').classList.remove('hidden');
             },
 
             closeCraftHand() {
                 document.getElementById('craft-hand-modal').classList.add('hidden');
+                this._cfs = null;
                 this.craftSelection = {};
                 this.craftPoolCounts = {};
             },
@@ -8164,8 +8196,325 @@
                 p.hasMulliganed = true; // Locks both Mulligan and Craft Hand for this player
 
                 this.logAction(`You crafted a starting hand of ${newHand.length} cards.`);
+                this._openingHow = 'crafted';
                 this.closeCraftHand();
                 this._finishMulligan(); // captures the crafted hand as the real opener
+            },
+
+            // --- Craft from a saved game (Feature 64) ---
+            // The Craft dialog's second view: a saved game or demo, then one of its
+            // decks, then one of that deck's openings. The seat on its mulligan gets
+            // that exact hand and deck order (switching to that deck if it differs).
+
+            _cfs: null,
+
+            _showCraftView(saved) {
+                document.getElementById('craft-pick-view').style.display = saved ? 'none' : 'flex';
+                document.getElementById('craft-saved-view').hidden = !saved;
+                document.getElementById('craft-hand-confirm').style.display = saved ? 'none' : '';
+            },
+
+            // Footer Back: one step up, then back to crafting by hand, then the mulligan.
+            craftBack() {
+                const c = this._cfs;
+                if (!c) { this.backToMulligan(); return; }
+                if (c.step === 'openings') { c.step = 'decks'; c.deck = null; }
+                else if (c.step === 'decks') { c.step = 'games'; c.game = null; }
+                else { this._cfs = null; this._showCraftView(false); return; }
+                this.renderCraftSaved();
+            },
+
+            async openCraftFromSaved() {
+                const c = this._cfs = { step: 'games', games: null, game: null, deck: null, loading: false };
+                this._showCraftView(true);
+                this.renderCraftSaved();
+                const [rows, demos] = await Promise.all([
+                    DojoLibrary.listSessions().catch(() => []),
+                    DojoLibrary.loadDemoManifest().catch(() => [])
+                ]);
+                if (this._cfs !== c) return;
+                // Not the game on the board, and not Duels.ink imports: their deck order is unknown.
+                const liveId = this.session && this.session.id;
+                c.games = [
+                    ...rows.filter(r => r.id !== liveId && !/\(Duels\.ink\)\s*$/.test(r.title || ''))
+                        .map(r => ({ kind: 'saved', id: r.id, title: r.title, summary: r.summary, ts: r.updatedAt })),
+                    ...demos.map(d => ({ kind: 'demo', demo: d, title: d.title }))
+                ];
+                this.renderCraftSaved();
+            },
+
+            async _cfsPickGame(i) {
+                const c = this._cfs;
+                const g = c && c.games && c.games[i];
+                if (!g) return;
+                c.loading = true;
+                this.renderCraftSaved();
+                try {
+                    const data = g.kind === 'demo'
+                        ? (await DojoLibrary.fetchDemo(g.demo)).data
+                        : (await DojoLibrary.loadSession(g.id)).data;
+                    if (this._cfs !== c) return;
+                    c.game = { title: g.title, decks: this._openingsFromSession(data) };
+                    c.step = 'decks';
+                } catch (e) {
+                    this.showToast(e && e.message ? e.message : "Couldn't open that game.");
+                }
+                c.loading = false;
+                this.renderCraftSaved();
+            },
+
+            _cfsPickDeck(seat) {
+                const c = this._cfs;
+                const d = c && c.game && c.game.decks[seat];
+                if (!d) return;
+                const usable = d.openings.filter(o => !o.why);
+                if (!usable.length) return;
+                if (usable.length === 1 && d.openings.length === 1) { this._cfsApply(d, usable[0]); return; }
+                c.deck = d;
+                c.step = 'openings';
+                this.renderCraftSaved();
+            },
+
+            renderCraftSaved() {
+                const c = this._cfs;
+                if (!c) return;
+                const esc = (v) => this.escapeHtml(v);
+                const crumb = document.getElementById('craft-saved-crumb');
+                const list = document.getElementById('craft-saved-list');
+                const step = { games: 'Pick a game', decks: 'Pick a deck', openings: 'Pick an opening' }[c.step];
+                const path = c.game ? `${c.game.title}${c.deck ? ` · ${c.deck.name}` : ''}` : 'Copy a hand and its deck order';
+                crumb.innerHTML = `<span class="cfs-step">${esc(step)}</span><span class="cfs-path">${esc(path)}</span>`;
+
+                if (c.loading || !c.games) { list.innerHTML = '<div class="cfs-empty">Loading…</div>'; return; }
+
+                if (c.step === 'games') {
+                    const row = (g) => `<button type="button" class="cfs-row" data-i="${c.games.indexOf(g)}">
+                        <span class="cfs-txt"><span class="cfs-title">${esc(g.title)}</span>
+                        <span class="cfs-meta">${g.kind === 'demo' ? 'Demo' : this.sessionMetaHtml(g.summary, g.ts)}</span></span>
+                        <i class="fa-solid fa-chevron-right cfs-go"></i></button>`;
+                    const saved = c.games.filter(g => g.kind === 'saved');
+                    const demos = c.games.filter(g => g.kind === 'demo');
+                    list.innerHTML = '<div class="cfs-group">Your saved games</div>'
+                        + (saved.length ? saved.map(row).join('') : '<div class="cfs-empty">No other saved games on this device yet.</div>')
+                        + (demos.length ? '<div class="cfs-group">Demos</div>' + demos.map(row).join('') : '');
+                    list.querySelectorAll('.cfs-row').forEach(el => { el.onclick = () => this._cfsPickGame(+el.dataset.i); });
+                    return;
+                }
+
+                if (c.step === 'decks') {
+                    list.innerHTML = c.game.decks.map(d => {
+                        const usable = d.openings.filter(o => !o.why).length;
+                        const why = (d.openings[0] && d.openings[0].why) || 'No opening to copy';
+                        const sub = `Player ${d.seat + 1} · ${d.seat === 0 ? 'went first' : 'on the draw'} · `
+                            + (usable ? `${usable} opening${usable === 1 ? '' : 's'}` : why);
+                        return `<button type="button" class="cfs-row is-deck" data-seat="${d.seat}"${usable ? '' : ' disabled'}>
+                            ${this.deckBoxHtml(d.inks, d.seat + 1)}
+                            <span class="cfs-txt"><span class="cfs-title">${esc(d.name)}</span><span class="cfs-meta">${esc(sub)}</span></span>
+                            ${usable ? '<i class="fa-solid fa-chevron-right cfs-go"></i>' : ''}</button>`;
+                    }).join('');
+                    list.querySelectorAll('.cfs-row:not([disabled])').forEach(el => { el.onclick = () => this._cfsPickDeck(+el.dataset.seat); });
+                    return;
+                }
+
+                list.innerHTML = c.deck.openings.map((o, i) => `<button type="button" class="cfs-row is-opening" data-i="${i}"${o.why ? ' disabled' : ''}>
+                    <span class="cfs-how">${esc(o.why ? 'n/a' : o.how)}</span>
+                    <span class="cfs-hand">${o.why ? `<span class="cfs-why">${esc(o.why)}</span>`
+                        : o.hand.map(id => this.cardThumbHtml(this.cardDB[id], 'cfs-thumb')).join('')}</span></button>`).join('');
+                list.querySelectorAll('.cfs-row:not([disabled])').forEach(el => {
+                    el.onclick = () => this._cfsApply(c.deck, c.deck.openings[+el.dataset.i]);
+                });
+            },
+
+            // Both decks of a saved game, each with its distinct openings:
+            // [{ seat, name, inks, openings: [{ hand, deck, how } | { why }] }]
+            _openingsFromSession(data) {
+                const found = [[], []];
+                const add = (seat, o) => {
+                    if (!o) return;
+                    if (!o.why) {
+                        if (!Array.isArray(o.hand) || !Array.isArray(o.deck) || o.hand.length !== 7) return;
+                        if (o.hand.concat(o.deck).some(id => !this.cardDB[id])) return; // unknown cards: an import
+                    }
+                    const key = o.why ? `why:${o.why}` : `${o.hand.slice().sort((a, b) => a - b).join(',')}|${o.deck.join(',')}`;
+                    if (!found[seat].some(x => x.key === key)) found[seat].push({ ...o, key });
+                };
+                const states = (data.bookmarks || []).map(b => ({ b, raw: b.state }));
+                if (data.currentState) states.push({ b: null, raw: data.currentState });
+                states.forEach(({ b, raw }) => {
+                    let s;
+                    try { s = typeof raw === 'string' ? JSON.parse(raw) : raw; } catch (e) { return; }
+                    if (!s || !Array.isArray(s.players)) return;
+                    if (s.openings) { [0, 1].forEach(i => add(i, s.openings[i])); return; }
+                    if (b) this._rebuildOpenings(s, b).forEach((o, i) => add(i, o));
+                });
+                const lists = [data.deck1, data.deck2];
+                return [0, 1].map(seat => {
+                    const openings = found[seat].filter(o => !o.why).concat(found[seat].filter(o => o.why));
+                    const ref = openings.find(o => !o.why);
+                    const ids = ref ? ref.hand.concat(ref.deck) : null;
+                    const inks = this.deckInfo(ids ? this._decklistFromIds(ids) : (lists[seat] || '')).inks;
+                    const lib = ids ? this._libraryDeckFor(ids) : null;
+                    const name = lib ? lib.name : (this.inkSlashLabel(inks) || 'Random cards');
+                    return { seat, name, inks, openings };
+                });
+            },
+
+            // Saves from before Feature 64 don't record openings. The node auto-saved as
+            // Player 2's turn 1 starts still holds both: P1's kept hand (turnStartHand)
+            // with the deck after their turn 1, and P2's kept hand plus the draw-step
+            // card, last in hand. → [P1, P2], each an opening, { why } or null.
+            _rebuildOpenings(s, b) {
+                const out = [null, null];
+                const sh = s.turnStartHand;
+                if (b.isDeckEdit || s.turn !== 1 || s.activePlayer !== 1) return out;
+                if (!sh || sh.player !== 0 || !Array.isArray(sh.cards) || sh.cards.length !== 7) return out;
+                const log = Array.isArray(s.log) ? s.log : [];
+                const text = (e) => String(e && e.text != null ? e.text : e);
+                const p2Start = log.findIndex(e => e && e.player === 1 && /--- Turn 1 Begins ---/.test(text(e)));
+                if (p2Start < 0) return out;
+                const seg1 = log.slice(0, p2Start).map(text);
+                const seg2 = log.slice(p2Start);
+                const drawAt = seg2.findIndex(e => text(e) === 'Draw step');
+                // Only the node saved right at the draw step: nothing done on P2's turn yet.
+                if (drawAt < 0 || seg2.slice(drawAt + 1).some(e => !(e && e.isSystem))) return out;
+                const howOf = (lines) => {
+                    const m = lines.map(l => /You mulliganed (\d+) card/.exec(l)).find(Boolean);
+                    if (m) return `mull ${m[1]}`;
+                    return lines.some(l => /crafted a starting hand/.test(l)) ? 'crafted' : 'kept';
+                };
+                const allCards = (p) => {
+                    const pool = [];
+                    const walk = (arr, zone) => (arr || []).forEach(c => { pool.push({ c, zone }); walk(c.stackedCards, zone); });
+                    ['hand', 'field', 'inkwell', 'discard', 'deck'].forEach(z => walk(p[z], z));
+                    return pool;
+                };
+
+                // Player 1: the kept hand, and the deck with turn 1's draws back on top.
+                const p1 = s.players[0];
+                const pool1 = allCards(p1);
+                if (pool1.every(x => this.cardDB[x.c.cardId])) {
+                    const kept = sh.cards.map(x => x.iid);
+                    const keptSet = new Set(kept);
+                    const byIid = new Map(pool1.map(x => [x.c.instanceId, x.c]));
+                    if (seg1.some(l => /shuffled your deck/.test(l))) out[0] = { why: 'Deck was shuffled on turn 1' };
+                    else if (seg1.some(l => /custom deck order for your deck|Slipped top card/.test(l))) out[0] = { why: 'Deck was reordered on turn 1' };
+                    else if (kept.some(iid => !byIid.has(iid))) out[0] = { why: "Couldn't rebuild this opening" };
+                    else {
+                        const deck = p1.deck.filter(c => !keptSet.has(c.instanceId)); // kept cards put back
+                        const out1 = pool1.filter(x => x.zone !== 'deck' && !keptSet.has(x.c.instanceId)).map(x => x.c);
+                        const drawn = (b.sections && Array.isArray(b.sections.drawn)) ? b.sections.drawn : [];
+                        // Drawn cards that went back to the deck: look from the end it went to.
+                        const fromTop = seg1.some(l => /to deck \(top\)/.test(l)) && !seg1.some(l => /to deck \(bottom\)/.test(l));
+                        const top = [];
+                        let ok = true;
+                        drawn.forEach(id => {
+                            let i = out1.findIndex(c => c.cardId === id);
+                            if (i >= 0) { top.push(out1.splice(i, 1)[0]); return; }
+                            i = fromTop ? deck.findIndex(c => c.cardId === id)
+                                : deck.map(c => c.cardId).lastIndexOf(id);
+                            if (i >= 0) top.push(deck.splice(i, 1)[0]); else ok = false;
+                        });
+                        if (!ok || out1.length) out[0] = { why: "Couldn't rebuild this opening" };
+                        else out[0] = {
+                            hand: kept.map(iid => byIid.get(iid).cardId),
+                            deck: top.concat(deck).map(c => c.cardId),
+                            how: howOf(seg1)
+                        };
+                    }
+                }
+
+                // Player 2: the hand minus the draw-step card, which goes back on top.
+                const p2 = s.players[1];
+                if (p2.hand.length === 8 && allCards(p2).every(x => this.cardDB[x.c.cardId])) {
+                    out[1] = {
+                        hand: p2.hand.slice(0, 7).map(c => c.cardId),
+                        deck: [p2.hand[7]].concat(p2.deck).map(c => c.cardId),
+                        how: howOf(seg2.slice(0, drawAt).map(text))
+                    };
+                }
+                return out;
+            },
+
+            // Copies the opening onto the seat on its mulligan. A different deck is
+            // swapped in first, if the player agrees; the other seat is left alone.
+            async _cfsApply(deck, o) {
+                const c = this._cfs;
+                if (!c || !o || o.why) return;
+                const idx = this.state.activePlayer;
+                const p = this.state.players[idx];
+                const ids = o.hand.concat(o.deck);
+                let seat = null;
+                if (this._nameKey(this._collectAllCards(p).map(x => x.cardId)) !== this._nameKey(ids)) {
+                    const ok = await this.dialog({
+                        title: 'Switch to that deck?',
+                        icon: 'fa-shuffle',
+                        message: `This opening is from ${deck.name}, a different deck from the one ${p.name} has here. Switch ${p.name} to that exact deck? The other player's deck stays as it is.`,
+                        stat: `${ids.length} cards · ${o.how}`,
+                        confirmText: 'Switch deck',
+                        cancelText: 'Cancel'
+                    });
+                    if (!ok || this._cfs !== c) return;
+                    const decklist = this._decklistFromIds(ids);
+                    seat = this._libraryDeckFor(ids) || { key: null, name: this.deckAutoName(decklist), decklist };
+                }
+
+                const titleNames = () => [this._seatTitleName(this.seats[1]), this._seatTitleName(this.seats[2])];
+                const retitle = !!seat && !!this.session && this.session.title === this.defaultSessionTitle(titleNames());
+
+                this.saveState();
+                p.hand = o.hand.map(id => this.makeCardInstance(id));
+                p.deck = o.deck.map(id => this.makeCardInstance(id));
+                p.field = [];
+                p.inkwell = [];
+                p.discard = [];
+                p.inkTotal = 0;
+                p.inkReady = 0;
+                p.hasMulliganed = true;
+                if (seat) {
+                    this.seats[idx + 1] = seat;
+                    this.sessionDecks['deck' + (idx + 1)] = seat.decklist;
+                    if (retitle) {
+                        this.session.title = this.defaultSessionTitle(titleNames()).slice(0, 120);
+                        this.syncSessionTitle();
+                    }
+                }
+
+                const source = `${c.game.title} (${deck.name}, ${o.how})`;
+                this.logAction(`You copied the opening from ${source}.`);
+                this._openingHow = 'copied';
+                this.closeCraftHand();
+                this._finishMulligan(); // the second player's draw step runs here
+                if (this.state.turnActions) this.state.turnActions.opening = source; // for the turn's recap
+                this.saveToDevice();
+                this.showToast(seat ? `Switched to ${seat.name} and copied the opening` : 'Opening copied');
+            },
+
+            // Cards by name, sorted: two lists hold the same deck when their keys match.
+            _nameKey(ids) {
+                return ids.map(id => { const d = this.cardDB[id]; return d ? (d.fullName || d.name) : `#${id}`; }).sort().join('\n');
+            },
+
+            _decklistFromIds(ids) {
+                const counts = new Map();
+                ids.forEach(id => {
+                    const d = this.cardDB[id];
+                    if (!d) return;
+                    const n = d.fullName || d.name;
+                    counts.set(n, (counts.get(n) || 0) + 1);
+                });
+                return Array.from(counts, ([n, k]) => `${k} ${n}`).join('\n');
+            },
+
+            // The library deck (saved or default) with exactly these cards, as a seat.
+            _libraryDeckFor(ids) {
+                const key = this._nameKey(ids);
+                for (const k of Object.keys(this._deckIndex || {})) {
+                    const d = this._deckIndex[k];
+                    if (d && d.decklist && this._nameKey(this.parseDeck(d.decklist)) === key) {
+                        return { key: k, name: d.name, decklist: d.decklist };
+                    }
+                }
+                return null;
             },
 
             // --- Drag and Drop Handlers ---
