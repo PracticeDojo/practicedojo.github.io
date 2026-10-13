@@ -4,10 +4,10 @@ title: Challenge
 summary: Challenge an opposing card by dragging or tapping, with a forecast of what happens before you commit.
 devices: [desktop, phone]
 aliases: [attack, fight, challenge mode, combat, block]
-targets: [challenge-mode, challenge-banner, field, opponent-field]
+targets: [challenge-mode, challenge-banner, challenge-keys, field, opponent-field]
 related: [forecast, card-actions, modifiers]
 order: 90
-verified: v3.14.0
+verified: v3.15.0
 ---
 
 In a challenge, your character and the opposing card deal their strength to each other as damage. The Dojo works out the damage, exerts your character and banishes anything that ends up with damage equal to its willpower. [Modifiers](help:modifiers) on either card (+strength, Challenger, Resist, willpower) are counted.
@@ -22,6 +22,12 @@ Drag one of your characters onto an opposing card. Or click your character, then
 
 :::touch
 Tap one of your characters, then tap an opposing card. Once you've picked, every opposing card shows a badge with the outcome. Dragging works too.
+:::
+
+:::phone
+Thumb keys sit at the bottom right of your side, like the Multiverse's. The mode starts on your first ready character. ◀ ▶ ▲ ▼ step through your characters. The swap key (or ▲ off your top row) moves to the opponent's cards: the arrows now aim, and a red arrow runs from your character to the target. Press the fist to challenge. Swap again to go back to your characters. Tapping works too: tap an opposing card to aim at it, tap it again to challenge.
+
+A tap on the bare battlefield leaves challenge mode.
 :::
 
 You stay in the mode to challenge again. Press **Done · Esc** to leave. {key:Esc} first drops the picked character, then leaves. Ending the turn leaves it too.

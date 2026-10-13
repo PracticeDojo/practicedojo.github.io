@@ -1092,6 +1092,24 @@
         <button type="button" class="cb-done" onclick="App.exitChallengeMode()">Done · Esc</button>
     </div>
     <div id="challenge-forecast" class="chal-fc" aria-hidden="true"></div>
+    <!-- Feature 62: phones get thumb keys in challenge mode, two rows of three like the
+         Multiverse's: challenge (the fist), ▲, swap sides / ◀ ▼ ▶. The arrows walk your
+         characters, then the opponent's cards; the fist challenges the one aimed at. -->
+    <div id="chal-keys" class="chal-keys" role="group" aria-label="Pick a challenge" hidden
+        onclick="event.stopPropagation(); const b = event.target.closest('[data-ck]'); if (b) App.chalKey(b.dataset.ck)">
+        <button type="button" class="chal-key ck-go" data-ck="go" title="Challenge" aria-label="Challenge"><i
+                class="fa-solid fa-hand-fist"></i></button>
+        <button type="button" class="chal-key ck-up" data-ck="up" title="Row above" aria-label="Row above"><i
+                class="fa-solid fa-caret-up"></i></button>
+        <button type="button" class="chal-key ck-swap" data-ck="swap" title="To the opponent's cards"
+            aria-label="To the opponent's cards"><i class="fa-solid fa-arrow-down-up-across-line"></i></button>
+        <button type="button" class="chal-key ck-back" data-ck="back" title="Card to the left"
+            aria-label="Card to the left"><i class="fa-solid fa-caret-left"></i></button>
+        <button type="button" class="chal-key ck-down" data-ck="down" title="Row below" aria-label="Row below"><i
+                class="fa-solid fa-caret-down"></i></button>
+        <button type="button" class="chal-key ck-fwd" data-ck="fwd" title="Card to the right"
+            aria-label="Card to the right"><i class="fa-solid fa-caret-right"></i></button>
+    </div>
 
     <!-- Feature 37/48: card drawer (a board or phone-hand card on touch), inkwell panel -->
     <div id="sheet-scrim" class="sheet-scrim" onclick="App.closeCardSheet(); App.closeInkPanel()"></div>
@@ -1167,7 +1185,7 @@
     <script>
         let cardFuse = null;
 
-        const APP_VERSION = "v3.14.0"; // Centralized version string (v3: Field Unit)
+        const APP_VERSION = "v3.15.0"; // Centralized version string (v3: Field Unit)
 
         // Tweaks panel accent presets (hue values for the OKLCH accent ramp)
         // Tweaks → Accent: the approved Field Unit signals only (design.md ·
@@ -1644,7 +1662,7 @@
                     cancel();
                     if (e.pointerType !== 'touch' && e.pointerType !== 'pen') return;
                     if (!this.state || !this.state.players || !this.state.players.length) return;
-                    if (e.target.closest(BUSY)) return;
+                    if (this.challengeMode || e.target.closest(BUSY)) return;
                     hold = { id: e.pointerId, x: e.clientX, y: e.clientY };
                     hold.t = setTimeout(() => {
                         hold = null;
@@ -1656,6 +1674,10 @@
                     if (hold && e.pointerId === hold.id && Math.hypot(e.clientX - hold.x, e.clientY - hold.y) > SLOP) cancel();
                 });
                 ['pointerup', 'pointercancel', 'pointerleave'].forEach(t => play.addEventListener(t, cancel));
+                // Feature 62: on phones a tap on the bare battlefield leaves challenge mode.
+                play.addEventListener('click', (e) => {
+                    if (this.challengeMode && this.isPhoneUI() && !e.target.closest(BUSY)) this.exitChallengeMode();
+                });
                 // The browser's own long-press menu (and text selection) would fight the dialog.
                 play.addEventListener('contextmenu', (e) => {
                     if (e.pointerType === 'mouse' || e.target.closest(BUSY)) return;
@@ -4545,6 +4567,7 @@
                 if (this.challengeMode) {
                     this.challengeMode = false;
                     this.challengePick = null;
+                    this.challengeAim = null;
                     this.hideForecast();
                     this.clearAimArrow();
                 }
@@ -9468,6 +9491,17 @@
             enterChallengeMode(pickIid) {
                 this.challengeMode = true;
                 this.challengePick = pickIid || null;
+                this.challengeAim = null;
+                // Feature 62: phones start on the first ready character, for the keys.
+                if (!this.challengePick && this.isPhoneUI()) {
+                    const p = this.state.players[this.state.activePlayer];
+                    const ready = (p.field || []).filter(c => {
+                        const db = this.cardDB[c.cardId];
+                        return db && db.type === 'Character';
+                    });
+                    const first = ready.find(c => !c.exerted && !c.drying) || ready[0];
+                    if (first) this.challengePick = first.instanceId;
+                }
                 document.getElementById('context-menu').style.display = 'none';
                 this.closeCardSheet();
                 this.closeInkPanel();
@@ -9478,6 +9512,7 @@
                 if (!this.challengeMode) return;
                 this.challengeMode = false;
                 this.challengePick = null;
+                this.challengeAim = null;
                 this.hideForecast();
                 this.clearAimArrow();
                 this.render();
@@ -9498,9 +9533,15 @@
                 const pick = this.challengePick ? this.findCard(this.challengePick) : null;
                 const pdb = pick ? this.cardDB[pick.card.cardId] : null;
                 const verb = this.isTouchUI() ? 'tap' : 'tap or hover';
-                document.getElementById('challenge-banner-text').innerHTML = pdb
-                    ? `<b>${this._esc(pdb.name)}</b> → ${verb} an opponent`
-                    : `Drag or tap <b>any of your characters</b>, then an opponent`;
+                const aim = pdb && this.challengeAim ? this.findCard(this.challengeAim) : null;
+                const adb = aim ? this.cardDB[aim.card.cardId] : null;
+                document.getElementById('challenge-banner-text').innerHTML = !this.isPhoneUI()
+                    ? (pdb ? `<b>${this._esc(pdb.name)}</b> → ${verb} an opponent`
+                        : `Drag or tap <b>any of your characters</b>, then an opponent`)
+                    // Feature 62: phones steer with the keys; a tap on the battlefield leaves.
+                    : adb ? `<b>${this._esc(pdb.name)}</b> → <b>${this._esc(adb.name)}</b>. Press the fist to challenge`
+                        : pdb ? `<b>${this._esc(pdb.name)}</b> challenges. Swap to pick a target`
+                            : `Pick one of your characters. Tap the battlefield to leave`;
                 const fc = this.getChallengeForecast();
                 banner.querySelectorAll('[data-fc]').forEach(b => {
                     const act = b.dataset.fc === fc;
@@ -9518,6 +9559,7 @@
                 if (f.player.id === this.state.activePlayer) {
                     if (!db || db.type !== 'Character') return;
                     this.challengePick = this.challengePick === instanceId ? null : instanceId;
+                    this.challengeAim = null;
                     this.hideForecast();
                     this.clearAimArrow();
                     this.render();
@@ -9528,6 +9570,13 @@
                     if (t) t.innerHTML = '<b>Pick one of your characters first</b> (or drag from it)';
                     return;
                 }
+                // Feature 62: on phones a tap aims (arrow + outcome); the fist or a second tap challenges.
+                if (this.isPhoneUI() && this.challengeAim !== instanceId) {
+                    this.challengeAim = instanceId;
+                    this.render();
+                    return;
+                }
+                this.challengeAim = null;
                 this.resolveChallenge(this.challengePick, instanceId);
             },
             challengeOutcome(aIid, dIid) {
@@ -9657,7 +9706,7 @@
             },
             // Pointer moved onto a card (document-level mouseover).
             onCardHover(instanceId) {
-                if (!this.challengeMode || !this.challengePick) return;
+                if (!this.challengeMode || !this.challengePick || this.isPhoneUI()) return;
                 const f = instanceId ? this.findCard(instanceId) : null;
                 if (f && f.loc === 'field' && f.player.id !== this.state.activePlayer) {
                     this.showForecast(this.challengePick, instanceId);
@@ -9696,6 +9745,121 @@
                 const notes = o.notes.filter(n => n.indexOf(o.dName) === 0).length ? 'target is ready' : '';
                 b.innerHTML = `<b>${this._esc(lbl.head)}</b><span>${this._esc(lbl.rest)}</span>${notes ? `<i>${notes}</i>` : ''}`;
                 return b;
+            },
+
+            // --- Feature 62: challenge keys on phones -----------------------------
+            // Two rows of three, like the Multiverse's: the fist challenges, ▲ ▼ ◀ ▶
+            // move through the side you're on (your characters pick the challenger,
+            // the opponent's cards are aimed at), swap crosses sides. ▲ off your top
+            // row goes to the opponent's cards, ▼ off theirs comes back.
+            chalSideCards(side) {
+                const host = document.getElementById(side === 'mine' ? 'bottom-board' : 'top-board');
+                if (!host) return [];
+                const out = [];
+                host.querySelectorAll('.card-wrap[data-iid]').forEach(w => {
+                    const f = this.findCard(w.dataset.iid);
+                    if (!f || f.loc !== 'field') return;
+                    const mine = f.player.id === this.state.activePlayer;
+                    if (mine !== (side === 'mine')) return;
+                    const db = this.cardDB[f.card.cardId];
+                    if (mine && (!db || db.type !== 'Character')) return;
+                    const r = w.getBoundingClientRect();
+                    out.push({ iid: w.dataset.iid, x: r.left + r.width / 2, y: r.top + r.height / 2, h: r.height });
+                });
+                // Reading order: rows top to bottom, then left to right.
+                return out.sort((a, b) => Math.abs(a.y - b.y) < Math.min(a.h, b.h) / 2 ? a.x - b.x : a.y - b.y);
+            },
+            chalSide() { return this.challengeAim ? 'theirs' : 'mine'; },
+            // Where a key would go: { side, iid }, or null when it can't.
+            chalKeyTarget(kind) {
+                const side = this.chalSide();
+                const other = side === 'mine' ? 'theirs' : 'mine';
+                const cur = side === 'mine' ? this.challengePick : this.challengeAim;
+                const list = this.chalSideCards(side);
+                const at = list.findIndex(c => c.iid === cur);
+                if (kind === 'swap') {
+                    if (side === 'theirs') return { side: 'mine', iid: this.challengePick };
+                    if (!this.challengePick) return null;
+                    const them = this.chalSideCards('theirs');
+                    if (!them.length) return null;
+                    // The opposing card nearest above the challenger.
+                    const me = list[at];
+                    const pick = me ? them.reduce((b, c) => Math.abs(c.x - me.x) < Math.abs(b.x - me.x) ? c : b) : them[0];
+                    return { side: 'theirs', iid: pick.iid };
+                }
+                if (at < 0) return list.length && kind !== 'up' && kind !== 'down' ? { side, iid: list[0].iid } : null;
+                if (kind === 'back') return at > 0 ? { side, iid: list[at - 1].iid } : null;
+                if (kind === 'fwd') return at < list.length - 1 ? { side, iid: list[at + 1].iid } : null;
+                if (kind !== 'up' && kind !== 'down') return null;
+                const me = list[at];
+                let best = null, bestScore = Infinity;
+                list.forEach(c => {
+                    const dy = c.y - me.y;
+                    if (kind === 'up' ? dy > -me.h / 2 : dy < me.h / 2) return;
+                    const score = Math.abs(c.x - me.x) + 3 * Math.abs(dy);
+                    if (score < bestScore) { bestScore = score; best = c; }
+                });
+                if (best) return { side, iid: best.iid };
+                // Off the edge of your side towards theirs (they sit above), or back.
+                if ((kind === 'up' && side === 'mine') || (kind === 'down' && side === 'theirs')) {
+                    const t = this.chalKeyTarget('swap');
+                    return t && t.side === other ? t : null;
+                }
+                return null;
+            },
+            chalKey(kind) {
+                if (!this.challengeMode) return;
+                if (kind === 'go') {
+                    if (this.challengePick && this.challengeAim) {
+                        const aim = this.challengeAim;
+                        this.challengeAim = null;
+                        this.resolveChallenge(this.challengePick, aim);
+                    }
+                    return;
+                }
+                const t = this.chalKeyTarget(kind);
+                if (!t) return;
+                if (t.side === 'mine') {
+                    this.challengePick = t.iid;
+                    this.challengeAim = null;
+                } else {
+                    this.challengeAim = t.iid;
+                }
+                this.hideForecast();
+                this.clearAimArrow();
+                this.render();
+                const w = this.fieldWrap(t.iid);
+                if (w && w.scrollIntoView) w.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+            },
+            // After each render: show the keys on phones in challenge mode, light the
+            // ones that can go somewhere, and redraw the arrow to the aimed card.
+            updateChalKeys() {
+                const host = document.getElementById('chal-keys');
+                if (!host) return;
+                const on = !!this.challengeMode && this.isPhoneUI();
+                host.hidden = !on;
+                document.body.classList.toggle('has-chal-keys', on);
+                if (!on) return;
+                const pick = this.challengePick ? this.findCard(this.challengePick) : null;
+                const aim = this.challengeAim ? this.findCard(this.challengeAim) : null;
+                if (!aim || aim.loc !== 'field' || aim.player.id === this.state.activePlayer || !pick) this.challengeAim = null;
+                const theirs = this.chalSide() === 'theirs';
+                host.querySelectorAll('[data-ck]').forEach(b => {
+                    const k = b.dataset.ck;
+                    b.disabled = k === 'go' ? !(this.challengePick && this.challengeAim) : !this.chalKeyTarget(k);
+                });
+                const swap = host.querySelector('[data-ck="swap"]');
+                const label = theirs ? 'Back to your characters' : "To the opponent's cards";
+                swap.title = label;
+                swap.setAttribute('aria-label', label);
+                swap.setAttribute('aria-pressed', theirs ? 'true' : 'false');
+                if (this.challengeAim) {
+                    const w = this.fieldWrap(this.challengeAim);
+                    if (w) w.classList.add('cm-aim');
+                    this.showAimArrow(this.challengePick, this.challengeAim);
+                } else {
+                    this.clearAimArrow();
+                }
             },
 
             // --- Card drawer (touch devices) --------------------------------------
@@ -11937,6 +12101,7 @@
             },
 
             renderFeature37Overlays() {
+                this.updateChalKeys();
                 this.updateChallengeBanner();
                 if (this._sheetIid) this.renderCardSheet();
                 if (this._inkPanelPlayer != null) this.renderInkPanel();
@@ -12346,7 +12511,7 @@
                 if (App._inkPanelPlayer != null) { App.closeInkPanel(); return; }
                 if (App._inkSel) { App.clearInkSel(); return; }
                 if (App.challengeMode) {
-                    if (App.challengePick) { App.challengePick = null; App.hideForecast(); App.clearAimArrow(); App.render(); }
+                    if (App.challengePick) { App.challengePick = null; App.challengeAim = null; App.hideForecast(); App.clearAimArrow(); App.render(); }
                     else App.exitChallengeMode();
                     return;
                 }

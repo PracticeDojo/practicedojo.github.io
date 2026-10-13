@@ -700,6 +700,20 @@ Implements version 2 of `docs/DESIGN-field-unit.md` (Kiln dark mode, signal fami
 - **Signal family.** By day the signal is Ember `#E4572E`; on Kiln it is Radio `#E86B2A` with dark text on the key. Tweaks → Accent offers only the approved swaps: **Signal** (the theme's own), **Coral**, **Olive** (its lore numeral lifts to `#C6C45A` on the well) and **Trace**. Each carries the text colour that sits on it. The old Amber / Rose / Emerald / Violet / Azure accents were ink colours, so a saved pick of one falls back to Signal.
 - **CSS file.** The Field Unit tokens, themes, palettes and component styles moved from the inline `<style>` to `app/css/field-unit.css`, loaded right after it (pixel-identical move). The older inline rules stay put.
 
+## Feature 62: Challenge keys on phones (v3.15.0)
+
+### User Story
+- As a player on a phone, I want challenge mode to have thumb keys like the Multiverse's, so I can pick my challenger and its target with arrows, see the arrow and the outcome, and only then commit.
+
+### Details
+- **The keys** (phones, challenge mode on): two rows of three, bottom right of your side above the bar, the same keys as the Multiverse's. Top: the fist (challenge), ▲, swap. Bottom: ◀ ▼ ▶. A key that can't go anywhere is hollow.
+- **Your side first.** The mode opens on your first ready character as the challenger. ◀ ▶ step through your characters in reading order, ▲ ▼ go to the row above / below.
+- **Swap** (or ▲ off your top row) moves to the opponent's cards, on the one nearest above your challenger; the key stays down while you're there. ◀ ▶ ▲ ▼ aim at their cards. Swap again (or ▼ off their bottom row) goes back.
+- **Aimed:** the red aim arrow runs from your challenger to the target, the target is lit, every opposing card keeps its outcome badge, and the banner reads *Challenger → Target*. The fist turns Coral; press it to challenge. You stay in the mode to challenge again.
+- **Taps** work with the keys: tap your character to pick it, tap an opposing card to aim at it, tap it again (or the fist) to challenge.
+- **Leaving:** a tap on the bare battlefield leaves challenge mode (Done is gone on phones; the top bar's Challenge and ending the turn still leave it). A long press doesn't open the turn note while the mode is on.
+- The banner shrinks to the space beside the keys.
+
 ## Feature 61: Card modifiers (v3.14.0)
 
 ### User Story
@@ -1116,3 +1130,4 @@ The public page (`index.html`) follows Field Unit too, as `docs/DESIGN-field-uni
 - [x] Feature 58: Guided tours for first-time players
 - [x] Feature 59: "You're the referee" tour — card effects are yours to carry out
 - [x] Feature 60: Ink drops counter (Hyperia City)
+- [x] Feature 62: Challenge keys on phones
