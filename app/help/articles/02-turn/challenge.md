@@ -7,7 +7,7 @@ aliases: [attack, fight, challenge mode, combat, block]
 targets: [challenge-mode, challenge-banner, challenge-keys, field, opponent-field]
 related: [forecast, card-actions, modifiers]
 order: 90
-verified: v3.15.0
+verified: v3.16.0
 ---
 
 In a challenge, your character and the opposing card deal their strength to each other as damage. The Dojo works out the damage, exerts your character and banishes anything that ends up with damage equal to its willpower. [Modifiers](help:modifiers) on either card (+strength, Challenger, Resist, willpower) are counted.
@@ -18,6 +18,8 @@ Press **Challenge** in the top bar (or {key:C}). A bar across the board reads **
 
 :::desktop
 Drag one of your characters onto an opposing card. Or click your character, then click the target. With a character picked, hovering a target shows the forecast.
+
+Or use the arrow keys, like the phone's thumb keys. The first arrow picks your first ready character; {key:←} {key:→} {key:↑} {key:↓} step through your characters. {key:↑} off your top row moves to the opponent's cards: the arrows now aim, the target is lit and a red arrow runs to it with the forecast. Press {key:Enter} to challenge. {key:↓} off their bottom row goes back to your characters.
 :::
 
 :::touch

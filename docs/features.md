@@ -700,6 +700,16 @@ Implements version 2 of `docs/DESIGN-field-unit.md` (Kiln dark mode, signal fami
 - **Signal family.** By day the signal is Ember `#E4572E`; on Kiln it is Radio `#E86B2A` with dark text on the key. Tweaks → Accent offers only the approved swaps: **Signal** (the theme's own), **Coral**, **Olive** (its lore numeral lifts to `#C6C45A` on the well) and **Trace**. Each carries the text colour that sits on it. The old Amber / Rose / Emerald / Violet / Azure accents were ink colours, so a saved pick of one falls back to Signal.
 - **CSS file.** The Field Unit tokens, themes, palettes and component styles moved from the inline `<style>` to `app/css/field-unit.css`, loaded right after it (pixel-identical move). The older inline rules stay put.
 
+## Feature 63: Challenge mode arrow keys on desktop (v3.16.0)
+
+### User Story
+- As a player at a keyboard, I want challenge mode to take the same arrow selection as the phone keys, so I can pick my challenger and its target without the mouse, see the arrow and the forecast, and only then commit.
+
+### Details
+- **Arrows** (challenge mode on): the same moves as the phone keys (Feature 62). If nothing is picked, the first arrow picks your first ready character. ◀ ▶ step through your characters in reading order, ▲ ▼ go to the row above / below. ▲ off your top row moves to the opponent's cards, on the one nearest above your challenger; ◀ ▶ ▲ ▼ then aim, and ▼ off their bottom row comes back.
+- **Aimed:** the target is lit, the red aim arrow runs to it, the forecast (Light / Full) shows over it, and the banner reads *Challenger → Target. Enter to challenge*. **Enter** challenges; you stay in the mode.
+- **Mouse still works:** hovering another opposing card previews that one; moving off it goes back to the aimed card. Clicks and drags are unchanged. **Esc** drops the picked challenger, then leaves the mode.
+
 ## Feature 62: Challenge keys on phones (v3.15.0)
 
 ### User Story
@@ -1131,3 +1141,4 @@ The public page (`index.html`) follows Field Unit too, as `docs/DESIGN-field-uni
 - [x] Feature 59: "You're the referee" tour — card effects are yours to carry out
 - [x] Feature 60: Ink drops counter (Hyperia City)
 - [x] Feature 62: Challenge keys on phones
+- [x] Feature 63: Challenge mode arrow keys on desktop

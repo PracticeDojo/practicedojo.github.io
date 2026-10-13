@@ -1185,7 +1185,7 @@
     <script>
         let cardFuse = null;
 
-        const APP_VERSION = "v3.15.1"; // Centralized version string (v3: Field Unit)
+        const APP_VERSION = "v3.16.0"; // Centralized version string (v3: Field Unit)
 
         // Tweaks panel accent presets (hue values for the OKLCH accent ramp)
         // Tweaks → Accent: the approved Field Unit signals only (design.md ·
@@ -9455,7 +9455,15 @@
                     this.enterChallengeMode(mine ? this._hoverIid : null);
                     return true;
                 }
-                if (this.challengeMode || !this._hoverIid) return false;
+                // Feature 63: the phone keys' moves on the keyboard. Arrows pick your
+                // challenger, then aim at the opponent's cards; Enter challenges.
+                if (this.challengeMode) {
+                    const moves = { ArrowLeft: 'back', ArrowRight: 'fwd', ArrowUp: 'up', ArrowDown: 'down' };
+                    if (moves[k]) { this.chalKey(moves[k]); return true; }
+                    if (k === 'Enter' && this.challengePick && this.challengeAim) { this.chalKey('go'); return true; }
+                    return false;
+                }
+                if (!this._hoverIid) return false;
                 const f = this.findCard(this._hoverIid);
                 if (!f || f.loc !== 'field') return false;
                 const id = this._hoverIid, dmg = f.card.damage || 0;
@@ -9493,20 +9501,22 @@
                 this.challengePick = pickIid || null;
                 this.challengeAim = null;
                 // Feature 62: phones start on the first ready character, for the keys.
-                if (!this.challengePick && this.isPhoneUI()) {
-                    const p = this.state.players[this.state.activePlayer];
-                    const ready = (p.field || []).filter(c => {
-                        const db = this.cardDB[c.cardId];
-                        return db && db.type === 'Character';
-                    });
-                    const first = ready.find(c => !c.exerted && !c.drying) || ready[0];
-                    if (first) this.challengePick = first.instanceId;
-                }
+                if (!this.challengePick && this.isPhoneUI()) this.challengePick = this.firstChallenger();
                 document.getElementById('context-menu').style.display = 'none';
                 this.closeCardSheet();
                 this.closeInkPanel();
                 this.setHandFan(false);
                 this.render();
+            },
+            // The active player's first ready character (else their first character).
+            firstChallenger() {
+                const p = this.state.players[this.state.activePlayer];
+                const chars = (p.field || []).filter(c => {
+                    const db = this.cardDB[c.cardId];
+                    return db && db.type === 'Character';
+                });
+                const first = chars.find(c => !c.exerted && !c.drying) || chars[0];
+                return first ? first.instanceId : null;
             },
             exitChallengeMode() {
                 if (!this.challengeMode) return;
@@ -9533,11 +9543,13 @@
                 const pick = this.challengePick ? this.findCard(this.challengePick) : null;
                 const pdb = pick ? this.cardDB[pick.card.cardId] : null;
                 const verb = this.isTouchUI() ? 'tap' : 'tap or hover';
+                const keys = !this.isTouchUI();
                 const aim = pdb && this.challengeAim ? this.findCard(this.challengeAim) : null;
                 const adb = aim ? this.cardDB[aim.card.cardId] : null;
                 document.getElementById('challenge-banner-text').innerHTML = !this.isPhoneUI()
-                    ? (pdb ? `<b>${this._esc(pdb.name)}</b> → ${verb} an opponent`
-                        : `Drag or tap <b>any of your characters</b>, then an opponent`)
+                    ? (adb ? `<b>${this._esc(pdb.name)}</b> → <b>${this._esc(adb.name)}</b>. Enter to challenge`
+                        : pdb ? `<b>${this._esc(pdb.name)}</b> → ${verb} an opponent${keys ? ', or aim with the arrows' : ''}`
+                            : `Drag or tap <b>any of your characters</b>, then an opponent${keys ? '. Or use the arrows' : ''}`)
                     // Feature 62: phones steer with the keys; a tap on the battlefield leaves.
                     : adb ? `<b>${this._esc(pdb.name)}</b> → <b>${this._esc(adb.name)}</b>. Press the fist to challenge`
                         : pdb ? `<b>${this._esc(pdb.name)}</b> challenges. Swap to pick a target`
@@ -9714,6 +9726,7 @@
                 } else {
                     this.hideForecast();
                     this.clearAimArrow();
+                    if (this.challengeAim) this.drawChalAim();
                 }
             },
             // While a field card is dragged over an opponent's card (drag challenge).
@@ -9817,7 +9830,10 @@
                     }
                     return;
                 }
-                const t = this.chalKeyTarget(kind);
+                // Feature 63: on a desktop the mode can open with nothing picked; the
+                // first arrow picks your first ready character.
+                const t = this.challengePick || !this.firstChallenger()
+                    ? this.chalKeyTarget(kind) : { side: 'mine', iid: this.firstChallenger() };
                 if (!t) return;
                 if (t.side === 'mine') {
                     this.challengePick = t.iid;
@@ -9839,10 +9855,16 @@
                 const on = !!this.challengeMode && this.isPhoneUI();
                 host.hidden = !on;
                 document.body.classList.toggle('has-chal-keys', on);
-                if (!on) return;
+                if (!this.challengeMode) return;
                 const pick = this.challengePick ? this.findCard(this.challengePick) : null;
                 const aim = this.challengeAim ? this.findCard(this.challengeAim) : null;
                 if (!aim || aim.loc !== 'field' || aim.player.id === this.state.activePlayer || !pick) this.challengeAim = null;
+                // Feature 63: desktops steer with the arrow keys: the aimed card is lit,
+                // with the arrow and the forecast.
+                if (!on) {
+                    this.drawChalAim();
+                    return;
+                }
                 const theirs = this.chalSide() === 'theirs';
                 host.querySelectorAll('[data-ck]').forEach(b => {
                     const k = b.dataset.ck;
@@ -9853,10 +9875,14 @@
                 swap.title = label;
                 swap.setAttribute('aria-label', label);
                 swap.setAttribute('aria-pressed', theirs ? 'true' : 'false');
+                this.drawChalAim();
+            },
+            drawChalAim() {
                 if (this.challengeAim) {
                     const w = this.fieldWrap(this.challengeAim);
                     if (w) w.classList.add('cm-aim');
                     this.showAimArrow(this.challengePick, this.challengeAim);
+                    if (!this.isPhoneUI()) this.showForecast(this.challengePick, this.challengeAim);
                 } else {
                     this.clearAimArrow();
                 }

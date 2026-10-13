@@ -7,7 +7,7 @@ aliases: [hotkeys, keys, keyboard, key bindings, space, esc, escape, enter, arro
 targets: [mini-multiverse-keys]
 related: [hotkeys-not-working, card-actions, multiverse-navigate, gestures]
 order: 10
-verified: v3.11.0
+verified: v3.16.0
 ---
 
 Every key the Dojo answers to, grouped by where it works. Keys are single presses: the Dojo leaves anything with Ctrl, Cmd or Alt to your browser. If a key does nothing, see [Shortcuts don't do anything](help:hotkeys-not-working).
@@ -41,6 +41,17 @@ Point at a card in play, on either side, and press:
 | {key:C} | Challenge mode, with this character picked as the challenger (one of the active player's characters) |
 
 These work only while no window is open over the board, and not in challenge mode. The card's menu shows the same keys beside **Exert**, **Challenge…** and **Banish**.
+
+## In challenge mode
+
+| Key | What it does |
+|---|---|
+| {key:←} {key:→} | The previous or next card on the side you're on. The first arrow picks your first ready character |
+| {key:↑} {key:↓} | The row above or below. {key:↑} off your top row moves to the opponent's cards, {key:↓} off theirs comes back |
+| {key:Enter} | Challenge the card you're aiming at |
+| {key:Esc} | Drop the picked challenger, then leave challenge mode |
+
+[Read more](help:challenge)
 
 ## A card with keyboard focus
 
