@@ -2120,7 +2120,7 @@
     "import-replay",
     "hidden-information"
    ],
-   "verified": "v3.11.0",
+   "verified": "v3.16.1",
    "todo": false,
    "headings": [
     {
@@ -2139,7 +2139,7 @@
      "slug": "good-to-know"
     }
    ],
-   "body": "Bring a game you played on Duels.ink into the Dojo to look at it turn by turn and try other lines from any point.\n\n## Bring in a game\n\n1. Open the home screen.\n2. Paste the game's text log into the field, or press **Choose a file** for a replay file. You can also drop a file anywhere on the page.\n3. The readout says what it found: a **Duels.ink log** with its number of turns, or a **Duels.ink replay** with the players' names.\n4. Press **Study this game**.\n\n[Show me](show:readout)\n\nNo game to hand? Press **A Duels.ink log** under the field to load an example.\n\n## What you get\n\n- A new session named after the players or their inks, with *(Duels.ink)* at the end.\n- One Multiverse node per turn, with the turn's moves in its note and its card sections (played, inked, drawn and so on).\n- The board at the end of the game.\n\nOpen **Multiverse**, pick a turn and press **Play from here** to load it, then play it differently. See [The Multiverse](help:multiverse).\n\n## Good to know\n\n- A replay file rebuilds the game most exactly. A text log is fine too. Compare them in [Import a text log](help:import-log) and [Import a replay file](help:import-replay).\n- Some cards stay unknown: see [What an import knows and doesn't](help:hidden-information).\n- The Dojo can't fetch games from Duels.ink by itself. Copy or download the game there first.\n"
+   "body": "Bring a game you played on Duels.ink into the Dojo to look at it turn by turn and try other lines from any point.\n\n## Bring in a game\n\n1. Open the home screen.\n2. Paste the game's text log into the field, or press **Choose a file** for a replay file. You can also drop a file anywhere on the page.\n3. The readout says what it found: a **Duels.ink log** with its number of turns, or a **Duels.ink replay** with the players' names.\n4. Press **Study this game**.\n\n[Show me](show:readout)\n\nNo game to hand? Press **A Duels.ink log** under the field to load an example.\n\n## What you get\n\n- A new session named after the date and the players or their inks, with *(Duels.ink)* at the end.\n- One Multiverse node per turn, with the turn's moves in its note and its card sections (played, inked, drawn and so on).\n- The board at the end of the game.\n\nOpen **Multiverse**, pick a turn and press **Play from here** to load it, then play it differently. See [The Multiverse](help:multiverse).\n\n## Good to know\n\n- A replay file rebuilds the game most exactly. A text log is fine too. Compare them in [Import a text log](help:import-log) and [Import a replay file](help:import-replay).\n- Some cards stay unknown: see [What an import knows and doesn't](help:hidden-information).\n- The Dojo can't fetch games from Duels.ink by itself. Copy or download the game there first.\n"
   },
   {
    "id": "import-log",
@@ -2309,7 +2309,7 @@
     "library",
     "storage"
    ],
-   "verified": "v3.11.0",
+   "verified": "v3.16.1",
    "todo": false,
    "headings": [
     {
@@ -2333,7 +2333,7 @@
      "slug": "good-to-know"
     }
    ],
-   "body": "A session is one match with its whole Multiverse. The Dojo keeps every session on this device as you play, so you never lose a match by closing the tab.\n\n## What makes a session\n\nA new session starts when you:\n\n- press **Start match** on the home screen,\n- open a saved session file,\n- study a Duels.ink log or replay,\n- open a demo (it opens as your own copy).\n\nIt gets a name from the decks, like *Amber/Steel vs Ruby/Sapphire*. You can rename it: see [Save, save as copy, rename](help:save-and-rename).\n\n## Saving happens by itself\n\nEvery change you make is saved to this device about a second later, and again when you switch tabs or close the page. You don't have to press **Save**. Leaving to the home screen keeps the match too.\n\n## Pick up again\n\nThe home screen's **Pick up again** box lists your last session first (**Resume**), then your most recent ones, then the demos (**Explore**). The match on the board says **Back to it**. **All sessions** opens the [Library](help:library) with every session you have.\n\n[Show me](show:recent)\n\n## Good to know\n\n- Sessions live in this browser on this device. Clearing the site's data or closing a private window deletes them, and another browser or device doesn't have them. Export a file to keep a backup, or [sign in](help:account) to keep them in an account. See [Where your things are kept](help:storage).\n- **Auto-save every turn** (in the side rail, or the ☰ menu on a phone) is different: it saves a node in the [Multiverse](help:auto-save) at each turn.\n- If the Dojo can't save to this device, it tells you once: \"Couldn't save to this device. Export the session to keep it.\"\n"
+   "body": "A session is one match with its whole Multiverse. The Dojo keeps every session on this device as you play, so you never lose a match by closing the tab.\n\n## What makes a session\n\nA new session starts when you:\n\n- press **Start match** on the home screen,\n- open a saved session file,\n- study a Duels.ink log or replay,\n- open a demo (it opens as your own copy).\n\nIt gets a name from the date and the decks, like *Oct 13 · Steelsong Tempo vs Ruby/Sapphire*: a deck's name, or its inks when it has no name. You can rename it: see [Save, save as copy, rename](help:save-and-rename).\n\n## Saving happens by itself\n\nEvery change you make is saved to this device about a second later, and again when you switch tabs or close the page. You don't have to press **Save**. Leaving to the home screen keeps the match too.\n\n## Pick up again\n\nThe home screen's **Pick up again** box lists your last session first (**Resume**), then your most recent ones, then the demos (**Explore**). The match on the board says **Back to it**. **All sessions** opens the [Library](help:library) with every session you have.\n\n[Show me](show:recent)\n\n## Good to know\n\n- Sessions live in this browser on this device. Clearing the site's data or closing a private window deletes them, and another browser or device doesn't have them. Export a file to keep a backup, or [sign in](help:account) to keep them in an account. See [Where your things are kept](help:storage).\n- **Auto-save every turn** (in the side rail, or the ☰ menu on a phone) is different: it saves a node in the [Multiverse](help:auto-save) at each turn.\n- If the Dojo can't save to this device, it tells you once: \"Couldn't save to this device. Export the session to keep it.\"\n"
   },
   {
    "id": "save-and-rename",

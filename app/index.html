@@ -1185,7 +1185,7 @@
     <script>
         let cardFuse = null;
 
-        const APP_VERSION = "v3.16.0"; // Centralized version string (v3: Field Unit)
+        const APP_VERSION = "v3.16.1"; // Centralized version string (v3: Field Unit)
 
         // Tweaks panel accent presets (hue values for the OKLCH accent ramp)
         // Tweaks → Accent: the approved Field Unit signals only (design.md ·
@@ -1455,14 +1455,24 @@
                         : 'Lorcana Practice Dojo';
             },
 
-            // "Amethyst/Ruby vs Amber/Steel", or the player names a Duels.ink import carries.
-            defaultSessionTitle() {
+            // "Oct 13 · Steelsong Tempo vs Amber/Steel": today's date, then each side's
+            // deck name (its inks when it has none), or the player names a Duels.ink
+            // import carries.
+            defaultSessionTitle(deckNames) {
+                const date = new Date().toLocaleDateString([], { month: 'short', day: 'numeric' });
                 const ps = (this.state && this.state.players) || [];
                 const named = ps.some(p => p && p.name && !/^Player [12]$/.test(p.name));
-                if (named && ps.length === 2) return `${ps[0].name} vs ${ps[1].name}`;
-                const side = (i) => this.inkSlashLabel(this.getDeckColors(i));
+                if (named && ps.length === 2) return `${date} · ${ps[0].name} vs ${ps[1].name}`;
+                const side = (i) => (deckNames && deckNames[i]) || this.inkSlashLabel(this.getDeckColors(i));
                 const a = side(0), b = side(1);
-                return a && b ? `${a} vs ${b}` : 'Practice match';
+                return `${date} · ${a && b ? `${a} vs ${b}` : 'Practice match'}`;
+            },
+
+            // A seat's deck name for the session title. A pasted list's automatic
+            // name ("Amber/Steel · Oct 13") repeats the inks and date, so it gives none.
+            _seatTitleName(seat) {
+                if (!seat || !seat.name) return '';
+                return !seat.key && seat.name === this.deckAutoName(seat.decklist) ? '' : seat.name;
             },
 
             renameCurrentSession(value) {
@@ -4467,6 +4477,7 @@
                 }
                 const deck1Str = this.seats[1] ? this.seats[1].decklist : '';
                 const deck2Str = this.seats[2] ? this.seats[2].decklist : '';
+                const deckNames = [this._seatTitleName(this.seats[1]), this._seatTitleName(this.seats[2])];
 
                 // The match on the board keeps everything up to now; then it lets go,
                 // so nothing below can autosave into it.
@@ -4527,7 +4538,7 @@
                 // after the draw, so the dialog never opens on an empty hand.
                 this.state.mulliganPending = true;
                 this.render();
-                this._startNewSession(this.defaultSessionTitle());
+                this._startNewSession(this.defaultSessionTitle(deckNames));
             },
 
             // Returns the drawn CardInstance (or null). `track` records it in the turn's
