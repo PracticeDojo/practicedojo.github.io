@@ -700,6 +700,14 @@ Implements version 2 of `docs/DESIGN-field-unit.md` (Kiln dark mode, signal fami
 - **Signal family.** By day the signal is Ember `#E4572E`; on Kiln it is Radio `#E86B2A` with dark text on the key. Tweaks → Accent offers only the approved swaps: **Signal** (the theme's own), **Coral**, **Olive** (its lore numeral lifts to `#C6C45A` on the well) and **Trace**. Each carries the text colour that sits on it. The old Amber / Rose / Emerald / Violet / Azure accents were ink colours, so a saved pick of one falls back to Signal.
 - **CSS file.** The Field Unit tokens, themes, palettes and component styles moved from the inline `<style>` to `app/css/field-unit.css`, loaded right after it (pixel-identical move). The older inline rules stay put.
 
+## Patch: Decklists with Duels.ink's printing suffix (v3.16.2)
+
+Duels.ink exports a deck with the printing at the end of each line, `4 Ursula - Deceiver (3-90)`. Those lines used to be skipped, so a pasted list came out as 60 random cards.
+
+- **Pasted, typed, imported or edited lists** take the suffix. `deckInfo` and `parseDeck` share one line parser (`parseDeckLine`).
+- **The printing wins.** The `(set-number)` (or `(set-group-number)` for promos, like `9-P3-8`) is looked up first, so an Enchanted or promo printing resolves to its card. If it isn't found, the name is used. Lists without a suffix work as before.
+- The readout names a skipped line without its suffix.
+
 ## Feature 63: Challenge mode arrow keys on desktop (v3.16.0)
 
 ### User Story
@@ -1142,3 +1150,4 @@ The public page (`index.html`) follows Field Unit too, as `docs/DESIGN-field-uni
 - [x] Feature 60: Ink drops counter (Hyperia City)
 - [x] Feature 62: Challenge keys on phones
 - [x] Feature 63: Challenge mode arrow keys on desktop
+- [x] Patch: Decklists with Duels.ink's printing suffix

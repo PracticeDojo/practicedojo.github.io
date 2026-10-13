@@ -1185,7 +1185,7 @@
     <script>
         let cardFuse = null;
 
-        const APP_VERSION = "v3.16.1"; // Centralized version string (v3: Field Unit)
+        const APP_VERSION = "v3.16.2"; // Centralized version string (v3: Field Unit)
 
         // Tweaks panel accent presets (hue values for the OKLCH accent ramp)
         // Tweaks → Accent: the approved Field Unit signals only (design.md ·
@@ -2043,19 +2043,17 @@
                 this._deckInfoCache = this._deckInfoCache || new Map();
                 const key = String(text || '');
                 if (this._deckInfoCache.has(key)) return this._deckInfoCache.get(key);
-                const regex = /^(\d+)\s+(.+)$/;
                 let count = 0;
                 const unmatched = [];
                 const inks = new Set();
                 key.split('\n').forEach(line => {
                     const t = line.trim();
                     if (!t) return;
-                    const m = t.match(regex);
+                    const m = this.parseDeckLine(t);
                     if (!m) { unmatched.push(t); return; }
-                    const name = m[2].toLowerCase().trim();
-                    const card = this.cardDB[name] || this.allCards.find(c => c.name.toLowerCase() === name || (c.fullName && c.fullName.toLowerCase() === name));
-                    if (!card) { unmatched.push(m[2].trim()); return; }
-                    count += parseInt(m[1]);
+                    const card = m.card;
+                    if (!card) { unmatched.push(m.name); return; }
+                    count += m.qty;
                     const cols = (card.colors && card.colors.length) ? card.colors : (card.color ? String(card.color).split('-') : []);
                     cols.forEach(c => { const k = String(c).trim().toLowerCase(); if (k) inks.add(k); });
                 });
@@ -2063,6 +2061,28 @@
                 if (this._deckInfoCache.size > 200) this._deckInfoCache.clear();
                 this._deckInfoCache.set(key, info);
                 return info;
+            },
+
+            // One decklist line -> { qty, name, card }, or null when it isn't "<qty> <card>".
+            // Takes both "4 Ursula - Deceiver" and Duels.ink's export, which ends each
+            // line with the printing, "4 Ursula - Deceiver (3-90)". The printing (set-number,
+            // or set-group-number for promos) is looked up first: it is exact, and survives a
+            // name that differs from the card DB's. The name is the fallback.
+            parseDeckLine(line) {
+                const m = String(line || '').trim().match(/^(\d+)\s+(.+)$/);
+                if (!m) return null;
+                let name = m[2].trim();
+                let card = null;
+                const ref = name.match(/\s*\(\s*([A-Za-z0-9]+(?:-[A-Za-z0-9]+)*-\d+)\s*\)$/);
+                if (ref) {
+                    name = name.slice(0, ref.index).trim();
+                    card = this.setNumberIndex[ref[1]] || null;
+                }
+                if (!card) {
+                    const key = name.toLowerCase();
+                    card = this.cardDB[key] || this.allCards.find(c => c.name.toLowerCase() === key || (c.fullName && c.fullName.toLowerCase() === key)) || null;
+                }
+                return { qty: parseInt(m[1], 10), name, card };
             },
 
             sortInks(inks) {
@@ -4330,18 +4350,11 @@
 
                 const lines = text.split('\n');
                 let deck = [];
-                const regex = /^(\d+)\s+(.+)$/;
 
                 for (let line of lines) {
-                    const match = line.trim().match(regex);
-                    if (match) {
-                        let qty = parseInt(match[1]);
-                        let name = match[2].toLowerCase().trim();
-                        let card = this.cardDB[name] || this.allCards.find(c => c.name.toLowerCase() === name || (c.fullName && c.fullName.toLowerCase() === name));
-
-                        if (card) {
-                            for (let i = 0; i < qty; i++) deck.push(card.id);
-                        }
+                    const m = this.parseDeckLine(line);
+                    if (m && m.card) {
+                        for (let i = 0; i < m.qty; i++) deck.push(m.card.id);
                     }
                 }
 
