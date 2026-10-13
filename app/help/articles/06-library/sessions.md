@@ -7,7 +7,7 @@ aliases: [continue, resume, my matches, saved games, autosave]
 targets: [recent, all-sessions, session-title]
 related: [save-and-rename, library, storage]
 order: 10
-verified: v3.11.0
+verified: v3.16.1
 ---
 
 A session is one match with its whole Multiverse. The Dojo keeps every session on this device as you play, so you never lose a match by closing the tab.
@@ -21,7 +21,7 @@ A new session starts when you:
 - study a Duels.ink log or replay,
 - open a demo (it opens as your own copy).
 
-It gets a name from the decks, like *Amber/Steel vs Ruby/Sapphire*. You can rename it: see [Save, save as copy, rename](help:save-and-rename).
+It gets a name from the date and the decks, like *Oct 13 · Steelsong Tempo vs Ruby/Sapphire*: a deck's name, or its inks when it has no name. You can rename it: see [Save, save as copy, rename](help:save-and-rename).
 
 ## Saving happens by itself
 

@@ -7,7 +7,7 @@ aliases: [import game, duels.ink, duels ink, review game, replay a game, analyse
 targets: [intake, readout, example-log]
 related: [import-log, import-replay, hidden-information]
 order: 10
-verified: v3.11.0
+verified: v3.16.1
 ---
 
 Bring a game you played on Duels.ink into the Dojo to look at it turn by turn and try other lines from any point.
@@ -25,7 +25,7 @@ No game to hand? Press **A Duels.ink log** under the field to load an example.
 
 ## What you get
 
-- A new session named after the players or their inks, with *(Duels.ink)* at the end.
+- A new session named after the date and the players or their inks, with *(Duels.ink)* at the end.
 - One Multiverse node per turn, with the turn's moves in its note and its card sections (played, inked, drawn and so on).
 - The board at the end of the game.
 
