@@ -8652,8 +8652,8 @@ body:not(.ink-drops-on) .ink-drops {
 
 /* Floating badge over the card art in the preview */
 #preview-ink-gem {
-    --gem-h: 56px;
-    font-size: 17px;
+    --gem-h: 39px;
+    font-size: 12px;
 }
 
 /* Text card in the preview, on the dark glass */
