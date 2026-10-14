@@ -708,18 +708,21 @@ Duels.ink exports a deck with the printing at the end of each line, `4 Ursula - 
 - **The printing wins.** The `(set-number)` (or `(set-group-number)` for promos, like `9-P3-8`) is looked up first, so an Enchanted or promo printing resolves to its card. If it isn't found, the name is used. Lists without a suffix work as before.
 - The readout names a skipped line without its suffix.
 
-## Feature 64: Craft from a saved game — copy an opening's hand and deck order (v3.18.0)
+## Feature 64: Build or replay an opening hand — Draw · Build · Replay (v3.18.0)
 
 ### User Story
-- As a player, I want to start a game from the exact opening a deck had in another game (its hand and its deck order), so I can see whether a different line or a different deck beats the same draws.
+- As a player, I want to make my opening hand three ways in one place: draw it and mulligan, build it card by card, or replay the exact opening (hand and deck order) a deck had in another game, so I can see whether a different line or a different deck beats the same draws.
 
 ### Details
-- **Where:** **From a saved game** in the Craft Starting Hand dialog, while the seat is on its mulligan. Three steps with **Back**: a game (saved games on this device, then the demos; not the game on the board, not Duels.ink imports), one of its two decks (who went first, how many openings), then an opening (one row per distinct hand + deck order, labelled kept / mull N / crafted / copied, with the seven cards). A deck with a single opening skips the last step.
-- **What lands:** the seat on its mulligan gets that hand and deck order exactly and the opening is settled. The second player still draws their top card in the draw step; the first player doesn't.
-- **Different deck:** if the cards (by name and count) differ from the seat's deck, the Dojo asks **Switch deck?** Yes puts that exact deck on the seat (the library deck with the same cards if there is one, otherwise a pasted list) and updates an automatic session title; the opponent is untouched. Cancel changes nothing.
-- **Recorded openings:** every board now keeps each seat's settled opening (`openings` in the saved state: hand, deck order before the draw step, and how it was settled), so new games copy exactly.
+- **One dialog, three modes.** The mulligan dialog's header has **Draw · Build · Replay** (full-width tabs under the title on a phone). It always opens on Draw. After a mulligan only the new hand is left, so the switch goes away. Build and Replay replace the old Craft Starting Hand dialog.
+- **Draw** is the mulligan as before (Feature 54).
+- **Build:** the hand's seven slots sit in the glass like the mulligan's hand, with the curve, inkable pips and a Picked count. The deck is a pool of card art on the right rail (below the hand on a phone, where the glass is one compact row), cheapest first, with Find a card and cost filters (desktop). Dots under a card are its copies, filled for the ones in hand; a card fades once all are in. A click adds a copy to the next slot (outlined); a click on a hand card takes it out (✕ on desktop). **Fill the rest at random** (Random on a phone), **Clear**, and the key reads *Pick N more* until it's *Keep this hand*. The rest of the deck is shuffled.
+- **Replay:** the rail lists every opening in the saved games on this device (not the game on the board, not Duels.ink imports) and the demos, grouped by game: deck, on the play or the draw, how the hand was settled (kept / mull N / built / replayed), and a Your deck / Other deck badge. **Your deck / All** (Your deck first, All when it has none) and Find a game or deck. The picked opening shows in the glass with its curve, inkable pips and **Your next draws**: the next four cards, labelled by the turn this seat draws them. Phones show the list first; an opening opens its preview, **Openings** goes back.
+- **What lands:** that exact hand and deck order on the seat on its mulligan. The second player still draws their top card in the draw step; the first player doesn't.
+- **Different deck:** said before you commit: the footer names the deck you'll get and the key reads **Switch deck and play**. The seat takes that deck (the library deck with the same cards if there is one, otherwise a pasted list) and an automatic session title follows; the opponent is untouched.
+- **Recorded openings:** every board keeps each seat's settled opening (`openings` in the saved state: hand, deck order before the draw step, and how it was settled), so new games replay exactly.
 - **Older saves:** rebuilt from the node auto-saved as Player 2's turn 1 starts. Player 1: the kept hand (Turn Starting Hand) and the deck with turn 1's draws put back on top. Player 2: the hand minus the draw-step card, which goes back on top. A deck shuffled or reordered on turn 1 shows its opening greyed out.
-- Only the opening is copied: later shuffles are random. The log and the turn recap say where the opening came from.
+- Only the opening is replayed: later shuffles are random. The log and the turn recap say where it came from.
 
 ## Feature 63: Challenge mode arrow keys on desktop (v3.16.0)
 
@@ -1166,4 +1169,4 @@ The public page (`index.html`) follows Field Unit too, as `docs/DESIGN-field-uni
 - [x] Feature 62: Challenge keys on phones
 - [x] Feature 63: Challenge mode arrow keys on desktop
 - [x] Patch: Decklists with Duels.ink's printing suffix
-- [x] Feature 64: Craft from a saved game — copy an opening's hand and deck order
+- [x] Feature 64: Build or replay an opening hand — Draw · Build · Replay

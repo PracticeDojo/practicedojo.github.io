@@ -406,7 +406,7 @@
     "draw-odds",
     "draw"
    ],
-   "verified": "v3.11.0",
+   "verified": "v3.18.0",
    "todo": false,
    "headings": [
     {
@@ -430,24 +430,26 @@
      "slug": "good-to-know"
     }
    ],
-   "body": "Each player's first turn opens on the mulligan. Player 1 chooses as the match starts. Player 2 chooses when Player 1 ends their first turn, before Player 2's draw, so they choose from the seven they were dealt.\n\n## Keep or send cards back\n\nThe dialog shows your seven, cheapest first. The head says whether you're **on the play** (no draw turn 1) or **on the draw** (you draw one once you've chosen).\n\n:::desktop\nClick a card to mark it to go to the bottom; click it again to unmark it. To read a card, click the magnifier in its corner: the card grows in place. Any click or {key:Esc} puts it back.\n:::\n\n:::phone\nTap a card to mark it to go to the bottom; tap it again to unmark it. To read a card, {gesture:long-press} it: it shows large with its name, cost and type. Tap anywhere to close it; that tap marks nothing.\n:::\n\nA marked card sinks and shows `↓ Bottom`. Then press the one button at the foot:\n\n- **Keep hand** when nothing is marked: the hand stays and the deck isn't touched.\n- **Mulligan N cards** otherwise: the marked cards go to the bottom of the deck, you draw as many from the top, then the deck is shuffled.\n\n[Show me](show:mulligan-confirm)\n\n## Read the hand before you choose\n\nUnder the hand, the readout follows your marks: the **Curve** of the cards you'd keep (the ones going back show dashed), **Inkable** (how many you'd keep can be inked) and the plan (`5 kept + 2 redraw`).\n\n**Draw odds** show your chance to find each card: **RD** among the redraws, then within the next turns' draws. Phones show the top three rows; press **All** for the rest.\n\n[Show me](show:mulligan-readout)\n\n## After a mulligan\n\nThe dialog stays open on your new hand. The new cards carry a **NEW** tag and the readout says how many went back and were drawn. You can't mark cards again. Press **Start turn** (or **Draw and start turn** for Player 2) to play.\n\n## Good to know\n\n- Nothing else works until the hand is settled: no hotkeys, and the turn can't end.\n- **Craft hand** picks your seven by hand instead. See [Craft a starting hand](help:craft-hand).\n- **Undo** after the turn has started brings the mulligan back.\n- Leave for the home screen mid-mulligan and the dialog is waiting when you come back.\n"
+   "body": "Each player's first turn opens on the mulligan. Player 1 chooses as the match starts. Player 2 chooses when Player 1 ends their first turn, before Player 2's draw, so they choose from the seven they were dealt.\n\n## Keep or send cards back\n\nThe dialog shows your seven, cheapest first. The head says whether you're **on the play** (no draw turn 1) or **on the draw** (you draw one once you've chosen).\n\n:::desktop\nClick a card to mark it to go to the bottom; click it again to unmark it. To read a card, click the magnifier in its corner: the card grows in place. Any click or {key:Esc} puts it back.\n:::\n\n:::phone\nTap a card to mark it to go to the bottom; tap it again to unmark it. To read a card, {gesture:long-press} it: it shows large with its name, cost and type. Tap anywhere to close it; that tap marks nothing.\n:::\n\nA marked card sinks and shows `↓ Bottom`. Then press the one button at the foot:\n\n- **Keep hand** when nothing is marked: the hand stays and the deck isn't touched.\n- **Mulligan N cards** otherwise: the marked cards go to the bottom of the deck, you draw as many from the top, then the deck is shuffled.\n\n[Show me](show:mulligan-confirm)\n\n## Read the hand before you choose\n\nUnder the hand, the readout follows your marks: the **Curve** of the cards you'd keep (the ones going back show dashed), **Inkable** (how many you'd keep can be inked) and the plan (`5 kept + 2 redraw`).\n\n**Draw odds** show your chance to find each card: **RD** among the redraws, then within the next turns' draws. Phones show the top three rows; press **All** for the rest.\n\n[Show me](show:mulligan-readout)\n\n## After a mulligan\n\nThe dialog stays open on your new hand. The new cards carry a **NEW** tag and the readout says how many went back and were drawn. You can't mark cards again. Press **Start turn** (or **Draw and start turn** for Player 2) to play.\n\n## Good to know\n\n- Nothing else works until the hand is settled: no hotkeys, and the turn can't end.\n- **Build** and **Replay**, next to **Draw** at the top, make the hand another way: pick your seven, or copy an opening from a saved game. See [Build or replay an opening hand](help:craft-hand).\n- **Undo** after the turn has started brings the mulligan back.\n- Leave for the home screen mid-mulligan and the dialog is waiting when you come back.\n"
   },
   {
    "id": "craft-hand",
    "section": "turn",
-   "title": "Craft a starting hand",
-   "summary": "Pick your seven from the whole deck, or copy an opening from a saved game, to practise a specific opener.",
+   "title": "Build or replay an opening hand",
+   "summary": "Pick your seven from the whole deck, or replay the exact hand and deck order of an opening from a saved game.",
    "devices": [
     "desktop",
     "phone"
    ],
    "aliases": [
     "craft hand",
+    "build hand",
     "choose opening hand",
     "pick starting hand",
     "custom hand",
     "set hand",
     "opening hand",
+    "replay opening",
     "copy opening",
     "same shuffle",
     "replay shuffle",
@@ -456,23 +458,24 @@
     "seed"
    ],
    "targets": [
-    "craft-hand"
+    "craft-hand",
+    "replay-opening"
    ],
    "related": [
     "mulligan"
    ],
-   "verified": "v3.17.0",
+   "verified": "v3.18.0",
    "todo": false,
    "headings": [
     {
      "level": 2,
-     "text": "Craft your opening hand",
-     "slug": "craft-your-opening-hand"
+     "text": "Build your seven",
+     "slug": "build-your-seven"
     },
     {
      "level": 2,
-     "text": "Copy an opening from a saved game",
-     "slug": "copy-an-opening-from-a-saved-game"
+     "text": "Replay an opening",
+     "slug": "replay-an-opening"
     },
     {
      "level": 2,
@@ -480,7 +483,7 @@
      "slug": "good-to-know"
     }
    ],
-   "body": "Crafting lets you choose your opening hand card by card, so you can practise one opener again and again.\n\n## Craft your opening hand\n\n1. When your mulligan opens, press **Craft hand** (**Craft** on a phone). [Show me](show:craft-hand)\n2. **Craft Starting Hand** shows every different card in your deck, cheapest first. Each says how many you've picked of how many the deck has (`1/4`).\n3. Add a copy by clicking (or tapping) the card. You can't pick more copies than the deck has, or more than seven cards.\n\n:::mouse\nRight-click a card to take one copy back out.\n:::\n\n:::touch\nTo start over, press **Clear**.\n:::\n\n4. When **Selected** reads `7 / 7`, press **Confirm Hand**. The rest of the deck is shuffled and your turn starts. Player 2 draws for the turn first, as usual.\n\n## Copy an opening from a saved game\n\nReplay the exact luck of another game: the same seven in hand and the same deck order underneath, so you see the same draws. Use it to test whether another line, or another deck, beats the draws a deck had.\n\n1. In **Craft Starting Hand**, press **From a saved game**.\n2. **Pick a game**: your saved games on this device, then the demos. The game on the board and Duels.ink imports aren't listed (an import doesn't know the hidden deck order).\n3. **Pick a deck**: either player's deck from that game. It says whether that deck went first or was on the draw, and how many openings it has.\n4. **Pick an opening**: each different opening that deck had in the game's Multiverse, labelled **kept**, **mull 2** and so on, with its seven cards. When there's only one, this step is skipped.\n\nThe hand and deck order land on the seat that's on its mulligan. Going second, you still draw your top card for the turn; going first, you don't.\n\n- If the opening is from a different deck, the Dojo asks whether to **Switch deck**. Yes puts that exact deck on your seat (your opponent's deck stays). **Cancel** changes nothing.\n- Only the opening is copied. Shuffles later in the game are random again.\n- An older game whose deck was shuffled or reordered on turn 1 can't give back its order; that opening shows greyed out.\n- The log and the turn's recap say where the opening came from. **Back** steps back through the picker.\n\n## Good to know\n\n- **Back** (or **×**) returns to the mulligan without changing anything.\n- Crafting takes the place of the mulligan: once you confirm, the opening hand is settled.\n- Changed your mind? **Undo** brings the mulligan back.\n"
+   "body": "The opening-hand dialog makes your hand three ways. The switch at its top picks one: **Draw** is the dealt seven and the mulligan, **Build** picks the seven yourself, and **Replay** copies an opening from another game. It always opens on **Draw**.\n\n## Build your seven\n\nPractise one opener again and again by picking it card by card.\n\n1. When your mulligan opens, press **Build**. [Show me](show:craft-hand)\n2. Your hand is in the middle: seven empty slots. Your deck is on the right (below the hand on a phone), cheapest first. The dots under a card are its copies, filled for the ones in your hand.\n3. Click (or tap) a card in the deck to put it in the next slot. Click a card in your hand to take it out.\n4. **Find a card** searches by name, and the cost buttons (desktop) show one cost at a time.\n5. **Fill the rest at random** (**Random** on a phone) fills the empty slots from what's left of the deck: pick the two cards you care about and let the rest be random.\n6. When all seven are in, press **Keep this hand**. The rest of the deck is shuffled and your turn starts. Player 2 draws for the turn first, as usual.\n\n## Replay an opening\n\nReplay the exact luck of another game: the same seven in hand and the same deck order underneath, so you see the same draws. Use it to test whether another line, or another deck, beats the draws a deck had.\n\n1. When your mulligan opens, press **Replay**. [Show me](show:replay-opening)\n2. The list shows every opening in your saved games on this device, then in the demos, grouped by game. Each one says its deck, whether it was on the play or the draw, and how the hand was settled (**kept**, **mull 2**, **built**…). The game on the board and Duels.ink imports aren't listed: an import doesn't know the hidden deck order.\n3. **Your deck** shows only openings of the deck you have here; **All** shows every deck. **Find a game or deck** searches the list.\n4. Pick an opening. Its seven cards show in the middle with their curve, and **Your next draws** shows the next four cards, labelled by the turn you'd draw them on. On a phone the opening opens on its own; **Openings** goes back to the list.\n5. Press **Play this opening**. Going second, you still draw your top card for the turn; going first, you don't.\n\nIf the opening is from a different deck, the button says **Switch deck and play** and the line beside it says which deck you get. Your opponent's deck stays as it is.\n\n## Good to know\n\n- Only the opening is copied. Shuffles later in the game are random again.\n- An older game whose deck was shuffled or reordered on turn 1 can't give back its order: that opening shows greyed out.\n- The log and the turn's recap say where a replayed opening came from.\n- Building or replaying takes the place of the mulligan: once you keep the hand, it's settled. **Undo** brings the mulligan back.\n"
   },
   {
    "id": "draw",
@@ -3701,9 +3704,9 @@
    "any": "#mulligan-confirm"
   },
   "craft-hand": {
-   "label": "Craft hand",
+   "label": "Build",
    "screen": "mulligan",
-   "any": "#mulligan-craft"
+   "any": "#mull-mode-build"
   },
   "tree-canvas": {
    "label": "the Multiverse canvas",
@@ -3914,6 +3917,11 @@
    "label": "the card held up close",
    "screen": "mulligan",
    "phone": "#mulligan-peek"
+  },
+  "replay-opening": {
+   "label": "Replay",
+   "screen": "mulligan",
+   "any": "#mull-mode-replay"
   }
  },
  "synonyms": [

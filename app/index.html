@@ -409,6 +409,16 @@
                             send cards back</em><em class="mull-short" id="mulligan-title-tail-short">· mulligan</em>
                     </h2>
                 </div>
+                <!-- Feature 64: how the opening hand is made. Draw = the dealt seven (mulligan),
+                     Build = pick them, Replay = an opening from a saved game. -->
+                <div class="seg mull-modes" id="mull-modes" role="group" aria-label="Opening hand">
+                    <button type="button" id="mull-mode-draw" data-mode="draw" aria-pressed="true"
+                        onclick="App.setOpeningMode('draw')">Draw</button>
+                    <button type="button" id="mull-mode-build" data-mode="build" aria-pressed="false"
+                        onclick="App.setOpeningMode('build')">Build</button>
+                    <button type="button" id="mull-mode-replay" data-mode="replay" aria-pressed="false"
+                        onclick="App.setOpeningMode('replay')">Replay</button>
+                </div>
                 <div class="mull-head-figs">
                     <div class="mull-long">
                         <div class="mull-lbl" id="mulligan-draw-label">Then you draw</div>
@@ -422,6 +432,10 @@
                 </div>
             </div>
             <div class="mull-body">
+                <!-- Replay on phones: the preview's way back to the list -->
+                <button type="button" class="mull-back" id="mull-back" onclick="App.replayBack()"><i
+                        class="fa-solid fa-chevron-left" aria-hidden="true"></i> Openings <span class="mull-lbl"
+                        id="mull-back-what"></span></button>
                 <div class="mull-well">
                     <div id="mulligan-hand" class="mull-hand">
                         <!-- Cards injected here -->
@@ -452,57 +466,49 @@
                         </div>
                         <div class="prob-list" id="mulligan-prob"></div>
                     </div>
+                    <!-- Build: the deck as a pool of cards; a click puts one in the next slot -->
+                    <div class="mull-pool" id="mull-pool">
+                        <div class="mull-rail-head"><span class="mull-lbl">Your deck</span><span class="mull-odds-n"
+                                id="mull-pool-n"></span></div>
+                        <div class="mull-rail-tools">
+                            <label class="mull-find"><i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i><input
+                                    type="search" id="mull-pool-find" placeholder="Find a card" autocomplete="off"
+                                    oninput="App.setPoolQuery(this.value)"></label>
+                            <div class="mull-costs" id="mull-pool-costs"></div>
+                        </div>
+                        <div class="mull-pool-grid" id="mull-pool-grid"></div>
+                    </div>
+                    <!-- Replay: every opening the saved games and demos hold -->
+                    <div class="mull-openings" id="mull-openings">
+                        <div class="mull-rail-head"><span class="mull-lbl">Openings</span>
+                            <div class="seg" id="mull-op-filter">
+                                <button type="button" data-f="mine" onclick="App.setReplayFilter('mine')">Your deck</button>
+                                <button type="button" data-f="all" onclick="App.setReplayFilter('all')">All</button>
+                            </div>
+                        </div>
+                        <div class="mull-rail-tools">
+                            <label class="mull-find"><i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i><input
+                                    type="search" id="mull-op-find" placeholder="Find a game or deck" autocomplete="off"
+                                    oninput="App.setReplayQuery(this.value)"></label>
+                        </div>
+                        <div class="mull-op-list" id="mull-op-list"></div>
+                    </div>
                 </div>
                 <div class="mull-lbl mull-hint mull-short" id="mulligan-hint-short">Tap to mark · hold to look closer
                 </div>
             </div>
             <div class="mull-foot">
                 <div class="mull-lbl mull-hint mull-long" id="mulligan-hint"></div>
-                <button class="btn btn-ghost mull-craft" id="mulligan-craft" onclick="App.openCraftHand()"
-                    title="Pick your seven from the whole deck instead"><i class="fa-solid fa-wand-magic-sparkles"></i>
-                    <span class="mull-long">Craft hand</span><span class="mull-short">Craft</span></button>
+                <div class="mull-note" id="mull-note"></div>
+                <button type="button" class="btn btn-ghost mull-build-only" id="mull-random"
+                    onclick="App.buildFillRandom()"><i class="fa-solid fa-dice" aria-hidden="true"></i> <span
+                        class="mull-long">Fill the rest at random</span><span class="mull-short">Random</span></button>
+                <button type="button" class="btn btn-ghost mull-build-only mull-long" id="mull-clear"
+                    onclick="App.buildClear()">Clear</button>
                 <button class="btn btn-primary" id="mulligan-confirm" onclick="App.confirmMulligan()">Keep hand</button>
             </div>
             <!-- Press and hold a card (touch): it shows large until the next touch. -->
             <div class="mull-peek" id="mulligan-peek" hidden aria-hidden="true"></div>
-        </div>
-    </div>
-
-    <!-- Craft Hand Modal -->
-    <div id="craft-hand-modal" role="dialog" aria-modal="true" aria-labelledby="craft-hand-title"
-        class="modal-backdrop fixed inset-0 flex items-center justify-center hidden p-6" style="z-index:90">
-        <div class="modal-card wide">
-            <div class="modal-head">
-                <h2><span id="craft-hand-title">Craft Starting Hand</span></h2>
-                <button class="close" onclick="App.backToMulligan()" title="Back to the mulligan">&times;</button>
-            </div>
-            <div class="modal-body" id="craft-pick-view" style="display:flex;flex-direction:column;gap:12px;">
-                <p class="muted">Left-click a card to add a copy to your starting hand (7 total). Right-click to remove
-                    a copy. You can only add as many copies as your deck contains.</p>
-                <div class="flex items-center justify-between">
-                    <div style="font-size:13px;color:var(--text)">Selected: <span id="craft-hand-count"
-                            style="color:var(--accent-hi);font-weight:700">0</span> / 7</div>
-                    <div class="craft-tools">
-                        <button class="btn btn-ghost" id="craft-from-saved" onclick="App.openCraftFromSaved()"><i
-                                class="fa-solid fa-clock-rotate-left"></i> From a saved game</button>
-                        <button class="btn btn-ghost" onclick="App.clearCraftHand()">Clear</button>
-                    </div>
-                </div>
-                <div id="craft-hand-grid" class="card-grid"
-                    style="grid-template-columns:repeat(auto-fill,minmax(90px,1fr))">
-                    <!-- Unique deck cards injected here -->
-                </div>
-            </div>
-            <!-- Feature 64: copy an opening (hand + deck order) from a saved game -->
-            <div class="modal-body cfs" id="craft-saved-view" hidden>
-                <div class="cfs-crumb" id="craft-saved-crumb"></div>
-                <div class="cfs-list" id="craft-saved-list"></div>
-            </div>
-            <div class="modal-foot">
-                <button class="btn btn-ghost" onclick="App.craftBack()">Back</button>
-                <button class="btn btn-primary" id="craft-hand-confirm" onclick="App.confirmCraftHand()">Confirm
-                    Hand</button>
-            </div>
         </div>
     </div>
 
@@ -1258,8 +1264,6 @@
             setNumberIndex: {}, // Maps duels.ink "setCode-number" ids (e.g. "10-57") -> cardDB entry
             allCards: [],
             mulliganSelection: [],
-            craftSelection: {},
-            craftPoolCounts: {},
 
             bookmarks: [],
             autoSaves: [],
@@ -7653,7 +7657,7 @@
             // --- Mulligan Handlers ---
 
             // Mulligan mode (Feature 54): a player's first turn opens on their mulligan,
-            // and the dialog stays up until they keep, mulligan or craft. render() calls
+            // and the dialog stays up until they keep, mulligan, build or replay. render() calls
             // this, and so does leaving the home screen, so undo, a reload or a restored
             // board all land back in the dialog. Never over the home screen.
             syncMulliganMode() {
@@ -7662,7 +7666,7 @@
                     if (isOpen('mulligan-modal')) this.closeMulligan(); // the board moved on without it
                     return;
                 }
-                if (isOpen('setup-modal') || isOpen('craft-hand-modal')) return;
+                if (isOpen('setup-modal')) return;
                 // Open, and still showing the hand on the board: leave the marks alone.
                 if (isOpen('mulligan-modal') && this._mullHandKey === this._mulliganHandKey()) return;
                 this.openMulligan();
@@ -7677,24 +7681,17 @@
 
             // Two phases. Choosing: mark cards, then keep or mulligan. After a mulligan:
             // the new hand, its readout and the odds of the shuffled deck, until the
-            // turn starts. (Keeping or crafting goes straight to the turn.)
+            // turn starts. (Keeping, building or replaying goes straight to the turn.)
             openMulligan() {
                 const p = this.state.players[this.state.activePlayer];
                 const draw = !!this.state.drawPending;
                 const after = !!p.hasMulliganed;
                 document.querySelector('#mulligan-modal .mull-dlg').classList.toggle('is-after', after);
                 document.getElementById('mulligan-title').innerText = p.name;
-                document.getElementById('mulligan-title-tail').innerText = after ? '· your new hand' : '· keep it, or send cards back';
-                document.getElementById('mulligan-title-tail-short').innerText = after ? '· new hand' : '· mulligan';
                 document.getElementById('mulligan-deck-icon').className = `deck-icon is-p${p.id + 1}`;
                 // Phones drop "Opening hand ·" so the line fits.
                 document.getElementById('mulligan-context').innerHTML = `<span class="mull-long">Opening hand · </span>`
                     + `Turn ${this.state.turn} · ${after ? 'after the mulligan' : draw ? 'on the draw' : 'on the play'}`;
-                const look = '<i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>';
-                document.getElementById('mulligan-hint').innerHTML = after
-                    ? `<span class="mull-on-hover">Your new hand · ${look} to look closer</span><span class="mull-on-touch">Your new hand · hold a card to look closer</span>`
-                    : `<span class="mull-on-hover">Click a card to mark it · ${look} to look closer</span><span class="mull-on-touch">Tap a card to mark it · hold it to look closer</span>`;
-                document.getElementById('mulligan-hint-short').innerText = after ? 'Your new hand · hold to look closer' : 'Tap to mark · hold to look closer';
                 // The second player draws for the turn once they've chosen; the first has no draw on turn 1.
                 document.getElementById('mulligan-draw-label').innerText = draw ? 'Then you draw' : 'No draw turn 1';
                 document.getElementById('mulligan-draw-fig').innerText = draw ? '+1' : '—';
@@ -7702,9 +7699,11 @@
                 const odds = document.getElementById('mulligan-odds');
                 odds.classList.add('is-collapsed');
                 odds.querySelector('.mull-odds-more').setAttribute('aria-expanded', 'false');
-                this.mulliganSelection = [];
                 this._mullHandKey = this._mulliganHandKey();
-                this.renderMulliganCards();
+                // Feature 64: always opens on Draw; Build starts empty, Replay reloads.
+                this._build = null;
+                this._replay = null;
+                this.setOpeningMode('draw');
                 document.getElementById('mulligan-modal').classList.remove('hidden');
             },
 
@@ -7971,6 +7970,8 @@
             // top, then the deck is shuffled, and the dialog shows the new hand. Its
             // button then starts the turn. Undo comes back to the choice either way.
             confirmMulligan() {
+                if (this.openingMode === 'build') { this.confirmBuild(); return; }
+                if (this.openingMode === 'replay') { this.confirmReplay(); return; }
                 const p = this.state.players[this.state.activePlayer];
                 if (p.hasMulliganed) { // the new hand was on show
                     this.closeMulligan();
@@ -8046,7 +8047,7 @@
                 };
             },
 
-            // --- Craft Hand Handlers ---
+            // --- Opening hand: shared helpers ---
 
             // Flattens every card the player owns (across all zones, including stacks) into one pool.
             _collectAllCards(p) {
@@ -8061,269 +8062,462 @@
                 return pool;
             },
 
-            _craftSelectedTotal() {
-                return Object.values(this.craftSelection).reduce((a, b) => a + b, 0);
-            },
 
-            openCraftHand() {
+            // --- Opening hand modes (Feature 64): Draw · Build · Replay ---
+            // One dialog makes the opening hand three ways. Draw is the mulligan above.
+            // Build picks the seven: the hand fills the glass, the deck is a pool of
+            // cards on the rail. Replay copies an opening (hand and deck order) from a
+            // saved game or demo: the openings on the rail, the picked one in the glass
+            // with its next draws. The dialog always opens on Draw.
+
+            openingMode: 'draw',
+            _build: null,  // { picked: [cardId], cost: 'all' | 1–7, query }
+            _replay: null, // { rows, filter: 'mine' | 'all', query, sel, view: 'list' | 'preview' }
+            _replayCache: {}, // saved game id → its openings, for this page's life
+
+            setOpeningMode(mode) {
                 const p = this.state.players[this.state.activePlayer];
-                document.getElementById('craft-hand-title').innerText = `${p.name} — Craft Starting Hand`;
-                this.closeMulligan(); // crafting is the mulligan dialog's other way out
-                this.craftSelection = {};
-                // Count available copies of each unique card across the player's whole pool.
-                this.craftPoolCounts = {};
-                this._collectAllCards(p).forEach(c => {
-                    this.craftPoolCounts[c.cardId] = (this.craftPoolCounts[c.cardId] || 0) + 1;
+                if (mode !== 'draw' && p.hasMulliganed) return; // after a mulligan only the new hand is left
+                this.openingMode = mode;
+                this.closeMulliganLook();
+                this.hideMulliganPeek();
+                const dlg = document.getElementById('mulligan-dialog');
+                dlg.dataset.mode = mode;
+                dlg.dataset.view = '';
+                document.querySelectorAll('#mull-modes button').forEach(b => {
+                    b.setAttribute('aria-pressed', b.dataset.mode === mode ? 'true' : 'false');
                 });
-                this._cfs = null;
-                this._showCraftView(false);
-                this.renderCraftHand();
-                document.getElementById('craft-hand-modal').classList.remove('hidden');
+                document.getElementById('mulligan-confirm').disabled = false;
+                document.getElementById('mull-note').innerHTML = '';
+                this._setMulliganCopy();
+                if (mode === 'build') {
+                    if (!this._build) this._build = { picked: [], cost: 'all', query: '' };
+                    this.renderBuild();
+                } else if (mode === 'replay') {
+                    this.openReplay();
+                } else {
+                    this.mulliganSelection = [];
+                    this.renderMulliganCards();
+                }
             },
 
-            closeCraftHand() {
-                document.getElementById('craft-hand-modal').classList.add('hidden');
-                this._cfs = null;
-                this.craftSelection = {};
-                this.craftPoolCounts = {};
+            // The title's tail and the hints, for the mode and the phase.
+            _setMulliganCopy() {
+                const p = this.state.players[this.state.activePlayer];
+                const after = !!p.hasMulliganed;
+                const mode = after ? 'draw' : this.openingMode;
+                const set = (id, v) => { document.getElementById(id).innerHTML = v; };
+                const tails = {
+                    draw: after ? ['· your new hand', '· new hand'] : ['· keep it, or send cards back', '· mulligan'],
+                    build: ['· build your seven', '· build'],
+                    replay: ['· replay an opening', '· replay']
+                }[mode];
+                set('mulligan-title-tail', tails[0]);
+                set('mulligan-title-tail-short', tails[1]);
+                const look = '<i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>';
+                const hints = {
+                    draw: after
+                        ? [`<span class="mull-on-hover">Your new hand · ${look} to look closer</span><span class="mull-on-touch">Your new hand · hold a card to look closer</span>`, 'Your new hand · hold to look closer']
+                        : [`<span class="mull-on-hover">Click a card to mark it · ${look} to look closer</span><span class="mull-on-touch">Tap a card to mark it · hold it to look closer</span>`, 'Tap to mark · hold to look closer'],
+                    build: ['<span class="mull-on-hover">Click a card to add it · click it in your hand to take it out</span><span class="mull-on-touch">Tap a card to add it · tap it in your hand to take it out</span>', ''],
+                    replay: ['', '']
+                }[mode];
+                set('mulligan-hint', hints[0]);
+                set('mulligan-hint-short', hints[1]);
             },
 
-            // Back out of crafting: the hand isn't settled yet, so the mulligan returns.
-            backToMulligan() {
-                this.closeCraftHand();
-                this.syncMulliganMode();
+            // Curve and inkable cells of the readout, as the mulligan draws them.
+            // `open` = empty slots still to fill, shown as ghost pips.
+            _readoutCells(ids, open = 0) {
+                const db = (id) => this.cardDB[id];
+                const bucket = (id) => { const d = db(id); return d && d.cost != null ? Math.min(7, Math.max(1, d.cost)) : 0; };
+                const at = Array(8).fill(0);
+                ids.forEach(id => at[bucket(id)]++);
+                const tallest = Math.max(3, ...at);
+                const cols = [1, 2, 3, 4, 5, 6, 7].map(n => `<div class="mull-col">
+                        <b class="${at[n] ? '' : 'is-zero'}">${at[n]}</b>
+                        <span class="mull-bars">${at[n] ? `<i style="height:${(at[n] / tallest) * 100}%"></i>` : ''}</span>
+                        <em>${n === 7 ? '7+' : n}</em></div>`).join('');
+                const inkable = ids.filter(id => db(id) && db(id).inkwell).length;
+                const pips = ids.map(id => `<i class="${db(id) && db(id).inkwell ? '' : 'is-off'}"></i>`).join('')
+                    + '<i class="is-ghost"></i>'.repeat(open);
+                return `<div class="mull-read-cell"><div class="mull-lbl">Curve</div><div class="mull-curve">${cols}</div></div>
+                    <div class="mull-read-cell"><div class="mull-lbl"><span class="gi gi-inkable" aria-hidden="true"></span>Inkable</div>
+                        <div class="mull-pips">${pips}<span>${inkable}<small>/ ${ids.length}</small></span></div></div>`;
             },
 
-            clearCraftHand() {
-                this.craftSelection = {};
-                this.renderCraftHand();
+            _cardCost(id) {
+                const d = this.cardDB[id];
+                return d && d.cost != null ? d.cost : 99;
             },
 
-            renderCraftHand() {
-                const grid = document.getElementById('craft-hand-grid');
-                grid.innerHTML = '';
-                const total = this._craftSelectedTotal();
-                document.getElementById('craft-hand-count').innerText = total;
-                document.getElementById('craft-hand-confirm').disabled = (total !== 7);
+            _cardName(id) {
+                const d = this.cardDB[id];
+                return String((d && (d.fullName || d.name)) || '');
+            },
 
-                // Sort unique cards by ink cost, then name, for a tidy curve layout.
-                const cardIds = Object.keys(this.craftPoolCounts).map(Number).sort((a, b) => {
-                    const ca = this.cardDB[a], cb = this.cardDB[b];
-                    const costA = (ca && ca.cost != null) ? ca.cost : 0;
-                    const costB = (cb && cb.cost != null) ? cb.cost : 0;
-                    if (costA !== costB) return costA - costB;
-                    const na = (ca && (ca.fullName || ca.name)) || '';
-                    const nb = (cb && (cb.fullName || cb.name)) || '';
-                    return na.localeCompare(nb);
-                });
+            // A card face for the glass. `onPick` makes it a button.
+            _mullFace(id, onPick, label) {
+                const face = document.createElement('div');
+                face.className = 'mull-card';
+                this.paintCardFace(face, this.cardDB[id], { lazy: false });
+                if (!onPick) return face;
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'mull-pick';
+                btn.setAttribute('aria-label', label || this._cardName(id));
+                btn.appendChild(face);
+                btn.onclick = onPick;
+                return btn;
+            },
 
-                cardIds.forEach(cardId => {
-                    const dbCard = this.cardDB[cardId];
-                    const available = this.craftPoolCounts[cardId];
-                    const selected = this.craftSelection[cardId] || 0;
-                    const atHandLimit = total >= 7;
+            // --- Build ---
 
-                    const wrap = document.createElement('div');
-                    wrap.className = 'relative rounded-md overflow-hidden select-none cursor-pointer transition-all duration-150';
-                    wrap.style.aspectRatio = '5 / 7';
-                    this.paintCardFace(wrap, dbCard);
+            // Copies of each card the player owns, by cardId.
+            _buildCounts() {
+                const counts = {};
+                this._collectAllCards(this.state.players[this.state.activePlayer])
+                    .forEach(c => { counts[c.cardId] = (counts[c.cardId] || 0) + 1; });
+                return counts;
+            },
 
-                    if (selected > 0) {
-                        wrap.classList.add('ring-2', 'ring-green-400', 'shadow-lg');
+            renderBuild() {
+                const b = this._build;
+                const picked = b.picked;
+
+                const hand = document.getElementById('mulligan-hand');
+                hand.innerHTML = '';
+                for (let i = 0; i < 7; i++) {
+                    const slot = document.createElement('div');
+                    if (picked[i] != null) {
+                        slot.className = 'mull-slot is-built';
+                        const name = this._cardName(picked[i]);
+                        slot.appendChild(this._mullFace(picked[i], () => this.buildRemove(i), `Take ${name} out`));
+                        slot.insertAdjacentHTML('beforeend', '<span class="mull-out" aria-hidden="true"><i class="fa-solid fa-xmark"></i></span>');
                     } else {
-                        wrap.style.opacity = atHandLimit ? '0.4' : '1';
-                        wrap.classList.add('border', 'border-white/10', 'hover:-translate-y-1', 'hover:shadow-xl', 'hover:z-10');
+                        slot.className = 'mull-empty' + (i === picked.length ? ' is-next' : '');
+                        slot.textContent = i + 1;
                     }
+                    hand.appendChild(slot);
+                }
 
-                    // beforeend, not innerHTML — keeps the card face underneath.
-                    wrap.insertAdjacentHTML('beforeend', `
-                        <div class="absolute top-1 right-1 bg-black/70 text-[10px] font-mono text-gray-200 px-1.5 py-0.5 rounded">${selected}/${available}</div>
-                        ${selected > 0 ? `<div class="absolute bottom-0 inset-x-0 bg-green-600/90 text-white text-center text-sm font-bold py-0.5">×${selected} in hand</div>` : ''}
-                    `);
+                document.getElementById('mulligan-readout').innerHTML = this._readoutCells(picked, 7 - picked.length)
+                    + `<div class="mull-read-cell mull-plan"><div class="mull-lbl">Picked</div>
+                        <div class="mull-plan-fig"><b>${picked.length}</b> <i>/</i> 7</div></div>`;
 
-                    wrap.onclick = () => {
-                        if (this._craftSelectedTotal() < 7 && (this.craftSelection[cardId] || 0) < available) {
-                            this.craftSelection[cardId] = (this.craftSelection[cardId] || 0) + 1;
-                            this.renderCraftHand();
-                        }
-                    };
-                    wrap.oncontextmenu = (e) => {
-                        e.preventDefault();
-                        if (this.craftSelection[cardId] > 0) {
-                            this.craftSelection[cardId]--;
-                            if (this.craftSelection[cardId] === 0) delete this.craftSelection[cardId];
-                            this.renderCraftHand();
-                        }
-                    };
+                const left = 7 - picked.length;
+                const confirm = document.getElementById('mulligan-confirm');
+                confirm.textContent = left ? `Pick ${left} more` : 'Keep this hand';
+                confirm.disabled = left > 0;
+                document.getElementById('mull-random').disabled = !left;
+                document.getElementById('mull-clear').disabled = !picked.length;
+                this.renderPool();
+            },
 
-                    grid.appendChild(wrap);
+            renderPool() {
+                const b = this._build;
+                const counts = this._buildCounts();
+                const used = {};
+                b.picked.forEach(id => { used[id] = (used[id] || 0) + 1; });
+                const total = Object.values(counts).reduce((a, n) => a + n, 0);
+                document.getElementById('mull-pool-n').textContent = `${total - b.picked.length} left`;
+
+                document.getElementById('mull-pool-costs').innerHTML = ['all', 1, 2, 3, 4, 5, 6, 7].map(c =>
+                    `<button type="button" aria-pressed="${b.cost === c ? 'true' : 'false'}" onclick="App.setPoolCost(${c === 'all' ? "'all'" : c})">${c === 'all' ? 'All' : c === 7 ? '7+' : c}</button>`).join('');
+
+                const q = b.query.trim().toLowerCase();
+                const ids = Object.keys(counts).map(Number)
+                    .filter(id => b.cost === 'all' || Math.min(7, Math.max(1, this._cardCost(id))) === b.cost)
+                    .filter(id => !q || this._cardName(id).toLowerCase().includes(q))
+                    .sort((x, y) => this._cardCost(x) - this._cardCost(y) || this._cardName(x).localeCompare(this._cardName(y)));
+
+                const grid = document.getElementById('mull-pool-grid');
+                grid.innerHTML = '';
+                if (!ids.length) {
+                    grid.innerHTML = '<div class="mull-rail-empty">No card matches.</div>';
+                    return;
+                }
+                const full = b.picked.length >= 7;
+                ids.forEach(id => {
+                    const n = counts[id], u = used[id] || 0;
+                    const cell = document.createElement('div');
+                    cell.className = 'mull-pool-card' + (u >= n ? ' is-out' : '') + (full ? ' is-full' : '');
+                    cell.appendChild(this._mullFace(id, () => this.buildAdd(id), `Add ${this._cardName(id)} (${u} of ${n} in hand)`));
+                    cell.insertAdjacentHTML('beforeend', `<span class="mull-copies" aria-hidden="true">${'<i class="is-in"></i>'.repeat(u)}${'<i></i>'.repeat(n - u)}</span>`);
+                    grid.appendChild(cell);
                 });
             },
 
-            confirmCraftHand() {
-                if (this._craftSelectedTotal() !== 7) return;
+            buildAdd(id) {
+                const b = this._build;
+                const n = this._buildCounts()[id] || 0;
+                if (b.picked.length >= 7 || b.picked.filter(x => x === id).length >= n) return;
+                b.picked.push(id);
+                this.renderBuild();
+            },
 
+            buildRemove(i) {
+                this._build.picked.splice(i, 1);
+                this.renderBuild();
+            },
+
+            buildClear() {
+                this._build.picked = [];
+                this.renderBuild();
+            },
+
+            // The rest of the seven at random, from the copies not in hand yet.
+            buildFillRandom() {
+                const b = this._build;
+                const left = [];
+                const counts = this._buildCounts();
+                b.picked.forEach(id => { counts[id]--; });
+                Object.entries(counts).forEach(([id, n]) => { for (let k = 0; k < n; k++) left.push(Number(id)); });
+                this.shuffle(left);
+                while (b.picked.length < 7 && left.length) b.picked.push(left.pop());
+                this.renderBuild();
+            },
+
+            setPoolCost(c) {
+                this._build.cost = c;
+                this.renderPool();
+            },
+
+            setPoolQuery(v) {
+                this._build.query = String(v || '');
+                this.renderPool();
+            },
+
+            // The built seven become the hand; the rest of the deck is shuffled.
+            confirmBuild() {
+                const b = this._build;
+                if (!b || b.picked.length !== 7) return;
                 this.saveState();
                 const p = this.state.players[this.state.activePlayer];
-
-                // Flatten every card the player owns, resetting per-card visual/game props.
+                // Every card the player owns, reset; the picked copies come out of it.
                 const pool = this._collectAllCards(p).map(c => ({
                     ...c, exerted: false, damage: 0, faceUp: false, locationId: null, drying: false, stackedCards: []
                 }));
-
-                // Bucket the pool by cardId so we can pull the exact copies requested.
                 const byCardId = {};
                 pool.forEach(c => { (byCardId[c.cardId] = byCardId[c.cardId] || []).push(c); });
-
-                const newHand = [];
-                Object.entries(this.craftSelection).forEach(([cardId, count]) => {
-                    for (let i = 0; i < count; i++) {
-                        const card = byCardId[cardId] && byCardId[cardId].pop();
-                        if (card) newHand.push(card);
-                    }
-                });
-
-                const handIds = new Set(newHand.map(c => c.instanceId));
-                const newDeck = pool.filter(c => !handIds.has(c.instanceId));
-                this.shuffle(newDeck);
-
+                const newHand = b.picked.map(id => byCardId[id].pop()).filter(Boolean);
+                const inHand = new Set(newHand.map(c => c.instanceId));
                 p.hand = newHand;
-                p.deck = newDeck;
+                p.deck = this.shuffle(pool.filter(c => !inHand.has(c.instanceId)));
                 p.field = [];
                 p.inkwell = [];
                 p.discard = [];
                 p.inkTotal = 0;
                 p.inkReady = 0;
-                p.hasMulliganed = true; // Locks both Mulligan and Craft Hand for this player
-
-                this.logAction(`You crafted a starting hand of ${newHand.length} cards.`);
-                this._openingHow = 'crafted';
-                this.closeCraftHand();
-                this._finishMulligan(); // captures the crafted hand as the real opener
+                p.hasMulliganed = true;
+                this.logAction(`You built a starting hand of ${newHand.length} cards.`);
+                this._openingHow = 'built';
+                this.closeMulligan();
+                this._finishMulligan();
             },
 
-            // --- Craft from a saved game (Feature 64) ---
-            // The Craft dialog's second view: a saved game or demo, then one of its
-            // decks, then one of that deck's openings. The seat on its mulligan gets
-            // that exact hand and deck order (switching to that deck if it differs).
+            // --- Replay ---
 
-            _cfs: null,
-
-            _showCraftView(saved) {
-                document.getElementById('craft-pick-view').style.display = saved ? 'none' : 'flex';
-                document.getElementById('craft-saved-view').hidden = !saved;
-                document.getElementById('craft-hand-confirm').style.display = saved ? 'none' : '';
+            async openReplay() {
+                const dlg = document.getElementById('mulligan-dialog');
+                const r = this._replay;
+                if (r && r.rows) { this.renderReplay(); return; }
+                const mine = this._replay = { rows: null, filter: 'mine', query: '', sel: null, view: 'list' };
+                dlg.dataset.view = 'list';
+                this.renderReplay();
+                const rows = await this._loadOpenings().catch(() => []);
+                if (this._replay !== mine) return;
+                mine.rows = rows;
+                // Your deck first; all decks when it has none.
+                if (!rows.some(x => x.match && !x.o.why)) mine.filter = 'all';
+                if (this.openingMode === 'replay') this.renderReplay();
             },
 
-            // Footer Back: one step up, then back to crafting by hand, then the mulligan.
-            craftBack() {
-                const c = this._cfs;
-                if (!c) { this.backToMulligan(); return; }
-                if (c.step === 'openings') { c.step = 'decks'; c.deck = null; }
-                else if (c.step === 'decks') { c.step = 'games'; c.game = null; }
-                else { this._cfs = null; this._showCraftView(false); return; }
-                this.renderCraftSaved();
-            },
-
-            async openCraftFromSaved() {
-                const c = this._cfs = { step: 'games', games: null, game: null, deck: null, loading: false };
-                this._showCraftView(true);
-                this.renderCraftSaved();
-                const [rows, demos] = await Promise.all([
+            // Every opening in the saved games on this device (not the game on the
+            // board, not Duels.ink imports) and the demos, as rows for the list.
+            async _loadOpenings() {
+                const p = this.state.players[this.state.activePlayer];
+                const mine = this._nameKey(this._collectAllCards(p).map(c => c.cardId));
+                const liveId = this.session && this.session.id;
+                const [sessions, demos] = await Promise.all([
                     DojoLibrary.listSessions().catch(() => []),
                     DojoLibrary.loadDemoManifest().catch(() => [])
                 ]);
-                if (this._cfs !== c) return;
-                // Not the game on the board, and not Duels.ink imports: their deck order is unknown.
-                const liveId = this.session && this.session.id;
-                c.games = [
-                    ...rows.filter(r => r.id !== liveId && !/\(Duels\.ink\)\s*$/.test(r.title || ''))
-                        .map(r => ({ kind: 'saved', id: r.id, title: r.title, summary: r.summary, ts: r.updatedAt })),
-                    ...demos.map(d => ({ kind: 'demo', demo: d, title: d.title }))
+                const games = [
+                    ...sessions.filter(r => r.id !== liveId && !/\(Duels\.ink\)\s*$/.test(r.title || ''))
+                        .map(r => ({ key: `s:${r.id}:${r.updatedAt || 0}`, title: r.title || 'Untitled session', when: this.relativeTime(r.updatedAt || Date.now()), load: () => DojoLibrary.loadSession(r.id) })),
+                    ...demos.map(d => ({ key: `d:${d.id}`, title: d.title, when: 'Demo', load: () => DojoLibrary.fetchDemo(d) }))
                 ];
-                this.renderCraftSaved();
-            },
-
-            async _cfsPickGame(i) {
-                const c = this._cfs;
-                const g = c && c.games && c.games[i];
-                if (!g) return;
-                c.loading = true;
-                this.renderCraftSaved();
-                try {
-                    const data = g.kind === 'demo'
-                        ? (await DojoLibrary.fetchDemo(g.demo)).data
-                        : (await DojoLibrary.loadSession(g.id)).data;
-                    if (this._cfs !== c) return;
-                    c.game = { title: g.title, decks: this._openingsFromSession(data) };
-                    c.step = 'decks';
-                } catch (e) {
-                    this.showToast(e && e.message ? e.message : "Couldn't open that game.");
+                const rows = [];
+                for (const g of games) {
+                    let decks = this._replayCache[g.key];
+                    if (!decks) {
+                        try { decks = this._openingsFromSession((await g.load()).data); } catch (e) { decks = null; }
+                        if (decks) this._replayCache[g.key] = decks;
+                    }
+                    (decks || []).forEach(d => d.openings.forEach(o => rows.push({
+                        game: g, deck: d, o, match: !o.why && this._nameKey(o.hand.concat(o.deck)) === mine
+                    })));
                 }
-                c.loading = false;
-                this.renderCraftSaved();
+                return rows;
             },
 
-            _cfsPickDeck(seat) {
-                const c = this._cfs;
-                const d = c && c.game && c.game.decks[seat];
-                if (!d) return;
-                const usable = d.openings.filter(o => !o.why);
-                if (!usable.length) return;
-                if (usable.length === 1 && d.openings.length === 1) { this._cfsApply(d, usable[0]); return; }
-                c.deck = d;
-                c.step = 'openings';
-                this.renderCraftSaved();
+            _replayRows() {
+                const r = this._replay;
+                const q = r.query.trim().toLowerCase();
+                return r.rows.filter(x => (r.filter === 'all' || x.match)
+                    && (!q || x.game.title.toLowerCase().includes(q) || x.deck.name.toLowerCase().includes(q)));
             },
 
-            renderCraftSaved() {
-                const c = this._cfs;
-                if (!c) return;
+            setReplayFilter(f) {
+                this._replay.filter = f;
+                this._replay.sel = null;
+                this.renderReplay();
+            },
+
+            setReplayQuery(v) {
+                this._replay.query = String(v || '');
+                this.renderReplay();
+            },
+
+            replayPick(row) {
+                const r = this._replay;
+                r.sel = row;
+                r.view = 'preview';
+                this.renderReplay();
+            },
+
+            // Phones: from the preview back to the list.
+            replayBack() {
+                this._replay.view = 'list';
+                this.renderReplay();
+            },
+
+            renderReplay() {
+                const r = this._replay;
+                const dlg = document.getElementById('mulligan-dialog');
                 const esc = (v) => this.escapeHtml(v);
-                const crumb = document.getElementById('craft-saved-crumb');
-                const list = document.getElementById('craft-saved-list');
-                const step = { games: 'Pick a game', decks: 'Pick a deck', openings: 'Pick an opening' }[c.step];
-                const path = c.game ? `${c.game.title}${c.deck ? ` · ${c.deck.name}` : ''}` : 'Copy a hand and its deck order';
-                crumb.innerHTML = `<span class="cfs-step">${esc(step)}</span><span class="cfs-path">${esc(path)}</span>`;
+                const list = document.getElementById('mull-op-list');
+                const confirm = document.getElementById('mulligan-confirm');
+                const note = document.getElementById('mull-note');
+                document.querySelectorAll('#mull-op-filter button').forEach(b => b.setAttribute('aria-pressed', b.dataset.f === r.filter ? 'true' : 'false'));
 
-                if (c.loading || !c.games) { list.innerHTML = '<div class="cfs-empty">Loading…</div>'; return; }
+                const rows = r.rows ? this._replayRows() : [];
+                // Desktop always previews something; a phone starts on the list.
+                const phone = window.matchMedia('(max-width: 760px)').matches;
+                if (r.rows && (!r.sel || !rows.includes(r.sel))) {
+                    r.sel = phone ? null : (rows.find(x => !x.o.why) || null);
+                    if (!r.sel) r.view = 'list';
+                }
+                dlg.dataset.view = phone && r.view === 'preview' && r.sel ? 'preview' : 'list';
 
-                if (c.step === 'games') {
-                    const row = (g) => `<button type="button" class="cfs-row" data-i="${c.games.indexOf(g)}">
-                        <span class="cfs-txt"><span class="cfs-title">${esc(g.title)}</span>
-                        <span class="cfs-meta">${g.kind === 'demo' ? 'Demo' : this.sessionMetaHtml(g.summary, g.ts)}</span></span>
-                        <i class="fa-solid fa-chevron-right cfs-go"></i></button>`;
-                    const saved = c.games.filter(g => g.kind === 'saved');
-                    const demos = c.games.filter(g => g.kind === 'demo');
-                    list.innerHTML = '<div class="cfs-group">Your saved games</div>'
-                        + (saved.length ? saved.map(row).join('') : '<div class="cfs-empty">No other saved games on this device yet.</div>')
-                        + (demos.length ? '<div class="cfs-group">Demos</div>' + demos.map(row).join('') : '');
-                    list.querySelectorAll('.cfs-row').forEach(el => { el.onclick = () => this._cfsPickGame(+el.dataset.i); });
-                    return;
+                // The list, grouped by game.
+                if (!r.rows) {
+                    list.innerHTML = '<div class="mull-rail-empty">Looking through your saved games…</div>';
+                } else if (!r.rows.length) {
+                    list.innerHTML = '<div class="mull-rail-empty">No openings yet. Play a game with auto-save on and its openings show up here.</div>';
+                } else if (!rows.length) {
+                    list.innerHTML = `<div class="mull-rail-empty">${r.query ? 'Nothing matches.' : 'No saved openings with this deck yet.'}</div>`;
+                } else {
+                    let html = '', last = null;
+                    rows.forEach((x, i) => {
+                        if (x.game !== last) {
+                            html += `<div class="mull-op-game"><b>${esc(x.game.title)}</b><span class="mull-lbl">${esc(x.game.when)}</span></div>`;
+                            last = x.game;
+                        }
+                        const sub = `${x.deck.seat === 0 ? 'On the play' : 'On the draw'} · ${x.o.why ? x.o.why : x.o.how}`;
+                        html += `<button type="button" class="mull-op${x === r.sel ? ' is-on' : ''}" data-i="${i}"${x.o.why ? ' disabled' : ''}>
+                            ${this.deckBoxHtml(x.deck.inks, x.deck.seat + 1)}
+                            <span class="mull-op-txt"><b>${esc(x.deck.name)}</b><span>${esc(sub)}</span></span>
+                            ${x.o.why ? '' : `<span class="mull-op-badge${x.match ? ' is-match' : ''}">${x.match ? 'Your deck' : 'Other deck'}</span>`}</button>`;
+                    });
+                    list.innerHTML = html;
+                    list.querySelectorAll('.mull-op:not([disabled])').forEach(el => { el.onclick = () => this.replayPick(rows[+el.dataset.i]); });
                 }
 
-                if (c.step === 'decks') {
-                    list.innerHTML = c.game.decks.map(d => {
-                        const usable = d.openings.filter(o => !o.why).length;
-                        const why = (d.openings[0] && d.openings[0].why) || 'No opening to copy';
-                        const sub = `Player ${d.seat + 1} · ${d.seat === 0 ? 'went first' : 'on the draw'} · `
-                            + (usable ? `${usable} opening${usable === 1 ? '' : 's'}` : why);
-                        return `<button type="button" class="cfs-row is-deck" data-seat="${d.seat}"${usable ? '' : ' disabled'}>
-                            ${this.deckBoxHtml(d.inks, d.seat + 1)}
-                            <span class="cfs-txt"><span class="cfs-title">${esc(d.name)}</span><span class="cfs-meta">${esc(sub)}</span></span>
-                            ${usable ? '<i class="fa-solid fa-chevron-right cfs-go"></i>' : ''}</button>`;
-                    }).join('');
-                    list.querySelectorAll('.cfs-row:not([disabled])').forEach(el => { el.onclick = () => this._cfsPickDeck(+el.dataset.seat); });
+                // The preview in the glass.
+                const hand = document.getElementById('mulligan-hand');
+                const readout = document.getElementById('mulligan-readout');
+                hand.innerHTML = '';
+                const x = r.sel;
+                if (!x) {
+                    hand.innerHTML = `<div class="mull-glass-empty">${r.rows ? 'Pick an opening to see it here.' : 'Loading openings…'}</div>`;
+                    readout.innerHTML = '';
+                    note.innerHTML = '';
+                    confirm.textContent = 'Play this opening';
+                    confirm.disabled = true;
                     return;
                 }
+                document.getElementById('mull-back-what').textContent = `${x.deck.name} · ${x.o.how}`;
+                x.o.hand.slice()
+                    .sort((a, b) => this._cardCost(a) - this._cardCost(b) || this._cardName(a).localeCompare(this._cardName(b)))
+                    .forEach(id => {
+                        const slot = document.createElement('div');
+                        slot.className = 'mull-slot';
+                        slot.appendChild(this._mullFace(id));
+                        hand.appendChild(slot);
+                    });
+                // The next four cards, labelled by the turn they're drawn on this seat.
+                const firstTurn = this.state.drawPending ? 1 : 2;
+                const next = x.o.deck.slice(0, 4).map((id, i) => `<figure>${this.cardThumbHtml(this.cardDB[id], 'mull-next-card')}
+                    <figcaption>Turn ${firstTurn + i}</figcaption></figure>`).join('');
+                readout.innerHTML = this._readoutCells(x.o.hand)
+                    + `<div class="mull-read-cell mull-plan"><div class="mull-lbl">Your next draws</div><div class="mull-next">${next}</div></div>`;
+                const p = this.state.players[this.state.activePlayer];
+                note.innerHTML = x.match
+                    ? '<i class="fa-solid fa-check" aria-hidden="true"></i><span>Same deck as yours: only the hand and the deck order change.</span>'
+                    : `<i class="fa-solid fa-shuffle" aria-hidden="true"></i><span><span class="mull-long">${esc(p.name)}'s deck switches to </span><span class="mull-short">Switches your deck to </span><b>${esc(x.deck.name)}</b><span class="mull-long"> for this match. The other deck stays.</span></span>`;
+                confirm.textContent = x.match ? 'Play this opening' : 'Switch deck and play';
+                confirm.disabled = false;
+            },
 
-                list.innerHTML = c.deck.openings.map((o, i) => `<button type="button" class="cfs-row is-opening" data-i="${i}"${o.why ? ' disabled' : ''}>
-                    <span class="cfs-how">${esc(o.why ? 'n/a' : o.how)}</span>
-                    <span class="cfs-hand">${o.why ? `<span class="cfs-why">${esc(o.why)}</span>`
-                        : o.hand.map(id => this.cardThumbHtml(this.cardDB[id], 'cfs-thumb')).join('')}</span></button>`).join('');
-                list.querySelectorAll('.cfs-row:not([disabled])').forEach(el => {
-                    el.onclick = () => this._cfsApply(c.deck, c.deck.openings[+el.dataset.i]);
-                });
+            confirmReplay() {
+                const r = this._replay;
+                if (r && r.sel && !r.sel.o.why) this._applyOpening(r.sel);
+            },
+
+            // Puts the opening on the seat on its mulligan: that exact hand and deck
+            // order. A different deck is swapped in (the button said so); the other
+            // seat is left alone.
+            _applyOpening(row) {
+                const { o, deck, game } = row;
+                const idx = this.state.activePlayer;
+                const p = this.state.players[idx];
+                const ids = o.hand.concat(o.deck);
+                let seat = null;
+                if (this._nameKey(this._collectAllCards(p).map(x => x.cardId)) !== this._nameKey(ids)) {
+                    const decklist = this._decklistFromIds(ids);
+                    seat = this._libraryDeckFor(ids) || { key: null, name: this.deckAutoName(decklist), decklist };
+                }
+                const titleNames = () => [this._seatTitleName(this.seats[1]), this._seatTitleName(this.seats[2])];
+                const retitle = !!seat && !!this.session && this.session.title === this.defaultSessionTitle(titleNames());
+
+                this.saveState();
+                p.hand = o.hand.map(id => this.makeCardInstance(id));
+                p.deck = o.deck.map(id => this.makeCardInstance(id));
+                p.field = [];
+                p.inkwell = [];
+                p.discard = [];
+                p.inkTotal = 0;
+                p.inkReady = 0;
+                p.hasMulliganed = true;
+                if (seat) {
+                    this.seats[idx + 1] = seat;
+                    this.sessionDecks['deck' + (idx + 1)] = seat.decklist;
+                    if (retitle) {
+                        this.session.title = this.defaultSessionTitle(titleNames()).slice(0, 120);
+                        this.syncSessionTitle();
+                    }
+                }
+
+                const source = `${game.title} (${deck.name}, ${o.how})`;
+                this.logAction(`You replayed the opening from ${source}.`);
+                this._openingHow = 'replayed';
+                this.closeMulligan();
+                this._finishMulligan(); // the second player's draw step runs here
+                if (this.state.turnActions) this.state.turnActions.opening = source; // for the turn's recap
+                this.saveToDevice();
+                this.showToast(seat ? `Switched to ${seat.name} and replayed the opening` : 'Opening replayed');
             },
 
             // Both decks of a saved game, each with its distinct openings:
@@ -8381,6 +8575,7 @@
                 const howOf = (lines) => {
                     const m = lines.map(l => /You mulliganed (\d+) card/.exec(l)).find(Boolean);
                     if (m) return `mull ${m[1]}`;
+                    if (lines.some(l => /built a starting hand/.test(l))) return 'built';
                     return lines.some(l => /crafted a starting hand/.test(l)) ? 'crafted' : 'kept';
                 };
                 const allCards = (p) => {
@@ -8436,60 +8631,6 @@
                 return out;
             },
 
-            // Copies the opening onto the seat on its mulligan. A different deck is
-            // swapped in first, if the player agrees; the other seat is left alone.
-            async _cfsApply(deck, o) {
-                const c = this._cfs;
-                if (!c || !o || o.why) return;
-                const idx = this.state.activePlayer;
-                const p = this.state.players[idx];
-                const ids = o.hand.concat(o.deck);
-                let seat = null;
-                if (this._nameKey(this._collectAllCards(p).map(x => x.cardId)) !== this._nameKey(ids)) {
-                    const ok = await this.dialog({
-                        title: 'Switch to that deck?',
-                        icon: 'fa-shuffle',
-                        message: `This opening is from ${deck.name}, a different deck from the one ${p.name} has here. Switch ${p.name} to that exact deck? The other player's deck stays as it is.`,
-                        stat: `${ids.length} cards · ${o.how}`,
-                        confirmText: 'Switch deck',
-                        cancelText: 'Cancel'
-                    });
-                    if (!ok || this._cfs !== c) return;
-                    const decklist = this._decklistFromIds(ids);
-                    seat = this._libraryDeckFor(ids) || { key: null, name: this.deckAutoName(decklist), decklist };
-                }
-
-                const titleNames = () => [this._seatTitleName(this.seats[1]), this._seatTitleName(this.seats[2])];
-                const retitle = !!seat && !!this.session && this.session.title === this.defaultSessionTitle(titleNames());
-
-                this.saveState();
-                p.hand = o.hand.map(id => this.makeCardInstance(id));
-                p.deck = o.deck.map(id => this.makeCardInstance(id));
-                p.field = [];
-                p.inkwell = [];
-                p.discard = [];
-                p.inkTotal = 0;
-                p.inkReady = 0;
-                p.hasMulliganed = true;
-                if (seat) {
-                    this.seats[idx + 1] = seat;
-                    this.sessionDecks['deck' + (idx + 1)] = seat.decklist;
-                    if (retitle) {
-                        this.session.title = this.defaultSessionTitle(titleNames()).slice(0, 120);
-                        this.syncSessionTitle();
-                    }
-                }
-
-                const source = `${c.game.title} (${deck.name}, ${o.how})`;
-                this.logAction(`You copied the opening from ${source}.`);
-                this._openingHow = 'copied';
-                this.closeCraftHand();
-                this._finishMulligan(); // the second player's draw step runs here
-                if (this.state.turnActions) this.state.turnActions.opening = source; // for the turn's recap
-                this.saveToDevice();
-                this.showToast(seat ? `Switched to ${seat.name} and copied the opening` : 'Opening copied');
-            },
-
             // Cards by name, sorted: two lists hold the same deck when their keys match.
             _nameKey(ids) {
                 return ids.map(id => { const d = this.cardDB[id]; return d ? (d.fullName || d.name) : `#${id}`; }).sort().join('\n');
@@ -8517,6 +8658,7 @@
                 }
                 return null;
             },
+
 
             // --- Drag and Drop Handlers ---
 
@@ -12990,7 +13132,7 @@
                 // A mulligan card looked at goes back; the mulligan itself stays (it gates the game).
                 if (App._mullLookSlot) { App.closeMulliganLook(); return; }
                 if (App.isMulliganPeekOpen()) { App.hideMulliganPeek(); return; }
-                // Dismissible overlay modals (mulligan/craft stay open — they gate game state)
+                // Dismissible overlay modals (the mulligan stays open — it gates game state)
                 const escapable = [
                     ['inspect-deck-modal', () => App.closeInspectDeck()],
                     ['inspect-discard-modal', () => App.closeInspectDiscard()],
@@ -13022,7 +13164,7 @@
             // Feature 37: hover-card hotkeys (+ − 0–9 E B) and C for challenge mode.
             // Only while no modal is up, so they never fire behind the tree or a dialog.
             const anyModal = ['tree-modal', 'setup-modal', 'inspect-deck-modal', 'inspect-discard-modal',
-                'import-log-modal', 'card-search-modal', 'mulligan-modal', 'craft-hand-modal']
+                'import-log-modal', 'card-search-modal', 'mulligan-modal']
                 .some(id => { const m = document.getElementById(id); return m && !m.classList.contains('hidden'); });
             if (!anyModal && App.state && App.state.players && App.handleCardHotkey(e)) {
                 e.preventDefault();
@@ -13031,7 +13173,7 @@
 
             // Mulligan mode gates the board: no hotkeys (Space would end the turn)
             // until the opening hand is settled (Feature 54).
-            if (['mulligan-modal', 'craft-hand-modal'].some(id => !document.getElementById(id).classList.contains('hidden'))) return;
+            if (!document.getElementById('mulligan-modal').classList.contains('hidden')) return;
 
             // --- Global Hotkeys ---
             const keyStr = e.key.toLowerCase();
