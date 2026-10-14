@@ -75,9 +75,12 @@ window.Mods = (function () {
 
     // ---------- Picker ----------
     // opts: { anchor: DOMRect, cardName, allLabel, recent: [{stat, value, until}],
-    //         last: {stat, value, until}, onAdd({stat, value, until, all}) }
+    //         last: {stat, value, until}, onAdd({stat, value, until, all}),
+    //         getRecent() -> the list again after an add (the picker stays open on a desktop),
+    //         onNav('left'|'right'|'up'|'down') -> {anchor, cardName, allLabel, onAdd} or null,
+    //         onClose() }
 
-    let el = null, onKey = null, onDown = null;
+    let el = null, onKey = null, onDown = null, onClose = null;
 
     function closePicker() {
         if (!el) return;
@@ -85,10 +88,15 @@ window.Mods = (function () {
         el = null;
         document.removeEventListener('keydown', onKey, true);
         document.removeEventListener('pointerdown', onDown, true);
+        const done = onClose;
+        onClose = null;
+        if (done) done();
     }
+    function isOpen() { return !!el; }
 
     function openPicker(opts) {
         closePicker();
+        onClose = opts.onClose || null;
         const pick = Object.assign({ stat: 'strength', value: 1, until: 'turn' }, opts.last || {});
         let all = false;
         const esc = (s) => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -128,10 +136,30 @@ window.Mods = (function () {
                 <div class="mp-foot"><span class="mod-pill is-${pick.until}${pick.value < 0 ? ' is-neg' : ''}" title="${esc(title(preview))}">${esc(label(preview))}</span>
                     <button type="button" class="mp-add" data-act="add">Add</button></div>`;
         };
+        // On a desktop the picker stays up after an add, for the next one; the
+        // phone sheet closes as before.
         const commit = (m) => {
-            const done = opts.onAdd;
-            closePicker();
-            done(Object.assign({ all }, m));
+            const add = Object.assign({ all: all && !!opts.allLabel }, m);
+            if (el.classList.contains('is-sheet')) {
+                const done = opts.onAdd;
+                closePicker();
+                done(add);
+                return;
+            }
+            opts.onAdd(add);
+            if (!el) return; // the add took its card out of play and closed us
+            if (opts.getRecent) opts.recent = opts.getRecent();
+            redraw();
+        };
+        // Redraw, keeping the focused key focused.
+        const redraw = () => {
+            const a = document.activeElement;
+            const sel = a && el.contains(a)
+                ? ['stat', 'until', 'step', 'act'].map(k => a.dataset[k] !== undefined ? `[data-${k}="${a.dataset[k]}"]` : null).find(Boolean)
+                : null;
+            draw();
+            const again = sel && el.querySelector(sel);
+            if (again && !again.disabled) again.focus();
         };
 
         el.addEventListener('click', (e) => {
@@ -153,18 +181,15 @@ window.Mods = (function () {
                 if (v === 0) v += Number(b.dataset.step); // there is no "+0"
                 pick.value = Math.max(stat(pick.stat).signed ? -20 : 1, Math.min(20, v));
             }
-            const focusKey = b.dataset.stat ? `[data-stat="${b.dataset.stat}"]` : b.dataset.until ? `[data-until="${b.dataset.until}"]` : b.dataset.step ? `[data-step="${b.dataset.step}"]` : null;
-            draw();
-            const again = focusKey && el.querySelector(focusKey);
-            if (again && !again.disabled) again.focus();
+            redraw();
         });
 
         draw();
         document.body.appendChild(el);
 
         // Beside the card, kept on screen. Phones get a sheet along the bottom (CSS).
-        const r = opts.anchor;
-        if (r && window.innerWidth > 600) {
+        const place = () => {
+            const r = opts.anchor;
             const w = el.offsetWidth, h = el.offsetHeight;
             let left = r.right + 10;
             if (left + w > window.innerWidth - 8) left = r.left - w - 10;
@@ -172,12 +197,26 @@ window.Mods = (function () {
             const top = Math.max(8, Math.min(window.innerHeight - h - 8, r.top));
             el.style.left = left + 'px';
             el.style.top = top + 'px';
-        } else {
-            el.classList.add('is-sheet');
-        }
+        };
+        if (opts.anchor && window.innerWidth > 600) place();
+        else el.classList.add('is-sheet');
 
+        // Arrows move the picker to the next card; opts.onNav(dir) says which
+        // (or returns null to stay). Desktop only: the phone sheet has no board beside it.
+        const NAV = { ArrowLeft: 'left', ArrowRight: 'right', ArrowUp: 'up', ArrowDown: 'down' };
         onKey = (e) => {
-            if (e.key === 'Escape') { e.stopPropagation(); e.preventDefault(); closePicker(); }
+            if (NAV[e.key] && opts.onNav && !e.altKey && !e.ctrlKey && !e.metaKey) {
+                if (el.classList.contains('is-sheet')) return;
+                e.stopPropagation(); e.preventDefault();
+                const t = opts.onNav(NAV[e.key]);
+                if (t) {
+                    Object.assign(opts, t);
+                    el.setAttribute('aria-label', `Add a modifier to ${opts.cardName}`);
+                    redraw();
+                    place();
+                }
+            }
+            else if (e.key === 'Escape') { e.stopPropagation(); e.preventDefault(); closePicker(); }
             else if (e.key === 'Enter' && !e.target.closest('button')) { e.preventDefault(); commit({ stat: pick.stat, value: pick.value, until: pick.until }); }
         };
         onDown = (e) => { if (el && !el.contains(e.target)) closePicker(); };
@@ -187,5 +226,5 @@ window.Mods = (function () {
         if (first) first.focus();
     }
 
-    return { STATS, UNTIL, total, make, label, full, title, expire, openPicker, closePicker };
+    return { STATS, UNTIL, total, make, label, full, title, expire, openPicker, closePicker, isOpen };
 })();

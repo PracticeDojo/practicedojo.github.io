@@ -7,7 +7,7 @@ aliases: [craft hand, choose opening hand, pick starting hand, custom hand, set 
 targets: [craft-hand]
 related: [mulligan]
 order: 20
-verified: v3.17.0
+verified: v3.18.0
 ---
 
 Crafting lets you choose your opening hand card by card, so you can practise one opener again and again.

@@ -8861,6 +8861,11 @@ body:not(.ink-drops-on) .ink-drops {
     }
 }
 
+/* The card the picker points at, while arrow keys walk it along the board */
+.card-wrap.is-modpick .card {
+    box-shadow: 0 0 0 2px var(--accent), 0 0 18px 0 var(--accent-soft) !important;
+}
+
 /* ----- The picker: a paper module beside the card ----- */
 .mod-pop {
     position: fixed;

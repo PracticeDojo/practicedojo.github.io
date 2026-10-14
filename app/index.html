@@ -1194,7 +1194,7 @@
     <script>
         let cardFuse = null;
 
-        const APP_VERSION = "v3.17.0"; // Centralized version string (v3: Field Unit)
+        const APP_VERSION = "v3.18.0"; // Centralized version string (v3: Field Unit)
 
         // Tweaks panel accent presets (hue values for the OKLCH accent ramp)
         // Tweaks → Accent: the approved Field Unit signals only (design.md ·
@@ -4397,6 +4397,7 @@
                 if (this.history.length === 0) return;
                 const prevCompressed = JSON.parse(this.history.pop());
                 this.state = this.decompressState(prevCompressed, this.state.log);
+                if (window.Mods) Mods.closePicker(); // Feature 61
                 this.render();
             },
 
@@ -8913,26 +8914,77 @@
             },
 
             // --- Feature 61: modifiers ------------------------------------------
-            openModPicker(instanceId, anchorRect) {
+            // What the picker needs to point at one card, or null if it isn't in play.
+            modPickerTarget(instanceId, anchorRect) {
                 const f = this.findCard(instanceId);
-                if (!f || f.loc !== 'field') return;
+                if (!f || f.loc !== 'field') return null;
                 const db = this.cardDB[f.card.cardId] || {};
                 const isChar = db.type === 'Character';
                 const chars = f.player.field.filter(c => (this.cardDB[c.cardId] || {}).type === 'Character');
                 const pNo = this.state.players.indexOf(f.player) + 1;
-                const recent = this.getRecentMods();
                 if (!anchorRect) {
                     const w = this.fieldWrap(instanceId);
                     anchorRect = w ? w.getBoundingClientRect() : null;
                 }
-                Mods.openPicker({
+                return {
                     anchor: anchorRect,
                     cardName: db.name || 'Card',
                     allLabel: isChar && chars.length > 1 ? `All of P${pNo}'s characters (${chars.length})` : '',
+                    onAdd: (m) => this.addModifier(instanceId, m)
+                };
+            },
+            openModPicker(instanceId, anchorRect) {
+                const t = this.modPickerTarget(instanceId, anchorRect);
+                if (!t) return;
+                const recent = this.getRecentMods();
+                Mods.openPicker(Object.assign(t, {
                     recent,
                     last: recent[0],
-                    onAdd: (m) => this.addModifier(instanceId, m)
-                });
+                    getRecent: () => this.getRecentMods(),
+                    onNav: (dir) => this.navModPicker(dir),
+                    onClose: () => this.setModPick(null)
+                }));
+                this.setModPick(instanceId); // after openPicker: it closes a picker still up
+            },
+            // The card the picker points at gets an outline (render() re-applies it).
+            setModPick(instanceId) {
+                const prev = this.fieldWrap(this._modPickIid);
+                if (prev) prev.classList.remove('is-modpick');
+                this._modPickIid = instanceId || null;
+                const w = this.fieldWrap(this._modPickIid);
+                if (w) w.classList.add('is-modpick');
+            },
+            // Arrow keys while the picker is up: ← → along the battlefield the card is
+            // in (wrapping), ↑ ↓ to the top or bottom battlefield, nearest column. Only
+            // characters and locations count; items are skipped.
+            navModPicker(dir) {
+                const cur = this.fieldWrap(this._modPickIid);
+                if (!cur) return null;
+                const ok = (w) => {
+                    const f = this.findCard(w.dataset.iid);
+                    const t = f && (this.cardDB[f.card.cardId] || {}).type;
+                    return t === 'Character' || t === 'Location';
+                };
+                const centre = (w) => { const r = w.getBoundingClientRect(); return r.left + r.width / 2; };
+                const row = (field) => [...field.querySelectorAll('.card-wrap[data-iid]')].filter(ok)
+                    .sort((a, b) => centre(a) - centre(b));
+                const nearest = (cards, x) => cards.reduce((best, w) =>
+                    !best || Math.abs(centre(w) - x) < Math.abs(centre(best) - x) ? w : best, null);
+                const home = cur.closest('#top-field, #bottom-field');
+                if (!home) return null;
+                let next = null;
+                if (dir === 'left' || dir === 'right') {
+                    const cards = row(home), i = cards.indexOf(cur);
+                    if (i < 0) next = nearest(cards, centre(cur));
+                    else if (cards.length > 1) next = cards[(i + (dir === 'right' ? 1 : cards.length - 1)) % cards.length];
+                } else {
+                    const field = document.getElementById(dir === 'up' ? 'top-field' : 'bottom-field');
+                    if (field !== home) next = nearest(row(field), centre(cur));
+                }
+                if (!next || next === cur) return null;
+                const t = this.modPickerTarget(next.dataset.iid, next.getBoundingClientRect());
+                if (t) this.setModPick(next.dataset.iid);
+                return t;
             },
             getRecentMods() {
                 try {
@@ -10800,6 +10852,7 @@
                 if (onField && owner) {
                     wrap.dataset.iid = c.instanceId;
                     if (this._hoverIid === c.instanceId) wrap.classList.add('is-hovered');
+                    if (this._modPickIid === c.instanceId) wrap.classList.add('is-modpick'); // Feature 61
                     if (wp > 0 && (c.damage || 0) >= wp) wrap.classList.add('is-lethal');
                     if (this.challengeMode) {
                         if (isMine && isChar) wrap.classList.add('cm-mine');
@@ -12316,6 +12369,12 @@
             render() {
                 const ap = this.state.players[this.state.activePlayer];
                 const ip = this.state.players[this.state.inactivePlayer];
+
+                // Feature 61: the modifier picker closes when its card is no longer in play.
+                if (window.Mods && Mods.isOpen()) {
+                    const mf = this.findCard(this._modPickIid);
+                    if (!mf || mf.loc !== 'field') Mods.closePicker();
+                }
 
                 // Feature 61: modifiers only live on cards in play. A card that left
                 // (banished, returned, put in the deck or inkwell) drops them.
