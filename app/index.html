@@ -1185,7 +1185,7 @@
     <script>
         let cardFuse = null;
 
-        const APP_VERSION = "v3.17.1"; // Centralized version string (v3: Field Unit)
+        const APP_VERSION = "v3.17.2"; // Centralized version string (v3: Field Unit)
 
         // Tweaks panel accent presets (hue values for the OKLCH accent ramp)
         // Tweaks → Accent: the approved Field Unit signals only (design.md ·
@@ -8535,12 +8535,20 @@
                 this.render();
             },
 
-            // Feature 19: Returns numeric value of a keyword like "Challenger +2" or "Resist +1" from card abilities
+            // Feature 19: the value of a keyword the card itself has, like "Challenger +2"
+            // or "Resist +1". Only its own keyword abilities count: text that gives the
+            // keyword to other characters ("give chosen character Resist +2") or only
+            // under a condition ("While you have no cards in your hand…") does not.
+            // Those are added by hand as modifiers when they apply.
             getKeywordBonus(dbCard, keyword) {
                 if (!dbCard) return 0;
-                const text = JSON.stringify(dbCard);
-                const re = new RegExp(keyword + '\\s*\\+\\s*(\\d+)', 'i');
-                const m = text.match(re);
+                if (Array.isArray(dbCard.abilities)) {
+                    const a = dbCard.abilities.find(x => x && x.type === 'keyword' && x.keyword === keyword);
+                    return a ? (parseInt(a.keywordValueNumber ?? String(a.keywordValue || '').replace(/\D/g, '')) || 0) : 0;
+                }
+                // No ability list: a keyword is a text section that starts with it.
+                const re = new RegExp('^' + keyword + '\\s*\\+\\s*(\\d+)');
+                const m = (dbCard.fullTextSections || []).map(s => re.exec(s)).find(Boolean);
                 return m ? parseInt(m[1]) : 0;
             },
 
