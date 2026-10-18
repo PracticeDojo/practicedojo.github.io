@@ -1,0 +1,25 @@
+# The repo's own checks on every push and pull request: the manual and the landing page
+# are current, and the app's riskiest logic still works (tools/app-checks.mjs).
+name: Checks
+on:
+  push:
+    branches: [main]
+  pull_request:
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Manual is current
+        run: node tools/help.mjs --check
+      - name: Help search finds its articles
+        run: node tools/help.mjs --test
+      - name: Landing page is current
+        run: node tools/refresh-landing.mjs --check
+      - name: Install Playwright and Chromium
+        run: npm i -g playwright@1.56.1 && npx playwright install --with-deps chromium
+      - name: App checks (headless)
+        run: node tools/app-checks.mjs
