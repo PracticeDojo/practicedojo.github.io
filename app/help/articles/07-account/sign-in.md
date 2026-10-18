@@ -7,7 +7,7 @@ aliases: [login, log in, log out, logout, discord, google, shared computer]
 targets: [account-button]
 related: [account, account-sync]
 order: 20
-verified: v3.11.0
+verified: v3.17.3
 ---
 
 Sign in to keep your decks and sessions in an account. It's optional; see [Why sign in](help:account).
@@ -41,7 +41,7 @@ Press your name on the home screen to see who you're signed in as and how much o
 Press your name, then **Sign out**. The Dojo asks about the copies of your account's decks and sessions on this device:
 
 - **Keep on this device**: they stay here, for you or anyone using this browser.
-- **Remove from this device**: use this on a shared computer. Your account keeps everything either way.
+- **Remove from this device**: use this on a shared computer. Changes your account doesn't have yet are saved to it first; anything that can't be saved stays on this device, and the Dojo tells you how many.
 
 Sessions and decks that were never in an account stay on the device either way.
 

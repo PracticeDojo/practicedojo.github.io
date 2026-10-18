@@ -1185,7 +1185,7 @@
     <script>
         let cardFuse = null;
 
-        const APP_VERSION = "v3.17.2"; // Centralized version string (v3: Field Unit)
+        const APP_VERSION = "v3.17.3"; // Centralized version string (v3: Field Unit)
 
         // Tweaks panel accent presets (hue values for the OKLCH accent ramp)
         // Tweaks → Accent: the approved Field Unit signals only (design.md ·
@@ -1385,6 +1385,8 @@
             // one on the board; every state change autosaves it, debounced ~1s.
             // null means nothing on the board belongs to the library (no saves).
             session: null, // { id, title, createdAt, lastOpenedAt }
+            // Session id → the stored updatedAt this tab last loaded or wrote (two-tab guard).
+            _seenAt: {},
             // The decklists the match was started from (session file deck1/deck2).
             sessionDecks: { deck1: '', deck2: '' },
 
@@ -1421,9 +1423,18 @@
                 const file = { data: this.buildSessionData(), summary: this.buildSessionSummary(), appVersion: APP_VERSION };
                 this._deviceSaveChain = (this._deviceSaveChain || Promise.resolve())
                     .catch(() => { })
-                    .then(() => DojoLibrary.saveSession(meta, file))
-                    .then(() => { this._saveFailWarned = false; return true; })
+                    // Read the last-seen stamp at write time: an earlier save in the chain may have moved it.
+                    .then(() => DojoLibrary.saveSession({ ...meta, updatedAt: this._seenAt[meta.id] }, file))
+                    .then(row => { this._seenAt[row.id] = row.updatedAt; this._saveFailWarned = false; return true; })
                     .catch(e => {
+                        if (e && e.code === 'stale') {
+                            // Another tab saved this session since: keep both by saving this board as a copy.
+                            if (this.session && this.session.id === meta.id) {
+                                this._startNewSession(`${meta.title} (other tab)`);
+                                this.dialogAlert(`“${meta.title}” was saved in another tab, so this tab's board was saved as “${this.session.title}” instead. Nothing was overwritten.`, 'Open in another tab');
+                            }
+                            return false;
+                        }
                         console.warn('Device save failed:', e);
                         if (this.session && this.session.id === meta.id) this._sessionDirty = true;
                         // Say it once: the old localStorage slot failed silently on big sessions.
@@ -1617,6 +1628,7 @@
                     this._applySessionData(data);
                     const now = Date.now();
                     this.session = { id: meta.id, title: meta.title, createdAt: meta.createdAt, lastOpenedAt: now };
+                    this._seenAt[id] = meta.updatedAt;
                     DojoLibrary.updateSessionMeta(id, { lastOpenedAt: now }).catch(() => { });
                     DojoLibrary.setPref('lastSessionId', id);
                     this.syncSessionTitle();
@@ -3534,10 +3546,15 @@
                 });
                 if (!choice) return;
                 await this.flushDeviceSave();
+                let removed = null;
                 if (choice === 'remove') {
+                    // Changes the account doesn't have yet go up first; any that fail stay on this device.
+                    const [ss, ds] = await Promise.all([DojoLibrary.listSessions(), DojoLibrary.listDecks()]);
+                    const dirty = (rows) => rows.filter(r => this.isLinked(r) && r.accountDirty);
+                    if (dirty(ss).length || dirty(ds).length) await this.uploadToAccount(dirty(ds), dirty(ss));
                     if (this.session) {
                         const meta = await DojoLibrary.getSession(this.session.id);
-                        if (this.isLinked(meta)) {
+                        if (this.isLinked(meta) && !meta.accountDirty) {
                             // The board's session is going; detach it so nothing saves it back.
                             this.session = null;
                             this.syncSessionTitle();
@@ -3545,7 +3562,7 @@
                             if (back) back.classList.add('hidden');
                         }
                     }
-                    await DojoLibrary.deleteAccountCopies();
+                    removed = await DojoLibrary.deleteAccountCopies(this.account.id);
                 }
                 try { await DojoCloud.signOut(); } catch (e) { console.warn('Sign out failed:', e); }
                 this.account = null;
@@ -3554,7 +3571,9 @@
                 await this.refreshDeckIndex();
                 this.renderRecent();
                 if (this.isLibraryOpen()) this.libTab(this._libTab);
-                this.showToast(choice === 'remove' ? 'Signed out and removed account copies from this device' : 'Signed out');
+                this.showToast(!removed ? 'Signed out'
+                    : removed.kept ? `Signed out. Kept ${removed.kept} on this device: ${removed.kept === 1 ? 'it has' : 'they have'} changes your account doesn't have yet`
+                        : 'Signed out and removed account copies from this device');
             },
 
             // First sign-in on a device that already has decks or sessions (§8.1).
@@ -3648,9 +3667,14 @@
                 if (!meta || packed == null) throw new Error('That session is no longer on this device.');
                 const blob = typeof packed === 'string' ? new Blob([packed], { type: 'application/json' }) : new Blob([packed], { type: 'application/gzip' });
                 const fields = { id, title: meta.title, summary: meta.summary, blob };
+                // The file didn't upload but the account row moved on: carry on from its revision next time.
+                const save = (revision) => DojoCloud.saveAccountSession({ ...fields, revision }).catch(async e => {
+                    if (e.claimedRevision) await DojoLibrary.updateSessionMeta(id, { account: { revision: e.claimedRevision, uid: this.account.id }, accountDirty: true });
+                    throw e;
+                });
                 let rev;
                 try {
-                    rev = await DojoCloud.saveAccountSession({ ...fields, revision: this.isLinked(meta) ? meta.account.revision : null });
+                    rev = await save(this.isLinked(meta) ? meta.account.revision : null);
                 } catch (e) {
                     if (e.code !== 'conflict') throw e;
                     if (quiet) {
@@ -3667,7 +3691,7 @@
                         ]
                     });
                     if (v === 'over' && e.current != null) {
-                        rev = await DojoCloud.saveAccountSession({ ...fields, revision: e.current });
+                        rev = await save(e.current);
                     } else if (v === 'copy') {
                         const copy = await DojoLibrary.duplicateSession(id, `${meta.title} (copy)`.slice(0, 120));
                         if (this.session && this.session.id === id) {

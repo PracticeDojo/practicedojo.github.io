@@ -173,6 +173,8 @@ const DojoLibrary = (() => {
 
     // Writes the meta row and the file together, so the list never points at a
     // missing or stale file. `file` = { data, summary, appVersion }.
+    // meta.updatedAt, when given, is the stored updatedAt the caller last saw:
+    // a newer one means another tab saved since, and the write is refused (code 'stale').
     async function saveSession(meta, file) {
         const now = Date.now();
         const row = {
@@ -187,6 +189,11 @@ const DojoLibrary = (() => {
         return tx(['sessions', 'session_blobs'], 'readwrite', async s => {
             // Keep the account link; a save after it means the account copy is behind.
             const prev = await reqP(s.sessions.get(row.id));
+            if (meta.updatedAt && prev && prev.updatedAt > meta.updatedAt) {
+                const e = new Error('This session was saved in another tab.');
+                e.code = 'stale';
+                throw e;
+            }
             const account = meta.account !== undefined ? meta.account : (prev && prev.account);
             if (account) {
                 row.account = account;
@@ -284,17 +291,20 @@ const DojoLibrary = (() => {
 
     const deleteDeck = (id) => tx('decks', 'readwrite', s => { s.decks.delete(id); });
 
-    // Sign out on a shared computer: drop every device copy that came from or
-    // went to the account. Returns how many sessions and decks were removed.
-    async function deleteAccountCopies() {
+    // Sign out on a shared computer: drop the device copies of account `uid`'s
+    // decks and sessions. A copy with changes the account doesn't have yet
+    // (accountDirty) is kept, so nothing is lost. → { sessions, decks, kept }
+    async function deleteAccountCopies(uid) {
         const [sessions, decks] = await Promise.all([getAll('sessions'), getAll('decks')]);
-        const ss = sessions.filter(r => r.account);
-        const ds = decks.filter(r => r.account);
+        const mine = (r) => r.account && r.account.uid === uid;
+        const ss = sessions.filter(r => mine(r) && !r.accountDirty);
+        const ds = decks.filter(r => mine(r) && !r.accountDirty);
         await tx(['sessions', 'session_blobs', 'decks'], 'readwrite', s => {
             ss.forEach(r => { s.sessions.delete(r.id); s.session_blobs.delete(r.id); });
             ds.forEach(r => s.decks.delete(r.id));
         });
-        return { sessions: ss.length, decks: ds.length };
+        const kept = sessions.concat(decks).filter(r => mine(r) && r.accountDirty).length;
+        return { sessions: ss.length, decks: ds.length, kept };
     }
 
     // --- Prefs (kv) -------------------------------------------------------------
