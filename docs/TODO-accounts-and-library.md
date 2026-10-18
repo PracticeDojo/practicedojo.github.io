@@ -110,7 +110,7 @@ App:
   - Sign out → Remove uploads unsynced changes first and keeps any it couldn't, plus other accounts' copies
   - Two tabs on one session: a tab whose copy is stale saves its board as "(other tab)" instead of overwriting
   - A failed account upload keeps the revision the row moved to, so the next Save isn't a false conflict; a brand-new row is taken back
-- [ ] Apply `supabase/migrations/20261017120000_caps_fail_closed.sql` to production: `summary` capped at 4 KB, shares bucket cap also checked at upload
+- [x] Apply `supabase/migrations/20261017120000_caps_fail_closed.sql` to production: `summary` capped at 4 KB, shares bucket cap also checked at upload. *Applied by the GitHub integration; `shares_bucket_bytes()` answers "permission denied" to anon over the API, 2026-10-18. Live site returns 404 for `/.git/HEAD`*
 
 ## Parked (outside the ARCH plan)
 
