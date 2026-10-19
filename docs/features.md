@@ -712,7 +712,7 @@ Proposed from [`RESEARCH-competitive-training.md`](RESEARCH-competitive-training
 ### Details
 - The Draw odds pane gets a **Mine · Theirs** switch. *Theirs* follows the inactive player (the opponent of whoever's turn it is).
 - Their hand and deck are one unseen pool. Each row shows the copies unseen and the chance they hold at least one copy **now** (the window is their hand size) and **after their next draw** (hand + 1).
-- Same hypergeometric as the pane (`hypergeoAtLeastOne`). Unknown cards count in the pool but get no row of their own.
+- Same hypergeometric as the pane (`hypergeoAtLeastOne`). Unknown cards from an import share one Unknown row, as in My draws.
 
 ## Feature 65: Hide the line (prototype: `claude/feat-65-hide-the-line`)
 
@@ -720,8 +720,9 @@ Proposed from [`RESEARCH-competitive-training.md`](RESEARCH-competitive-training
 - As a player studying a strong player's game, I want the Multiverse to hide what they did each turn until I've played that turn myself, so I test my own line before I see theirs.
 
 ### Details
-- A **Hide the line** switch in the Multiverse panel. While it is on, nodes saved before it was switched on hide their note and their card sections (played, quested and so on), in the nodes and in the panel. The panel has **Reveal the line** for the selected node.
-- Nodes you save while it is on show as usual, so your own line is always visible.
+- A **Hide line** switch in the Multiverse's top bar. While it is on, imported nodes (Duels.ink logs and replays) hide their note and card sections, in the nodes (*Line hidden*) and in the panel. The panel has **Reveal the line** for the selected node.
+- Only imported nodes hide: an imported node is the board at the *start* of the turn its note describes, while an auto-saved node is the board *after* the turn, so hiding its note would hide nothing. The importers flag their nodes `fromImport: true`. Games imported before this have no flag.
+- Play from here on a hidden node doesn't copy its note into the turn note.
 - The switch isn't saved; reloading turns it off.
 
 ## Feature 66: Debrief and matchups (prototype: `claude/feat-66-debrief-matchups`)
@@ -730,8 +731,9 @@ Proposed from [`RESEARCH-competitive-training.md`](RESEARCH-competitive-training
 - As a player, I want to record each game's result and what went wrong in a few clicks, and see my record per matchup, so I know which matchup to practise and what to work on.
 
 ### Details
-- **Debrief** in the Multiverse panel: which side you were, the result, the turn it was decided, mistake tags (Mulligan, Inking, Curve / tempo, Quest vs challenge, Played into an answer, Misread their deck, Lore race maths, Sequencing) and one lesson. Saved with the session (`data.debrief`, sanitised on load) and in its summary, so the library can list it without opening the session.
-- **Matchups** in the library's Sessions shelf: every debriefed session on this device, grouped by your inks against theirs. Each row shows games, wins and losses, win rate, the top tag and the latest lesson, weakest first. A row with fewer than 5 games says so.
+- **Debrief** on the win dialog and as *Debrief this game* in the Multiverse panel: which side you were, the result, the turn it was decided, mistake tags (Mulligan, Inking, Curve / tempo, Quest vs challenge, Played into an answer, Misread their deck, Lore race maths, Sequencing) and one lesson. Saved with the session (`data.debrief`, sanitised on load) and in its summary, so the library can list it without opening the session.
+- **Matchups** on the library's Sessions tab: every debriefed session on this device, grouped by your inks against theirs. Each row shows games, wins and losses, win rate, the top tag and the latest lesson, weakest first. A row with fewer than 5 games says so.
+- Code: `app/js/debrief.js` (`DojoDebrief`: the tags, cleaning, the form, grouping). `App.dialog` takes a `content` element for the form and the list.
 
 ## Patch: Decklists with Duels.ink's printing suffix (v3.16.2)
 
