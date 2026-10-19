@@ -1437,7 +1437,7 @@
    "id": "draw-odds",
    "section": "cards",
    "title": "Draw odds",
-   "summary": "The chance to draw each card in your next draws, updated as the game changes.",
+   "summary": "The chance to draw each card in your next draws, or that your opponent holds it, updated as the game changes.",
    "devices": [
     "desktop"
    ],
@@ -1447,7 +1447,11 @@
     "chance to draw",
     "hypergeometric",
     "outs",
-    "percentages"
+    "percentages",
+    "their hand",
+    "opponent's hand",
+    "play around",
+    "what do they have"
    ],
    "targets": [
     "draw-odds"
@@ -1466,6 +1470,11 @@
     },
     {
      "level": 2,
+     "text": "Their hand",
+     "slug": "their-hand"
+    },
+    {
+     "level": 2,
      "text": "Change the draw windows",
      "slug": "change-the-draw-windows"
     },
@@ -1480,7 +1489,7 @@
      "slug": "good-to-know"
     }
    ],
-   "body": "**Draw odds**, on the right of the board, shows the chance of drawing at least one copy of each card in your next few draws. It follows the active player's deck and updates after every change.\n\n[Show me](show:draw-odds)\n\n## Read the odds\n\nEach row is a card in the player's whole list, wherever its copies are now:\n\n- **Left**: copies still in the deck.\n- The three number columns: the chance, in percent, of drawing at least one copy within the next 1, 2 or 3 draws.\n\nRows with the most copies left come first. A card with no copies left stays in the list, greyed out with dashes. The number next to the title is the deck size. Point at a row to see the card in the preview.\n\n## Change the draw windows\n\nClick a column's number (1, 2 or 3) and type how many draws it should cover, from 1 to 60. The mulligan's odds use the same three windows.\n\n## Hide the pane\n\nClick the arrows at the top right of **Draw odds** to fold it into a thin strip; click them again to open it.\n\n## Good to know\n\n- The odds assume the deck is in random order. After you stack a deck by hand, they don't know the order you set.\n- Unknown cards from an import are grouped in one **Unknown** row.\n- On a phone there's no draw odds pane; the mulligan shows its own odds. See [Mulligan](help:mulligan).\n"
+   "body": "**Draw odds**, on the right of the board, shows the chance of drawing at least one copy of each card in your next few draws. It follows the active player's deck and updates after every change.\n\n[Show me](show:draw-odds)\n\n## Read the odds\n\nEach row is a card in the player's whole list, wherever its copies are now:\n\n- **Left**: copies still in the deck.\n- The three number columns: the chance, in percent, of drawing at least one copy within the next 1, 2 or 3 draws.\n\nRows with the most copies left come first. A card with no copies left stays in the list, greyed out with dashes. The number next to the title is the deck size. Point at a row to see the card in the preview.\n\n## Their hand\n\nSwitch **My draws** to **Their hand** to see the opponent's side: the chance they hold at least one copy of each card.\n\n- **Left**: copies you haven't seen, in their hand or their deck. Seen copies (in play, in the inkwell, in the discard) don't count.\n- **Hand**: the chance they hold one now. **+1** and **+2**: after one or two more draws.\n\nFrom your seat their hand and deck are one unseen pile, so this is the same sum as your draw odds, with their hand size as the number of draws. Point at a name to see the count it comes from (\"2 of their 38 unseen cards\").\n\nUse it to learn what to play around: guess first, then check. The odds are exact when you loaded their list. After an import their unrevealed cards are **Unknown**, so the chances for named cards are lower than the real ones.\n\n## Change the draw windows\n\nClick a column's number (1, 2 or 3) and type how many draws it should cover, from 1 to 60. The mulligan's odds use the same three windows.\n\n## Hide the pane\n\nClick the arrows at the top right of **Draw odds** to fold it into a thin strip; click them again to open it.\n\n## Good to know\n\n- The odds assume the deck is in random order. After you stack a deck by hand, they don't know the order you set.\n- Unknown cards from an import are grouped in one **Unknown** row.\n- On a phone there's no draw odds pane; the mulligan shows its own odds. See [Mulligan](help:mulligan).\n"
   },
   {
    "id": "decks",

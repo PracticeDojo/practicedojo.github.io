@@ -4,6 +4,7 @@
 //   - Duels.ink imports: every sample log and replay still builds the same board
 //     (turns, timeline nodes, cards per zone, lore, unknown cards).
 //   - Challenges: the damage done is the damage the forecast showed.
+//   - Their hand odds: the chance the opponent holds a card.
 //   - Untrusted files: session sanitising, the session codec, replay patches.
 //   - Device library: the two-tab guard and sign-out removal.
 //
@@ -62,6 +63,18 @@ export default async (page) => {
             check('challenge: damage taken = forecast', (fa.damage - before[0]) + '/' + (fd.damage - before[1]), o.toAtt + '/' + o.toDef);
             App.undo();
         }
+
+        // Their hand odds (Feature 64): hand and deck are one unseen pool, the hand size the draws.
+        App.saveState();
+        const opp = App.state.players[App.state.inactivePlayer];
+        opp.hand.push(...opp.deck.splice(0, 3));
+        App.setProbMode('theirs');
+        const row = document.querySelector('#prob-list .prob-row');
+        const k = Number(row.querySelector('.prob-count').innerText), U = opp.deck.length + opp.hand.length;
+        const want = (1 - ((U - k) * (U - k - 1) * (U - k - 2)) / (U * (U - 1) * (U - 2))) * 100;
+        check('their hand: chance they hold a card', row.querySelector('.prob-val').innerText, want.toFixed(1));
+        App.setProbMode('mine');
+        App.undo();
 
         // A stranger's session file: ids that could break out of markup are re-issued, CSS url() dropped.
         const evil = App.sanitizeSessionData({

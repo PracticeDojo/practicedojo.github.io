@@ -712,7 +712,7 @@ Proposed from [`RESEARCH-competitive-training.md`](RESEARCH-competitive-training
 ### Details
 - The Draw odds pane gets a **Mine · Theirs** switch. *Theirs* follows the inactive player (the opponent of whoever's turn it is).
 - Their hand and deck are one unseen pool. Each row shows the copies unseen and the chance they hold at least one copy **now** (the window is their hand size) and **after their next draw** (hand + 1).
-- Same hypergeometric as the pane (`hypergeoAtLeastOne`). Unknown cards count in the pool but get no row of their own.
+- Same hypergeometric as the pane (`hypergeoAtLeastOne`). Unknown cards from an import share one Unknown row, as in My draws.
 
 ## Feature 65: Hide the line (prototype: `claude/feat-65-hide-the-line`)
 

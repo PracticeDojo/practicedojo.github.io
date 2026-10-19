@@ -1,9 +1,9 @@
 ---
 id: draw-odds
 title: Draw odds
-summary: The chance to draw each card in your next draws, updated as the game changes.
+summary: The chance to draw each card in your next draws, or that your opponent holds it, updated as the game changes.
 devices: [desktop]
-aliases: [probability, odds, chance to draw, hypergeometric, outs, percentages]
+aliases: [probability, odds, chance to draw, hypergeometric, outs, percentages, their hand, opponent's hand, play around, what do they have]
 targets: [draw-odds]
 related: [mulligan, inspect-deck]
 order: 60
@@ -22,6 +22,17 @@ Each row is a card in the player's whole list, wherever its copies are now:
 - The three number columns: the chance, in percent, of drawing at least one copy within the next 1, 2 or 3 draws.
 
 Rows with the most copies left come first. A card with no copies left stays in the list, greyed out with dashes. The number next to the title is the deck size. Point at a row to see the card in the preview.
+
+## Their hand
+
+Switch **My draws** to **Their hand** to see the opponent's side: the chance they hold at least one copy of each card.
+
+- **Left**: copies you haven't seen, in their hand or their deck. Seen copies (in play, in the inkwell, in the discard) don't count.
+- **Hand**: the chance they hold one now. **+1** and **+2**: after one or two more draws.
+
+From your seat their hand and deck are one unseen pile, so this is the same sum as your draw odds, with their hand size as the number of draws. Point at a name to see the count it comes from ("2 of their 38 unseen cards").
+
+Use it to learn what to play around: guess first, then check. The odds are exact when you loaded their list. After an import their unrevealed cards are **Unknown**, so the chances for named cards are lower than the real ones.
 
 ## Change the draw windows
 

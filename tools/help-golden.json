@@ -270,6 +270,14 @@
       "article": "draw-odds"
     },
     {
+      "q": "what cards does my opponent have in hand",
+      "article": "draw-odds"
+    },
+    {
+      "q": "play around removal",
+      "article": "draw-odds"
+    },
+    {
       "q": "save a deck",
       "article": "decks"
     },

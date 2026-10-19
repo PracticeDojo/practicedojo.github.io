@@ -1068,9 +1068,19 @@
                     <i class="fa-solid fa-angles-right" id="prob-toggle-icon"></i>
                 </button>
             </div>
+            <!-- Feature 64: the same odds for the opponent's hand -->
+            <div class="seg prob-mode" id="prob-mode" role="group" aria-label="Whose odds">
+                <button type="button" data-mode="mine" aria-pressed="true" onclick="App.setProbMode('mine')"
+                    title="The chance to draw each card in the active player's next draws">My draws</button>
+                <button type="button" data-mode="theirs" aria-pressed="false" onclick="App.setProbMode('theirs')"
+                    title="The chance the opponent holds each card, now and after their next draws">Their hand</button>
+            </div>
             <div class="prob-cols">
-                <span class="prob-count" title="Copies left in the deck">Left</span>
+                <span class="prob-count" title="Copies left in the deck (Their hand: copies unseen)">Left</span>
                 <span class="prob-name">Card</span>
+                <span class="prob-val prob-their-col" title="Chance they hold one now">Hand</span>
+                <span class="prob-val prob-their-col" title="Chance they hold one after their next draw">+1</span>
+                <span class="prob-val prob-their-col" title="Chance they hold one after two more draws">+2</span>
                 <input class="prob-win" id="prob-win-0" type="number" min="1" max="60"
                     onchange="App.onProbWindowChange(0, this.value)" title="Draw window: chance within next N draws">
                 <input class="prob-win" id="prob-win-1" type="number" min="1" max="60"
@@ -11917,6 +11927,13 @@
                 if (icon) icon.className = `fa-solid ${collapsed ? 'fa-angles-left' : 'fa-angles-right'}`;
             },
 
+            // Feature 64: 'mine' = the active player's draws, 'theirs' = the opponent's hand.
+            probMode: 'mine',
+            setProbMode(mode) {
+                this.probMode = mode;
+                this.updateProbPane();
+            },
+
             updateProbPane() {
                 const list = document.getElementById('prob-list');
                 if (!list) return;
@@ -11926,23 +11943,30 @@
                     if (input && document.activeElement !== input) input.value = w;
                 });
 
-                const p = this.state.players[this.state.activePlayer];
-                const N = p.deck.length;
+                const theirs = this.probMode === 'theirs';
+                document.getElementById('prob-pane').classList.toggle('is-theirs', theirs);
+                document.querySelectorAll('#prob-mode button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.mode === this.probMode)));
+                const p = this.state.players[theirs ? this.state.inactivePlayer : this.state.activePlayer];
+                // From your seat their hand and deck are one unseen pool, so the chance they
+                // hold a card is the chance of drawing it in hand-size draws from that pool.
+                const pool = theirs ? p.deck.concat(p.hand) : p.deck;
+                const draws = theirs ? [0, 1, 2].map(i => p.hand.length + i) : wins;
+                const N = pool.length;
                 document.getElementById('prob-deck-count').innerText = N ? `· ${N}` : '';
                 list.innerHTML = '';
                 if (!N) {
                     const empty = document.createElement('div');
                     empty.className = 'prob-empty';
-                    empty.innerText = 'Deck is empty.';
+                    empty.innerText = theirs ? 'No unseen cards.' : 'Deck is empty.';
                     list.appendChild(empty);
                     return;
                 }
 
                 // Rows come from the player's whole card pool (all zones), so cards you've
-                // fully drawn stay listed but grayed. Counts = copies still in the deck.
-                // Unknown placeholders collapse into one grouped row.
+                // fully drawn stay listed but grayed. Counts = copies still in the deck
+                // (theirs: still unseen). Unknown placeholders collapse into one grouped row.
                 const inDeck = new Map();
-                p.deck.forEach(c => inDeck.set(c.cardId, (inDeck.get(c.cardId) || 0) + 1));
+                pool.forEach(c => inDeck.set(c.cardId, (inDeck.get(c.cardId) || 0) + 1));
                 const poolIds = new Set(this._collectAllCards(p).map(c => c.cardId));
                 const rows = [...poolIds].map(cardId => {
                     const dbCard = cardId === -999 ? null : this.cardDB[cardId];
@@ -11966,10 +11990,12 @@
                     const name = document.createElement('span');
                     name.className = 'prob-name';
                     name.innerText = r.name;
-                    name.title = r.dbCard ? `${r.name} — ${r.count} left in deck` : `${r.count} unidentified cards in deck`;
+                    name.title = theirs
+                        ? `${r.dbCard ? r.name : 'Unidentified'}: ${r.count} of their ${N} unseen cards (hand ${p.hand.length}, deck ${p.deck.length})`
+                        : r.dbCard ? `${r.name} — ${r.count} left in deck` : `${r.count} unidentified cards in deck`;
                     if (r.dbCard && r.count) this.applyInkTint(name, r.dbCard.color);
                     row.appendChild(name);
-                    wins.forEach(n => {
+                    draws.forEach(n => {
                         const val = document.createElement('span');
                         val.className = 'prob-val';
                         val.innerText = r.count ? pct(this.hypergeoAtLeastOne(r.count, N, n)) : '—';

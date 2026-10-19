@@ -2670,6 +2670,29 @@ body.challenge-mode .board-half {
     color: var(--text-dim);
 }
 
+/* Feature 64: My draws · Their hand. Theirs has fixed draw heads (hand, +1,
+   +2) in place of the editable windows. */
+.prob-mode {
+    display: flex;
+    flex: none;
+    margin: 6px 8px 6px 12px;
+}
+
+.prob-mode button {
+    flex: 1;
+}
+
+.prob-pane.is-collapsed .prob-mode,
+.prob-cols .prob-their-col,
+.prob-pane.is-theirs .prob-win {
+    display: none;
+}
+
+.prob-pane.is-theirs .prob-cols .prob-their-col {
+    display: block;
+    font-size: 10px;
+}
+
 /* ----- Context menu: a paper module ----- */
 #context-menu {
     background: var(--surface);
