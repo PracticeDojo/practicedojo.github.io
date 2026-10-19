@@ -19,8 +19,8 @@
             document.documentElement.dataset.theme = fuNight ? 'night' : 'day';
         } catch (e) { }
     </script>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+        integrity="sha384-iw3OoTErCYJJB9mCa8LNS2hbsQ7M3C0EpIsO/H5+EGAkPGc6rk+V8i04oW/K5xq0" crossorigin="anonymous">
 
     <!-- Field Unit fonts, all self-hosted in fonts/ (declared in css/field-unit.css):
          Inter and Inter Display (Inter 4.1, OFL, see fonts/Inter-OFL.txt) and
@@ -29,10 +29,14 @@
     <link rel="preload" href="fonts/InterDisplayVariable.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="preload" href="fonts/LiberationMono-Regular.woff2" as="font" type="font/woff2" crossorigin>
 
-    <!-- Fuse, marked, and DOMPurify (marked passes raw HTML through; comments come from session files) -->
-    <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.6.2"></script>
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.2.4/purify.min.js"></script>
+    <!-- Fuse, marked, and DOMPurify (marked passes raw HTML through; comments come from session files).
+         Pinned with SRI hashes: when updating one, change its version and hash together. -->
+    <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.6.2/dist/fuse.min.js"
+        integrity="sha384-zPE55eyESN+FxCWGEnlNxGyAPJud6IZ6TtJmXb56OFRGhxZPN4akj9rjA3gw5Qqa" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked@15.0.12/marked.min.js"
+        integrity="sha384-948ahk4ZmxYVYOc+rxN1H2gM1EJ2Duhp7uHtZ4WSLkV4Vtx5MUqnV+l7u9B+jFv+" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.2.4/purify.min.js"
+        integrity="sha384-eEu5CTj3qGvu9PdJuS+YlkNi7d2XxQROAFYOr59zgObtlcux1ae1Il3u7jvdCSWu" crossorigin="anonymous"></script>
 
     <!-- Device library: IndexedDB decks & sessions, session file codec, repo defaults -->
     <script src="js/library.js"></script>
@@ -55,6 +59,8 @@
     <!-- Base styles (the original stylesheet), then the Field Unit design system on top -->
     <link rel="stylesheet" href="css/base.css">
     <link rel="stylesheet" href="css/field-unit.css">
+    <!-- The utility classes Tailwind used to generate in the browser, frozen (see the file) -->
+    <link rel="stylesheet" href="css/tailwind.css">
 </head>
 
 <body>
@@ -1185,7 +1191,7 @@
     <script>
         let cardFuse = null;
 
-        const APP_VERSION = "v3.17.3"; // Centralized version string (v3: Field Unit)
+        const APP_VERSION = "v3.17.4"; // Centralized version string (v3: Field Unit)
 
         // Tweaks panel accent presets (hue values for the OKLCH accent ramp)
         // Tweaks → Accent: the approved Field Unit signals only (design.md ·
@@ -5495,6 +5501,8 @@
                 const unescape = (s) => s.replace(/~1/g, '/').replace(/~0/g, '~');
                 for (const op of ops) {
                     const keys = op.path.split('/').slice(1).map(unescape);
+                    // Replay files come from anywhere: never walk into an object's prototype.
+                    if (keys.some(k => k === '__proto__' || k === 'constructor' || k === 'prototype')) continue;
                     let parent = doc;
                     let ok = true;
                     for (let i = 0; i < keys.length - 1; i++) {
@@ -8771,14 +8779,8 @@
                 const dDb = this.cardDB[df.card.cardId];
                 if (!cDb || !dDb) return;
 
-                // Feature 61: strength, Challenger and Resist with modifiers.
-                const cStr = this.challengeStrength(cf.card);
-                const dStr = this.statOf(df.card, 'strength');
-                const cResist = this.statOf(cf.card, 'resist');
-                const dResist = this.statOf(df.card, 'resist');
-
-                const dmgToDefender = Math.max(0, cStr - dResist);
-                const dmgToChallenger = Math.max(0, dStr - cResist);
+                // The forecast's arithmetic (strength, Challenger, Resist, modifiers), so the two can't drift.
+                const { toDef: dmgToDefender, toAtt: dmgToChallenger } = this.challengeOutcome(challengerInstanceId, defenderInstanceId);
 
                 this.saveState();
 
@@ -9704,7 +9706,7 @@
                 if (!a || !d) return null;
                 const aDb = this.cardDB[a.card.cardId], dDb = this.cardDB[d.card.cardId];
                 if (!aDb || !dDb) return null;
-                // Same arithmetic as performChallenge.
+                // performChallenge uses this too: the forecast is the result.
                 // Feature 61: with each card's modifiers.
                 const toDef = Math.max(0, this.challengeStrength(a.card) - this.statOf(d.card, 'resist'));
                 const toAtt = Math.max(0, this.statOf(d.card, 'strength') - this.statOf(a.card, 'resist'));
