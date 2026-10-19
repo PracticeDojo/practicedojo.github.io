@@ -9105,3 +9105,124 @@ body:not(.ink-drops-on) .ink-drops {
     flex-wrap: wrap-reverse;
     align-content: flex-start;
 }
+
+/* ----- Feature 66: Debrief and matchups. The form and the list sit in a
+       dialog's body; labels are the mono label/sm, tags are toggle chips. ----- */
+.db-form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 12px;
+}
+
+.db-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.db-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+}
+
+.db-form .seg {
+    align-self: flex-start;
+}
+
+.db-form .input {
+    padding: 7px 9px;
+    font-size: 13px;
+}
+
+.db-turn {
+    width: 120px;
+}
+
+.db-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.db-tag {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 9px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: var(--surface);
+    color: var(--text-2);
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.db-tag input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.db-tag:hover {
+    border-color: var(--border-strong);
+}
+
+.db-tag:has(input:checked) {
+    background: var(--fu-glass);
+    border-color: var(--fu-glass);
+    color: var(--fu-light);
+}
+
+.db-tag:has(input:focus-visible) {
+    outline: 2px solid var(--text);
+    outline-offset: 2px;
+}
+
+.mu-list {
+    max-height: min(55vh, 460px);
+    overflow-y: auto;
+    margin-top: 12px;
+    border-top: 1px solid var(--fu-row-rule);
+}
+
+.mu-row {
+    padding: 10px 0;
+    border-bottom: 1px solid var(--fu-row-rule);
+}
+
+.mu-top {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.mu-name {
+    color: var(--text);
+    font-size: 12.5px;
+}
+
+.mu-rec {
+    flex: none;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--text);
+    font-variant-numeric: tabular-nums;
+}
+
+.mu-line {
+    margin-top: 4px;
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+.mu-line .db-label {
+    margin-right: 6px;
+}
+
+:root[data-theme="night"] .db-tag:has(input:checked) {
+    box-shadow: inset 0 0 0 1px var(--fu-line);
+}

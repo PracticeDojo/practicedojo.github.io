@@ -16,6 +16,7 @@ The first player to reach 20 lore wins. The Dojo notices, whether the lore came 
 
 A dialog says who won, the lore score and the turn. A **Game Over - Player 1 Wins!** node is saved to the Multiverse, whether auto-save is on or not. Then choose:
 
+- **Debrief** to record the result, what went wrong and one lesson. See [Debrief a game](help:debrief).
 - **View Multiverse** to see the game as a tree and pick another turn to replay.
 - **Stay Here** to keep playing on this board.
 

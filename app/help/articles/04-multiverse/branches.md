@@ -31,4 +31,4 @@ The path to the node you're on is highlighted; the other lines are grey. Select 
 - Branching never changes or deletes the nodes you already have.
 - The board you leave is kept as a ["Left here" snapshot](help:left-here) if it wasn't saved.
 - **Undo** doesn't reach across a jump: its history starts fresh from the node you play from.
-- When a player reaches 20 lore, a **Game Over** node closes the branch, and the Dojo offers **View Multiverse** or **Stay Here**. You can still go back and play a branch where the other player wins.
+- When a player reaches 20 lore, a **Game Over** node closes the branch, and the Dojo offers **Debrief**, **View Multiverse** or **Stay Here**. You can still go back and play a branch where the other player wins.

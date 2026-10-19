@@ -50,6 +50,9 @@
     <!-- Card modifiers (Feature 61): +/- stats, Challenger / Resist, and when they end -->
     <script src="js/modifiers.js"></script>
 
+    <!-- Debrief and matchups (Feature 66): a game's result and lessons, the record per matchup -->
+    <script src="js/debrief.js"></script>
+
     <!-- Help (Features 57-58): manual search, the manual, "Show me", guided tours. app/help/ holds the content -->
     <script src="js/help-search.js"></script>
     <script src="js/help.js"></script>
@@ -346,6 +349,10 @@
 
         <section class="lib-panel" id="lib-panel-sessions" role="tabpanel" aria-labelledby="lib-tab-sessions">
             <div class="lib-toolbar is-end">
+                <button class="btn btn-ghost" id="btn-lib-matchups" onclick="App.openMatchups()"
+                    title="Your debriefed games, by matchup">
+                    <i class="fa-solid fa-chart-simple"></i> Matchups
+                </button>
                 <input type="file" id="setup-import-file" class="hidden"
                     accept=".json,.gz,application/json,application/gzip" onchange="App.importTimelines(event)">
                 <button class="btn btn-ghost" id="btn-lib-import"
@@ -693,6 +700,9 @@
                                     class="fa-solid fa-bookmark"></i> Save node</button>
                         </div>
                     </div>
+                    <button class="btn btn-block" id="tp-debrief-open" onclick="App.openDebrief()"
+                        title="Result, what went wrong, one lesson"><i class="fa-solid fa-clipboard-check"></i> Debrief
+                        this game</button>
                 </section>
                 <section class="tp-block tp-sel" id="tp-sel" aria-live="polite"></section>
             </aside>
@@ -1405,7 +1415,8 @@
                     autoSaves: this.autoSaves,
                     history: this.history,
                     deck1: this.sessionDecks.deck1 || '',
-                    deck2: this.sessionDecks.deck2 || ''
+                    deck2: this.sessionDecks.deck2 || '',
+                    debrief: this.debrief || null
                 };
             },
 
@@ -1594,7 +1605,8 @@
                     autoSaves: list(data.autoSaves),
                     history: Array.isArray(data.history) ? data.history.filter(h => typeof h === 'string') : [],
                     deck1: str(data.deck1),
-                    deck2: str(data.deck2)
+                    deck2: str(data.deck2),
+                    debrief: DojoDebrief.clean(data.debrief)
                 };
             },
 
@@ -1617,6 +1629,7 @@
                 this.autoSaves = clean.autoSaves;
                 this.history = clean.history;
                 this.sessionDecks = { deck1: clean.deck1, deck2: clean.deck2 };
+                this.debrief = clean.debrief;
                 this.markBoardKeptIfOnNode();
 
                 this.leaveSetup();
@@ -1948,16 +1961,20 @@
 
                     // Celebrate the win in the design system, then offer the multiverse
                     setTimeout(async () => {
-                        const goToTree = await this.dialog({
+                        const next = await this.dialog({
                             title: `${winner.name} wins the branch!`,
-                            message: `${winner.name} reached ${winner.lore} lore. Explore the multiverse to revisit other timelines, or stay here to keep experimenting with this board.`,
+                            message: `${winner.name} reached ${winner.lore} lore. Debrief the game while it's fresh, explore the multiverse to revisit other timelines, or stay here to keep experimenting with this board.`,
                             stat: `Turn ${this.state.turn}  ·  P1 ${p1.lore} — P2 ${p2.lore} lore`,
                             icon: 'fa-trophy',
                             celebrate: true,
-                            confirmText: 'View Multiverse',
-                            cancelText: 'Stay Here'
+                            choices: [
+                                { label: 'Debrief', value: 'debrief', kind: 'primary', icon: 'fa-solid fa-clipboard-check' },
+                                { label: 'View Multiverse', value: 'tree' },
+                                { label: 'Stay Here', value: null }
+                            ]
                         });
-                        if (goToTree) {
+                        if (next === 'debrief') this.openDebrief();
+                        else if (next === 'tree') {
                             this.treePan.zoom = 0.8; // Zoom out
                             this.openTreeModal();
                             // Zoom out and center on current node logic will be in openTreeModal
@@ -2558,7 +2575,8 @@
                         lore: [this.state.players[0].lore, this.state.players[1].lore],
                         nodes: this.bookmarks.length,
                         lines: Math.max(leaves, this.bookmarks.length ? 1 : 0),
-                        inks: [this.getDeckColors(0), this.getDeckColors(1)]
+                        inks: [this.getDeckColors(0), this.getDeckColors(1)],
+                        ...(this.debrief ? { debrief: this.debrief } : {})
                     };
                 } catch (e) {
                     return null;
@@ -4535,6 +4553,7 @@
                     p2: this.seats[2] ? this.seats[2].key : null
                 });
                 this.sessionDecks = { deck1: deck1Str, deck2: deck2Str };
+                this.debrief = null;
 
                 const d1Ids = this.parseDeck(deck1Str);
                 const d2Ids = this.parseDeck(deck2Str);
@@ -7472,7 +7491,7 @@
 
             // --- Styled dialogs (replace native confirm/prompt/alert) ---
             // dialog({title, message, stat, icon, confirmText, cancelText, danger,
-            //         celebrate, prompt, placeholder, multiline, allowEmpty}) -> Promise<boolean|string|null>
+            //         celebrate, prompt, placeholder, multiline, allowEmpty, content}) -> Promise<boolean|string|null>
             // multiline: the prompt is a textarea (Enter adds a line, Ctrl/Cmd+Enter confirms).
             // allowEmpty: OK accepts an empty value (clearing a note); Cancel still gives null.
             dialog(opts = {}) {
@@ -7535,6 +7554,9 @@
                             body.appendChild(note);
                         } else body.appendChild(inputEl);
                     }
+
+                    // opts.content: an element of the caller's (a form, a list); the caller reads it after OK.
+                    if (opts.content) body.appendChild(opts.content);
 
                     const foot = document.createElement('div');
                     foot.className = 'dlg-foot';
@@ -7634,6 +7656,55 @@
 
             dialogAlert(message, title = 'Something went wrong') {
                 return this.dialog({ title, message, danger: true, confirmText: 'OK' });
+            },
+
+            // --- Debrief and matchups (Feature 66, app/js/debrief.js) ---
+            // The session's debrief: saved with it (data.debrief) and in its summary,
+            // so Matchups can count it without opening the session.
+            debrief: null,
+
+            async openDebrief() {
+                if (!this.hasLiveMatch()) return;
+                if (!this.session) { this.showToast('Save this as your own session first (Save as copy), then debrief it.'); return; }
+                const ps = this.state.players;
+                const winner = ps.findIndex(p => p.lore >= 20);
+                const form = DojoDebrief.form(this.debrief || { me: 0, won: winner === -1 ? null : winner === 0 }, ps.map(p => p.name));
+                const ok = await this.dialog({
+                    title: 'Debrief this game',
+                    message: "Half a minute while it's fresh. It's saved with the session and counted in Matchups.",
+                    icon: 'fa-clipboard-check', help: 'debrief', content: form,
+                    confirmText: 'Save debrief', cancelText: 'Cancel'
+                });
+                if (!ok) return;
+                this.debrief = DojoDebrief.read(form);
+                this.saveToDevice();
+                this.showToast('Debrief saved. Home → Sessions → Matchups shows your record.');
+            },
+
+            async openMatchups() {
+                await this.flushDeviceSave();
+                let rows = [];
+                try { rows = await DojoLibrary.listSessions(); } catch (e) { }
+                const list = DojoDebrief.matchups(rows, (inks) => this.inkPairLabel(this.sortInks(inks)));
+                const esc = (v) => this.escapeHtml(v);
+                const side = (inks, label) => `${this.inkPipsHtml(this.sortInks(inks))} ${esc(label)}`;
+                const el = document.createElement('div');
+                el.className = 'mu-list custom-scrollbar';
+                el.innerHTML = list.length ? list.map(m => `
+                    <div class="mu-row">
+                        <div class="mu-top">
+                            <span class="mu-name">${side(m.myInks, m.mine)} <span class="dim">vs</span> ${side(m.theirInks, m.theirs)}</span>
+                            <span class="mu-rec">${m.wins}–${m.losses} · ${Math.round(m.rate * 100)}%</span>
+                        </div>
+                        ${m.few ? `<div class="mu-line dim">${m.games} ${m.games === 1 ? 'game' : 'games'}: too few to trust the rate</div>` : ''}
+                        ${m.topTag ? `<div class="mu-line"><span class="db-label">Most often</span> ${esc(m.topTag)} · ${m.topCount}</div>` : ''}
+                        ${m.lesson ? `<div class="mu-line"><span class="db-label">Last lesson</span> ${esc(m.lesson)}</div>` : ''}
+                    </div>`).join('')
+                    : '<p class="tp-hint">No debriefed games yet. After a game, open the Multiverse and press Debrief this game.</p>';
+                await this.dialog({
+                    title: 'Matchups', icon: 'fa-chart-simple', help: 'debrief', content: el, confirmText: 'Close',
+                    message: list.length ? 'Your debriefed games on this device, by your inks against theirs. Weakest first: practise the top one.' : ''
+                });
             },
 
             // Player-identity color for bookmarks/tree lines. Stored as a var()

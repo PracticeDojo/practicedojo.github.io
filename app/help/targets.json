@@ -416,6 +416,16 @@
       "screen": "library",
       "any": "#btn-lib-import"
     },
+    "lib-matchups": {
+      "label": "Matchups",
+      "screen": "library",
+      "any": "#btn-lib-matchups"
+    },
+    "debrief-open": {
+      "label": "Debrief this game",
+      "screen": "multiverse",
+      "any": "#tp-debrief-open"
+    },
     "deck-new": {
       "label": "New deck",
       "screen": "library",

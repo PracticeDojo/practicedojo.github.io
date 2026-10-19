@@ -5,6 +5,7 @@
 //     (turns, timeline nodes, cards per zone, lore, unknown cards).
 //   - Challenges: the damage done is the damage the forecast showed.
 //   - Untrusted files: session sanitising, the session codec, replay patches.
+//   - Debrief: untrusted debriefs cleaned, matchups grouped and ordered.
 //   - Device library: the two-tab guard and sign-out removal.
 //
 // An import fingerprint changed on purpose (a parser fix)? Run with --update to print the
@@ -83,6 +84,20 @@ export default async (page) => {
         // Replay patches can't reach Object.prototype.
         App.applyJsonPatch({}, [{ op: 'add', path: '/__proto__/dojoPolluted', value: 1 }, { op: 'add', path: '/constructor/prototype/dojoPolluted', value: 1 }]);
         check('replay patch: no prototype pollution', ({}).dojoPolluted, undefined);
+
+        // Debrief (Feature 66): a stranger's debrief is cleaned; matchups group by inks, weakest first.
+        const dbx = App.sanitizeSessionData({ currentState: {}, debrief: { me: '1', won: 'yes', turn: 3.5, tags: ['Mulligan', '<img onerror>'], lesson: 7 } }).debrief;
+        check('debrief: untrusted values cleaned', JSON.stringify([dbx.me, dbx.won, dbx.turn, dbx.tags, dbx.lesson]), '[0,null,null,["Mulligan"],"7"]');
+        const dbRow = (me, won, mine, theirs, tags, lesson, at) => ({ summary: { inks: me ? [theirs, mine] : [mine, theirs], debrief: { me, won, tags, lesson, at } } });
+        const mu = DojoDebrief.matchups([
+            dbRow(0, true, ['amber', 'steel'], ['ruby'], ['Inking'], 'a', 1),
+            dbRow(1, false, ['amber', 'steel'], ['ruby'], ['Inking', 'Mulligan'], 'b', 2),
+            dbRow(0, false, ['emerald'], ['sapphire'], [], '', 3),
+            dbRow(0, null, ['emerald'], ['sapphire'], [], '', 4)
+        ], inks => inks.join('/'));
+        check('debrief: matchups by inks, weakest first',
+            mu.map(m => `${m.mine} v ${m.theirs} ${m.wins}-${m.losses} ${m.topTag} ${m.lesson}`.trim()).join(' | '),
+            'emerald v sapphire 0-1 | amber/steel v ruby 1-1 Inking b');
 
         // Device library.
         const L = DojoLibrary, data = App.buildSessionData(), id = L.newId();

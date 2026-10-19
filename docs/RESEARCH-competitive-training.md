@@ -94,8 +94,8 @@ A Lorcana game is a series of decisions: the mulligan, what to ink, what to play
 
 **What it does.**
 
-- **Debrief** (in the Multiverse panel): a 30-second form for the session. Which side you were, the result, the turn it was decided, what went wrong (tags) and one lesson. It's saved with the session, so imports of real games can be debriefed too.
-- **Matchups** (in the library's Sessions shelf): every debriefed session on this device, grouped by matchup (your inks against theirs). Each row shows games, wins and losses, win rate, the most common mistake and the latest lesson. The **weakest matchup comes first**.
+- **Debrief** (on the win dialog, or *Debrief this game* in the Multiverse panel): a 30-second form for the session. Which side you were, the result, the turn it was decided, what went wrong (tags) and one lesson. It's saved with the session, so imports of real games can be debriefed too.
+- **Matchups** (on the library's Sessions tab): every debriefed session on this device, grouped by matchup (your inks against theirs). Each row shows games, wins and losses, win rate, the most common mistake and the latest lesson. The **weakest matchup comes first**.
 
 The tags are about decisions: *Mulligan, Inking, Curve / tempo, Quest vs challenge, Played into an answer, Misread their deck, Lore race maths, Sequencing*.
 
@@ -105,7 +105,7 @@ The tags are about decisions: *Mulligan, Inking, Curve / tempo, Quest vs challen
 
 **Limits.** Win rates over a few games are noise: a row with fewer than 5 games is marked *few games*. Matchups are grouped by ink pair, so two different decks in the same inks share a row. It covers this device only. Account sync carries the debrief with the session, but there's no cross-device table.
 
-**Try it.** Open any session, open Debrief from the Multiverse panel, fill it in, then go Home → Sessions → **Matchups**.
+**Try it.** Finish a game (or open any session and press **Debrief this game** in the Multiverse panel), fill it in, then go Home → Sessions → **Matchups**.
 
 ## 4. Ideas considered and not built (yet)
 

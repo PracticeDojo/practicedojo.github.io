@@ -84,7 +84,8 @@
     "library",
     "files",
     "share-links",
-    "open-a-shared-link"
+    "open-a-shared-link",
+    "debrief"
    ]
   },
   {
@@ -1191,7 +1192,7 @@
      "slug": "good-to-know"
     }
    ],
-   "body": "The first player to reach 20 lore wins. The Dojo notices, whether the lore came from a quest, **Quest** or the lore **+**.\n\n## When a player reaches 20\n\nA dialog says who won, the lore score and the turn. A **Game Over - Player 1 Wins!** node is saved to the Multiverse, whether auto-save is on or not. Then choose:\n\n- **View Multiverse** to see the game as a tree and pick another turn to replay.\n- **Stay Here** to keep playing on this board.\n\n[Show me](show:lore)\n\n## Try another line\n\nA win is the end of one branch, not of the session. Open the **Multiverse**, select an earlier turn and press **Play from here** to play it differently. See [What the Multiverse is](help:multiverse).\n\n## Good to know\n\n- The Dojo doesn't stop the game at 20: the board stays live.\n- It says so once per branch. If you **Undo** below 20 and reach it again, you get the dialog and a new node again.\n- Lore isn't capped at 20, and other ways to win or lose (like an empty deck) aren't checked.\n"
+   "body": "The first player to reach 20 lore wins. The Dojo notices, whether the lore came from a quest, **Quest** or the lore **+**.\n\n## When a player reaches 20\n\nA dialog says who won, the lore score and the turn. A **Game Over - Player 1 Wins!** node is saved to the Multiverse, whether auto-save is on or not. Then choose:\n\n- **Debrief** to record the result, what went wrong and one lesson. See [Debrief a game](help:debrief).\n- **View Multiverse** to see the game as a tree and pick another turn to replay.\n- **Stay Here** to keep playing on this board.\n\n[Show me](show:lore)\n\n## Try another line\n\nA win is the end of one branch, not of the session. Open the **Multiverse**, select an earlier turn and press **Play from here** to play it differently. See [What the Multiverse is](help:multiverse).\n\n## Good to know\n\n- The Dojo doesn't stop the game at 20: the board stays live.\n- It says so once per branch. If you **Undo** below 20 and reach it again, you get the dialog and a new node again.\n- Lore isn't capped at 20, and other ways to win or lose (like an empty deck) aren't checked.\n"
   },
   {
    "id": "card-preview",
@@ -1883,7 +1884,7 @@
      "slug": "good-to-know"
     }
    ],
-   "body": "To try another line, go back to an earlier node and play on from it. The new turns grow a new branch, and the line you played before stays exactly as it was.\n\n## Try another line\n\n1. Open the Multiverse and select the node to go back to. An auto-save named **Turn 6 - Player 1 Active** is the board at the start of Player 1's turn 6, so pick it to replay that turn.\n2. Press **Play from here**. You're back on the board, at that point in the game.\n3. Play the turn differently and end it. With auto-save on, the new node hangs off the one you played from, beside the turn that followed before: that's a branch.\n4. Keep playing. Every turn you end adds to the new line.\n\n[Show me](show:tree-canvas)\n\n## Compare the lines\n\nThe path to the node you're on is highlighted; the other lines are grey. Select nodes on each line and compare their **Lore race to 20** and **Turn recap** in the panel. The plot shows the whole game at once (see [Cards and plot](help:multiverse-views)).\n\n\n## Good to know\n\n- Branching never changes or deletes the nodes you already have.\n- The board you leave is kept as a [\"Left here\" snapshot](help:left-here) if it wasn't saved.\n- **Undo** doesn't reach across a jump: its history starts fresh from the node you play from.\n- When a player reaches 20 lore, a **Game Over** node closes the branch, and the Dojo offers **View Multiverse** or **Stay Here**. You can still go back and play a branch where the other player wins.\n"
+   "body": "To try another line, go back to an earlier node and play on from it. The new turns grow a new branch, and the line you played before stays exactly as it was.\n\n## Try another line\n\n1. Open the Multiverse and select the node to go back to. An auto-save named **Turn 6 - Player 1 Active** is the board at the start of Player 1's turn 6, so pick it to replay that turn.\n2. Press **Play from here**. You're back on the board, at that point in the game.\n3. Play the turn differently and end it. With auto-save on, the new node hangs off the one you played from, beside the turn that followed before: that's a branch.\n4. Keep playing. Every turn you end adds to the new line.\n\n[Show me](show:tree-canvas)\n\n## Compare the lines\n\nThe path to the node you're on is highlighted; the other lines are grey. Select nodes on each line and compare their **Lore race to 20** and **Turn recap** in the panel. The plot shows the whole game at once (see [Cards and plot](help:multiverse-views)).\n\n\n## Good to know\n\n- Branching never changes or deletes the nodes you already have.\n- The board you leave is kept as a [\"Left here\" snapshot](help:left-here) if it wasn't saved.\n- **Undo** doesn't reach across a jump: its history starts fresh from the node you play from.\n- When a player reaches 20 lore, a **Game Over** node closes the branch, and the Dojo offers **Debrief**, **View Multiverse** or **Stay Here**. You can still go back and play a branch where the other player wins.\n"
   },
   {
    "id": "left-here",
@@ -2600,6 +2601,57 @@
     }
    ],
    "body": "Open the link in your browser. You don't need an account, and nothing is saved until you choose to keep it.\n\n## A shared session\n\nThe match opens on the board with a bar at the top: **Shared** · its title · **not saved yet** · **Save a copy**.\n\n[Show me](show:shared-banner)\n\nLook around, play on, open the Multiverse. While the bar shows, nothing goes into your library. To keep it, press **Save a copy** (**Save** in the top bar does the same). It becomes your own session on this device, under the same title, and saves itself from then on like any other.\n\nIf you open something else instead, or reload the page, your changes to the shared match are gone. A reload opens the link again from the start.\n\n## A shared deck\n\nThe Dojo opens the home screen with the deck in the paste field, marked **Shared deck** with its name. Press **Play it as you** or **Play against it** to seat it, or **Save to My decks** to keep it.\n\n[Show me](show:intake)\n\n## If it doesn't open\n\n- **Link not recognised:** part of the link is missing. Ask for it again, or check you copied all of it.\n- **This share is no longer available:** the person who shared it deleted it.\n- **Couldn't open the link:** the Dojo couldn't reach the sharing service. Check your connection and try again.\n\n## Good to know\n\n- Your copy is yours. Changing it never changes the link or the sharer's session.\n- A shared link is a snapshot of the moment it was made. If they keep playing, ask for a new link.\n"
+  },
+  {
+   "id": "debrief",
+   "section": "library",
+   "title": "Debrief a game and see your matchups",
+   "summary": "After a game, record the result, what went wrong and one lesson; Matchups shows your record per matchup, weakest first.",
+   "devices": [
+    "desktop",
+    "phone"
+   ],
+   "aliases": [
+    "debrief",
+    "review my game",
+    "win rate",
+    "matchup",
+    "record",
+    "mistakes",
+    "lessons",
+    "after action review",
+    "what went wrong",
+    "weakest matchup"
+   ],
+   "targets": [
+    "debrief-open",
+    "lib-matchups"
+   ],
+   "related": [
+    "import-overview",
+    "sessions",
+    "winning"
+   ],
+   "verified": "v3.17.4",
+   "todo": false,
+   "headings": [
+    {
+     "level": 2,
+     "text": "Debrief a game",
+     "slug": "debrief-a-game"
+    },
+    {
+     "level": 2,
+     "text": "See your matchups",
+     "slug": "see-your-matchups"
+    },
+    {
+     "level": 2,
+     "text": "Good to know",
+     "slug": "good-to-know"
+    }
+   ],
+   "body": "A short debrief after each game, and a table of your record per matchup, show you which matchup to practise and what to work on.\n\n## Debrief a game\n\nWhen a player reaches 20 lore, press **Debrief**. At any other time, open **Multiverse** and press **Debrief this game** at the top of the panel.\n\n[Show me](show:debrief-open)\n\n- **You played**: which side was you. For an imported Duels.ink game, pick your own name.\n- **Result**: won or lost. A game with no result is saved, but Matchups doesn't count it.\n- **Decided on turn**: the turn the game turned, if one did.\n- **What went wrong**: tap every tag that applies. The tags are decisions (*Mulligan*, *Inking*, *Quest vs challenge*…), not a grade.\n- **One lesson**: one sentence you'd tell yourself before the next game in this matchup.\n\n**Save debrief** keeps it with the session. Open it again to change it.\n\n## See your matchups\n\nOn the home screen, open **Sessions** and press **Matchups**.\n\n[Show me](show:lib-matchups)\n\nEach row is a matchup, your inks against theirs, with your wins and losses, the win rate, your most common tag and your latest lesson. The weakest matchup comes first: that's the one to practise next. Under five games, the rate is mostly luck, and the row says so.\n\n## Good to know\n\n- Matchups counts the sessions on this device. Decks in the same two inks share a row.\n- A debrief belongs to its session, so it's part of the session's file, its share links and its account copy.\n- Debriefing your real games (imported from Duels.ink) gives you the most honest record.\n"
   },
   {
    "id": "account",
@@ -3848,6 +3900,16 @@
    "label": "Import file",
    "screen": "library",
    "any": "#btn-lib-import"
+  },
+  "lib-matchups": {
+   "label": "Matchups",
+   "screen": "library",
+   "any": "#btn-lib-matchups"
+  },
+  "debrief-open": {
+   "label": "Debrief this game",
+   "screen": "multiverse",
+   "any": "#tp-debrief-open"
   },
   "deck-new": {
    "label": "New deck",

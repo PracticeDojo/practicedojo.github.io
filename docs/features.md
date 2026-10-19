@@ -730,8 +730,9 @@ Proposed from [`RESEARCH-competitive-training.md`](RESEARCH-competitive-training
 - As a player, I want to record each game's result and what went wrong in a few clicks, and see my record per matchup, so I know which matchup to practise and what to work on.
 
 ### Details
-- **Debrief** in the Multiverse panel: which side you were, the result, the turn it was decided, mistake tags (Mulligan, Inking, Curve / tempo, Quest vs challenge, Played into an answer, Misread their deck, Lore race maths, Sequencing) and one lesson. Saved with the session (`data.debrief`, sanitised on load) and in its summary, so the library can list it without opening the session.
-- **Matchups** in the library's Sessions shelf: every debriefed session on this device, grouped by your inks against theirs. Each row shows games, wins and losses, win rate, the top tag and the latest lesson, weakest first. A row with fewer than 5 games says so.
+- **Debrief** on the win dialog and as *Debrief this game* in the Multiverse panel: which side you were, the result, the turn it was decided, mistake tags (Mulligan, Inking, Curve / tempo, Quest vs challenge, Played into an answer, Misread their deck, Lore race maths, Sequencing) and one lesson. Saved with the session (`data.debrief`, sanitised on load) and in its summary, so the library can list it without opening the session.
+- **Matchups** on the library's Sessions tab: every debriefed session on this device, grouped by your inks against theirs. Each row shows games, wins and losses, win rate, the top tag and the latest lesson, weakest first. A row with fewer than 5 games says so.
+- Code: `app/js/debrief.js` (`DojoDebrief`: the tags, cleaning, the form, grouping). `App.dialog` takes a `content` element for the form and the list.
 
 ## Patch: Decklists with Duels.ink's printing suffix (v3.16.2)
 
