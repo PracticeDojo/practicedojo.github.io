@@ -5096,6 +5096,27 @@ body.palette-competition .tree-node.tn-p2::before {
     border-color: var(--fu-edge);
 }
 
+/* Feature 65: Hide the line. A hidden turn is a dashed well with Reveal,
+   in the panel; a mono label in the node. */
+.tp-hidden-line {
+    padding: 10px 10px 11px;
+    border: 1px dashed var(--fu-edge);
+    border-radius: var(--radius-sm);
+}
+
+.tp-hidden-line .tp-hint {
+    margin-bottom: 8px;
+}
+
+.tn-hidden {
+    margin-top: 7px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+}
+
 .tp-note {
     font-size: 12px;
     line-height: 1.45;

@@ -720,8 +720,9 @@ Proposed from [`RESEARCH-competitive-training.md`](RESEARCH-competitive-training
 - As a player studying a strong player's game, I want the Multiverse to hide what they did each turn until I've played that turn myself, so I test my own line before I see theirs.
 
 ### Details
-- A **Hide the line** switch in the Multiverse panel. While it is on, nodes saved before it was switched on hide their note and their card sections (played, quested and so on), in the nodes and in the panel. The panel has **Reveal the line** for the selected node.
-- Nodes you save while it is on show as usual, so your own line is always visible.
+- A **Hide line** switch in the Multiverse's top bar. While it is on, imported nodes (Duels.ink logs and replays) hide their note and card sections, in the nodes (*Line hidden*) and in the panel. The panel has **Reveal the line** for the selected node.
+- Only imported nodes hide: an imported node is the board at the *start* of the turn its note describes, while an auto-saved node is the board *after* the turn, so hiding its note would hide nothing. The importers flag their nodes `fromImport: true`. Games imported before this have no flag.
+- Play from here on a hidden node doesn't copy its note into the turn note.
 - The switch isn't saved; reloading turns it off.
 
 ## Feature 66: Debrief and matchups (prototype: `claude/feat-66-debrief-matchups`)

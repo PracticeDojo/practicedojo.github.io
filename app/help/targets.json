@@ -286,6 +286,11 @@
       "screen": "multiverse",
       "any": "#tree-view-toggle"
     },
+    "hide-line": {
+      "label": "Hide line",
+      "screen": "multiverse",
+      "any": "#tree-hide-line"
+    },
     "tree-legend": {
       "label": "the plot's key",
       "screen": "multiverse",

@@ -73,12 +73,12 @@ A Lorcana game is a series of decisions: the mulligan, what to ink, what to play
 
 ### Feature 65 · Hide the line — `claude/feat-65-hide-the-line`
 
-**What it does.** A **Hide the line** switch in the Multiverse panel. While it is on, every node saved *before* you switched it on hides what happened on that turn (its note, the turn recap and the cards played or quested), until you press **Reveal the line**. Nodes you make afterwards (your own lines) show as usual.
+**What it does.** A **Hide line** switch in the Multiverse's top bar. While it is on, every imported turn (Duels.ink log or replay) hides what happened on it (its note, the turn recap and the cards played or quested), until you press **Reveal the line**. Your own nodes always show. Only imports hide, because an imported node is the board at the start of the turn its note describes. An auto-saved node is the board after its turn, so hiding its note would hide nothing.
 
 **How to study with it.**
 
 1. Import a replay of a strong player in the matchup you want to learn (Duels.ink).
-2. Turn on **Hide the line**.
+2. Open the Multiverse and press **Hide line**.
 3. On one of their turns, press **Play from here** and play the turn yourself. Your line is saved as a branch.
 4. Open the Multiverse, select their node and press **Reveal the line**. Compare it with yours, then write in the note why theirs (or yours) was better.
 
@@ -86,9 +86,9 @@ A Lorcana game is a series of decisions: the mulligan, what to ink, what to play
 
 **How far the evidence transfers.** The chess evidence is about games of skill with hidden lines, so it transfers well. Lorcana adds hidden information and shuffles, so a strong player's line is a good line, not always the best one. Compare and reason about it, don't just copy it.
 
-**Limits.** Each node's lore score still shows in its stats, so the outcome of later turns is visible. The switch isn't saved: it resets when you reload, and any node then counts as new.
+**Limits.** Each node's lore score still shows in its stats, so the outcome of later turns is visible. The switch isn't saved: it resets when you reload. Games imported before this version have no flag, so they have to be imported again.
 
-**Try it.** Home → Demos → open a demo, turn on **Hide the line** in the Multiverse, and select a node.
+**Try it.** On the home screen press **A Duels.ink log** (the example), then **Study this game**. Open the Multiverse, press **Hide line** and select a turn.
 
 ### Feature 66 · Debrief and matchups — `claude/feat-66-debrief-matchups`
 

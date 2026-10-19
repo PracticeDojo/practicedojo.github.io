@@ -2,6 +2,10 @@
   "$comment": "Golden queries for the manual search (tools/help.mjs --test). Each query must find its article in the top 3. Add queries for the articles you write. device defaults to desktop.",
   "queries": [
     {
+      "q": "guess the move before seeing it",
+      "article": "import-overview"
+    },
+    {
       "q": "how do i go back",
       "article": "undo"
     },

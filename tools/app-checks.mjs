@@ -2,7 +2,7 @@
 // Exits 1 if any check fails. Needs Playwright, like the dojo-screenshots tool it runs through.
 //
 //   - Duels.ink imports: every sample log and replay still builds the same board
-//     (turns, timeline nodes, cards per zone, lore, unknown cards).
+//     (turns, timeline nodes, cards per zone, lore, unknown cards), every node flagged fromImport.
 //   - Challenges: the damage done is the damage the forecast showed.
 //   - Untrusted files: session sanitising, the session codec, replay patches.
 //   - Device library: the two-tab guard and sign-out removal.
@@ -31,6 +31,7 @@ export default async (page) => {
         const check = (name, got, want) => out.push({ name, ok: got === want, got: String(got), want: String(want) });
 
         // Imports: the same pipeline as Import log, without putting the game on the board.
+        const unflagged = [];
         for (const path of Object.keys(IMPORTS)) {
             let got;
             try {
@@ -39,6 +40,7 @@ export default async (page) => {
                 let session, turns;
                 if (fmt.type === 'replay') { session = App.buildSessionFromReplay(fmt.data); turns = session._turnCount; }
                 else { const parsed = App.parseDojoLog(text); session = App.buildSessionFromLog(parsed); turns = parsed.turns.length; }
+                if (session.bookmarks.some(b => !b.fromImport)) unflagged.push(path.split('/').pop());
                 const st = App.decompressState(session.currentState);
                 const zones = ['deck', 'hand', 'field', 'inkwell', 'discard'];
                 let unknown = 0;
@@ -48,6 +50,8 @@ export default async (page) => {
             } catch (e) { got = 'threw: ' + e.message; }
             check('import ' + path.split('/').pop(), got, IMPORTS[path]);
         }
+        // Hide the line (Feature 65) hides only nodes the importers flag.
+        check('import: every node is flagged fromImport', unflagged.join() || 'all', 'all');
 
         // Challenge: what the forecast says is what happens.
         const me = App.state.players[App.state.activePlayer], them = App.state.players[1 - App.state.activePlayer];

@@ -627,6 +627,9 @@
                 <button class="tree-tool" id="tree-view-toggle" onclick="App.toggleTreeView()" aria-pressed="false"
                     title="Show the tree as a plot: every saved turn a dot"><i
                         class="fa-solid fa-braille"></i><span>Plot</span></button>
+                <button class="tree-tool" id="tree-hide-line" onclick="App.toggleHideLine()" aria-pressed="false"
+                    title="Hide what happened on each imported turn until you reveal it"><i
+                        class="fa-solid fa-eye-slash"></i><span>Hide line</span></button>
                 <button type="button" class="help-q" data-help="multiverse" aria-label="Help: the Multiverse">?</button>
                 <button onclick="App.toggleTreePanelSide()" class="close tree-dock-toggle" id="tree-dock-toggle"
                     title="Move the panel to the left" aria-label="Move the panel to the left"><i
@@ -5436,6 +5439,7 @@
                         state: JSON.stringify(this.compressState(snapshot, true)),
                         timestamp: Date.now(),
                         isDeckEdit: false,
+                        fromImport: true, // Feature 65: the board at the start of the turn its note describes
                         cardsPlayedData,
                         sections: nodeSections
                     });
@@ -5768,6 +5772,7 @@
                         state: JSON.stringify(this.compressState(segSnapshot, true)),
                         timestamp: Date.now(),
                         isDeckEdit: false,
+                        fromImport: true, // Feature 65: the board at the start of the turn its note describes
                         cardsPlayedData: segPlayed.slice(),
                         // drawn/discarded: a replay has no semantic frame for either (draws
                         // ride inside the END_TURN patch, and the opponent's are hidden).
@@ -6156,7 +6161,7 @@
 
                     // Seed the turn comment textarea with the bookmark's comment if the state
                     // has nothing for this turn yet (covers log-imported nodes and manual bookmark comments).
-                    if (bookmark.comment) {
+                    if (bookmark.comment && !this.isLineHidden(bookmark)) {
                         const commentKey = `${this.state.turn}-${this.state.activePlayer}`;
                         if (!this.state.turnComments[commentKey] && !this.state.turnComments[this.state.turn]) {
                             this.state.turnComments[commentKey] = bookmark.comment;
@@ -6626,6 +6631,29 @@
                 if (m) return [Number(m[1]), Number(m[2])];
                 if (isAuto) return this.autoSaveInfo(b).lore;
                 try { return JSON.parse(b.state).players.map(p => p.lore || 0); } catch (e) { return null; }
+            },
+
+            // Feature 65: Hide the line. Imported nodes keep what happened on their turn
+            // hidden until each is revealed, so you play the turn first. Only imports: an
+            // imported node is the board at the start of the turn its note describes, while
+            // an auto-saved one is the board after it.
+            // shortcut: in memory only, a reload turns it off; save it with the session if kept.
+            hideLine: false,
+            lineRevealed: new Set(),
+            isLineHidden(b) {
+                return this.hideLine && !!b.fromImport && !this.lineRevealed.has(b.id);
+            },
+
+            toggleHideLine() {
+                this.hideLine = !this.hideLine;
+                this.lineRevealed = new Set();
+                document.getElementById('tree-hide-line').setAttribute('aria-pressed', String(this.hideLine));
+                this.renderTree();
+            },
+
+            revealLine(id) {
+                this.lineRevealed.add(id);
+                this.renderTree();
             },
 
             toggleTreeRecap() {
@@ -7237,7 +7265,8 @@
 
                     // The whole comment (the note and the text recap of the turn) in a
                     // glass note block, only when there's something to show.
-                    const comment = this.shownComment(b.comment);
+                    const hidden = this.isLineHidden(b);
+                    const comment = hidden ? '' : this.shownComment(b.comment);
 
                     el.innerHTML = `
                          <span class="deck-icon${pIdx === null ? '' : ' is-p' + (pIdx + 1)}"></span>
@@ -7252,6 +7281,7 @@
                                  <div class="tn-note-head"><span>Note</span><i class="fa-solid fa-pen" aria-hidden="true"></i></div>
                                  <div class="tn-comment custom-scrollbar markdown-comment">${this.renderMarkdown(comment)}</div>
                              </div>` : ''}
+                             ${hidden ? '<div class="tn-hidden"><i class="fa-solid fa-eye-slash" aria-hidden="true"></i> Line hidden</div>' : ''}
                              ${isVictory ? this.treeWinPlateHtml(b, pIdx) : ''}
 
                              <button data-act="delete" class="tn-icon-btn tn-delete"
@@ -7260,7 +7290,7 @@
                              </button>
                          </div>
 
-                         ${this.buildNodeSectionsHtml(b)}
+                         ${hidden ? '' : this.buildNodeSectionsHtml(b)}
                     `;
                     nodesContainer.appendChild(el);
                 });
@@ -7310,7 +7340,8 @@
                 const pIdx = node ? this.bookmarkPlayerIndex(node) : this.autoSaveInfo(auto).activePlayer;
                 const time = new Date(b.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' });
                 const editing = this._tpEdit && this._tpEdit.id === b.id ? this._tpEdit.field : null;
-                const comment = node ? this.shownComment(node.comment) : '';
+                const hidden = !!node && this.isLineHidden(node);
+                const comment = node && !hidden ? this.shownComment(node.comment) : '';
                 const noteHead = (right) => `<div class="tp-note-head"><span>${esc(this.noteLabel(node))}</span><span>${right}</span></div>`;
 
                 const label = auto ? 'Where you jumped from'
@@ -7320,7 +7351,12 @@
                     : editing === 'name'
                         ? `<input type="text" class="input tp-name-input" id="tp-name-input" maxlength="120" value="${esc(node.name)}" aria-label="Node name">`
                         : `<button class="tp-name" data-act="edit-name" title="Click to rename">${esc(node.name)}</button>`;
-                const noteHtml = auto
+                const noteHtml = hidden
+                    ? `<div class="tp-hidden-line">
+                           <p class="tp-hint">What happened on this turn is hidden. Play it yourself first, then reveal it and compare.</p>
+                           <button class="btn" data-act="reveal"><i class="fa-solid fa-eye"></i> Reveal the line</button>
+                       </div>`
+                    : auto
                     ? `<p class="tp-hint">Kept automatically when you jumped to another node, so the board you left is never lost. The last five stay until you keep one as a node.</p>`
                     : editing === 'note'
                         ? `<div class="tp-note-box is-editing">${noteHead('Editing')}
@@ -7362,7 +7398,7 @@
                     <div class="tp-actions">${actions}</div>
                     ${noteHtml}
                     ${loreHtml}
-                    <div class="tp-recap">${recapHead}${recapCards}</div>`;
+                    ${hidden ? '' : `<div class="tp-recap">${recapHead}${recapCards}</div>`}`;
 
                 if (editing) this.bindTreeEdit(b.id, editing);
             },
@@ -7428,6 +7464,7 @@
                     // A link inside the rendered note still opens; anywhere else edits.
                     case 'edit-note': if (!e.target.closest('a')) this.startTreeEdit('note'); break;
                     case 'toggle-recap': this.toggleTreeRecap(); break;
+                    case 'reveal': this.revealLine(id); break;
                 }
             },
 

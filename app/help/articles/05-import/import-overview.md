@@ -3,8 +3,8 @@ id: import-overview
 title: Study a Duels.ink game
 summary: Paste or drop a Duels.ink log or replay and the Dojo rebuilds the game turn by turn as a Multiverse.
 devices: [desktop, phone]
-aliases: [import game, duels.ink, duels ink, review game, replay a game, analyse match, game log]
-targets: [intake, readout, example-log]
+aliases: [import game, duels.ink, duels ink, review game, replay a game, analyse match, game log, hide the line, guess the move, study a replay, reveal]
+targets: [intake, readout, example-log, hide-line]
 related: [import-log, import-replay, hidden-information]
 order: 10
 verified: v3.16.1
@@ -30,6 +30,18 @@ No game to hand? Press **A Duels.ink log** under the field to load an example.
 - The board at the end of the game.
 
 Open **Multiverse**, pick a turn and press **Play from here** to load it, then play it differently. See [The Multiverse](help:multiverse).
+
+## Hide the line: play each turn before you see it
+
+To learn from a stronger player's game, try each of their turns yourself before you look at what they did.
+
+1. Import their game, open **Multiverse** and press **Hide line** at the top. Imported turns now hide their note and their cards (*Line hidden*).
+2. Select one of their turns and press **Play from here**. Play the turn as you would. Ending it saves your line as a new branch, which always shows.
+3. Open **Multiverse** again, select their turn and press **Reveal the line**. Compare it with yours, and write in the note why one is better.
+
+[Show me](show:hide-line)
+
+Press **Hide line** again to show every turn. Reloading the page turns it off. Only games imported from this version on can be hidden: import an older one again.
 
 ## Good to know
 
