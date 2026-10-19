@@ -700,6 +700,39 @@ Implements version 2 of `docs/DESIGN-field-unit.md` (Kiln dark mode, signal fami
 - **Signal family.** By day the signal is Ember `#E4572E`; on Kiln it is Radio `#E86B2A` with dark text on the key. Tweaks → Accent offers only the approved swaps: **Signal** (the theme's own), **Coral**, **Olive** (its lore numeral lifts to `#C6C45A` on the well) and **Trace**. Each carries the text colour that sits on it. The old Amber / Rose / Emerald / Violet / Azure accents were ink colours, so a saved pick of one falls back to Signal.
 - **CSS file.** The Field Unit tokens, themes, palettes and component styles moved from the inline `<style>` to `app/css/field-unit.css`, loaded right after it (pixel-identical move). The older inline rules stay put.
 
+## Planned: training for competitive play (Features 64–66)
+
+Proposed from [`RESEARCH-competitive-training.md`](RESEARCH-competitive-training.md), which gives the evidence behind each. Each one has a working prototype on its own branch. A kept prototype gets its version bump, manual, test protocol and landing refresh when it is finished.
+
+## Feature 64: Their hand odds (prototype: `claude/feat-64-their-hand-odds`)
+
+### User Story
+- As a player learning a matchup, I want to see the chance that my opponent holds each of their cards, so I learn what to play around and how likely it really is.
+
+### Details
+- The Draw odds pane gets a **Mine · Theirs** switch. *Theirs* follows the inactive player (the opponent of whoever's turn it is).
+- Their hand and deck are one unseen pool. Each row shows the copies unseen and the chance they hold at least one copy **now** (the window is their hand size) and **after their next draw** (hand + 1).
+- Same hypergeometric as the pane (`hypergeoAtLeastOne`). Unknown cards count in the pool but get no row of their own.
+
+## Feature 65: Hide the line (prototype: `claude/feat-65-hide-the-line`)
+
+### User Story
+- As a player studying a strong player's game, I want the Multiverse to hide what they did each turn until I've played that turn myself, so I test my own line before I see theirs.
+
+### Details
+- A **Hide the line** switch in the Multiverse panel. While it is on, nodes saved before it was switched on hide their note and their card sections (played, quested and so on), in the nodes and in the panel. The panel has **Reveal the line** for the selected node.
+- Nodes you save while it is on show as usual, so your own line is always visible.
+- The switch isn't saved; reloading turns it off.
+
+## Feature 66: Debrief and matchups (prototype: `claude/feat-66-debrief-matchups`)
+
+### User Story
+- As a player, I want to record each game's result and what went wrong in a few clicks, and see my record per matchup, so I know which matchup to practise and what to work on.
+
+### Details
+- **Debrief** in the Multiverse panel: which side you were, the result, the turn it was decided, mistake tags (Mulligan, Inking, Curve / tempo, Quest vs challenge, Played into an answer, Misread their deck, Lore race maths, Sequencing) and one lesson. Saved with the session (`data.debrief`, sanitised on load) and in its summary, so the library can list it without opening the session.
+- **Matchups** in the library's Sessions shelf: every debriefed session on this device, grouped by your inks against theirs. Each row shows games, wins and losses, win rate, the top tag and the latest lesson, weakest first. A row with fewer than 5 games says so.
+
 ## Patch: Decklists with Duels.ink's printing suffix (v3.16.2)
 
 Duels.ink exports a deck with the printing at the end of each line, `4 Ursula - Deceiver (3-90)`. Those lines used to be skipped, so a pasted list came out as 60 random cards.
@@ -1153,3 +1186,6 @@ The public page (`index.html`) follows Field Unit too, as `docs/DESIGN-field-uni
 - [x] Feature 62: Challenge keys on phones
 - [x] Feature 63: Challenge mode arrow keys on desktop
 - [x] Patch: Decklists with Duels.ink's printing suffix
+- [ ] Feature 64: Their hand odds (prototype)
+- [ ] Feature 65: Hide the line (prototype)
+- [ ] Feature 66: Debrief and matchups (prototype)
