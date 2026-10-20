@@ -92,11 +92,11 @@ window.DojoTour = (function () {
     const turnActs = () => { const a = app(); return (a && a.state && a.state.turnActions) || {}; };
 
     // Settles an opening hand that is still being chosen, the way its own keys would: back from
-    // Craft hand, put a looked-at card down, keep the hand (or start the turn after a mulligan).
+    // Build or Replay to Draw, put a looked-at card down, keep the hand (or start the turn after a mulligan).
     // Skipping a mulligan step must never leave the dialog up behind the tour.
     function settleMulligan(a) {
         for (let n = 0; n < 3 && a && a.state && a.state.mulliganPending; n++) {
-            if (visible('craft-hand-modal') && a.backToMulligan) a.backToMulligan();
+            if (a.openingMode && a.openingMode !== 'draw' && a.setOpeningMode) a.setOpeningMode('draw');
             if (a.closeMulliganLook) a.closeMulliganLook();
             if (a.hideMulliganPeek) a.hideMulliganPeek();
             const p = a.state.players[a.state.activePlayer];

@@ -257,9 +257,9 @@
       "any": "#mulligan-confirm"
     },
     "craft-hand": {
-      "label": "Craft hand",
+      "label": "Build",
       "screen": "mulligan",
-      "any": "#mulligan-craft"
+      "any": "#mull-mode-build"
     },
     "tree-canvas": {
       "label": "the Multiverse canvas",
@@ -470,6 +470,11 @@
       "label": "the card held up close",
       "screen": "mulligan",
       "phone": "#mulligan-peek"
+    },
+    "replay-opening": {
+      "label": "Replay",
+      "screen": "mulligan",
+      "any": "#mull-mode-replay"
     }
   }
 }

@@ -3110,7 +3110,7 @@ button.ctx-item:focus-visible {
     cursor: default;
 }
 
-.mull-dlg.is-after .mull-craft,
+.mull-dlg.is-after .mull-modes,
 .mull-dlg.is-after #mull-rd-head,
 .mull-dlg.is-after .mull-rd {
     display: none;
@@ -6827,17 +6827,9 @@ body.palette-competition .tree-node.tn-p2::before {
     margin-right: 6px;
 }
 
-/* Card grids in modals sit on glass: hover is a paper hairline, and the
-   Craft Hand "×N in hand" bar is paper, not green. */
+/* Card grids in modals sit on glass: hover is a paper hairline. */
 .modal-body [class*="hover:border-blue-400"]:hover {
     border-color: var(--fu-glass-2) !important;
-}
-
-#craft-hand-grid .bg-green-600\/90 {
-    background: var(--fu-light) !important;
-    color: var(--fu-dark) !important;
-    font-family: var(--font-mono);
-    font-size: 11px !important;
 }
 
 /* Node subline: lore pair and the time it was saved. */
@@ -9104,4 +9096,544 @@ body:not(.ink-drops-on) .ink-drops {
     max-height: calc(100% - 38px * var(--badge-scale));
     flex-wrap: wrap-reverse;
     align-content: flex-start;
+}
+
+/* ---------------------------------------------------------------------------
+   Feature 64: the opening hand's modes. Draw (the mulligan), Build (pick the
+   seven: the hand in the glass, the deck as a pool on the rail) and Replay (an
+   opening from a saved game: the list on the rail, the preview in the glass).
+   The dialog's data-mode picks what shows; data-view="preview" is a phone on
+   one opening.
+   --------------------------------------------------------------------------- */
+.mull-modes {
+    align-self: flex-end;
+    margin: 0 4px 2px auto;
+}
+
+.mull-modes button {
+    height: 26px;
+    padding: 0 12px;
+}
+
+/* What each mode shows. */
+.mull-pool,
+.mull-openings,
+.mull-back,
+.mull-note,
+.mull-build-only {
+    display: none;
+}
+
+.mull-dlg[data-mode="build"] .mull-odds,
+.mull-dlg[data-mode="replay"] .mull-odds {
+    display: none;
+}
+
+.mull-dlg[data-mode="build"] .mull-pool,
+.mull-dlg[data-mode="replay"] .mull-openings {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    padding-left: 4px;
+    border-left: 1px solid var(--fu-row-rule);
+}
+
+.mull-dlg[data-mode="build"] .mull-build-only {
+    display: inline-flex;
+}
+
+.mull-dlg[data-mode="replay"] .mull-note {
+    display: flex;
+}
+
+.mull-dlg[data-mode="replay"] #mulligan-hint {
+    display: none;
+}
+
+/* The rail is wider for the pool and the list, and Build is a little taller
+   than Draw, so the pool shows three rows. */
+.mull-dlg[data-mode="build"] .mull-body,
+.mull-dlg[data-mode="replay"] .mull-body {
+    grid-template-columns: minmax(0, 1fr) 380px;
+}
+
+.mull-dlg[data-mode="build"] .mull-body {
+    min-height: min(560px, 64vh);
+}
+
+.mull-dlg[data-mode="build"] .mull-well,
+.mull-dlg[data-mode="replay"] .mull-well {
+    justify-content: space-between;
+}
+
+.mull-dlg[data-mode="build"] .mull-hand,
+.mull-dlg[data-mode="replay"] .mull-hand {
+    margin: auto 0;
+    padding-bottom: 24px;
+    gap: 12px;
+}
+
+/* Rail parts shared by the pool and the openings. */
+.mull-rail-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 2px 12px 8px;
+}
+
+.mull-rail-head .mull-lbl {
+    flex: 1;
+}
+
+.mull-rail-tools {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 0 12px 10px;
+}
+
+.mull-find {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    height: 32px;
+    padding: 0 10px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--surface-2);
+    color: var(--text-dim);
+}
+
+.mull-find input {
+    flex: 1;
+    min-width: 0;
+    border: 0;
+    outline: 0;
+    background: none;
+    color: var(--text);
+    font: inherit;
+    font-size: 13px;
+}
+
+.mull-find:focus-within {
+    border-color: var(--text);
+}
+
+.mull-costs {
+    display: flex;
+    gap: 4px;
+}
+
+.mull-costs button {
+    flex: 1;
+    height: 26px;
+    padding: 0;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--surface);
+    color: var(--text-dim);
+    font: 500 10.5px var(--font-mono);
+    cursor: pointer;
+}
+
+.mull-costs button[aria-pressed="true"] {
+    background: var(--fu-glass);
+    border-color: var(--fu-glass);
+    color: var(--fu-light);
+}
+
+.mull-rail-empty {
+    margin: 4px 12px;
+    padding: 12px;
+    font-size: 13px;
+    color: var(--text-dim);
+    border: 1px dashed var(--border);
+    border-radius: var(--radius-sm);
+}
+
+/* Build: the hand's slots in the glass. */
+.mull-slot.is-built .mull-out {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    display: grid;
+    place-items: center;
+    width: 22px;
+    height: 22px;
+    border-radius: 6px;
+    background: rgb(0 0 0 / 0.65);
+    color: #fff;
+    font-size: 11px;
+    pointer-events: none;
+}
+
+.mull-empty {
+    display: grid;
+    place-items: center;
+    aspect-ratio: 5 / 7;
+    border-radius: var(--radius-sm);
+    outline: 1.5px dashed var(--fu-glass-line);
+    outline-offset: -1.5px;
+    font: 500 11px var(--font-mono);
+    color: var(--fu-glass-mute);
+}
+
+.mull-empty.is-next {
+    outline-color: var(--fu-light);
+    color: var(--fu-light);
+}
+
+/* Build: the pool. */
+.mull-pool-grid {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    align-content: start;
+    gap: 10px 8px;
+    padding: 0 12px 12px;
+}
+
+.mull-pool-grid .mull-rail-empty {
+    grid-column: 1 / -1;
+    margin: 0;
+}
+
+.mull-pool-card .mull-card {
+    box-shadow: 0 0 0 1px var(--border);
+    transition: transform 120ms var(--ease), opacity 120ms var(--ease);
+}
+
+@media (hover: hover) {
+    .mull-pool-card:not(.is-out):not(.is-full) .mull-pick:hover .mull-card {
+        transform: translateY(-3px);
+    }
+}
+
+.mull-pool-card.is-out .mull-card,
+.mull-pool-card.is-full .mull-card {
+    opacity: 0.35;
+    filter: grayscale(0.7);
+}
+
+.mull-pool-card.is-out .mull-pick,
+.mull-pool-card.is-full .mull-pick {
+    cursor: default;
+}
+
+.mull-copies {
+    display: flex;
+    justify-content: center;
+    gap: 3px;
+    margin-top: 5px;
+}
+
+.mull-copies i {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    box-shadow: inset 0 0 0 1px var(--text-dim);
+}
+
+.mull-copies i.is-in {
+    background: var(--text);
+    box-shadow: none;
+}
+
+/* Replay: the list. */
+.mull-op-list {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    padding-bottom: 8px;
+}
+
+.mull-op-game {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 10px 12px 6px;
+}
+
+.mull-op-game b {
+    overflow: hidden;
+    font-size: 12.5px;
+    font-weight: 600;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.mull-op {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 10px;
+    width: calc(100% - 16px);
+    margin: 0 8px 6px;
+    padding: 8px 10px;
+    text-align: left;
+    color: var(--text);
+    background: var(--surface);
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+}
+
+.mull-op:hover:not([disabled]) {
+    border-color: var(--text-dim);
+}
+
+.mull-op.is-on {
+    border-color: var(--text);
+    box-shadow: inset 0 0 0 1px var(--text);
+}
+
+.mull-op[disabled] {
+    cursor: default;
+    color: var(--text-dim);
+    background: transparent;
+    border-style: dashed;
+}
+
+.mull-op-txt {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    min-width: 0;
+}
+
+.mull-op-txt b {
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.mull-op-txt span {
+    font-size: 11.5px;
+    color: var(--text-dim);
+}
+
+.mull-op-badge {
+    padding: 3px 6px;
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    font: 500 9.5px var(--font-mono);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    color: var(--text-dim);
+}
+
+.mull-op-badge.is-match {
+    border-color: var(--text);
+    color: var(--text);
+}
+
+/* Replay: the preview's extras. */
+.mull-glass-empty {
+    grid-column: 1 / -1;
+    padding: 48px 0;
+    text-align: center;
+    font-size: 13px;
+    color: var(--fu-glass-mute);
+}
+
+.mull-next {
+    display: flex;
+    gap: 10px;
+}
+
+.mull-next figure {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    margin: 0;
+}
+
+.mull-next-card {
+    width: 44px;
+    aspect-ratio: 5 / 7;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.mull-next figcaption {
+    font: 500 9.5px var(--font-mono);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--fu-glass-mute);
+}
+
+.mull-note {
+    flex: 1;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+    font-size: 12.5px;
+}
+
+.mull-note > i {
+    color: var(--text-dim);
+}
+
+.mull-back {
+    align-items: center;
+    gap: 8px;
+    padding: 2px 4px 4px;
+    border: 0;
+    background: none;
+    color: var(--text);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.mull-back .mull-lbl {
+    margin-left: auto;
+}
+
+@media (max-width: 760px) {
+    .mull-head {
+        flex-wrap: wrap;
+    }
+
+    .mull-modes {
+        order: 3;
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        width: 100%;
+        margin: 8px 0 0;
+    }
+
+    .mull-modes button {
+        height: 32px;
+        font-size: 11px;
+    }
+
+    /* Build: a compact hand in one row, the pool below it. */
+    .mull-dlg[data-mode="build"] .mull-body,
+    .mull-dlg[data-mode="replay"] .mull-body {
+        min-height: 0;
+        overflow: hidden;
+    }
+
+    .mull-dlg[data-mode="build"] .mull-odds-col,
+    .mull-dlg[data-mode="replay"] .mull-odds-col {
+        flex: 1 1 auto;
+        display: flex;
+        min-height: 0;
+    }
+
+    .mull-dlg[data-mode="build"] .mull-pool,
+    .mull-dlg[data-mode="replay"] .mull-openings {
+        position: static;
+        flex: 1;
+        padding-left: 0;
+        border-left: 0;
+    }
+
+    .mull-dlg[data-mode="build"] .mull-well {
+        padding: 10px 10px 0;
+    }
+
+    .mull-dlg[data-mode="build"] .mull-hand {
+        grid-template-columns: repeat(7, minmax(0, 1fr));
+        gap: 5px;
+        padding-bottom: 10px;
+    }
+
+    .mull-dlg[data-mode="build"] .mull-out {
+        display: none;
+    }
+
+    .mull-empty {
+        border-radius: 5px;
+        font-size: 9px;
+    }
+
+    .mull-dlg[data-mode="build"] .mull-read {
+        margin: 0 -10px;
+        padding: 8px 12px 10px;
+    }
+
+    .mull-rail-head {
+        padding: 4px 2px 6px;
+    }
+
+    .mull-rail-tools {
+        padding: 0 0 8px;
+    }
+
+    .mull-dlg[data-mode="build"] .mull-costs,
+    .mull-dlg[data-mode="build"] #mull-clear {
+        display: none;
+    }
+
+    .mull-pool-grid {
+        gap: 10px 6px;
+        padding: 0 0 10px;
+    }
+
+    .mull-op {
+        width: 100%;
+        margin: 0 0 6px;
+    }
+
+    .mull-op-game {
+        padding: 10px 2px 6px;
+    }
+
+    /* Replay: the list first; an opening opens its preview, Back returns. */
+    .mull-dlg[data-mode="replay"][data-view="list"] .mull-well {
+        display: none;
+    }
+
+    .mull-dlg[data-mode="replay"][data-view="list"] .mull-foot {
+        display: none;
+    }
+
+    .mull-dlg[data-mode="replay"][data-view="preview"] .mull-odds-col {
+        display: none;
+    }
+
+    .mull-dlg[data-mode="replay"][data-view="preview"] .mull-back {
+        display: flex;
+    }
+
+    .mull-dlg[data-mode="replay"][data-view="preview"] .mull-body {
+        overflow-y: auto;
+    }
+
+    .mull-dlg[data-mode="replay"] .mull-hand {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 10px 8px;
+        padding-bottom: 14px;
+    }
+
+    .mull-dlg[data-mode="replay"] .mull-foot {
+        flex-wrap: wrap;
+    }
+
+    .mull-dlg[data-mode="replay"] .mull-note,
+    .mull-dlg[data-mode="replay"] .mull-foot .btn-primary {
+        flex: 1 1 100%;
+    }
+
+    .mull-next-card {
+        width: 40px;
+    }
+
+    /* The next draws get a row of their own under the curve and inkable. */
+    .mull-dlg[data-mode="replay"] .mull-read {
+        grid-template-columns: auto minmax(0, 1fr);
+        row-gap: 14px;
+    }
+
+    .mull-dlg[data-mode="replay"] .mull-plan {
+        grid-column: 1 / -1;
+        justify-self: start;
+        text-align: left;
+    }
 }

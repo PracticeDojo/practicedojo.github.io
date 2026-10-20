@@ -6,6 +6,7 @@
 //   - Challenges: the damage done is the damage the forecast showed.
 //   - Untrusted files: session sanitising, the session codec, replay patches.
 //   - Device library: the two-tab guard and sign-out removal.
+//   - Replay openings: rebuilt from saves that predate them, and safe from hostile files.
 //
 // An import fingerprint changed on purpose (a parser fix)? Run with --update to print the
 // new ones, check them, and paste them into IMPORTS below.
@@ -87,6 +88,18 @@ export default async (page) => {
         // Replay patches can't reach Object.prototype.
         App.applyJsonPatch({}, [{ op: 'add', path: '/__proto__/dojoPolluted', value: 1 }, { op: 'add', path: '/constructor/prototype/dojoPolluted', value: 1 }]);
         check('replay patch: no prototype pollution', ({}).dojoPolluted, undefined);
+
+        // Replay openings (Feature 64): the Set 13 demo predates recorded openings, so they
+        // are rebuilt. Player 1 drew 4 on turn 1 and put 3 on the bottom; the rebuilt deck
+        // must start with those 4 in draw order. Player 2's draw-step card goes back on top.
+        const demo = (await DojoLibrary.loadDemoManifest())[0];
+        const decks = App._openingsFromSession((await DojoLibrary.fetchDemo(demo)).data);
+        const o1 = decks[0].openings[0] || {}, o2 = decks[1].openings[0] || {};
+        check('openings: P1 rebuilt with turn 1 draws on top', `${o1.how} ${(o1.hand || []).length}+${(o1.deck || []).length} ${(o1.deck || []).slice(0, 4).join(',')}`, 'mull 3 7+53 2244,2726,2501,33');
+        check('openings: P2 hand without its draw-step card', `${o2.how} ${(o2.hand || []).length}+${(o2.deck || []).length}`, 'kept 7+53');
+        // A hostile file can't put unknown ids or markup in an opening.
+        const bad = App._openingsFromSession({ bookmarks: [], currentState: { players: [], openings: { 0: { hand: [1, 2, 3, 4, 5, 6, 'x'], deck: [], how: 'kept' }, 1: { ...o1, how: '<img onerror=alert(1)>' } } } });
+        check('openings: unknown ids and markup dropped', `${bad[0].openings.length} ${bad[1].openings[0] && bad[1].openings[0].how}`, '0 kept');
 
         // Device library.
         const L = DojoLibrary, data = App.buildSessionData(), id = L.newId();
