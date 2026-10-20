@@ -10,6 +10,7 @@ This file provides system instructions and context for AI agents working in this
 5. **`app/index.html`**: Where the tool lives and where the user is going to be asking for changes. Treat it with respect. Don't change anything that isn't specifically asked for.
 6. **`docs/ARCH-help-and-tour.md`** and **`docs/TODO-help-and-tour.md`**: the plan for the in-app user manual, its search and the guided tours, split into milestones that can be built in parallel. Claim a milestone in the TODO before starting it.
 7. **`docs/DESIGN-field-unit.md`**: The "Field Unit" design system the app's look follows (colours, type, components, do's and don'ts). Read it before any visual change, and style new UI with its tokens. The Field Unit tokens, themes and component styles live in `app/css/field-unit.css`; put visual changes there.
+8. **`docs/ARCH-two-player.md`** and **`docs/TODO-two-player.md`**: the plan for two-player tables (live and by turns), split into milestones. Claim a milestone in the TODO before starting it.
 
 ## Repository layout
 

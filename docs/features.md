@@ -700,6 +700,24 @@ Implements version 2 of `docs/DESIGN-field-unit.md` (Kiln dark mode, signal fami
 - **Signal family.** By day the signal is Ember `#E4572E`; on Kiln it is Radio `#E86B2A` with dark text on the key. Tweaks → Accent offers only the approved swaps: **Signal** (the theme's own), **Coral**, **Olive** (its lore numeral lifts to `#C6C45A` on the well) and **Trace**. Each carries the text colour that sits on it. The old Amber / Rose / Emerald / Violet / Azure accents were ink colours, so a saved pick of one falls back to Signal.
 - **CSS file.** The Field Unit tokens, themes, palettes and component styles moved from the inline `<style>` to `app/css/field-unit.css`, loaded right after it (pixel-identical move). The older inline rules stay put.
 
+## Feature 65: Live tables — play together at the same time (planned)
+
+### User Story
+- As a player at a table with a friend who's online too, I want every move to show on their screen as it happens, and to move us both to another node of the multiverse when they agree, so we can play and study a match together from two devices.
+
+### Details
+- Planned in `docs/ARCH-two-player.md` (§6, §7), tracked in `docs/TODO-two-player.md` (M5). Builds on Feature 64.
+- A table is live while both players have it open, and goes back to by turns when one leaves. No switch.
+
+## Feature 64: Two-player tables by turns (planned)
+
+### User Story
+- As a player, I want to share a session with a friend as a table, where I play my turn, the game waits, and they play theirs when they next open it, so we can play a match without being online at the same time.
+
+### Details
+- Planned in `docs/ARCH-two-player.md` (§4, §5, §7–§10), tracked in `docs/TODO-two-player.md` (M1–M4).
+- *Play with a friend* turns the board into a table with a link. Only the player whose turn it is changes the board; *End turn* hands it over. Moving to another node is a proposal the other player accepts. *Take a copy* or *Leave* goes back to solo.
+
 ## Patch: Decklists with Duels.ink's printing suffix (v3.16.2)
 
 Duels.ink exports a deck with the printing at the end of each line, `4 Ursula - Deceiver (3-90)`. Those lines used to be skipped, so a pasted list came out as 60 random cards.
@@ -1153,3 +1171,5 @@ The public page (`index.html`) follows Field Unit too, as `docs/DESIGN-field-uni
 - [x] Feature 62: Challenge keys on phones
 - [x] Feature 63: Challenge mode arrow keys on desktop
 - [x] Patch: Decklists with Duels.ink's printing suffix
+- [ ] Feature 64: Two-player tables by turns
+- [ ] Feature 65: Live tables
