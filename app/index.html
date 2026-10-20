@@ -1191,7 +1191,7 @@
     <script>
         let cardFuse = null;
 
-        const APP_VERSION = "v3.17.4"; // Centralized version string (v3: Field Unit)
+        const APP_VERSION = "v3.17.5"; // Centralized version string (v3: Field Unit)
 
         // Tweaks panel accent presets (hue values for the OKLCH accent ramp)
         // Tweaks → Accent: the approved Field Unit signals only (design.md ·
@@ -5795,6 +5795,7 @@
                 };
 
                 let firstSegmentOpened = false;
+                let endedPlayer = null; // set from END_TURN until the next player's turn starts
                 for (const frame of (replay.frames || [])) {
                     const type = frame.actionType;
                     // Track ink identities from semantic actions (works even after card data is stripped).
@@ -5813,9 +5814,14 @@
 
                     if (type === 'END_TURN') {
                         closeSegment();                                  // node for the turn that just ended
+                        endedPlayer = virtual.currentPlayer;
+                    }
+                    if (endedPlayer !== null) {
+                        // "End of turn" prompts can follow END_TURN: the turn passes on the frame
+                        // that flips currentPlayer, so open the next segment there.
                         if (frame.patch) this.applyJsonPatch(virtual, frame.patch); // ready + draw next turn
                         currentSeq = frame.seq || currentSeq;
-                        openSegment();                                   // start of next player-turn
+                        if (virtual.currentPlayer !== endedPlayer) { endedPlayer = null; openSegment(); }
                         continue;
                     }
 

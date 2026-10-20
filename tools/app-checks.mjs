@@ -21,7 +21,9 @@ const IMPORTS = {
     'docs/samples/log_example_v01.md': 'turns 34 · nodes 34 · P1 deck 31 hand 1 field 2 ink 11 discard 15 lore 21 · P2 deck 32 hand 1 field 3 ink 11 discard 13 lore 12 · unknown 63',
     'docs/samples/new_log_20261004.txt': 'turns 26 · nodes 26 · P1 deck 33 hand 1 field 4 ink 10 discard 11 lore 20 · P2 deck 36 hand 0 field 5 ink 8 discard 10 lore 14 · unknown 72',
     'docs/samples/019ea30a-6bbf-7518-8736-fd4db478b072_p1.json': 'turns 19 · nodes 19 · P1 deck 39 hand 2 field 6 ink 5 discard 5 lore 20 · P2 deck 42 hand 1 field 2 ink 4 discard 9 lore 18 · unknown 43',
-    'docs/samples/01a08b6d-cb54-743f-9bfd-debe26bb528a_p1.replay.gz': 'turns 26 · nodes 26 · P1 deck 33 hand 1 field 4 ink 10 discard 11 lore 20 · P2 deck 36 hand 0 field 5 ink 8 discard 10 lore 14 · unknown 38'
+    'docs/samples/01a08b6d-cb54-743f-9bfd-debe26bb528a_p1.replay.gz': 'turns 26 · nodes 26 · P1 deck 33 hand 1 field 4 ink 10 discard 11 lore 20 · P2 deck 36 hand 0 field 5 ink 8 discard 10 lore 14 · unknown 38',
+    // Ends turns with "end of turn" prompts: the turn passes on a later frame, not on END_TURN.
+    'docs/samples/01a15b0a-313b-73d3-846f-37752210870b_p1.replay.gz': 'turns 24 · nodes 24 · P1 deck 38 hand 0 field 4 ink 5 discard 13 lore 19 · P2 deck 37 hand 0 field 8 ink 6 discard 9 lore 20 · unknown 37'
 };
 
 // --- In the page (steps module for .claude/skills/dojo-screenshots/shoot.mjs) ---------------
@@ -45,6 +47,8 @@ export default async (page) => {
                 const side = (p) => zones.map(z => { (p[z] || []).forEach(c => { if (!App.cardDB[c.cardId]) unknown++; }); return `${z === 'inkwell' ? 'ink' : z} ${(p[z] || []).length}`; }).join(' ') + ` lore ${p.lore}`;
                 const sides = st.players.map((p, i) => `P${i + 1} ${side(p)}`).join(' · ');
                 got = `turns ${turns} · nodes ${session.bookmarks.length} · ${sides} · unknown ${unknown}`;
+                const actives = session.bookmarks.map(b => / (P[12]) Active$/.exec(b.name || '')?.[1]).filter(Boolean);
+                check('turns alternate ' + path.split('/').pop(), actives.every((a, i) => i === 0 || a !== actives[i - 1]), true);
             } catch (e) { got = 'threw: ' + e.message; }
             check('import ' + path.split('/').pop(), got, IMPORTS[path]);
         }
