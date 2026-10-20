@@ -105,6 +105,12 @@ App:
 - [ ] GitHub turns off scheduled workflows after 60 days with no commits. If it emails, re-enable the keep-alive in Actions (§10.1)
 - [ ] If Storage use climbs, check it with the §9.5 query and clean up there
 - [ ] When updating supabase-js, change the version **and** its SRI hash in `app/js/cloud.js` together
+- [x] v3.17.3 audit fixes. Verified headless (dojo-screenshots `--steps`) and against Postgres 16 with stub `auth`/`storage` schemas:
+  - `.assetsignore` stops Cloudflare serving `.git`, `docs`, `tools`, `supabase` and the Markdown files
+  - Sign out → Remove uploads unsynced changes first and keeps any it couldn't, plus other accounts' copies
+  - Two tabs on one session: a tab whose copy is stale saves its board as "(other tab)" instead of overwriting
+  - A failed account upload keeps the revision the row moved to, so the next Save isn't a false conflict; a brand-new row is taken back
+- [ ] Apply `supabase/migrations/20261017120000_caps_fail_closed.sql` to production: `summary` capped at 4 KB, shares bucket cap also checked at upload
 
 ## Parked (outside the ARCH plan)
 

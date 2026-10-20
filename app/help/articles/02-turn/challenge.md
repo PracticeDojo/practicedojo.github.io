@@ -7,7 +7,7 @@ aliases: [attack, fight, challenge mode, combat, block]
 targets: [challenge-mode, challenge-banner, challenge-keys, field, opponent-field]
 related: [forecast, card-actions, modifiers]
 order: 90
-verified: v3.16.0
+verified: v3.17.2
 ---
 
 In a challenge, your character and the opposing card deal their strength to each other as damage. The Dojo works out the damage, exerts your character and banishes anything that ends up with damage equal to its willpower. [Modifiers](help:modifiers) on either card (+strength, Challenger, Resist, willpower) are counted.
@@ -52,7 +52,7 @@ Before you commit, the Dojo shows what would happen: each card's damage after th
 
 ## Good to know
 
-- Damage is strength, plus **Challenger +N** on the challenger, minus **Resist +N** on the card taking it. Other abilities aren't applied: fix damage by hand afterwards.
+- Damage is strength, plus **Challenger +N** on the challenger, minus **Resist +N** on the card taking it. Only a card's own printed Challenger and Resist count. When an ability gives them to another character ("give chosen character Resist +2") or only under a condition ("while you have no cards in your hand"), add them as a [modifier](help:modifiers) when they apply. Other abilities aren't applied: fix damage by hand afterwards.
 - The Dojo doesn't stop an exerted or drying challenger, or a ready target. It allows them and notes it in the log.
 - Bodyguard, Evasive and the like aren't checked: you're the referee.
 - One **Undo** takes back the whole challenge.

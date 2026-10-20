@@ -16,10 +16,10 @@ Everything runs in the browser and is served by Cloudflare from this repo. GitHu
 | `app/index.html` | The Dojo |
 | `app/js/` | Small modules (`library.js`: decks and sessions on this device) |
 | `app/defaults/` | Default decks and demos |
-| `app/css/` | The CSS: `base.css` (original styles) and `field-unit.css` (the Field Unit design system on top) |
+| `app/css/` | The CSS: `base.css` (original styles) and `field-unit.css` (the Field Unit design system on top), then `tailwind.css` (frozen utility classes) |
 | `app/fonts/` | Self-hosted fonts: Inter, Inter Display and Liberation Mono (OFL) |
 | `img/` | Shared images |
-| `tools/` | Repo scripts: `refresh-landing.mjs` keeps the landing page in step with the app |
+| `tools/` | Repo scripts: `refresh-landing.mjs` keeps the landing page in step with the app, `app-checks.mjs` checks the app headless |
 | `docs/` | Feature list, dev guide, architecture and test protocols |
 
 Start with `docs/features.md` and `docs/personal_dojo_dev_guide.md`. The deck and session library (built), share links and optional accounts (planned) are described in `docs/ARCH-accounts-and-library.md`.

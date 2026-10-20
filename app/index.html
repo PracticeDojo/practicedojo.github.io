@@ -19,8 +19,8 @@
             document.documentElement.dataset.theme = fuNight ? 'night' : 'day';
         } catch (e) { }
     </script>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+        integrity="sha384-iw3OoTErCYJJB9mCa8LNS2hbsQ7M3C0EpIsO/H5+EGAkPGc6rk+V8i04oW/K5xq0" crossorigin="anonymous">
 
     <!-- Field Unit fonts, all self-hosted in fonts/ (declared in css/field-unit.css):
          Inter and Inter Display (Inter 4.1, OFL, see fonts/Inter-OFL.txt) and
@@ -29,10 +29,14 @@
     <link rel="preload" href="fonts/InterDisplayVariable.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="preload" href="fonts/LiberationMono-Regular.woff2" as="font" type="font/woff2" crossorigin>
 
-    <!-- Fuse, marked, and DOMPurify (marked passes raw HTML through; comments come from session files) -->
-    <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.6.2"></script>
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.2.4/purify.min.js"></script>
+    <!-- Fuse, marked, and DOMPurify (marked passes raw HTML through; comments come from session files).
+         Pinned with SRI hashes: when updating one, change its version and hash together. -->
+    <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.6.2/dist/fuse.min.js"
+        integrity="sha384-zPE55eyESN+FxCWGEnlNxGyAPJud6IZ6TtJmXb56OFRGhxZPN4akj9rjA3gw5Qqa" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked@15.0.12/marked.min.js"
+        integrity="sha384-948ahk4ZmxYVYOc+rxN1H2gM1EJ2Duhp7uHtZ4WSLkV4Vtx5MUqnV+l7u9B+jFv+" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.2.4/purify.min.js"
+        integrity="sha384-eEu5CTj3qGvu9PdJuS+YlkNi7d2XxQROAFYOr59zgObtlcux1ae1Il3u7jvdCSWu" crossorigin="anonymous"></script>
 
     <!-- Device library: IndexedDB decks & sessions, session file codec, repo defaults -->
     <script src="js/library.js"></script>
@@ -55,6 +59,8 @@
     <!-- Base styles (the original stylesheet), then the Field Unit design system on top -->
     <link rel="stylesheet" href="css/base.css">
     <link rel="stylesheet" href="css/field-unit.css">
+    <!-- The utility classes Tailwind used to generate in the browser, frozen (see the file) -->
+    <link rel="stylesheet" href="css/tailwind.css">
 </head>
 
 <body>
@@ -1401,6 +1407,8 @@
             // one on the board; every state change autosaves it, debounced ~1s.
             // null means nothing on the board belongs to the library (no saves).
             session: null, // { id, title, createdAt, lastOpenedAt }
+            // Session id → the stored updatedAt this tab last loaded or wrote (two-tab guard).
+            _seenAt: {},
             // The decklists the match was started from (session file deck1/deck2).
             sessionDecks: { deck1: '', deck2: '' },
 
@@ -1437,9 +1445,18 @@
                 const file = { data: this.buildSessionData(), summary: this.buildSessionSummary(), appVersion: APP_VERSION };
                 this._deviceSaveChain = (this._deviceSaveChain || Promise.resolve())
                     .catch(() => { })
-                    .then(() => DojoLibrary.saveSession(meta, file))
-                    .then(() => { this._saveFailWarned = false; return true; })
+                    // Read the last-seen stamp at write time: an earlier save in the chain may have moved it.
+                    .then(() => DojoLibrary.saveSession({ ...meta, updatedAt: this._seenAt[meta.id] }, file))
+                    .then(row => { this._seenAt[row.id] = row.updatedAt; this._saveFailWarned = false; return true; })
                     .catch(e => {
+                        if (e && e.code === 'stale') {
+                            // Another tab saved this session since: keep both by saving this board as a copy.
+                            if (this.session && this.session.id === meta.id) {
+                                this._startNewSession(`${meta.title} (other tab)`);
+                                this.dialogAlert(`“${meta.title}” was saved in another tab, so this tab's board was saved as “${this.session.title}” instead. Nothing was overwritten.`, 'Open in another tab');
+                            }
+                            return false;
+                        }
                         console.warn('Device save failed:', e);
                         if (this.session && this.session.id === meta.id) this._sessionDirty = true;
                         // Say it once: the old localStorage slot failed silently on big sessions.
@@ -1633,6 +1650,7 @@
                     this._applySessionData(data);
                     const now = Date.now();
                     this.session = { id: meta.id, title: meta.title, createdAt: meta.createdAt, lastOpenedAt: now };
+                    this._seenAt[id] = meta.updatedAt;
                     DojoLibrary.updateSessionMeta(id, { lastOpenedAt: now }).catch(() => { });
                     DojoLibrary.setPref('lastSessionId', id);
                     this.syncSessionTitle();
@@ -3550,10 +3568,15 @@
                 });
                 if (!choice) return;
                 await this.flushDeviceSave();
+                let removed = null;
                 if (choice === 'remove') {
+                    // Changes the account doesn't have yet go up first; any that fail stay on this device.
+                    const [ss, ds] = await Promise.all([DojoLibrary.listSessions(), DojoLibrary.listDecks()]);
+                    const dirty = (rows) => rows.filter(r => this.isLinked(r) && r.accountDirty);
+                    if (dirty(ss).length || dirty(ds).length) await this.uploadToAccount(dirty(ds), dirty(ss));
                     if (this.session) {
                         const meta = await DojoLibrary.getSession(this.session.id);
-                        if (this.isLinked(meta)) {
+                        if (this.isLinked(meta) && !meta.accountDirty) {
                             // The board's session is going; detach it so nothing saves it back.
                             this.session = null;
                             this.syncSessionTitle();
@@ -3561,7 +3584,7 @@
                             if (back) back.classList.add('hidden');
                         }
                     }
-                    await DojoLibrary.deleteAccountCopies();
+                    removed = await DojoLibrary.deleteAccountCopies(this.account.id);
                 }
                 try { await DojoCloud.signOut(); } catch (e) { console.warn('Sign out failed:', e); }
                 this.account = null;
@@ -3570,7 +3593,9 @@
                 await this.refreshDeckIndex();
                 this.renderRecent();
                 if (this.isLibraryOpen()) this.libTab(this._libTab);
-                this.showToast(choice === 'remove' ? 'Signed out and removed account copies from this device' : 'Signed out');
+                this.showToast(!removed ? 'Signed out'
+                    : removed.kept ? `Signed out. Kept ${removed.kept} on this device: ${removed.kept === 1 ? 'it has' : 'they have'} changes your account doesn't have yet`
+                        : 'Signed out and removed account copies from this device');
             },
 
             // First sign-in on a device that already has decks or sessions (§8.1).
@@ -3664,9 +3689,14 @@
                 if (!meta || packed == null) throw new Error('That session is no longer on this device.');
                 const blob = typeof packed === 'string' ? new Blob([packed], { type: 'application/json' }) : new Blob([packed], { type: 'application/gzip' });
                 const fields = { id, title: meta.title, summary: meta.summary, blob };
+                // The file didn't upload but the account row moved on: carry on from its revision next time.
+                const save = (revision) => DojoCloud.saveAccountSession({ ...fields, revision }).catch(async e => {
+                    if (e.claimedRevision) await DojoLibrary.updateSessionMeta(id, { account: { revision: e.claimedRevision, uid: this.account.id }, accountDirty: true });
+                    throw e;
+                });
                 let rev;
                 try {
-                    rev = await DojoCloud.saveAccountSession({ ...fields, revision: this.isLinked(meta) ? meta.account.revision : null });
+                    rev = await save(this.isLinked(meta) ? meta.account.revision : null);
                 } catch (e) {
                     if (e.code !== 'conflict') throw e;
                     if (quiet) {
@@ -3683,7 +3713,7 @@
                         ]
                     });
                     if (v === 'over' && e.current != null) {
-                        rev = await DojoCloud.saveAccountSession({ ...fields, revision: e.current });
+                        rev = await save(e.current);
                     } else if (v === 'copy') {
                         const copy = await DojoLibrary.duplicateSession(id, `${meta.title} (copy)`.slice(0, 120));
                         if (this.session && this.session.id === id) {
@@ -5488,6 +5518,8 @@
                 const unescape = (s) => s.replace(/~1/g, '/').replace(/~0/g, '~');
                 for (const op of ops) {
                     const keys = op.path.split('/').slice(1).map(unescape);
+                    // Replay files come from anywhere: never walk into an object's prototype.
+                    if (keys.some(k => k === '__proto__' || k === 'constructor' || k === 'prototype')) continue;
                     let parent = doc;
                     let ok = true;
                     for (let i = 0; i < keys.length - 1; i++) {
@@ -5780,6 +5812,7 @@
                 };
 
                 let firstSegmentOpened = false;
+                let endedPlayer = null; // set from END_TURN until the next player's turn starts
                 for (const frame of (replay.frames || [])) {
                     const type = frame.actionType;
                     // Track ink identities from semantic actions (works even after card data is stripped).
@@ -5798,9 +5831,14 @@
 
                     if (type === 'END_TURN') {
                         closeSegment();                                  // node for the turn that just ended
+                        endedPlayer = virtual.currentPlayer;
+                    }
+                    if (endedPlayer !== null) {
+                        // "End of turn" prompts can follow END_TURN: the turn passes on the frame
+                        // that flips currentPlayer, so open the next segment there.
                         if (frame.patch) this.applyJsonPatch(virtual, frame.patch); // ready + draw next turn
                         currentSeq = frame.seq || currentSeq;
-                        openSegment();                                   // start of next player-turn
+                        if (virtual.currentPlayer !== endedPlayer) { endedPlayer = null; openSegment(); }
                         continue;
                     }
 
@@ -8524,11 +8562,14 @@
             // [{ seat, name, inks, openings: [{ hand, deck, how } | { why }] }]
             _openingsFromSession(data) {
                 const found = [[], []];
+                // Saved games can come from anyone (§9.4): only card ids the card DB knows,
+                // a deck of a sane size, and a label that is a plain word or two.
                 const add = (seat, o) => {
-                    if (!o) return;
+                    if (!o || typeof o !== 'object') return;
                     if (!o.why) {
-                        if (!Array.isArray(o.hand) || !Array.isArray(o.deck) || o.hand.length !== 7) return;
+                        if (!Array.isArray(o.hand) || !Array.isArray(o.deck) || o.hand.length !== 7 || o.deck.length > 120) return;
                         if (o.hand.concat(o.deck).some(id => !this.cardDB[id])) return; // unknown cards: an import
+                        o = { hand: o.hand.map(Number), deck: o.deck.map(Number), how: /^[a-z0-9 ]{1,16}$/i.test(String(o.how || '')) ? String(o.how) : 'kept' };
                     }
                     const key = o.why ? `why:${o.why}` : `${o.hand.slice().sort((a, b) => a - b).join(',')}|${o.deck.join(',')}`;
                     if (!found[seat].some(x => x.key === key)) found[seat].push({ ...o, key });
@@ -9026,12 +9067,20 @@
                 this.render();
             },
 
-            // Feature 19: Returns numeric value of a keyword like "Challenger +2" or "Resist +1" from card abilities
+            // Feature 19: the value of a keyword the card itself has, like "Challenger +2"
+            // or "Resist +1". Only its own keyword abilities count: text that gives the
+            // keyword to other characters ("give chosen character Resist +2") or only
+            // under a condition ("While you have no cards in your hand…") does not.
+            // Those are added by hand as modifiers when they apply.
             getKeywordBonus(dbCard, keyword) {
                 if (!dbCard) return 0;
-                const text = JSON.stringify(dbCard);
-                const re = new RegExp(keyword + '\\s*\\+\\s*(\\d+)', 'i');
-                const m = text.match(re);
+                if (Array.isArray(dbCard.abilities)) {
+                    const a = dbCard.abilities.find(x => x && x.type === 'keyword' && x.keyword === keyword);
+                    return a ? (parseInt(a.keywordValueNumber ?? String(a.keywordValue || '').replace(/\D/g, '')) || 0) : 0;
+                }
+                // No ability list: a keyword is a text section that starts with it.
+                const re = new RegExp('^' + keyword + '\\s*\\+\\s*(\\d+)');
+                const m = (dbCard.fullTextSections || []).map(s => re.exec(s)).find(Boolean);
                 return m ? parseInt(m[1]) : 0;
             },
 
@@ -9230,14 +9279,8 @@
                 const dDb = this.cardDB[df.card.cardId];
                 if (!cDb || !dDb) return;
 
-                // Feature 61: strength, Challenger and Resist with modifiers.
-                const cStr = this.challengeStrength(cf.card);
-                const dStr = this.statOf(df.card, 'strength');
-                const cResist = this.statOf(cf.card, 'resist');
-                const dResist = this.statOf(df.card, 'resist');
-
-                const dmgToDefender = Math.max(0, cStr - dResist);
-                const dmgToChallenger = Math.max(0, dStr - cResist);
+                // The forecast's arithmetic (strength, Challenger, Resist, modifiers), so the two can't drift.
+                const { toDef: dmgToDefender, toAtt: dmgToChallenger } = this.challengeOutcome(challengerInstanceId, defenderInstanceId);
 
                 this.saveState();
 
@@ -10163,7 +10206,7 @@
                 if (!a || !d) return null;
                 const aDb = this.cardDB[a.card.cardId], dDb = this.cardDB[d.card.cardId];
                 if (!aDb || !dDb) return null;
-                // Same arithmetic as performChallenge.
+                // performChallenge uses this too: the forecast is the result.
                 // Feature 61: with each card's modifiers.
                 const toDef = Math.max(0, this.challengeStrength(a.card) - this.statOf(d.card, 'resist'));
                 const toAtt = Math.max(0, this.statOf(d.card, 'strength') - this.statOf(a.card, 'resist'));

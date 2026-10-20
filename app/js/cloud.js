@@ -170,7 +170,9 @@ const DojoCloud = (() => {
         if (up.error) {
             // A row without a file would open as "no longer available"; take it back.
             await sb.from('shares').delete().eq('id', slug);
-            throw classify(up.error);
+            // The row just went in, so a refused upload here is the bucket cap, not a sign-in problem.
+            const e = classify(up.error);
+            throw e.code === 'signed_out' ? fail('storage_full', e.message, up.error) : e;
         }
         return { slug, url: shareUrl(slug) };
     }
@@ -372,7 +374,14 @@ const DojoCloud = (() => {
         const up = await sb.storage.from('sessions').upload(`${uid}/${id}.json.gz`, blob, {
             contentType: 'application/gzip', cacheControl: '0', upsert: true
         });
-        if (up.error) throw classify(up.error);
+        if (up.error) {
+            const e = classify(up.error);
+            // A new row without a file would open as "gone" elsewhere: take it back.
+            // Otherwise the row is at `rev` now, so the device must save on from there.
+            if (rev === 1) await sb.from('sessions').delete().eq('id', id);
+            else e.claimedRevision = rev;
+            throw e;
+        }
         return rev;
     }
 

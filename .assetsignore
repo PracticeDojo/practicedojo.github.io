@@ -1,0 +1,9 @@
+# Files Cloudflare must not serve: the site is only index.html, app/, css/, js/ and img/.
+.git
+.github
+.claude
+docs
+tools
+supabase
+wrangler.toml
+*.md
