@@ -70,6 +70,7 @@ https://claude-feat-64-two-player-tables-practicedojo.heavenideasdesign.workers.
 - [x] `DojoCloud` table functions against Supabase (claim, then upload; `tableRevision` in the file)
 - [x] The Realtime calls `tableChannel` makes (subscribe, presence keyed by tab, `track`, broadcast with `self: false`, a 30 KB payload) checked against the live project on a public channel. *2026-10-20*
 - [x] Every flow against the real project: `node tools/table-checks.mjs --live`, 58/58, including the private channel, a real offline conflict (`setOffline`), and a stranger refused the row, the file and the channel. *2026-10-20*
+- [x] The same 58 on the deployed branch preview (Cloudflare build + the real project): 58/58. *2026-10-20, after the fresh-download fix below*
 - [x] Found live and fixed: Storage served an overwritten file from a cache (three overwrites later `download()` still gave the first), so the other seat never got the turn. Downloads now go through `downloadFresh()` (a new URL each time, `cache: 'no-store'`). The account side's *Get newer copy* had the same bug and uses it too
 - [ ] **(you)** After the merge: one by-turns game between a phone and a desktop (`TEST-PROTOCOL-v4.0.0.md` A–D)
 
