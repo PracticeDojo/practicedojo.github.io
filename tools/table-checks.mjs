@@ -6,6 +6,10 @@
 // (seats, the revision check, claim-then-upload). Each page's DojoCloud table functions
 // call it through an exposed function, and channel messages are pushed back in.
 // The SQL itself is tested by supabase/tests/run.sh.
+//
+// `node tools/table-checks.mjs --live` runs the same flows against the real Supabase project
+// instead (needs the tables migration applied). It signs in two anonymous identities, and
+// the table it makes is left and deleted at the end.
 import { spawnSync } from 'node:child_process';
 import { mkdtempSync, readFileSync, writeFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -195,16 +199,24 @@ export function shim() {
 }
 
 // --- The run ------------------------------------------------------------------------------
-export async function runTableChecks(page, { base }) {
+export async function runTableChecks(page, { base }, { live = false } = {}) {
     const out = [];
     const check = (name, got, want) => out.push({ name: 'tables: ' + name, ok: got === want, got: String(got), want: String(want) });
     const server = makeServer();
     const browser = page.context().browser();
-    const T = 20000;
+    const T = live ? 30000 : 20000;
 
     // Ann: the page the demo is already open in.
-    await page.exposeFunction('__tableRpc', server.bind('ann', page));
-    await page.evaluate(shim);
+    if (!live) {
+        await page.exposeFunction('__tableRpc', server.bind('ann', page));
+        await page.evaluate(shim);
+    }
+    // A player's network off and on: the stand-in refuses their calls; live, the browser goes offline.
+    const offline = async (p, uid, on) => {
+        if (live) await p.context().setOffline(on);
+        else if (on) server.offline.add(uid);
+        else server.offline.delete(uid);
+    };
 
     // Bea: her own browser profile (device library, identity).
     const vp = page.viewportSize();
@@ -215,8 +227,10 @@ export async function runTableChecks(page, { base }) {
     const open = async (ctx, uid, url) => {
         const p = await ctx.newPage();
         p.on('pageerror', e => console.log(`[${uid}] page error: ${e.message}`));
-        await p.exposeFunction('__tableRpc', server.bind(uid, p));
-        await p.addInitScript(shim);
+        if (!live) {
+            await p.exposeFunction('__tableRpc', server.bind(uid, p));
+            await p.addInitScript(shim);
+        }
         await p.goto(url, { waitUntil: 'domcontentloaded' });
         return p;
     };
@@ -336,14 +350,14 @@ export async function runTableChecks(page, { base }) {
         const z = await val(P, () => App.bookmarks[2].id);
         await val(P, (id) => App.restoreTimeline(id, false), z);
         check('conflict: the other seat is asked', await until(W, () => !!document.querySelector('#table-banner [data-act="go"]')), true);
-        server.offline.add(pUid);
+        await offline(P, pUid, true);
         const seat = await val(P, () => App.state.activePlayer);
         await val(P, (s) => App.drawCard(s), seat);
         const kept = await val(P, () => JSON.stringify(App.compressState(App.state, true)));
         await sleep(200);
         await W.click('#table-banner [data-act="go"]');
         check('conflict: the other seat moved', await until(W, (id) => App.state.activeBookmarkId === id, z), true);
-        server.offline.delete(pUid);
+        await offline(P, pUid, false);
         await val(P, () => DojoTable.flush());
         check('conflict: the holder lands on the move', await until(P, (id) => App.state.activeBookmarkId === id, z), true);
         check('conflict: the holder\'s board is kept as "Left here"', await val(P, (st) => App.autoSaves.some(a => a.state === st), kept), true);
@@ -379,6 +393,12 @@ export async function runTableChecks(page, { base }) {
         check('leave: Bea keeps her copy', await val(B2, () => !!App.session && App.state.players.length === 2), true);
         await val(A, () => DojoTable.sync());
         check('leave: Ann waits for a player', await until(A, () => /^Waiting for a player/.test(document.getElementById('table-chip-text').textContent)), true);
+        // The last one out closes the table.
+        await val(A, () => { App.leaveTable(); });
+        await dlgClick(A, 'Leave');
+        check('leave: Ann leaves; the table closes', await until(A, () => !App.atTable() && !App.session.table), true);
+        const tableId = new URL(url).searchParams.get('t');
+        check('leave: the link no longer opens', await val(A, (id) => DojoCloud.tableInvite(id).then(x => x === null), tableId), true);
         await ctxB.close();
     } catch (e) {
         out.push({ name: 'tables: run', ok: false, got: 'threw: ' + (e && e.message ? e.message.split('\n')[0] : e), want: 'no error' });
@@ -389,16 +409,16 @@ export async function runTableChecks(page, { base }) {
 
 // --- As a steps module, and from the command line -----------------------------------------
 export default async (page, info) => {
-    writeFileSync(process.env.TABLE_CHECKS_OUT, JSON.stringify(await runTableChecks(page, info)));
+    writeFileSync(process.env.TABLE_CHECKS_OUT, JSON.stringify(await runTableChecks(page, info, { live: process.env.TABLE_CHECKS_LIVE === '1' })));
 };
 
-export function runHeadless(root) {
+export function runHeadless(root, live = false) {
     const dir = mkdtempSync(join(tmpdir(), 'table-checks-'));
     const out = join(dir, 'results.json');
     const r = spawnSync(process.execPath, [
         join(root, '.claude/skills/dojo-screenshots/shoot.mjs'),
         '--demo', '--widths', '1440', '--themes', 'day', '--steps', fileURLToPath(import.meta.url), '--out', dir
-    ], { cwd: root, encoding: 'utf8', env: { ...process.env, TABLE_CHECKS_OUT: out } });
+    ], { cwd: root, encoding: 'utf8', env: { ...process.env, TABLE_CHECKS_OUT: out, TABLE_CHECKS_LIVE: live ? '1' : '' } });
     (r.stdout || '').split('\n').filter(l => /page error/.test(l)).forEach(l => console.log(l.slice(0, 500)));
     try { return JSON.parse(readFileSync(out, 'utf8')); } catch (e) {
         console.error(r.stdout || '', r.stderr || '', '\ntable-checks: the headless run gave no results (see above).');
@@ -407,7 +427,7 @@ export function runHeadless(root) {
 }
 
 if (import.meta.url === pathToFileURL(process.argv[1]).href) {
-    const rows = runHeadless(join(dirname(fileURLToPath(import.meta.url)), '..'));
+    const rows = runHeadless(join(dirname(fileURLToPath(import.meta.url)), '..'), process.argv.includes('--live'));
     if (!rows) process.exit(2);
     for (const x of rows) console.log(`${x.ok ? 'pass' : 'FAIL'}  ${x.name}${x.ok ? '' : `\n      got:  ${x.got}\n      want: ${x.want}`}`);
     const fails = rows.filter(x => !x.ok).length;
