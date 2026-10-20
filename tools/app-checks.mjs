@@ -6,6 +6,7 @@
 //   - Challenges: the damage done is the damage the forecast showed.
 //   - Untrusted files: session sanitising, the session codec, replay patches.
 //   - Device library: the two-tab guard and sign-out removal.
+//   - Two-player tables: two browsers at one table, live and by turns (tools/table-checks.mjs).
 //
 // An import fingerprint changed on purpose (a parser fix)? Run with --update to print the
 // new ones, check them, and paste them into IMPORTS below.
@@ -14,6 +15,7 @@ import { mkdtempSync, readFileSync, writeFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, dirname } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import { runHeadless as runTableChecks } from './table-checks.mjs';
 
 const IMPORTS = {
     // "unknown" counts cards the log hides (the opponent's hand and deck) as well as unresolved names.
@@ -124,6 +126,8 @@ if (import.meta.url === pathToFileURL(process.argv[1]).href) {
         rows.filter(x => x.name.startsWith('import ')).forEach(x => console.log(`${x.name.slice(7)}: '${x.got}'`));
         process.exit(0);
     }
+    const tables = runTableChecks(ROOT);
+    rows = rows.concat(tables || [{ name: 'tables: the headless run gave results', ok: false, got: 'none', want: 'results' }]);
     for (const x of rows) console.log(`${x.ok ? 'pass' : 'FAIL'}  ${x.name}${x.ok ? '' : `\n      got:  ${x.got}\n      want: ${x.want}`}`);
     const fails = rows.filter(x => !x.ok).length;
     console.log(`\n${rows.length - fails} pass, ${fails} fail.`);

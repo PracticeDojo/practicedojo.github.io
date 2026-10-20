@@ -9105,3 +9105,170 @@ body:not(.ink-drops-on) .ink-drops {
     flex-wrap: wrap-reverse;
     align-content: flex-start;
 }
+
+/* ---- Features 64–65 · Two-player tables ----
+   The chip: a paper tool beside the session title. Its dot is hollow while the
+   other player is away and Trace (a key colour, never the signal) while you're
+   both at the table. "Your turn" is ink at weight 600: the turn pill already
+   says "You", and End turn stays the one signal key. */
+#btn-session-table[hidden],
+.table-chip[hidden] {
+    display: none;
+}
+
+.table-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    height: 28px;
+    min-width: 0;
+    max-width: 260px;
+    margin-left: 6px;
+    padding: 0 10px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--surface);
+    color: var(--text-2);
+    font: 500 12px/1 var(--font-sans);
+    cursor: pointer;
+}
+
+.table-chip:hover {
+    background: var(--surface-2);
+    border-color: var(--border-strong);
+}
+
+.table-chip .tc-text {
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.table-chip.is-yours .tc-text {
+    color: var(--text);
+    font-weight: 600;
+}
+
+.table-chip .tc-dot {
+    flex: 0 0 auto;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    border: 1.5px solid var(--text-dim);
+}
+
+.table-chip.is-live .tc-dot {
+    background: var(--key-trace);
+    border-color: var(--key-trace);
+}
+
+.table-chip.is-pending .tc-dot {
+    border-style: dashed;
+}
+
+/* The banner: the shared-session strip, with a proposal's keys. */
+.table-banner .tb-acts {
+    display: inline-flex;
+    flex: 0 0 auto;
+    gap: 4px;
+}
+
+.table-banner .tb-acts:empty {
+    display: none;
+}
+
+.table-banner:not(:has(.tb-acts:not(:empty))) {
+    padding-right: 14px;
+}
+
+.table-banner .sb-text {
+    white-space: normal;
+}
+
+.table-banner.is-ask {
+    border-color: var(--key-trace);
+    box-shadow: 0 0 0 1px var(--key-trace), var(--shadow-2);
+}
+
+.table-banner .btn.btn-ghost {
+    min-height: 28px;
+    font-size: 12px;
+}
+
+/* Library and "Pick up again": a table's turn after its title. */
+.table-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    margin-right: 8px;
+    padding: 2px 7px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    color: var(--text-dim);
+    font: 600 10px/1.2 var(--font-mono);
+    letter-spacing: var(--label-track);
+    text-transform: uppercase;
+    vertical-align: 2px;
+    white-space: nowrap;
+}
+
+.table-badge i {
+    font-size: 9px;
+}
+
+.table-badge.is-yours {
+    color: var(--text);
+    border-color: var(--border-strong);
+    background: var(--surface-2);
+}
+
+/* Watching: the other player's turn. The board only looks, so its controls rest,
+   and the hover verbs and "Hold to reveal" (the top hand is yours) step aside. */
+body.is-watching #play .card-ctrl,
+body.is-watching #play .card-verbs,
+body.is-watching #top-peek {
+    display: none;
+}
+
+body.is-watching .sidebar-foot,
+body.is-watching #mobile-quick-actions,
+body.is-watching #btn-undo,
+body.is-watching #btn-challenge-mode {
+    opacity: 0.45;
+}
+
+body.is-watching #play .card-wrap,
+body.is-watching #play .pile {
+    cursor: default;
+}
+
+/* Phones: the chip is its dot; the banner says the rest. */
+@media (max-width: 760px) {
+    .table-chip {
+        width: 26px;
+        margin-left: 2px;
+        padding: 0;
+        justify-content: center;
+    }
+
+    .table-chip .tc-text {
+        display: none;
+    }
+
+    /* The banner: the words on one line, the keys under them on the right. */
+    .table-banner {
+        flex-wrap: wrap;
+        width: calc(100vw - 24px);
+        padding: 8px 8px 8px 12px;
+        row-gap: 6px;
+    }
+
+    .table-banner .sb-text {
+        flex: 1 1 calc(100% - 30px);
+    }
+
+    .table-banner .tb-acts {
+        margin-left: auto;
+    }
+}

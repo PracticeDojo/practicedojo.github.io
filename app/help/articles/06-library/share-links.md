@@ -3,7 +3,7 @@ id: share-links
 title: Share a deck or a session
 summary: Make a short link to a deck or a whole multiverse; anyone can open it, no account needed.
 devices: [desktop, phone]
-aliases: [share link, send a deck, send a session, copy link, delete link, my links]
+aliases: [share link, send a deck, send a session, send to a friend, copy link, delete link, my links]
 targets: [share, lib-links]
 related: [open-a-shared-link, share-limits, files]
 order: 50

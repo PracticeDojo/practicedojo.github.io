@@ -84,7 +84,10 @@
     "library",
     "files",
     "share-links",
-    "open-a-shared-link"
+    "open-a-shared-link",
+    "play-with-a-friend",
+    "live-and-by-turns",
+    "moving-the-table"
    ]
   },
   {
@@ -258,7 +261,7 @@
     "keyboard-shortcuts",
     "gestures"
    ],
-   "verified": "v3.11.0",
+   "verified": "v4.0.0",
    "todo": false,
    "headings": [
     {
@@ -282,7 +285,7 @@
      "slug": "good-to-know"
     }
    ],
-   "body": "The board is split in two: the player whose turn it is sits at the bottom, the other player at the top. When the turn ends, the two halves swap.\n\n## The top bar\n\n:::desktop\n- **Left:** **‹ Dojo** back to the home screen, the session's title (click to rename), then **Save**, **Save as copy** and **Share**.\n- **Centre:** **Undo**, the turn chip (`TURN 16 → Player 2`) and **Challenge**.\n- **Right:** **Multiverse** and **Tweaks**.\n:::\n\n:::phone\nFrom left to right: **☰** (the side panel), **Undo**, the turn chip, **Challenge**, **Multiverse** and **⋯**. The **⋯** menu holds **Save**, **Save as copy**, **Share link**, **Tweaks** and **Leave to the dojo**.\n:::\n\n[Show me](show:topbar)\n\n## Each player's half\n\n:::desktop\nEach half is labelled `P1 · TO PLAY` or `P2 · WAITING`. It holds:\n\n- **The play area**, where characters, items and locations sit.\n- **Discard**: a list of the cards in it, with a magnifier to look through them.\n- **The ink bar**: ready ink (`4 /7 READY`), **−** / **+**, **Ready all** and the ink cards.\n- **Deck**: the count. Click it to draw.\n- **Lore**: the big number, with **−** and **+**.\n\nThe bottom half also has your hand and the **Turn N notes** box. The top half has the other player's hand face down, with **Hold to Reveal Hand**.\n:::\n\n:::phone\nEach player has one bar: **Lore** with **−** / **+**, **Ink** with its count and pips (tap it for the inkwell), then the discard (its top card and count) and the deck (tap to draw, **⋮** for more). Under the board, the hand tray holds **Quest**, `Hand · N` and **End turn**, with your hand peeking up from the bottom edge.\n:::\n\n[Show me](show:board)\n\n## The side panels\n\n:::desktop\nThe left rail holds the players (deck and hand counts), the mini multiverse, the card preview (hover a card for details), the game log, **Auto-save every turn**, **Quest** and **End turn**. The right pane shows **Draw Odds** for the player to play.\n:::\n\n:::phone\n**☰** opens the side panel: the players, the card preview, the game log, **Auto-save every turn**, **Quest** and **End turn**. Phones have no draw odds pane, mini multiverse or notes box; see [Turn notes](help:turn-notes) for writing a note.\n:::\n\n[Show me](show:sidebar)\n\n## Good to know\n\n- The colour of a half follows the player, not the position: Player 1 keeps their colour when they move to the top.\n- On a phone or tablet, tap a card to open the card drawer with all its actions. See [Act on a card in play](help:card-actions).\n"
+   "body": "The board is split in two: the player whose turn it is sits at the bottom, the other player at the top. When the turn ends, the two halves swap.\n\n## The top bar\n\n:::desktop\n- **Left:** **‹ Dojo** back to the home screen, the session's title (click to rename), then **Save**, **Save as copy**, **Share** and **Play with a friend**. At a [two-player table](help:play-with-a-friend), a chip after them says who's there and whose turn it is.\n- **Centre:** **Undo**, the turn chip (`TURN 16 → Player 2`) and **Challenge**.\n- **Right:** **Multiverse** and **Tweaks**.\n:::\n\n:::phone\nFrom left to right: **☰** (the side panel), **Undo**, the turn chip, **Challenge**, **Multiverse** and **⋯**. The **⋯** menu holds **Save**, **Save as copy**, **Share link**, **Play with a friend**, **Tweaks** and **Leave to the dojo**. At a table, a dot after **☰** is the table chip.\n:::\n\n[Show me](show:topbar)\n\n## Each player's half\n\n:::desktop\nEach half is labelled `P1 · TO PLAY` or `P2 · WAITING`. It holds:\n\n- **The play area**, where characters, items and locations sit.\n- **Discard**: a list of the cards in it, with a magnifier to look through them.\n- **The ink bar**: ready ink (`4 /7 READY`), **−** / **+**, **Ready all** and the ink cards.\n- **Deck**: the count. Click it to draw.\n- **Lore**: the big number, with **−** and **+**.\n\nThe bottom half also has your hand and the **Turn N notes** box. The top half has the other player's hand face down, with **Hold to Reveal Hand**.\n:::\n\n:::phone\nEach player has one bar: **Lore** with **−** / **+**, **Ink** with its count and pips (tap it for the inkwell), then the discard (its top card and count) and the deck (tap to draw, **⋮** for more). Under the board, the hand tray holds **Quest**, `Hand · N` and **End turn**, with your hand peeking up from the bottom edge.\n:::\n\n[Show me](show:board)\n\n## The side panels\n\n:::desktop\nThe left rail holds the players (deck and hand counts), the mini multiverse, the card preview (hover a card for details), the game log, **Auto-save every turn**, **Quest** and **End turn**. The right pane shows **Draw Odds** for the player to play.\n:::\n\n:::phone\n**☰** opens the side panel: the players, the card preview, the game log, **Auto-save every turn**, **Quest** and **End turn**. Phones have no draw odds pane, mini multiverse or notes box; see [Turn notes](help:turn-notes) for writing a note.\n:::\n\n[Show me](show:sidebar)\n\n## Good to know\n\n- The colour of a half follows the player, not the position: Player 1 keeps their colour when they move to the top.\n- On a phone or tablet, tap a card to open the card drawer with all its actions. See [Act on a card in play](help:card-actions).\n"
   },
   {
    "id": "you-play-both-sides",
@@ -2506,6 +2509,7 @@
     "share link",
     "send a deck",
     "send a session",
+    "send to a friend",
     "copy link",
     "delete link",
     "my links"
@@ -2600,6 +2604,167 @@
     }
    ],
    "body": "Open the link in your browser. You don't need an account, and nothing is saved until you choose to keep it.\n\n## A shared session\n\nThe match opens on the board with a bar at the top: **Shared** · its title · **not saved yet** · **Save a copy**.\n\n[Show me](show:shared-banner)\n\nLook around, play on, open the Multiverse. While the bar shows, nothing goes into your library. To keep it, press **Save a copy** (**Save** in the top bar does the same). It becomes your own session on this device, under the same title, and saves itself from then on like any other.\n\nIf you open something else instead, or reload the page, your changes to the shared match are gone. A reload opens the link again from the start.\n\n## A shared deck\n\nThe Dojo opens the home screen with the deck in the paste field, marked **Shared deck** with its name. Press **Play it as you** or **Play against it** to seat it, or **Save to My decks** to keep it.\n\n[Show me](show:intake)\n\n## If it doesn't open\n\n- **Link not recognised:** part of the link is missing. Ask for it again, or check you copied all of it.\n- **This share is no longer available:** the person who shared it deleted it.\n- **Couldn't open the link:** the Dojo couldn't reach the sharing service. Check your connection and try again.\n\n## Good to know\n\n- Your copy is yours. Changing it never changes the link or the sharer's session.\n- A shared link is a snapshot of the moment it was made. If they keep playing, ask for a new link.\n"
+  },
+  {
+   "id": "play-with-a-friend",
+   "section": "library",
+   "title": "Play with a friend",
+   "summary": "Turn the match on the board into a table for two, send the link, and play live or by turns.",
+   "devices": [
+    "desktop",
+    "phone"
+   ],
+   "aliases": [
+    "two player",
+    "2 player",
+    "multiplayer",
+    "play a friend",
+    "invite",
+    "opponent",
+    "table",
+    "join a table",
+    "online",
+    "versus",
+    "pvp"
+   ],
+   "targets": [
+    "play-with-a-friend"
+   ],
+   "related": [
+    "live-and-by-turns",
+    "moving-the-table",
+    "share-links"
+   ],
+   "verified": "v4.0.0",
+   "todo": false,
+   "headings": [
+    {
+     "level": 2,
+     "text": "Set a table",
+     "slug": "set-a-table"
+    },
+    {
+     "level": 2,
+     "text": "Join a table",
+     "slug": "join-a-table"
+    },
+    {
+     "level": 2,
+     "text": "The table chip",
+     "slug": "the-table-chip"
+    },
+    {
+     "level": 2,
+     "text": "On another device",
+     "slug": "on-another-device"
+    }
+   ],
+   "body": "A table is a match two people share. You each take one side, and the board and its whole Multiverse belong to both of you. Nobody needs an account.\n\n## Set a table\n\n:::desktop\nPress the two-people button next to the share button in the top bar.\n\n[Show me](show:play-with-a-friend)\n:::\n\n:::phone\nTap **⋯** in the top bar, then **Play with a friend**.\n:::\n\nType the name your opponent will see, press **Next**, and choose your side (**P1** or **P2**). The **Table ready** box shows a link like `practicedojo.win/app/?t=k3J9xQ2mPa`. Press **Copy link** and send it to your opponent.\n\nThe match you started from stays in your library as it was. The table is a new session, marked with whose turn it is.\n\n## Join a table\n\nOpen the link you were sent. Type your name and press **Join table**: you take the free side. Whoever opens the link first gets the seat; once both seats are taken, the link only works for the two of you.\n\n## The table chip\n\nAt a table, a chip next to the session title says who's there and whose turn it is: *Live with Sam · Your turn*, *Sam is away · Sam's turn*, or *Waiting for a player*. On a phone it's just its dot: filled when you're both here, hollow when your opponent is away.\n\nPress it for the seats, **Copy link**, **Take a copy** (your own session to try things in, without moving the table), and **Leave the table**. Leaving keeps your copy as your own session. The last one to leave closes the table.\n\n## On another device\n\nYour seat belongs to this browser. To play the same table on another device, [sign in](help:sign-in) here first, then sign in there and open the link.\n"
+  },
+  {
+   "id": "live-and-by-turns",
+   "section": "library",
+   "title": "Live and by turns",
+   "summary": "The table is live while you're both there and waits for each turn when one of you is away; only the player whose turn it is moves cards.",
+   "devices": [
+    "desktop",
+    "phone"
+   ],
+   "aliases": [
+    "live",
+    "async",
+    "asynchronous",
+    "by turns",
+    "take turns",
+    "your turn",
+    "whose turn",
+    "watching",
+    "waiting for opponent",
+    "the pen",
+    "offline turn"
+   ],
+   "targets": [
+    "play-with-a-friend"
+   ],
+   "related": [
+    "play-with-a-friend",
+    "moving-the-table",
+    "end-turn",
+    "undo"
+   ],
+   "verified": "v4.0.0",
+   "todo": false,
+   "headings": [
+    {
+     "level": 2,
+     "text": "Whose turn it is",
+     "slug": "whose-turn-it-is"
+    },
+    {
+     "level": 2,
+     "text": "Live",
+     "slug": "live"
+    },
+    {
+     "level": 2,
+     "text": "By turns",
+     "slug": "by-turns"
+    },
+    {
+     "level": 2,
+     "text": "Hands",
+     "slug": "hands"
+    }
+   ],
+   "body": "There's nothing to switch: a table is **live** while you both have it open, and goes **by turns** when one of you leaves. Close the tab or come back whenever you like.\n\n## Whose turn it is\n\nOnly the player whose turn it is changes the board. The other player watches: they can look at cards, the discard piles, the log and the Multiverse, but card actions, **Undo** and **End turn** wait for their turn. The turn chip says **You** or your opponent's name.\n\n**End turn** hands the board over. If you ended your turn too soon, ask your opponent to press **Undo**: it gives the turn back to you.\n\n## Live\n\nWhen you're both here, every move shows on the other screen within a second, and the table chip reads *Live with Sam*.\n\n## By turns\n\nPlay your turn and press **End turn**. The table keeps it, and the bar at the top says your opponent plays next. Send them the link (**Copy link**) as a nudge.\n\nWhen it's your turn, the table shows **Your turn** in *Pick up again* and in the Library. Open it and play. If the tab is open in the background when your turn arrives, its title starts with ● Your turn.\n\nYou can play your turn offline. Your moves are kept on this device and sent when you're back online.\n\n## Hands\n\nYour own hand is face up and your opponent's is face down, wherever it sits on the screen. If you **Reveal** their hand or look through their deck, the log says so and they see it. It's a practice table between friends, not a secret: both browsers hold the whole board.\n"
+  },
+  {
+   "id": "moving-the-table",
+   "section": "library",
+   "title": "Move the table to another node",
+   "summary": "At a table, loading a node asks your opponent first; when they agree, both boards go there.",
+   "devices": [
+    "desktop",
+    "phone"
+   ],
+   "aliases": [
+    "go to a branch",
+    "jump together",
+    "propose",
+    "ask to go",
+    "go there",
+    "stay",
+    "rewind together",
+    "branch at a table"
+   ],
+   "targets": [
+    "multiverse"
+   ],
+   "related": [
+    "live-and-by-turns",
+    "multiverse-panel",
+    "left-here"
+   ],
+   "verified": "v4.0.0",
+   "todo": false,
+   "headings": [
+    {
+     "level": 2,
+     "text": "Ask",
+     "slug": "ask"
+    },
+    {
+     "level": 2,
+     "text": "Answer",
+     "slug": "answer"
+    },
+    {
+     "level": 2,
+     "text": "Nothing is lost",
+     "slug": "nothing-is-lost"
+    }
+   ],
+   "body": "At a table, the Multiverse belongs to both of you, so moving the board to another node is something you agree on.\n\n## Ask\n\nPick a node the way you'd load it alone: **Play from here** in the Multiverse panel, a double-click, or a node in the mini multiverse. Instead of loading, the bar at the top says *Waiting for Sam to go to \"Turn 6 – Amber\"*, with **Cancel**. Your board stays as it is until they answer.\n\nYou can ask on either player's turn.\n\n## Answer\n\nWhen your opponent asks, the bar says *Sam wants to go to \"Turn 6 – Amber\"*. Press **Go there** and both boards move. Press **Stay** and the table stays where it is.\n\nIf you're playing by turns, the question waits on the table until the other player next opens it.\n\n## Nothing is lost\n\nThe board you leave is kept as a [\"Left here\" snapshot](help:left-here) when it hasn't been saved, as it is when you jump alone. If you were in the middle of a turn when the other player moved the table, your board is kept the same way.\n\nTo try a line on your own without moving the table, use **Take a copy** from the table chip.\n"
   },
   {
    "id": "account",
@@ -3018,7 +3183,7 @@
     "card-display",
     "card-preview"
    ],
-   "verified": "v3.11.0",
+   "verified": "v4.0.0",
    "todo": false,
    "headings": [
     {
@@ -3042,7 +3207,7 @@
      "slug": "good-to-know"
     }
    ],
-   "body": "Card pictures come from the internet. When one can't load, the card shows as text instead, so the board stays readable and you can keep playing.\n\n## When art doesn't load\n\nA card without its picture shows its name, version, ink cost, and strength and willpower. Its full text is still there: in the preview on desktop, in the card drawer on a phone. Face-down cards and the deck go plain dark.\n\nPictures come back by themselves when your connection does. Pictures that loaded once in a session stay loaded, even if the connection drops later.\n\n## Text cards on purpose\n\nIn **Tweaks**, set **Card display** to **Text**. Every card then shows as text, and the Dojo loads no card pictures at all: handy on a slow or metered connection.\n\n[Show me](show:tweak-card-display)\n\n## Starting without a connection\n\nThe Dojo keeps a copy of the card database in this browser after the first visit, so it can start without downloading it again. The very first visit needs a connection: without one you see *Error loading database. Please refresh.*\n\nThe Dojo isn't an installed app. Once it's open you can play offline, but reopening it with no connection works only if your browser still has its files cached.\n\n## Good to know\n\n- Your sessions and decks are saved in this browser, so they don't need a connection. See [Where your things are kept](help:storage).\n- Share links, opening a link, and signing in need a connection.\n"
+   "body": "Card pictures come from the internet. When one can't load, the card shows as text instead, so the board stays readable and you can keep playing.\n\n## When art doesn't load\n\nA card without its picture shows its name, version, ink cost, and strength and willpower. Its full text is still there: in the preview on desktop, in the card drawer on a phone. Face-down cards and the deck go plain dark.\n\nPictures come back by themselves when your connection does. Pictures that loaded once in a session stay loaded, even if the connection drops later.\n\n## Text cards on purpose\n\nIn **Tweaks**, set **Card display** to **Text**. Every card then shows as text, and the Dojo loads no card pictures at all: handy on a slow or metered connection.\n\n[Show me](show:tweak-card-display)\n\n## Starting without a connection\n\nThe Dojo keeps a copy of the card database in this browser after the first visit, so it can start without downloading it again. The very first visit needs a connection: without one you see *Error loading database. Please refresh.*\n\nThe Dojo isn't an installed app. Once it's open you can play offline, but reopening it with no connection works only if your browser still has its files cached.\n\n## Good to know\n\n- Your sessions and decks are saved in this browser, so they don't need a connection. See [Where your things are kept](help:storage).\n- Share links, opening a link, and signing in need a connection.\n- At a [table](help:play-with-a-friend) you can play your turn offline; it's sent when you're back online. Setting or joining a table needs a connection.\n"
   },
   {
    "id": "storage",
@@ -3416,7 +3581,7 @@
     "multiverse",
     "what-is-the-dojo"
    ],
-   "verified": "v3.11.0",
+   "verified": "v4.0.0",
    "todo": false,
    "headings": [
     {
@@ -3430,7 +3595,7 @@
      "slug": "lorcana-words"
     }
    ],
-   "body": "The words this manual uses: first the Dojo's own, then Lorcana's.\n\n## Dojo words\n\n- **Session.** One match and everything saved from it: the board, its Multiverse and its history. It saves itself as you play. [Sessions](help:sessions)\n- **Multiverse.** The tree of every saved turn in a session. [The Multiverse](help:multiverse)\n- **Node.** One saved board in the Multiverse: whose turn, the lore, a note and what happened. [Reading a node](help:nodes)\n- **Line.** A run of turns, one after another, from the start to where it ends.\n- **Branch.** A line that splits off an earlier node, when you play from there and do something different. [Branching](help:branches)\n- **The line you're on.** The line that leads to the board in front of you. The Dojo marks it, and the node you're on, in the signal colour.\n- **Auto-save.** With **Auto-save every turn** on, ending a turn saves the board as a node. [Every turn is saved](help:auto-save)\n- **Left here.** A dashed snapshot of a board you jumped away from before saving it. [Left here snapshots](help:left-here)\n- **Library.** Your sessions, decks and links, on shelves by where they're kept: this device, your account, built in, public links. [The Library](help:library)\n- **Share link.** A short link to a frozen copy of a deck or a session. Anyone with it can open it. [Share a deck or a session](help:share-links)\n- **Practice board.** The board a guided tour runs on. Nothing on it is saved, and your own match is kept as it was. [Guided tours](help:tours)\n- **Unknown card.** A card an imported game never showed. It reads **Unknown card** until you fill it in. [Unknown cards](help:unknown-cards)\n\n## Lorcana words\n\n- **Ink, inkwell.** Cards put face down to pay for other cards. Each ink pays 1 once a turn. [Ink a card](help:ink-a-card)\n- **Ready, exert.** A ready card stands upright. Exerting turns it sideways, to quest, challenge or pay for an ability. [Act on a card](help:card-actions)\n- **Quest.** Exert a character to gain its lore. [Quest and lore](help:quest)\n- **Lore.** The score. The first player to 20 wins. [Winning](help:winning)\n- **Challenge.** Exert your character to fight an exerted opposing character (or a location); each deals damage equal to its strength. [Challenge](help:challenge)\n- **Banish.** Put a card from play into its owner's discard, for example when its damage reaches its willpower.\n- **Drying.** A character played this turn can't quest or challenge yet. The board marks it **NEW**.\n- **Shift.** Play a character on top of another version of it, for its shift cost. The card underneath stays under it. [Locations, shift and cards under](help:locations-and-stacks)\n- **Singer, song.** A character can exert to sing a song instead of paying its ink. The Dojo doesn't track singing: exert the singer and play the song yourself.\n- **Location.** A card your characters can move to. It has willpower and can give lore. [Locations](help:locations-and-stacks)\n\nThe Dojo doesn't enforce Lorcana's rules. You're the referee.\n"
+   "body": "The words this manual uses: first the Dojo's own, then Lorcana's.\n\n## Dojo words\n\n- **Session.** One match and everything saved from it: the board, its Multiverse and its history. It saves itself as you play. [Sessions](help:sessions)\n- **Multiverse.** The tree of every saved turn in a session. [The Multiverse](help:multiverse)\n- **Node.** One saved board in the Multiverse: whose turn, the lore, a note and what happened. [Reading a node](help:nodes)\n- **Line.** A run of turns, one after another, from the start to where it ends.\n- **Branch.** A line that splits off an earlier node, when you play from there and do something different. [Branching](help:branches)\n- **The line you're on.** The line that leads to the board in front of you. The Dojo marks it, and the node you're on, in the signal colour.\n- **Auto-save.** With **Auto-save every turn** on, ending a turn saves the board as a node. [Every turn is saved](help:auto-save)\n- **Left here.** A dashed snapshot of a board you jumped away from before saving it. [Left here snapshots](help:left-here)\n- **Library.** Your sessions, decks and links, on shelves by where they're kept: this device, your account, built in, public links. [The Library](help:library)\n- **Share link.** A short link to a frozen copy of a deck or a session. Anyone with it can open it. [Share a deck or a session](help:share-links)\n- **Table.** A match two people share, live or by turns. Only the player whose turn it is moves cards. [Play with a friend](help:play-with-a-friend)\n- **Practice board.** The board a guided tour runs on. Nothing on it is saved, and your own match is kept as it was. [Guided tours](help:tours)\n- **Unknown card.** A card an imported game never showed. It reads **Unknown card** until you fill it in. [Unknown cards](help:unknown-cards)\n\n## Lorcana words\n\n- **Ink, inkwell.** Cards put face down to pay for other cards. Each ink pays 1 once a turn. [Ink a card](help:ink-a-card)\n- **Ready, exert.** A ready card stands upright. Exerting turns it sideways, to quest, challenge or pay for an ability. [Act on a card](help:card-actions)\n- **Quest.** Exert a character to gain its lore. [Quest and lore](help:quest)\n- **Lore.** The score. The first player to 20 wins. [Winning](help:winning)\n- **Challenge.** Exert your character to fight an exerted opposing character (or a location); each deals damage equal to its strength. [Challenge](help:challenge)\n- **Banish.** Put a card from play into its owner's discard, for example when its damage reaches its willpower.\n- **Drying.** A character played this turn can't quest or challenge yet. The board marks it **NEW**.\n- **Shift.** Play a character on top of another version of it, for its shift cost. The card underneath stays under it. [Locations, shift and cards under](help:locations-and-stacks)\n- **Singer, song.** A character can exert to sing a song instead of paying its ink. The Dojo doesn't track singing: exert the singer and play the song yourself.\n- **Location.** A card your characters can move to. It has willpower and can give lore. [Locations](help:locations-and-stacks)\n\nThe Dojo doesn't enforce Lorcana's rules. You're the referee.\n"
   }
  ],
  "targets": {
@@ -3466,6 +3631,12 @@
    "label": "Share",
    "screen": "board",
    "desktop": "#btn-session-share",
+   "phone": "#btn-topbar-more"
+  },
+  "play-with-a-friend": {
+   "label": "Play with a friend",
+   "screen": "board",
+   "desktop": "#btn-session-table",
    "phone": "#btn-topbar-more"
   },
   "undo": {

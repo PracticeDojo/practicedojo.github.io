@@ -700,23 +700,37 @@ Implements version 2 of `docs/DESIGN-field-unit.md` (Kiln dark mode, signal fami
 - **Signal family.** By day the signal is Ember `#E4572E`; on Kiln it is Radio `#E86B2A` with dark text on the key. Tweaks → Accent offers only the approved swaps: **Signal** (the theme's own), **Coral**, **Olive** (its lore numeral lifts to `#C6C45A` on the well) and **Trace**. Each carries the text colour that sits on it. The old Amber / Rose / Emerald / Violet / Azure accents were ink colours, so a saved pick of one falls back to Signal.
 - **CSS file.** The Field Unit tokens, themes, palettes and component styles moved from the inline `<style>` to `app/css/field-unit.css`, loaded right after it (pixel-identical move). The older inline rules stay put.
 
-## Feature 65: Live tables — play together at the same time (planned)
+## Release v4.0.0: Two-player tables
+
+Two people can now share a match, live or by turns, so the Dojo moves to a major version. It bundles Feature 64 (tables by turns) and Feature 65 (live tables), built on `claude/feat-64-two-player-tables`. Plan and as-built notes: `docs/ARCH-two-player.md`; checklist: `docs/TODO-two-player.md`; test protocol: `docs/TEST-PROTOCOL-v4.0.0.md`. Solo play, sessions, decks, share links and session files from v3 work as before. Tables need the Supabase migration `supabase/migrations/20261020120000_tables.sql`, applied when this reaches `main`.
+
+## Feature 65: Live tables — play together at the same time (v4.0.0)
 
 ### User Story
 - As a player at a table with a friend who's online too, I want every move to show on their screen as it happens, and to move us both to another node of the multiverse when they agree, so we can play and study a match together from two devices.
 
 ### Details
-- Planned in `docs/ARCH-two-player.md` (§6, §7), tracked in `docs/TODO-two-player.md` (M5). Builds on Feature 64.
-- A table is live while both players have it open, and goes back to by turns when one leaves. No switch.
+- **Live by itself.** A table is live while both players have it open, and goes back to by turns when one leaves. There's no switch. The pen holder's board goes to the other seat at most every 250 ms over a private Supabase Realtime channel (`table:<id>`); *End turn* goes as the table file, so the new holder gets the new node and the undo history with the pen.
+- **The table chip** next to the session title: *Live with Sam · Your turn*, *Sam is away · Sam's turn*, *Waiting for a player*. Its dot is Trace while you're both there, hollow when the other is away; on phones the chip is the dot alone. The turn chip says **You** or the other player's name, and the sidebar names the seats.
+- **Moving the table.** At a table, loading a node or snapshot (Multiverse, mini multiverse, double-click, Enter) asks the other player instead. They see *Sam wants to go to "…"* with **Go there** / **Stay**; Go there moves both boards. By turns, the question waits until they next open the table.
+- **Your turn in the background:** the tab title starts with *● Your turn* until you look.
+- Boards over 200 KB go as the file instead of a live message (messages are capped at 256 KB).
 
-## Feature 64: Two-player tables by turns (planned)
+## Feature 64: Two-player tables by turns (v4.0.0)
 
 ### User Story
 - As a player, I want to share a session with a friend as a table, where I play my turn, the game waits, and they play theirs when they next open it, so we can play a match without being online at the same time.
 
 ### Details
-- Planned in `docs/ARCH-two-player.md` (§4, §5, §7–§10), tracked in `docs/TODO-two-player.md` (M1–M4).
-- *Play with a friend* turns the board into a table with a link. Only the player whose turn it is changes the board; *End turn* hands it over. Moving to another node is a proposal the other player accepts. *Take a copy* or *Leave* goes back to solo.
+- **Play with a friend** (top bar, next to Share; ⋯ on phones): your name, your side (P1 or P2), then a link (`?t=<code>`). The board becomes a new session linked to the table; the solo session stays as it was. No account needed (the anonymous identity share links use); sign in to sit at your tables from another device.
+- **Joining:** opening the link asks for a name and takes the free seat (*Join table*). Once both seats are taken, the link only works for the two players. Opening it again on the same device reopens that device's copy.
+- **The pen.** Only the seat whose turn it is changes the board. The other watches: previews, discard piles, the log and the Multiverse work; card actions, drags, hotkeys, Undo and End turn don't, and their controls rest. *End turn* hands the board over. Undo by the new holder right after *End turn* gives the turn back.
+- **Hands:** your own hand is face up wherever it sits, the other seat's face down. The other seat's mulligan isn't shown. Revealing their hand or looking through their deck is written to the log, and they see *Sam is looking at your hand*.
+- **By turns:** the table file is written about 4 s after the last change, and at once when the turn changes hands. A table that waits on you shows **Your turn** in *Pick up again* (first) and in the Library. A turn can be played offline and is sent when the table answers again.
+- **Nothing lost:** writes carry the revision they started from. When the other seat wrote first, their table wins and your board is kept as a "Left here" snapshot in the shared Multiverse.
+- **The table sheet** (the chip): the seats and who's here, **Copy link**, **Take a copy** (a solo session to try things in), **Free Sam's seat** (invite someone else), **Leave the table** (your copy stays yours; the last one out closes the table).
+- Every board and file from the other seat goes through `sanitizeSessionData()`. Hidden cards are hidden on screen, not secret: both browsers hold the whole board.
+- Code: `app/js/table.js` (`DojoTable`, the rules), the table transport in `app/js/cloud.js`, hooks and UI in `app/index.html`, styles in `app/css/field-unit.css`. Tests: `tools/table-checks.mjs` (two browsers, run by `tools/app-checks.mjs`) and `supabase/tests/run.sh` (the SQL on Postgres 16).
 
 ## Patch: Decklists with Duels.ink's printing suffix (v3.16.2)
 
@@ -1171,5 +1185,6 @@ The public page (`index.html`) follows Field Unit too, as `docs/DESIGN-field-uni
 - [x] Feature 62: Challenge keys on phones
 - [x] Feature 63: Challenge mode arrow keys on desktop
 - [x] Patch: Decklists with Duels.ink's printing suffix
-- [ ] Feature 64: Two-player tables by turns
-- [ ] Feature 65: Live tables
+- [x] Feature 64: Two-player tables by turns
+- [x] Feature 65: Live tables
+- [x] Release v4.0.0: Two-player tables

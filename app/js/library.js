@@ -134,6 +134,8 @@ const DojoLibrary = (() => {
                 title: typeof obj.title === 'string' ? obj.title : null,
                 summary: obj.summary && typeof obj.summary === 'object' ? obj.summary : null,
                 savedAt: typeof obj.savedAt === 'number' ? obj.savedAt : null,
+                // A two-player table's file: the table revision it was written at.
+                tableRevision: typeof obj.tableRevision === 'number' ? obj.tableRevision : null,
                 data: obj.data
             };
         } else {
@@ -159,10 +161,12 @@ const DojoLibrary = (() => {
 
     // --- Sessions ---------------------------------------------------------------
     // meta: { id, title, summary, createdAt, updatedAt, lastOpenedAt,
-    //         account?: { revision }, accountDirty? }
+    //         account?: { revision }, accountDirty?, table? }
     // blob: the gzipped v2 file (ArrayBuffer; plain text if gzip is unavailable)
     // `account` marks a device copy that is also in the signed-in account, at
     // that revision; `accountDirty` means it changed here since (§8.1).
+    // `table` marks this device's copy of a two-player table: { id, seat, revision,
+    // names, dirty } (docs/ARCH-two-player.md §5). null removes it.
 
     async function listSessions() {
         const all = await getAll('sessions');
@@ -199,6 +203,8 @@ const DojoLibrary = (() => {
                 row.account = account;
                 row.accountDirty = meta.accountDirty !== undefined ? !!meta.accountDirty : true;
             }
+            const table = meta.table !== undefined ? meta.table : (prev && prev.table);
+            if (table) row.table = table;
             s.sessions.put(row);
             s.session_blobs.put(packed, row.id);
             return row;
@@ -242,6 +248,7 @@ const DojoLibrary = (() => {
         const copy = { ...meta, id: newId(), title, createdAt: now, updatedAt: now, lastOpenedAt: now };
         delete copy.account;      // a copy starts life on this device only
         delete copy.accountDirty;
+        delete copy.table;        // and at no table
         await tx(['sessions', 'session_blobs'], 'readwrite', s => {
             s.sessions.put(copy);
             s.session_blobs.put(packed, copy.id);

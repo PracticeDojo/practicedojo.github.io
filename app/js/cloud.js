@@ -120,6 +120,10 @@ const DojoCloud = (() => {
         if (/account_deck_limit/.test(msg)) return fail('deck_quota', msg, err);
         if (/account_session_limit/.test(msg)) return fail('session_quota', msg, err);
         if (/account_storage_full/.test(msg)) return fail('account_storage_full', msg, err);
+        if (/seat_taken/.test(msg)) return fail('seat_taken', msg, err);
+        if (/table_gone|not_your_table/.test(msg)) return fail('gone', msg, err);
+        if (/table_limit/.test(msg)) return fail('table_limit', msg, err);
+        if (/table_storage_full/.test(msg)) return fail('table_storage_full', msg, err);
         if (/JWT|not_signed_in|row-level security/i.test(msg)) return fail('signed_out', msg, err);
         if (/Failed to fetch|NetworkError|network/i.test(msg)) return fail('offline', msg, err);
         return fail('unavailable', msg, err);
@@ -136,9 +140,9 @@ const DojoCloud = (() => {
         throw fail('unavailable', 'Could not pick a free link code');
     }
 
-    function shareUrl(slug) {
+    function shareUrl(slug, param = 's') {
         const origin = SITE_HOSTS.includes(location.hostname) ? SITE : location.origin;
-        return `${origin}${location.pathname}?s=${slug}`;
+        return `${origin}${location.pathname}?${param}=${slug}`;
     }
 
     // --- Creating ----------------------------------------------------------------
@@ -411,8 +415,198 @@ const DojoCloud = (() => {
         return { decks: d.count || 0, sessions: s.count || 0, maxDecks: 200, maxSessions: 50 };
     }
 
+    // --- Tables (docs/ARCH-two-player.md §10–§11) -----------------------------------
+    // A table is a row (seats, revision, whose turn, a proposal) and a private file
+    // tables/{id}.json.gz, shared by two seats. Live play adds a private Realtime
+    // channel table:{id}. Anonymous identities may create and join tables.
+    const TABLE_COLS = 'id, seat0, seat1, name0, name1, title, revision, turn_seat, summary, proposal, file_bytes, updated_at';
+    const tableUrl = (id) => shareUrl(id, 't');
+    const tableFile = (id) => `${id}.json.gz`;
+
+    function checkBlob(blob) {
+        if (!blob || blob.type !== 'application/gzip') throw fail('no_gzip', 'Table file is not gzipped');
+        if (blob.size > MAX_BLOB) throw fail('too_big', String(blob.size));
+    }
+
+    async function uploadTable(sb, id, blob) {
+        const up = await sb.storage.from('tables').upload(tableFile(id), blob, {
+            contentType: 'application/gzip', cacheControl: '0', upsert: true
+        });
+        if (up.error) throw classify(up.error);
+    }
+
+    // What the join screen needs, for anyone with the link (no SDK unless this
+    // browser already has an identity, so `mine` can say which seat is ours).
+    // → { title, summary, names: [n0, n1], free_seats: [..], mine: 0|1|null } | null
+    async function tableInvite(id) {
+        if (!SLUG_RE.test(String(id || ''))) return null;
+        if (hasIdentity()) {
+            const { sb } = await ensureUser();
+            const { data, error } = await sb.rpc('table_invite', { p_id: id });
+            if (error) throw classify(error);
+            return data || null;
+        }
+        let r;
+        try {
+            r = await fetch(`${URL}/rest/v1/rpc/table_invite`, {
+                method: 'POST',
+                headers: { apikey: KEY, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ p_id: id })
+            });
+        } catch (e) { throw fail('offline', 'network', e); }
+        if (!r.ok) throw fail('unavailable', `table_invite HTTP ${r.status}`);
+        return (await r.json()) || null;
+    }
+
+    // blob: the gzipped v2 file. → { id, revision: 1, url, uid }
+    async function createTable({ title, seat, name, blob, summary, turnSeat }) {
+        checkBlob(blob);
+        const { sb, uid } = await ensureUser();
+        const row = {
+            title: String(title || 'Table').slice(0, 120),
+            summary: summary || {},
+            turn_seat: turnSeat ? 1 : 0,
+            file_bytes: blob.size,
+            [seat ? 'seat1' : 'seat0']: uid,
+            [seat ? 'name1' : 'name0']: String(name || '').slice(0, 40) || null
+        };
+        let id = null;
+        for (let attempt = 0; attempt < 3 && !id; attempt++) {
+            const next = newSlug();
+            const { error } = await sb.from('tables').insert({ ...row, id: next });
+            if (!error) id = next;
+            else if (error.code !== '23505') throw classify(error);
+        }
+        if (!id) throw fail('unavailable', 'Could not pick a free table code');
+        try { await uploadTable(sb, id, blob); } catch (e) {
+            // A table without a file can't be opened: take the row back.
+            await sb.rpc('leave_table', { p_id: id });
+            throw e;
+        }
+        return { id, revision: 1, url: tableUrl(id), uid };
+    }
+
+    // Takes a free seat (or returns the row when already seated). → row
+    async function joinTable(id, seat, name) {
+        const { sb, uid } = await ensureUser();
+        const { data, error } = await sb.rpc('join_table', { p_id: id, p_seat: seat, p_name: String(name || '').slice(0, 40) });
+        if (error) throw classify(error);
+        return { ...data, uid };
+    }
+
+    // The rows of the tables this browser sits at, among `ids`. [] when it has no identity.
+    async function getTables(ids) {
+        if (!ids || !ids.length || !hasIdentity()) return [];
+        const { sb } = await ensureUser();
+        const { data, error } = await sb.from('tables').select(TABLE_COLS).in('id', ids);
+        if (error) throw classify(error);
+        return data || [];
+    }
+
+    // → row, or null when the table is gone or this browser no longer sits at it.
+    async function getTable(id) {
+        const { sb } = await ensureUser();
+        const { data, error } = await sb.from('tables').select(TABLE_COLS).eq('id', id).maybeSingle();
+        if (error) throw classify(error);
+        return data || null;
+    }
+
+    async function downloadTable(id) {
+        const { sb } = await ensureUser();
+        const { data, error } = await sb.storage.from('tables').download(tableFile(id));
+        if (error) throw fail(/not.?found|400|404/i.test(String(error.message || error.statusCode || '')) ? 'gone' : 'unavailable', error.message, error);
+        return data.arrayBuffer();
+    }
+
+    // Revision-checked write (§9): claim revision + 1, then upload. → the new revision.
+    // Throws code 'conflict' with e.current (the row's revision), or 'gone'.
+    // An upload that fails after the claim carries e.claimedRevision.
+    async function saveTable(id, { revision, blob, summary, turnSeat, title }) {
+        checkBlob(blob);
+        const { sb } = await ensureUser();
+        const fields = { revision: revision + 1, turn_seat: turnSeat ? 1 : 0, summary: summary || {}, file_bytes: blob.size };
+        if (title) fields.title = String(title).slice(0, 120);
+        const { data, error } = await sb.from('tables').update(fields).eq('id', id).eq('revision', revision).select('revision');
+        if (error) throw classify(error);
+        if (!data || !data.length) {
+            const cur = await getTable(id);
+            if (!cur) throw fail('gone', 'Table gone');
+            const e = fail('conflict', 'The other seat saved first');
+            e.current = cur.revision;
+            throw e;
+        }
+        try { await uploadTable(sb, id, blob); } catch (e) { e.claimedRevision = revision + 1; throw e; }
+        return revision + 1;
+    }
+
+    // proposal: { id, by, target, auto, name, at } or null. → row
+    async function setProposal(id, proposal) {
+        const { sb } = await ensureUser();
+        const { data, error } = await sb.from('tables').update({ proposal: proposal || null }).eq('id', id).select(TABLE_COLS);
+        if (error) throw classify(error);
+        if (!data || !data.length) throw fail('gone', 'Table gone');
+        return data[0];
+    }
+
+    // Leaves your seat; the last one out removes the file and the row. → true when gone.
+    async function leaveTable(id) {
+        const { sb, uid } = await ensureUser();
+        const row = await getTable(id);
+        if (!row) return true;
+        const other = row.seat0 === uid ? row.seat1 : row.seat0;
+        if (!other) {
+            const rm = await sb.storage.from('tables').remove([tableFile(id)]);
+            if (rm.error) throw classify(rm.error);
+        }
+        const { data, error } = await sb.rpc('leave_table', { p_id: id });
+        if (error) throw classify(error);
+        return !!data;
+    }
+
+    async function freeSeat(id, seat) {
+        const { sb } = await ensureUser();
+        const { data, error } = await sb.rpc('free_seat', { p_id: id, p_seat: seat });
+        if (error) throw classify(error);
+        return data;
+    }
+
+    // The live channel. me: { seat, name }. on: { board(payload), table(payload),
+    // presence([{ seat, name, tab }]), status('live' | 'down') }.
+    // → { sendBoard(payload), sendTable(payload), close() }. Sends before the
+    // channel is up are dropped: the table file carries everything anyway.
+    async function tableChannel(id, me, on) {
+        const { sb } = await ensureUser();
+        const tab = newSlug();
+        const ch = sb.channel(`table:${id}`, {
+            config: { private: true, broadcast: { self: false }, presence: { key: tab } }
+        });
+        let up = false;
+        ch.on('broadcast', { event: 'board' }, (m) => on.board && on.board(m.payload))
+            .on('broadcast', { event: 'table' }, (m) => on.table && on.table(m.payload))
+            .on('presence', { event: 'sync' }, () => {
+                const st = ch.presenceState();
+                const list = [];
+                Object.keys(st).forEach(k => (st[k] || []).forEach(p => list.push({ seat: p.seat, name: p.name, tab: k })));
+                on.presence && on.presence(list);
+            })
+            .subscribe((status) => {
+                up = status === 'SUBSCRIBED';
+                if (up) ch.track({ seat: me.seat, name: String(me.name || '').slice(0, 40) }).catch(() => { });
+                on.status && on.status(up ? 'live' : 'down', status);
+            });
+        const send = (event, payload) => { if (up) ch.send({ type: 'broadcast', event, payload }).catch(() => { }); };
+        return {
+            tab,
+            sendBoard: (p) => send('board', p),
+            sendTable: (p) => send('table', p),
+            close: () => { up = false; sb.removeChannel(ch).catch(() => { }); }
+        };
+    }
+
     return {
         SLUG_RE, MAX_BLOB,
+        tableUrl, tableInvite, createTable, joinTable, getTables, getTable, downloadTable, saveTable,
+        setProposal, leaveTable, freeSeat, tableChannel,
         getShare, fetchShareBlob, hasIdentity,
         createDeckShare, createSessionShare, listMyShares, deleteShare, shareUrl,
         isSignedIn, currentUser: () => userInfo(storedUser()), initAuth, enabledProviders, signIn, signOut, lastSignInProvider,

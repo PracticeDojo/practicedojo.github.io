@@ -35,6 +35,12 @@
       "desktop": "#btn-session-share",
       "phone": "#btn-topbar-more"
     },
+    "play-with-a-friend": {
+      "label": "Play with a friend",
+      "screen": "board",
+      "desktop": "#btn-session-table",
+      "phone": "#btn-topbar-more"
+    },
     "undo": {
       "label": "Undo",
       "screen": "board",

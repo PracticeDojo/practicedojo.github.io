@@ -1,6 +1,6 @@
 # ARCH: Two-player tables — live and by turns
 
-> **Status:** v0.1, proposal. Nothing is built. Waiting for the owner's answers in [§16](#16-open-questions).
+> **Status:** v1.0, built as **v4.0.0** on `claude/feat-64-two-player-tables` (Features 64 and 65 in one release). The open questions were settled by building the recommendations, except Q6: one release (§16). As built: [§18](#18-as-built-v400). The migration reaches Supabase when the branch reaches `main`.
 > **Scope:** Practice Dojo: `app/index.html` (small hooks), `app/js/cloud.js` (transport), a new `app/js/table.js`, one Supabase migration.
 > What's done and what's left: [`TODO-two-player.md`](TODO-two-player.md). Planned as **Feature 64** (tables by turns) and **Feature 65** (live tables) in `docs/features.md`.
 > Builds on [`ARCH-accounts-and-library.md`](ARCH-accounts-and-library.md): the session file (§6), the device library (§5), the anonymous identity (§9.3) and the revision check (§8.3).
@@ -326,6 +326,8 @@ Milestones, so agents can work in parallel. Claim one in the TODO before startin
 
 ## 16. Open questions
 
+*Settled 2026-10-20: the owner asked for a working v4.0.0, so Q1–Q5 were built as recommended and Q6 became one release. They can still be revisited; each is a small change.*
+
 | # | Question | Recommendation |
 |---|---|---|
 | Q1 | Live and by turns follow who's at the table, with no switch. Or do you want an explicit *Live / By turns* switch? | No switch. Both are the same table; a switch would only add a state that can disagree with reality. |
@@ -333,20 +335,35 @@ Milestones, so agents can work in parallel. Claim one in the TODO before startin
 | Q3 | How do tables share the 1 GB of Storage with shares and account sessions? | The account rule: no new tables once the project passes 900 MB, while existing tables keep saving, plus a 150 MB ceiling on the `tables` bucket. |
 | Q4 | Can a player take back their own *End turn* alone, before the other has played? | Not in v1: the other presses Undo. |
 | Q5 | Is "table" the right word in the app? | Yes: *Play with a friend*, *the table*, *Leave the table*. |
-| Q6 | Ship by turns (Feature 64) before live (Feature 65), or both in one release? | Two releases, by turns first. |
+| Q6 | Ship by turns (Feature 64) before live (Feature 65), or both in one release? | ~~Two releases~~ **One: v4.0.0** (owner, 2026-10-20). |
 
 ---
 
 ## 17. Decision log
 
-Proposed; becomes the log once the owner confirms them in M0.
-
 | # | Decision | Date |
 |---|---|---|
-| P1 | A table is a v2 session file in a private bucket plus a small row; live is a Realtime channel on top | 2026-10-20 (proposed) |
-| P2 | One writer at a time: the seat whose turn it is. Enforced in the browser; the database enforces seats and revisions | 2026-10-20 (proposed) |
-| P3 | Loading a node or snapshot at a table is a proposal the other seat accepts | 2026-10-20 (proposed) |
-| P4 | A replaced board with unsaved changes is always kept as "Left here" | 2026-10-20 (proposed) |
-| P5 | Anonymous identities can create and join tables; signing in carries the seats to every device | 2026-10-20 (proposed) |
-| P6 | Hands are hidden on screen, not secret; looking at the other's cards is logged | 2026-10-20 (proposed) |
-| P7 | *Play with a friend* makes a new device session for the table; the solo session is untouched | 2026-10-20 (proposed) |
+| D1 | A table is a v2 session file in a private bucket plus a small row; live is a Realtime channel on top | 2026-10-20 |
+| D2 | One writer at a time: the seat whose turn it is. Enforced in the browser; the database enforces seats and revisions | 2026-10-20 |
+| D3 | Loading a node or snapshot at a table is a proposal the other seat accepts | 2026-10-20 |
+| D4 | A replaced board with unsaved changes is always kept as "Left here" | 2026-10-20 |
+| D5 | Anonymous identities can create and join tables; signing in carries the seats to every device | 2026-10-20 |
+| D6 | Hands are hidden on screen, not secret; looking at the other's cards is logged | 2026-10-20 |
+| D7 | *Play with a friend* makes a new device session for the table; the solo session is untouched | 2026-10-20 |
+| D8 | No live / by-turns switch (Q1); today's view while watching (Q2); tables stop being created past 900 MB of project Storage or 150 MB in their bucket (Q3); the other player's Undo takes back an *End turn* (Q4); "table" (Q5) | 2026-10-20 |
+| D9 | Features 64 and 65 ship together as v4.0.0 (Q6) | 2026-10-20 |
+
+---
+
+## 18. As built (v4.0.0)
+
+What differs from, or adds to, the plan above. The working detail is in the dev guide §28.
+
+- **Contract.** `DojoTable.attach(link, hooks, sessionId)`; the hooks are `activePlayer`, `snapshot`, `boardState`, `applyFile`, `applyBoard`, `restore`, `saveLink`, `changed`, `gone` and `notify`. `DojoCloud.createTable` also takes the creator's `name`; `joinTable(id, seat, name)`. `DojoTable.info()` is what the chip, banner and sheet read.
+- **Row.** The row also holds the players' names (`name0`, `name1`, ≤ 40 characters), so the Library and the join screen can say *Sam's turn* without downloading. `table_invite()` returns `{ title, summary, names, free_seats, mine }`; `mine` lets a signed-in player who already sits at the table reopen it on another device.
+- **The pen waits for the first read.** Until the row has answered once, a table's board may be an older copy, so nobody holds the pen (the chip says *Catching up…*). An offline failure counts as an answer: a turn can be played offline and is sent later.
+- **Live boards** are sent only by the pen holder and accepted only from the other seat on its own turn, at the receiver's revision, and never while the receiver is uploading (§6 as written let a late board from the old holder undo a turn).
+- **The file** carries `tableRevision` and `board: { from, seq }` (the last live board sent before it), so a reader can tell a lagging file and put a newer live board back on top.
+- **Left at a free seat.** Moving the table needs no answer while the other seat is empty. If the turn passes to an empty seat, the table waits for whoever joins; the banner says so and offers the link and *Take a copy*.
+- **Not built (still §15):** the waiting player's own side at the bottom, borrowing the pen, notifications, spectators. The draw-odds pane follows the active player's deck, as solo.
+- **Tests.** `tools/table-checks.mjs` (52 checks, two browsers, a stand-in backend with the SQL's rules; in CI through `tools/app-checks.mjs`) and `supabase/tests/run.sh` (the migration, twice, and its tests on Postgres 16). The Realtime calls were checked against the live project on a public channel; private channels need the migration.

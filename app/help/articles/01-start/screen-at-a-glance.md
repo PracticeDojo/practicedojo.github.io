@@ -7,7 +7,7 @@ aliases: [layout, board, interface, where is, ui, sidebar, player bar]
 targets: [topbar, board, hand, ink-bar, lore, deck, discard, sidebar, draw-odds, more-menu]
 related: [you-play-both-sides, keyboard-shortcuts, gestures]
 order: 30
-verified: v3.11.0
+verified: v4.0.0
 ---
 
 The board is split in two: the player whose turn it is sits at the bottom, the other player at the top. When the turn ends, the two halves swap.
@@ -15,13 +15,13 @@ The board is split in two: the player whose turn it is sits at the bottom, the o
 ## The top bar
 
 :::desktop
-- **Left:** **‹ Dojo** back to the home screen, the session's title (click to rename), then **Save**, **Save as copy** and **Share**.
+- **Left:** **‹ Dojo** back to the home screen, the session's title (click to rename), then **Save**, **Save as copy**, **Share** and **Play with a friend**. At a [two-player table](help:play-with-a-friend), a chip after them says who's there and whose turn it is.
 - **Centre:** **Undo**, the turn chip (`TURN 16 → Player 2`) and **Challenge**.
 - **Right:** **Multiverse** and **Tweaks**.
 :::
 
 :::phone
-From left to right: **☰** (the side panel), **Undo**, the turn chip, **Challenge**, **Multiverse** and **⋯**. The **⋯** menu holds **Save**, **Save as copy**, **Share link**, **Tweaks** and **Leave to the dojo**.
+From left to right: **☰** (the side panel), **Undo**, the turn chip, **Challenge**, **Multiverse** and **⋯**. The **⋯** menu holds **Save**, **Save as copy**, **Share link**, **Play with a friend**, **Tweaks** and **Leave to the dojo**. At a table, a dot after **☰** is the table chip.
 :::
 
 [Show me](show:topbar)

@@ -7,7 +7,7 @@ aliases: [offline, no internet, no connection, cant see card pictures, missing i
 targets: [tweak-card-display]
 related: [card-display, card-preview]
 order: 10
-verified: v3.11.0
+verified: v4.0.0
 ---
 
 Card pictures come from the internet. When one can't load, the card shows as text instead, so the board stays readable and you can keep playing.
@@ -34,3 +34,4 @@ The Dojo isn't an installed app. Once it's open you can play offline, but reopen
 
 - Your sessions and decks are saved in this browser, so they don't need a connection. See [Where your things are kept](help:storage).
 - Share links, opening a link, and signing in need a connection.
+- At a [table](help:play-with-a-friend) you can play your turn offline; it's sent when you're back online. Setting or joining a table needs a connection.

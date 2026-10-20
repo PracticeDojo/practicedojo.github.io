@@ -1466,3 +1466,31 @@ Plan, formats and decisions: `docs/ARCH-help-and-tour.md` (§5.7 is the as-built
 * `App.CARD_DB_VERSION` (in `app/index.html`) is a hand-bumped stamp stored beside the cached copy. Same stamp: boot from IndexedDB with no network. Different stamp: download once with `cache: 'no-cache'` and store it. No periodic checking.
 * Sources: `raw.githubusercontent.com` first (5 min cache, CORS on), jsDelivr as fallback. If the download fails, the old copy is used.
 * **When similcana changes:** push it, wait a few minutes, change `CARD_DB_VERSION` to a new string, deploy. Everyone gets the new file on their next load.
+
+## 28. Features 64–65: Two-player tables (v4.0.0)
+
+Plan, decisions and the backend: `docs/ARCH-two-player.md` (§18 is the as-built summary). A table is a v2 session file in a private bucket plus a small row; live play is a Realtime channel on top. Everything below is in `app/js/table.js` (`DojoTable`), the "Features 64–65" block of `app/index.html`, and the table section of `app/js/cloud.js`.
+
+### 28.1 Three layers
+* **`DojoCloud`** (cloud.js) is the transport and still the only file that knows Supabase: `createTable`, `tableInvite`, `joinTable`, `getTable(s)`, `downloadTable`, `saveTable` (claim `revision + 1`, then upload; `conflict` carries `e.current`), `setProposal`, `leaveTable`, `freeSeat`, `tableChannel` (private channel `table:<id>`, presence keyed by a random tab id, broadcast `board` / `table`, `self: false`).
+* **`DojoTable`** (table.js) knows the rules, not the cards: the link `{ id, seat, revision, names, dirty }`, the pen, debounced writes, pulls, proposals and the channel. The App gives it hooks in `attach(link, hooks, sessionId)`: `activePlayer`, `snapshot`, `boardState`, `applyFile`, `applyBoard`, `restore`, `saveLink`, `changed`, `gone`, `notify`.
+* **App**: `session.table` is the link, kept on the device copy (`DojoLibrary.saveSession` keeps `meta.table`, `null` removes it; a duplicate drops it). `attachTable()` / `detachTable()` bracket it; detach comes before the board is replaced (`_applySessionData`, `startGame`, `_startNewSession`) because it takes a final snapshot for any unsent change.
+
+### 28.2 The pen
+* `DojoTable.holdsPen()` = my seat is `activePlayer` **and** the first read of the table has answered (`synced`; an offline failure counts, so a turn can be played offline) **and** the row isn't ahead of this board **and** no pull is running. `App.isWatching()` is its opposite at a table.
+* The watching lock is one capture-phase gate on `window` (`TableWatchLock`, before the keydown handler): clicks, drags, presses and context menus inside `#play`, `.turn-ctl`, `.sidebar-foot` and the board's floating menus stop there; `[data-watch-ok]` opts out (the discard inspectors). Keys: only look-keys pass. Functions that edit the tree or the notes call `tableLocked()` too (the Multiverse panel stays open for proposals). Hover previews still work.
+* Changes reach the table two ways: `saveToDevice()` → `tableNoteChange()` (multiverse edits) and `render()` → `tableAfterRender()`, which compares `boardSig()` with the last board seen. A change counts only from the pen holder or the seat that just passed the pen (`_tableTurn`), and never while `_applyingRemote`. A turn that changed hands is written at once and never streamed: the other side must get the file (new node, undo history) before it holds the pen.
+
+### 28.3 Live
+* The pen holder streams `{ rev, seq, from, seat, state }` (compressed state with its log), at most every 250 ms, only while it holds the pen and the other seat is present. The receiver takes a board only from the other seat on its own turn, not while it is dirty, uploading or holding the pen, and only at its own revision (ahead: it syncs; behind: dropped). *Found by the headless test:* a board sent just after the pen moved arrived after the other side had taken the pen and put the old turn back.
+* The newest board seen is kept as `latest`; after a pull, if the file's `board: { from, seq }` is older than `latest` from the same tab, `latest` goes back on top (boards sent while the file uploaded).
+* A `table` message just means "read the row": `sync()` pulls when the row's revision is ahead.
+
+### 28.4 Conflicts
+* A write that meets a newer revision pulls; when this side had unsent changes, `applyTableFile(data, { keepMine })` keeps the old board as a "Left here" snapshot (`_leftHereEntry()`, split out of `autoSaveTimeline`) unless it's already a node, and writes again. A pull never runs while an upload is under way (that upload will conflict and pull with its board kept).
+* The device copy's link (`saveTableLink`) is flushed at once, not debounced, so a copy never says "sent" while holding an older board.
+
+### 28.5 Testing
+* `node tools/table-checks.mjs` (and `node tools/app-checks.mjs`, which runs it in CI): two browser contexts against a stand-in backend in Node with the SQL's rules; the pages' `DojoCloud` table functions are swapped for calls to it through an exposed function, and channel messages are pushed back in. 52 checks: create, join, hands, live moves, the pen, End turn, Undo giving the turn back, proposals accepted and refused, a conflict with one side offline, by turns with *Your turn* in the library, leaving.
+* `bash supabase/tests/run.sh`: every migration (twice) and `supabase/tests/*.test.sql` on a throwaway Postgres 16 with stand-in `auth`, `storage` and `realtime` schemas (`stubs.sql`).
+* Real OAuth and private Realtime channels can't run here; the Realtime calls were checked against the live project on a public channel (subscribe, presence, a 30 KB board).

@@ -3,82 +3,81 @@
 The working checklist for [`ARCH-two-player.md`](ARCH-two-player.md). The ARCH doc says *how*; this file
 says *what's left*. Section numbers (§) point into the ARCH doc; M-numbers are its milestones (§13).
 
-**Rules:** tick an item only when it is on `main` and verified (say how in the note). Items marked
-**(you)** need a decision, a dashboard or a hands-on test from the owner. New work found along the way
-goes into the right milestone, or into *Parked* if it's outside the plan.
+**Rules:** tick an item only when it is verified (say how in the note). Items marked **(you)** need a
+decision, a dashboard or a hands-on test from the owner. New work found along the way goes into the
+right milestone, or into *Parked* if it's outside the plan.
 
-**Working in parallel:** claim a milestone by putting your branch name after its heading before you
-start. M0 goes first; then M1 and M2 run at once; M3 needs M2; M4 needs M1 and M2; M5 needs M3 and M4.
+**Now:** everything is built as v4.0.0 on `claude/feat-64-two-player-tables` and verified headless (ticks
+below say how). It reaches players when the owner's test passes and the branch merges to `main`; the
+Supabase migration is applied by the GitHub integration at that point.
 
-*Last updated: 2026-10-20 · live: v3.17.4 · plan v0.1, nothing built*
+*Last updated: 2026-10-20 · live: v3.17.4 · built: v4.0.0 on `claude/feat-64-two-player-tables`*
 
 | Milestone | Status |
 |---|---|
-| M0 · Review | ⏳ Waiting for the owner |
-| M1 · Database | ⬜ |
-| M2 · Contract and stand-in | ⬜ |
-| M3 · Tables by turns (Feature 64) | ⬜ |
-| M4 · Real transport | ⬜ |
-| M5 · Live tables (Feature 65) | ⬜ |
+| M0 · Review | ✅ Settled by building the recommendations; one release (§16) |
+| M1 · Database | ✅ Built and tested on Postgres 16; **(you)** apply on merge |
+| M2 · Contract and stand-in | ✅ Built |
+| M3 · Tables by turns (Feature 64) | ✅ Built, v4.0.0 |
+| M4 · Real transport | 🟡 Built; Realtime calls checked live on a public channel; the private channel waits for the migration |
+| M5 · Live tables (Feature 65) | ✅ Built, v4.0.0 |
 
 ---
 
-## M0 · Review **(you)**
-- [ ] Q1 No *Live / By turns* switch: the table is live while both are at it (§16)
-- [ ] Q2 Watching keeps today's view, the active player at the bottom
-- [ ] Q3 Storage rule for tables
-- [ ] Q4 The other player takes back an *End turn* with Undo
-- [ ] Q5 The word "table"
-- [ ] Q6 By turns ships before live
-- [ ] Decisions copied from P1–P7 into the ARCH decision log (§17)
-- [ ] **(you)** Supabase → Realtime Settings → *Allow public access* off (§10.3)
+## M0 · Review
+- [x] Q1 No *Live / By turns* switch: the table is live while both are at it (§16). *Built that way (D8)*
+- [x] Q2 Watching keeps today's view, the active player at the bottom. *D8*
+- [x] Q3 Storage rule: no new tables past 900 MB of project Storage or 150 MB in the `tables` bucket. *D8, in the migration*
+- [x] Q4 The other player takes back an *End turn* with Undo. *D8; tested (`undo: Bea's Undo gives Ann the turn back`)*
+- [x] Q5 The word "table". *D8*
+- [x] Q6 One release, v4.0.0. *Owner, 2026-10-20 (D9)*
+- [x] Decisions in the ARCH decision log (§17). *D1–D9*
+- [ ] **(you)** Optional: Supabase → Realtime Settings → *Allow public access* off. Private channels are checked against the policies either way; turning it off also refuses public channels, which the app doesn't use
 
 ## M1 · Database (§10)
-- [ ] Migration `supabase/migrations/<date>_tables.sql`: `tables` row, RLS, guard trigger (seats fixed, revision +1)
-- [ ] `table_invite`, `join_table`, `leave_table`, `free_seat`
-- [ ] Caps failing closed: 20 tables per identity, 10 MB a file, the Q3 storage rule
-- [ ] Private bucket `tables` and its policies
-- [ ] Realtime policies on `realtime.messages` for `table:<id>`
-- [ ] Tests on Postgres 16 with stand-in `auth`, `storage` and `realtime` schemas (§14)
-- [ ] **(you)** Migration applied by the GitHub integration; checked over the API
+- [x] Migration `supabase/migrations/20261020120000_tables.sql`: `tables` row, RLS, guard trigger (seats fixed, revision +1). *`bash supabase/tests/run.sh`: all checks pass, migrations run twice*
+- [x] `table_invite`, `join_table`, `leave_table`, `free_seat`. *Same run: one winner per seat, idempotent rejoin, last one out deletes*
+- [x] Caps failing closed: 20 tables per identity, 10 MB a file, the Q3 storage rule. *Same run*
+- [x] Private bucket `tables` and its policies. *Same run: seats read and write, strangers see nothing*
+- [x] Realtime policies on `realtime.messages` for `table:<id>`. *Same run, with a stand-in `realtime.topic()`*
+- [x] Tests on Postgres 16 with stand-in `auth`, `storage` and `realtime` schemas (`supabase/tests/`)
+- [ ] **(you)** Migration applied by the GitHub integration when the branch reaches `main`; check `tables` and the `tables` bucket exist
 
-## M2 · Contract and stand-in (§11.2)
-- [ ] `DojoCloud` table functions declared with the error codes (stubs that throw `unavailable`)
-- [ ] Stand-in backend for tests: row and file in the test runner, channel relayed between two browser contexts
-- [ ] Two-context runner in `tools/app-checks.mjs`, run in CI
+## M2 · Contract and stand-in (§11.2, §18)
+- [x] `DojoCloud` table functions with error codes (`seat_taken`, `table_limit`, `table_storage_full`, `gone`, `conflict`, `offline`)
+- [x] Stand-in backend: rows, files and the channel in Node, relayed into two browser contexts (`tools/table-checks.mjs`)
+- [x] Run in CI by `tools/app-checks.mjs`. *66/66 three runs in a row*
 
 ## M3 · Tables by turns — Feature 64 (§4, §5, §7, §8, §9)
-- [ ] `app/js/table.js` (`DojoTable`): attach / detach, the pen, debounced writes, `endTurn`, conflicts, pending upload
-- [ ] `DojoLibrary`: `table: { id, seat, revision, dirty }` on session rows
-- [ ] *Play with a friend*: pick a side and a name, new device session, link dialog with *Copy link* / *Share…*
-- [ ] `?t=` join screen; a full table says so
-- [ ] Watching state: one `App.watching` flag on drags, the card menu, hotkeys and the turn buttons
-- [ ] End-of-turn auto-save node always on at a table
-- [ ] Hands: the other seat's hand face down everywhere; mulligan dialog for its own seat only; looking is logged
-- [ ] Proposals in the row: banner, *Go there* / *Stay* / *Cancel*, Mini Multiverse steps move the proposal
-- [ ] Conflict and incoming-board rule: keep "Left here"
-- [ ] *Your turn* / *Sam's turn* badges in *Pick up again* and Library · Sessions (one read, only when there are tables)
-- [ ] Table chip and sheet: seats, link, *Take a copy*, *Leave the table*, *Free seat*
-- [ ] Every live `board` message and downloaded file goes through `sanitizeSessionData()`
-- [ ] Headless checks (§14) green against the stand-in
-- [ ] Manual: *Play with a friend*, *Moving the table*; targets; `node tools/help.mjs`
-- [ ] features.md, dev guide section, `TEST-PROTOCOL-v3.18.0.md`, minor bump, `node tools/refresh-landing.mjs`
+- [x] `app/js/table.js` (`DojoTable`): attach / detach, the pen, debounced writes, conflicts, pending upload
+- [x] `DojoLibrary`: `table: { id, seat, revision, names, dirty }` on session rows; duplicates drop it
+- [x] *Play with a friend*: a name, a side, a new device session, the link dialog with *Copy link*. *Checked headless and in screenshots, desktop and phone*
+- [x] `?t=` join screen; a full table says so; a device that already has the table reopens its copy
+- [x] Watching state: one capture-phase gate plus `tableLocked()` in the tree and note editors. *`pen:` checks*
+- [x] End-of-turn auto-save node always on at a table
+- [x] Hands: the other seat's hand face down; their mulligan not shown; looking is logged. *`hands:` checks and screenshots*
+- [x] Proposals: banner, *Go there* / *Stay* / *Cancel*. *`propose:` and `refuse:` checks*
+- [x] Conflict and incoming-board rule: keep "Left here". *`conflict:` checks, with one side offline*
+- [x] *Your turn* / *Sam's turn* badges in *Pick up again* (first) and Library · Sessions. *`by turns:` checks*
+- [x] Table chip and sheet: seats, link, *Take a copy*, *Leave the table*, *Free seat*
+- [x] Live boards and downloaded files go through `sanitizeSessionData()`
+- [x] Manual: *Play with a friend*, *Live and by turns*, *Move the table to another node*; target `play-with-a-friend`; 6 golden queries. *`help.mjs --check` and `--test` (134/134)*
+- [x] features.md, dev guide §28, `TEST-PROTOCOL-v4.0.0.md`, v4.0.0, `node tools/refresh-landing.mjs`
 
 ## M4 · Real transport (§10, §11.2)
-- [ ] `DojoCloud` table functions against Supabase (claim, then upload; `tableRevision` in the file)
-- [ ] End-to-end on a preview with two browsers: create, join, end turn, proposal, leave
-- [ ] **(you)** One by-turns game between a phone and a desktop
+- [x] `DojoCloud` table functions against Supabase (claim, then upload; `tableRevision` in the file)
+- [x] The Realtime calls `tableChannel` makes (subscribe, presence keyed by tab, `track`, broadcast with `self: false`, a 30 KB payload) checked against the live project on a public channel. *2026-10-20*
+- [ ] **(you)** After the merge: one by-turns game between a phone and a desktop (`TEST-PROTOCOL-v4.0.0.md` A–D)
 
 ## M5 · Live tables — Feature 65 (§6)
-- [ ] `tableChannel`: private channel, presence `{ seat, name }`
-- [ ] `board` streaming from `render()` (signature check, 250 ms, `seq`), dropped when stale
-- [ ] Arrival sends the board; *End turn* goes as file + `table`, never as `board`
-- [ ] Proposals answered live; both boards move with the time flash
-- [ ] Size guard (over 200 KB → file + `table`)
-- [ ] Chip states: waiting / live / away; tab title on *Your turn*
-- [ ] Headless checks for live (§14)
-- [ ] Manual: *Live and by turns*; features.md, dev guide, `TEST-PROTOCOL-v3.19.0.md`, minor bump, landing refresh
-- [ ] **(you)** A live game across two devices, switching to by turns and back mid-game; sign in on a second device and keep the seat
+- [x] `tableChannel`: private channel, presence `{ seat, name }`
+- [x] `board` streaming from `render()` (signature check, 250 ms, `seq`), only by the pen holder, dropped when stale. *`live:` checks*
+- [x] Arrival sends the board; *End turn* goes as file + `table`, never as `board`
+- [x] Proposals answered live; both boards move with the time flash
+- [x] Size guard (over 200 KB → file + `table`)
+- [x] Chip states: waiting / live / away; tab title on *Your turn*
+- [ ] **(you)** After the merge: a live game across two devices, switching to by turns and back mid-game; sign in on a second device and keep the seat (`TEST-PROTOCOL-v4.0.0.md` E–G)
 
 ## Parked
 - Deliberately not doing until a trigger fires: push or email notifications, spectators and more seats, chat, your own side at the bottom while watching, borrowing the pen, taking back your own *End turn* alone, peeking at a node, notes by the waiting player, real hidden information, table expiry. See ARCH §15
+- The draw-odds pane follows the active player's deck, as it does solo, so a watcher sees the odds of the other player's deck. Trigger: someone minds

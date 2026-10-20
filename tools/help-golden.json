@@ -518,6 +518,30 @@
     {
       "q": "ipad",
       "article": "browsers"
+    },
+    {
+      "q": "play with a friend",
+      "article": "play-with-a-friend"
+    },
+    {
+      "q": "multiplayer",
+      "article": "play-with-a-friend"
+    },
+    {
+      "q": "invite my opponent",
+      "article": "play-with-a-friend"
+    },
+    {
+      "q": "async turns",
+      "article": "live-and-by-turns"
+    },
+    {
+      "q": "whose turn is it",
+      "article": "live-and-by-turns"
+    },
+    {
+      "q": "go to a branch together",
+      "article": "moving-the-table"
     }
   ]
 }

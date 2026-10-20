@@ -44,6 +44,9 @@
     <!-- Share links (Supabase, loaded on first share; reading a link needs no SDK) -->
     <script src="js/cloud.js"></script>
 
+    <!-- Two-player tables, live and by turns (Features 64-65): the pen, proposals, the live channel -->
+    <script src="js/table.js"></script>
+
     <!-- Mini Multiverse: the tree as lines in the sidebar, and its step moves -->
     <script src="js/mini-multiverse.js"></script>
 
@@ -142,7 +145,14 @@
                 <button class="icon-btn ghost" id="btn-session-share" onclick="App.shareCurrentSession()"
                     title="Share a link to this session" aria-label="Share session"><i
                         class="fa-solid fa-share-nodes"></i></button>
+                <button class="icon-btn ghost" id="btn-session-table" onclick="App.playWithFriend()"
+                    title="Play with a friend: live, or by turns" aria-label="Play with a friend"><i
+                        class="fa-solid fa-user-group"></i></button>
             </div>
+            <!-- At a two-player table: who's here and whose turn it is. Opens the table. -->
+            <button class="table-chip" id="table-chip" onclick="App.openTableSheet()" hidden>
+                <span class="tc-dot" aria-hidden="true"></span><span class="tc-text" id="table-chip-text"></span>
+            </button>
         </div>
         <div class="topbar-center">
             <div class="turn-ctl" role="group" aria-label="Turn">
@@ -182,6 +192,9 @@
                     class="fa-regular fa-copy"></i>Save as copy</span></button>
         <button class="ctx-item" role="menuitem" onclick="App.closeTopbarMenu(); App.shareCurrentSession()"><span><i
                     class="fa-solid fa-share-nodes"></i>Share link</span></button>
+        <button class="ctx-item" role="menuitem" id="menu-table"
+            onclick="App.closeTopbarMenu(); App.playWithFriend()"><span><i class="fa-solid fa-user-group"></i><span
+                    id="menu-table-label">Play with a friend</span></span></button>
         <button class="ctx-item" role="menuitem" id="menu-help"
             onclick="App.closeTopbarMenu(); DojoHelp.open()"><span><i class="fa-regular fa-circle-question"></i>Help
                 &amp; tours</span></button>
@@ -201,6 +214,13 @@
                     id="shared-banner-title"></b></span></span>
         <span class="sb-note" id="shared-banner-note">not saved yet</span>
         <button class="btn btn-primary" onclick="App.saveSharedCopy()">Save a copy</button>
+    </div>
+
+    <!-- At a two-player table: a proposal to move the table, or whose turn it is. -->
+    <div class="shared-banner table-banner hidden" id="table-banner" role="status" aria-live="polite">
+        <i class="fa-solid fa-user-group" aria-hidden="true"></i>
+        <span class="sb-text" id="table-banner-text"></span>
+        <span class="tb-acts" id="table-banner-acts"></span>
     </div>
 
     <!-- Home screen: "The inkwell" (Feature 39). One field takes a decklist, a
@@ -715,12 +735,12 @@
                 <div class="player-rows" id="player-rows">
                     <div class="player-row is-p1 is-active" id="p0-badge">
                         <span class="deck-icon is-p1"></span>
-                        <span class="player-name">Player 1 (You)</span>
+                        <span class="player-name" id="p0-name">Player 1 (You)</span>
                         <span class="player-count" id="p0-cards">0 cards</span>
                     </div>
                     <div class="player-row is-p2" id="p1-badge">
                         <span class="deck-icon is-p2"></span>
-                        <span class="player-name">Player 2</span>
+                        <span class="player-name" id="p1-name">Player 2</span>
                         <span class="player-count" id="p1-cards">0 cards</span>
                     </div>
                 </div>
@@ -890,7 +910,7 @@
                             <span class="pile-num" id="top-discard-count">0</span>
                             <div class="discard-list" id="top-discard-list" role="list" aria-label="Discard pile"></div>
                             <button class="pile-inspect" title="Inspect discard pile"
-                                onclick="event.stopPropagation(); App.inspectDiscard(App.state.inactivePlayer)"><i
+                                data-watch-ok onclick="event.stopPropagation(); App.inspectDiscard(App.state.inactivePlayer)"><i
                                     class="fa-solid fa-magnifying-glass"></i></button>
                         </div>
                         <div class="pile deck drop-zone" id="top-deck" draggable="true"
@@ -1004,7 +1024,7 @@
                             <div class="discard-list" id="bottom-discard-list" role="list" aria-label="Discard pile">
                             </div>
                             <button class="pile-inspect" title="Inspect discard pile"
-                                onclick="event.stopPropagation(); App.inspectDiscard(App.state.activePlayer)"><i
+                                data-watch-ok onclick="event.stopPropagation(); App.inspectDiscard(App.state.activePlayer)"><i
                                     class="fa-solid fa-magnifying-glass"></i></button>
                         </div>
                         <div class="pile deck drop-zone" id="bottom-deck" draggable="true"
@@ -1191,7 +1211,7 @@
     <script>
         let cardFuse = null;
 
-        const APP_VERSION = "v3.17.4"; // Centralized version string (v3: Field Unit)
+        const APP_VERSION = "v4.0.0"; // Centralized version string (v4: two-player tables)
 
         // Tweaks panel accent presets (hue values for the OKLCH accent ramp)
         // Tweaks → Accent: the approved Field Unit signals only (design.md ·
@@ -1415,6 +1435,7 @@
                 this._sessionDirty = true;
                 clearTimeout(this._deviceSaveTimer);
                 this._deviceSaveTimer = setTimeout(() => this.flushDeviceSave(), 1000);
+                this.tableNoteChange();
             },
 
             // Writes now if anything is pending. The snapshot is taken synchronously,
@@ -1455,6 +1476,7 @@
 
             // Puts a new library session on the board's current state.
             _startNewSession(title) {
+                this.detachTable(); // a new session is never the table (Take a copy)
                 const now = Date.now();
                 this.session = { id: DojoLibrary.newId(), title: (title || 'Untitled session').slice(0, 120), createdAt: now, lastOpenedAt: now };
                 DojoLibrary.setPref('lastSessionId', this.session.id);
@@ -1467,7 +1489,8 @@
                 const el = document.getElementById('session-title');
                 const title = this.session ? this.session.title : (this._sharedView ? this._sharedView.title : '');
                 if (el && document.activeElement !== el) el.value = title;
-                document.title = this.session ? `${title} · Practice Dojo`
+                document.title = this._tableNudge ? `● Your turn · ${title} · Practice Dojo`
+                    : this.session ? `${title} · Practice Dojo`
                     : this._sharedView ? (this._sharedView.kind === 'tour' ? 'Practice · Practice Dojo' : `Shared · ${title} · Practice Dojo`)
                         : 'Lorcana Practice Dojo';
             },
@@ -1610,6 +1633,7 @@
                     throw new Error('Session state is incomplete');
                 }
                 this.flushDeviceSave();
+                this.detachTable();
                 this.session = null;
                 this.endSharedView();
                 this.state = nextState;
@@ -1634,10 +1658,12 @@
                     this._applySessionData(data);
                     const now = Date.now();
                     this.session = { id: meta.id, title: meta.title, createdAt: meta.createdAt, lastOpenedAt: now };
+                    if (meta.table) this.session.table = meta.table;
                     this._seenAt[id] = meta.updatedAt;
                     DojoLibrary.updateSessionMeta(id, { lastOpenedAt: now }).catch(() => { });
                     DojoLibrary.setPref('lastSessionId', id);
                     this.syncSessionTitle();
+                    if (meta.table) this.attachTable();
                     this.showToast(`Opened “${meta.title}”`);
                 } catch (e) {
                     console.warn('Failed to open session:', e);
@@ -1646,6 +1672,7 @@
             },
 
             updateTurnComment(turnNum, playerId, text) {
+                if (this.tableLocked()) { this.render(); return; }
                 // To avoid flooding the timeline stack on every keystroke, this should mainly be called onblur
                 // but we also need to capture current state before mutating
                 const key = `${turnNum}-${playerId}`;
@@ -1659,6 +1686,7 @@
             // battlefield opens this instead: the active player's note for this turn.
             async editTurnNote() {
                 if (document.querySelector('.dlg-backdrop')) return;
+                if (this.tableLocked()) return;
                 const { turn, activePlayer } = this.state;
                 let current = this.state.turnComments[`${turn}-${activePlayer}`];
                 if (current === undefined) current = this.state.turnComments[turn];
@@ -2303,7 +2331,7 @@
 
                     // A share link (?s=<slug>) opens straight onto what it points to;
                     // otherwise the home screen, which re-reads the library.
-                    if (!(await this.openShareFromUrl())) this.showSetup();
+                    if (!(await this.openTableFromUrl()) && !(await this.openShareFromUrl())) this.showSetup();
 
                     // Help deep links: #help, #help/<id>, #help/<id>/<slug> (Feature 57).
                     if (window.DojoHelp && DojoHelp.openFromHash) DojoHelp.openFromHash();
@@ -3075,6 +3103,36 @@
             // bar: only on this device; Trace + Olive: in your account too), and the
             // foot sums the shelves up. The header's Library button shows the same
             // counts (Feature 50).
+            // A table's turn for its library row, from the rows read now and then (Feature 64).
+            tableTurnOf(r) {
+                if (!r || !r.table || !r.table.id) return null;
+                if (!this._tableRows) return { yours: false, text: 'Table' };
+                const row = this._tableRows[r.table.id];
+                if (!row) return { yours: false, text: 'Table closed' };
+                const other = [row.name0, row.name1][1 - r.table.seat] || `Player ${2 - r.table.seat}`;
+                const yours = row.turn_seat === r.table.seat;
+                return { yours, text: yours ? 'Your turn' : `${other}'s turn` };
+            },
+
+            tableBadgeHtml(r) {
+                const t = this.tableTurnOf(r);
+                return t ? `<span class="table-badge${t.yours ? ' is-yours' : ''}"><i class="fa-solid fa-user-group" aria-hidden="true"></i>${this.escapeHtml(t.text)}</span>` : '';
+            },
+
+            // One read of the rows of the tables on this device, at most every 20 seconds.
+            refreshTableRows(list, rerender) {
+                const ids = (list || []).filter(r => r.table && r.table.id).map(r => r.table.id);
+                if (!ids.length || !DojoCloud.hasIdentity()) return;
+                const now = Date.now();
+                if (this._tableRowsAt && now - this._tableRowsAt < 20000) return;
+                this._tableRowsAt = now;
+                DojoCloud.getTables(ids).then(rows => {
+                    this._tableRows = {};
+                    rows.forEach(x => { this._tableRows[x.id] = x; });
+                    rerender();
+                }).catch(e => console.warn('Table rows unavailable:', e));
+            },
+
             async renderRecent() {
                 const el = document.getElementById('home-recent');
                 if (!el) return;
@@ -3087,7 +3145,11 @@
                 const lastId = await DojoLibrary.getPref('lastSessionId');
                 const list = rows || [];
                 const cont = list.find(r => r.id === lastId) || null;
-                const shown = (cont ? [cont] : []).concat(list.filter(r => r !== cont)).slice(0, 4);
+                // Tables waiting on you come first (Feature 64).
+                this.refreshTableRows(list, () => this.renderRecent());
+                const yours = list.filter(r => { const t = this.tableTurnOf(r); return t && t.yours; });
+                const shown = yours.concat(cont && !yours.includes(cont) ? [cont] : [])
+                    .concat(list.filter(r => r !== cont && !yours.includes(r))).slice(0, 4);
                 const live = this.hasLiveMatch() && this.session ? this.session.id : null;
                 const go = (label) => `<span class="rec-go">${label} <i class="fa-solid fa-arrow-right"></i></span>`;
                 const linked = (r) => !!this.account && this.isLinked(r);
@@ -3113,7 +3175,7 @@
                 }
                 html += shown.map(r => `
                     <button class="rec${r === cont ? ' is-continue' : ''}${linked(r) ? ' is-both' : ''}" data-act="open-session" data-id="${esc(r.id)}">
-                        <span class="rec-main"><span class="rec-title">${esc(r.title)}</span>
+                        <span class="rec-main"><span class="rec-title">${this.tableBadgeHtml(r)}${esc(r.title)}</span>
                         <span class="rec-meta">${this.sessionMetaHtml(r.summary, r.updatedAt)}</span></span>
                         ${go(r.id === live ? 'Back to it' : r === cont ? 'Resume' : 'Open')}
                     </button>`).join('');
@@ -3353,6 +3415,7 @@
                         this._applySessionData(back.data);
                         this.session = back.session;
                         this._sessionDirty = false;
+                        if (this.session && this.session.table) this.attachTable();
                         this._sharedView = back.shared;
                         if (back.shared && back.shared.slug) history.replaceState(null, '', `${location.pathname}?s=${encodeURIComponent(back.shared.slug)}${location.hash}`);
                         this.syncSessionTitle();
@@ -3380,6 +3443,533 @@
                     DojoLibrary.persist();
                     this.showToast(`Saved a copy of “${title}” to your library`);
                 }
+            },
+
+            // --- Features 64–65: two-player tables, live and by turns (docs/ARCH-two-player.md) ---
+            // A table is a session two seats share. DojoTable (js/table.js) keeps its rules;
+            // this is the board's side: the hooks it calls, the pen lock, the dialogs, the
+            // chip and the banner. `session.table` = { id, seat, revision, names, dirty }.
+
+            atTable() {
+                return !!(this.session && this.session.table && window.DojoTable && DojoTable.attached());
+            },
+
+            // At a table without the pen: the other seat's turn, or this board is catching up.
+            isWatching() {
+                return this.atTable() && !DojoTable.holdsPen();
+            },
+
+            // Board actions ask this first. True means "not now" (said once every few seconds).
+            tableLocked() {
+                if (!this.isWatching()) return false;
+                const now = Date.now();
+                if (!this._lockSaidAt || now - this._lockSaidAt > 2500) {
+                    this._lockSaidAt = now;
+                    const t = DojoTable.info();
+                    this.showToast(t.behind ? 'Catching up with the table…'
+                        : `It's ${t.other}'s turn. You can look, and ask to move the table from the Multiverse.`);
+                }
+                return true;
+            },
+
+            tableHooks() {
+                return {
+                    activePlayer: () => this.state.activePlayer,
+                    snapshot: () => {
+                        const summary = this.buildSessionSummary();
+                        const title = this.session ? this.session.title : 'Table';
+                        return {
+                            file: DojoLibrary.encodeFile({ id: this.session ? this.session.id : DojoLibrary.newId(), title, summary, data: this.buildSessionData(), appVersion: APP_VERSION }),
+                            summary, title, turnSeat: this.state.activePlayer
+                        };
+                    },
+                    boardState: () => this.compressState(this.state, true),
+                    applyFile: (data, opts) => this.applyTableFile(data, opts),
+                    applyBoard: (st) => this.applyTableBoard(st),
+                    restore: (target, auto) => {
+                        if (!(auto ? this.autoSaves : this.bookmarks).some(b => b.id === target)) return false;
+                        this.restoreTimeline(target, auto, { agreed: true });
+                        return true;
+                    },
+                    saveLink: (sid, link) => this.saveTableLink(sid, link),
+                    changed: () => this.renderTableUi(),
+                    gone: (sid) => this.onTableGone(sid),
+                    notify: (msg, opts) => { this.showToast(msg); if (opts.flash) this.triggerTimeFlash(); }
+                };
+            },
+
+            attachTable() {
+                if (!this.session || !this.session.table || !window.DojoTable) return;
+                this._tableSig = this.state && this.state.players ? this.boardSig(this.state) : null;
+                this._tableTurn = this.state ? this.state.activePlayer : null;
+                DojoTable.attach(this.session.table, this.tableHooks(), this.session.id);
+                // The table's link stays in the address bar, so a reload comes back to it.
+                const q = new URLSearchParams(location.search);
+                if (q.get('t') !== this.session.table.id) {
+                    q.delete('s');
+                    q.set('t', this.session.table.id);
+                    history.replaceState(null, '', `${location.pathname}?${q}${location.hash}`);
+                }
+                if (!this._tableVisBound) {
+                    this._tableVisBound = true;
+                    document.addEventListener('visibilitychange', () => {
+                        if (!document.hidden && this._tableNudge) { this._tableNudge = false; this.syncSessionTitle(); }
+                    });
+                }
+                this.render();
+            },
+
+            detachTable() {
+                if (window.DojoTable && DojoTable.attached()) DojoTable.detach();
+                this.dropTableParam();
+                this._tableSig = null;
+                this._tableTurn = null;
+                if (this._tableNudge) { this._tableNudge = false; this.syncSessionTitle(); }
+                this.renderTableUi();
+            },
+
+            dropTableParam() {
+                const q = new URLSearchParams(location.search);
+                if (!q.has('t')) return;
+                q.delete('t');
+                const qs = q.toString();
+                history.replaceState(null, '', location.pathname + (qs ? '?' + qs : '') + location.hash);
+            },
+
+            // A change kept on this side (saveToDevice). Only the pen holder's changes, and
+            // the one that just passed the pen, go to the table.
+            tableNoteChange() {
+                if (this._applyingRemote || !this.atTable()) return;
+                if (DojoTable.holdsPen() || this._tableTurn === this.session.table.seat) DojoTable.localChange();
+            },
+
+            // After every render: a board that changed here streams to the other seat (live)
+            // and is written to the table; a turn that changed hands is written at once.
+            tableAfterRender() {
+                if (this.atTable() && !this._applyingRemote && this.state && this.state.players) {
+                    const sig = this.boardSig(this.state);
+                    if (sig !== this._tableSig) {
+                        const mine = DojoTable.holdsPen() || this._tableTurn === this.session.table.seat;
+                        const moved = this._tableTurn != null && this._tableTurn !== this.state.activePlayer;
+                        this._tableSig = sig;
+                        this._tableTurn = this.state.activePlayer;
+                        if (mine) DojoTable.boardChanged(moved);
+                    }
+                }
+                this.renderTableUi(true);
+            },
+
+            _dropBoardOverlays() {
+                const menu = document.getElementById('context-menu');
+                if (menu) menu.style.display = 'none';
+                if (this._sheetIid) this.closeCardSheet();
+                if (this._inkPanelPlayer != null) this.closeInkPanel();
+                if (this.challengeMode) this.exitChallengeMode();
+                if (window.Mods && Mods.closePicker) Mods.closePicker();
+            },
+
+            // The table file from the other seat. opts.keepMine: this board has changes the
+            // table doesn't, so it is kept as a "Left here" snapshot (ARCH-two-player §9).
+            applyTableFile(data, opts = {}) {
+                const clean = this.sanitizeSessionData(data);
+                const next = this.decompressState(clean.currentState);
+                if (!next || !next.players || next.players.length < 2) throw new Error('Session state is incomplete');
+                const keep = opts.keepMine && this.state && this.state.players && !this.boardSource() ? this._leftHereEntry() : null;
+                this._applyingRemote = true;
+                try {
+                    this._dropBoardOverlays();
+                    this.state = next;
+                    this.bookmarks = clean.bookmarks;
+                    this.autoSaves = clean.autoSaves;
+                    this.history = clean.history;
+                    this.sessionDecks = { deck1: clean.deck1, deck2: clean.deck2 };
+                    if (keep && !this.autoSaves.some(a => a.state === keep.state)) {
+                        this.autoSaves.unshift(keep);
+                        this.autoSaves.sort((a, b) => b.timestamp - a.timestamp);
+                        if (this.autoSaves.length > 5) this.autoSaves.length = 5;
+                        this.showToast('The other player moved the table first. Your board is kept as “Left here” in the Multiverse.');
+                    }
+                    this.markBoardKeptIfOnNode();
+                    const held = (id) => this.bookmarks.some(b => b.id === id) || this.autoSaves.some(a => a.id === id);
+                    if (this.treeNavActiveId && !held(this.treeNavActiveId)) this.treeNavActiveId = null;
+                    this._tableSig = this.boardSig(this.state);
+                    this._tableTurn = this.state.activePlayer;
+                    this.renderTree();
+                    this.render();
+                    this.saveToDevice();
+                } finally {
+                    this._applyingRemote = false;
+                }
+            },
+
+            // A live board from the pen holder (no multiverse: that comes with the file).
+            applyTableBoard(st) {
+                let next;
+                try {
+                    const clean = this.sanitizeSessionData({ currentState: st, bookmarks: [], autoSaves: [], history: [] });
+                    next = this.decompressState(clean.currentState);
+                } catch (e) { return; }
+                if (!next || !next.players || next.players.length < 2) return;
+                this._applyingRemote = true;
+                try {
+                    this._dropBoardOverlays();
+                    this.state = next;
+                    this._tableSig = this.boardSig(next);
+                    this._tableTurn = next.activePlayer;
+                    this.render();
+                    this.saveToDevice();
+                } finally {
+                    this._applyingRemote = false;
+                }
+            },
+
+            // Keeps the table link on the device copy (the session on the board, or one in the library).
+            saveTableLink(sid, link) {
+                const fields = (prev) => ({
+                    id: link.id, seat: link.seat, revision: link.revision, names: link.names || [null, null],
+                    dirty: link.dirty !== undefined ? !!link.dirty : !!(prev && prev.dirty)
+                });
+                if (this.session && this.session.id === sid && this.session.table) {
+                    // Written at once: a copy whose link says "sent" must hold the board that was sent.
+                    this.session.table = fields(this.session.table);
+                    this._sessionDirty = true;
+                    this.flushDeviceSave();
+                    return;
+                }
+                DojoLibrary.getSession(sid).then(row => {
+                    if (row && row.table && row.table.id === link.id) return DojoLibrary.updateSessionMeta(sid, { table: fields(row.table) });
+                }).catch(() => { });
+            },
+
+            // The table closed, or this seat went to someone else. The copy stays, solo.
+            onTableGone(sid) {
+                if (this.session && this.session.id === sid) {
+                    this.session.table = null;
+                    this._sessionDirty = true;
+                    this.flushDeviceSave();
+                    this.detachTable();
+                    this.render();
+                } else {
+                    DojoLibrary.updateSessionMeta(sid, { table: null }).catch(() => { });
+                }
+                this.dialogAlert('The table closed, or your seat went to someone else. Your copy stays here as your own session.', 'No longer at the table');
+            },
+
+            tableErrorMessage(e) {
+                switch (e && e.code) {
+                    case 'seat_taken': return 'Someone took that seat a moment ago. Ask for a new link.';
+                    case 'table_limit': return 'You can sit at up to 20 tables. Leave one you are done with (the table chip → Leave the table), then try again.';
+                    case 'table_storage_full': return "New tables are paused because the Dojo's shared storage is full. Tables already set keep working.";
+                    case 'gone': return 'The table may have closed: both players left it.';
+                    case 'too_big': {
+                        const mb = (Number(e.message) / 1048576).toFixed(1);
+                        return `This session is ${mb} MB compressed, and a table can be up to 10 MB. Delete auto-saves or dead-end branches, then try again.`;
+                    }
+                    default: return this.shareErrorMessage(e);
+                }
+            },
+
+            // The name the other player sees. Remembered on this device.
+            async askPlayerName(title, message, confirmText = 'Next') {
+                const saved = await DojoLibrary.getPref('playerName');
+                const name = await this.dialog({
+                    title, message, icon: 'fa-user-group', help: 'play-with-a-friend', prompt: true, maxLength: 40,
+                    placeholder: 'Your name', value: saved || (this.account && this.account.name) || '', confirmText
+                });
+                if (!name) return null;
+                DojoLibrary.setPref('playerName', name.slice(0, 40));
+                return name.slice(0, 40);
+            },
+
+            sideLabel(i, inks) {
+                const k = this.sortInks(inks || this.getDeckColors(i) || []);
+                return `P${i + 1}${k.length ? ` · ${this.inkPairLabel(k)}` : ''}`;
+            },
+
+            // Play with a friend: the board becomes a table (a new device session; the solo
+            // session stays as it is), and a link for the opponent.
+            async playWithFriend() {
+                if (this.atTable()) { this.openTableSheet(); return; }
+                if (!this.state || !this.state.players || (!this.session && !this._sharedView)) return;
+                if (this._sharedView && this._sharedView.kind === 'tour') return;
+                const name = await this.askPlayerName('Play with a friend',
+                    'You get a link to send to your opponent. Play live when you are both here, or by turns: play your turn and the table waits for theirs.');
+                if (!name) return;
+                const seat = await this.dialog({
+                    title: 'Which side are you?', icon: 'fa-user-group', message: 'Your opponent gets the other side.',
+                    choices: [{ label: this.sideLabel(0), value: 0, kind: 'primary' }, { label: this.sideLabel(1), value: 1 }]
+                });
+                if (seat !== 0 && seat !== 1) return;
+                if (this._tableBusy) return;
+                this._tableBusy = true;
+                this.showToast('Setting the table…');
+                try {
+                    if (this.session) { this._sessionDirty = true; await this.flushDeviceSave(); }
+                    const title = this.session ? this.session.title : (this._sharedView ? this._sharedView.title : this.defaultSessionTitle());
+                    const summary = this.buildSessionSummary();
+                    const file = DojoLibrary.encodeFile({ id: DojoLibrary.newId(), title, summary, data: this.buildSessionData(), appVersion: APP_VERSION });
+                    file.tableRevision = 1;
+                    const blob = await DojoLibrary.encodeBlob(file);
+                    const res = await DojoCloud.createTable({ title, seat, name, blob, summary, turnSeat: this.state.activePlayer });
+                    this.endSharedView();
+                    await this._startNewSession(title);
+                    this.session.table = { id: res.id, seat, revision: 1, names: seat ? [null, name] : [name, null], dirty: false };
+                    this._sessionDirty = true;
+                    await this.flushDeviceSave();
+                    DojoLibrary.persist();
+                    this.attachTable();
+                    this.showTableLink(res.url);
+                } catch (e) {
+                    console.warn('Creating a table failed:', e);
+                    this.dialogAlert(this.tableErrorMessage(e), "Couldn't set the table");
+                } finally {
+                    this._tableBusy = false;
+                }
+            },
+
+            async showTableLink(url) {
+                const ok = await this.dialog({
+                    title: 'Table ready', icon: 'fa-user-group', help: 'play-with-a-friend',
+                    message: "Send this link to your opponent. Whoever opens it first takes the other seat.\nWhen you're both here, every move shows on both screens. When one of you is away, the table waits: end your turn, and they play theirs when they open it.",
+                    prompt: true, readOnly: true, value: url, confirmText: 'Copy link', cancelText: 'Done'
+                });
+                if (ok) this.copyText(url);
+            },
+
+            // ?t=<id> on load: this device's copy of the table, or the join screen.
+            // Returns true when it handled the page.
+            async openTableFromUrl() {
+                const id = new URLSearchParams(location.search).get('t');
+                if (!id) return false;
+                const loading = document.getElementById('loading-screen');
+                const loadingText = document.getElementById('loading-text');
+                const busy = (msg) => { if (loading) loading.classList.remove('hidden'); if (loadingText) loadingText.innerText = msg; };
+                const done = () => { if (loading) loading.classList.add('hidden'); };
+                const failTo = (msg, title) => { done(); this.dropTableParam(); this.showSetup(); this.dialogAlert(msg, title); return true; };
+                if (!DojoCloud.SLUG_RE.test(id)) return failTo("That table link isn't complete. Check you copied all of it.", 'Link not recognised');
+
+                let own = null;
+                try { own = (await DojoLibrary.listSessions()).find(r => r.table && r.table.id === id); } catch (e) { }
+                if (own) {
+                    await this.openDeviceSession(own.id);
+                    if (!this.atTable()) this.showSetup();
+                    return true;
+                }
+
+                busy('Opening the table…');
+                let inv;
+                try { inv = await DojoCloud.tableInvite(id); } catch (e) { return failTo(this.tableErrorMessage(e), "Couldn't open the table"); }
+                if (!inv) return failTo('The table may have closed: both players left it.', 'This table is no longer open');
+                const names = Array.isArray(inv.names) ? inv.names : [null, null];
+                const inks = inv.summary && Array.isArray(inv.summary.inks) ? inv.summary.inks : [];
+                let seat = inv.mine === 0 || inv.mine === 1 ? inv.mine : null;
+                let name = seat != null ? (names[seat] || '') : '';
+                if (seat == null) {
+                    const free = Array.isArray(inv.free_seats) ? inv.free_seats.filter(x => x === 0 || x === 1) : [];
+                    if (!free.length) return failTo('Both seats at this table are taken.', 'This table is full');
+                    seat = free[0];
+                    done();
+                    const host = names[1 - seat] || 'Your opponent';
+                    name = await this.askPlayerName(`Join “${inv.title}”`,
+                        `${host} invited you to play ${this.sideLabel(seat, inks[seat])}. Live when you're both here, by turns when one of you is away.`, 'Join table');
+                    if (!name) { this.dropTableParam(); this.showSetup(); return true; }
+                    busy('Taking your seat…');
+                }
+                try {
+                    const row = await DojoCloud.joinTable(id, seat, name);
+                    const file = await DojoLibrary.decode(await DojoCloud.downloadTable(id));
+                    this._applySessionData(file.data);
+                    await this._startNewSession(row.title || inv.title);
+                    // A file older than the row (its writer is mid-upload) is caught up on attach.
+                    const revision = Math.min(row.revision, file.tableRevision || row.revision);
+                    this.session.table = { id, seat, revision, names: [row.name0 || null, row.name1 || null], dirty: false };
+                    this._sessionDirty = true;
+                    await this.flushDeviceSave();
+                    DojoLibrary.persist();
+                    done();
+                    this.attachTable();
+                    this.showToast(`You're at the table as P${seat + 1}.`);
+                } catch (e) {
+                    console.warn('Joining a table failed:', e);
+                    return failTo(e.code ? this.tableErrorMessage(e) : (e.message || "That table couldn't be read."), "Couldn't join the table");
+                }
+                return true;
+            },
+
+            // The chip: who's at the table, the link, and the ways out.
+            async openTableSheet() {
+                const t = this.atTable() && DojoTable.info();
+                if (!t) return;
+                const where = (i) => i === t.seat ? 'you' : !t.otherSeated ? 'seat free' : t.otherHere ? 'here now' : 'away';
+                const lines = [0, 1].map(i => `P${i + 1} · ${i === t.seat || t.otherSeated ? t.names[i] : '—'} (${where(i)})`);
+                lines.push('', t.behind ? 'Catching up with the table…' : t.holdsPen ? "It's your turn." : `It's ${t.other}'s turn.`);
+                if (t.offline) lines.push("Offline: your moves are kept on this device and sent when you're back.");
+                else if (t.pending) lines.push('Saving your last moves…');
+                lines.push('', "Live when you're both here, by turns when one of you is away. Anyone with the link can take a free seat.");
+                const choice = await this.dialog({
+                    title: this.session.title, icon: 'fa-user-group', help: 'play-with-a-friend', message: lines.join('\n'),
+                    choices: [
+                        { label: 'Copy link', value: 'link', kind: 'primary', icon: 'fa-solid fa-link' },
+                        { label: 'Take a copy', value: 'copy', icon: 'fa-regular fa-copy' },
+                        ...(t.otherSeated ? [{ label: `Free ${t.other}'s seat`, value: 'free', icon: 'fa-solid fa-user-minus' }] : []),
+                        { label: 'Leave the table', value: 'leave', kind: 'danger', icon: 'fa-solid fa-arrow-right-from-bracket' }
+                    ]
+                });
+                if (choice === 'link') this.copyText(t.url);
+                else if (choice === 'copy') this.saveSessionAsCopy();
+                else if (choice === 'free') this.freeTableSeat();
+                else if (choice === 'leave') this.leaveTable();
+            },
+
+            async freeTableSeat() {
+                const t = this.atTable() && DojoTable.info();
+                if (!t || !t.otherSeated) return;
+                const ok = await this.dialog({
+                    title: `Free ${t.other}'s seat?`, danger: true, icon: 'fa-user-minus',
+                    message: `${t.other} leaves the table (their copy stays with them), and the next person to open the link takes the seat.`,
+                    confirmText: 'Free the seat', cancelText: 'Cancel'
+                });
+                if (!ok) return;
+                try {
+                    await DojoCloud.freeSeat(t.id, 1 - t.seat);
+                    await DojoTable.sync();
+                    this.showToast('The seat is free. Send the link to whoever takes it.');
+                } catch (e) { this.dialogAlert(this.tableErrorMessage(e), "Couldn't free the seat"); }
+            },
+
+            async leaveTable() {
+                const t = this.atTable() && DojoTable.info();
+                if (!t) return;
+                const ok = await this.dialog({
+                    title: 'Leave the table?', danger: true, icon: 'fa-arrow-right-from-bracket',
+                    message: `Your copy stays on this device as your own session. ${t.otherSeated ? `${t.other} keeps the table and can invite someone else.` : "You're the last one, so the table closes."}`,
+                    confirmText: 'Leave', cancelText: 'Stay'
+                });
+                if (!ok) return;
+                try {
+                    await DojoTable.flush();
+                    await DojoCloud.leaveTable(t.id);
+                } catch (e) {
+                    this.dialogAlert(this.tableErrorMessage(e), "Couldn't leave the table");
+                    return;
+                }
+                this.detachTable();
+                if (this.session) {
+                    this.session.table = null;
+                    this._sessionDirty = true;
+                    this.flushDeviceSave();
+                }
+                this.render();
+                this.showToast(`You left the table. “${this.session ? this.session.title : 'The match'}” is yours now.`);
+            },
+
+            // At a table, a node or snapshot picked in the Multiverse is asked for, not loaded.
+            proposeTableMove(id, isAuto, opts = {}) {
+                const list = isAuto ? this.autoSaves : this.bookmarks;
+                const b = list.find(x => x.id === id);
+                if (!b) return;
+                const t = DojoTable.info();
+                // Nobody to ask yet: the table is yours alone until someone joins.
+                if (!t.otherSeated) { this.restoreTimeline(id, isAuto, { ...opts, agreed: true }); DojoTable.localChange(true); return; }
+                if (!isAuto && this.state.activeBookmarkId === id && this.boardSource() === id) {
+                    this.showToast('The table is already there.');
+                    return;
+                }
+                DojoTable.propose({ target: id, auto: isAuto, name: isAuto ? 'Left here' : b.name });
+                if (!opts.quiet) this.closeTreeModal();
+            },
+
+            // The chip, the banner, the hands' lock and the ⋯ menu entry. fromRender: called
+            // by render() itself, which has just drawn the hands for the current pen.
+            renderTableUi(fromRender) {
+                const t = this.atTable() ? DojoTable.info() : null;
+                const watching = !!t && !t.holdsPen;
+                document.body.classList.toggle('at-table', !!t);
+                document.body.classList.toggle('is-watching', watching);
+                if (watching !== !!this._tableWatching) {
+                    this._tableWatching = watching;
+                    if (!fromRender && this.state && this.state.players) { this.render(); return; }
+                }
+                const btn = document.getElementById('btn-session-table');
+                if (btn) btn.hidden = !!t;
+                // The sidebar names the seats at a table (it says "Player 1 (You)" otherwise).
+                [0, 1].forEach(i => {
+                    const el = document.getElementById(`p${i}-name`);
+                    if (el) el.textContent = t ? `Player ${i + 1} · ${t.names[i]}${i === t.seat ? ' (you)' : ''}` : (i ? 'Player 2' : 'Player 1 (You)');
+                });
+                const menu = document.getElementById('menu-table-label');
+                if (menu) menu.textContent = t ? 'The table' : 'Play with a friend';
+                const chip = document.getElementById('table-chip');
+                const banner = document.getElementById('table-banner');
+                if (!t) {
+                    if (chip) chip.hidden = true;
+                    if (banner) banner.classList.add('hidden');
+                    this._tableWasYours = false;
+                    return;
+                }
+                const yours = t.holdsPen;
+                const turn = t.behind ? 'Catching up…' : yours ? 'Your turn' : `${t.other}'s turn`;
+                const who = !t.otherSeated ? 'Waiting for a player' : t.otherHere ? `Live with ${t.other}` : `${t.other} is away`;
+                if (chip) {
+                    chip.hidden = false;
+                    chip.classList.toggle('is-live', t.otherHere);
+                    chip.classList.toggle('is-yours', yours);
+                    chip.classList.toggle('is-pending', t.pending || t.offline);
+                    document.getElementById('table-chip-text').textContent = `${who} · ${turn}`;
+                    const note = t.offline ? " Offline: your moves are kept and sent when you're back." : t.pending ? ' Saving…' : '';
+                    chip.title = `${who}. ${turn}.${note} Open the table`;
+                    chip.setAttribute('aria-label', `The table: ${who}. ${turn}.${note}`);
+                }
+                const actor = document.getElementById('turn-actor');
+                if (actor && this.state && this.state.players) actor.innerText = this.state.activePlayer === t.seat ? 'You' : t.other;
+
+                // The banner: a proposal first, then whose turn it is.
+                const p = t.proposal;
+                const esc = (v) => this.escapeHtml(v);
+                const key = (act, label, primary) => `<button class="btn ${primary ? 'btn-primary' : 'btn-ghost'}" data-act="${act}">${label}</button>`;
+                let text = '', acts = '';
+                if (p && p.by !== t.seat) {
+                    text = `<b>${esc(t.names[p.by])}</b> wants to go to “${esc(p.name)}”.`;
+                    acts = key('go', 'Go there', true) + key('stay', 'Stay');
+                } else if (p) {
+                    text = `Waiting for <b>${esc(t.other)}</b> to go to “${esc(p.name)}”.`;
+                    acts = key('cancel', 'Cancel');
+                } else if (!t.otherSeated) {
+                    text = watching ? `It's P${2 - t.seat}'s turn and the seat is free. Send the link to your opponent, or Take a copy to play on alone.`
+                        : 'Send the link to your opponent. Whoever opens it takes the other seat.';
+                    acts = key('link', 'Copy link');
+                } else if (watching && t.behind) {
+                    text = 'Catching up with the table…';
+                } else if (watching && this.state && this.state.opponentHandRevealed) {
+                    text = `<b>${esc(t.other)}</b> is looking at your hand.`;
+                } else if (watching) {
+                    text = t.otherHere ? `<b>${esc(t.other)}</b>'s turn. You're watching live.`
+                        : `<b>${esc(t.other)}</b> plays next. The table waits until they're back.`;
+                    if (!t.otherHere) acts = key('link', 'Copy link');
+                }
+                if (banner) {
+                    banner.classList.toggle('hidden', !text);
+                    banner.classList.toggle('is-ask', !!(p && p.by !== t.seat));
+                    if (text) {
+                        document.getElementById('table-banner-text').innerHTML = text;
+                        document.getElementById('table-banner-acts').innerHTML = acts;
+                    }
+                    if (!this._tableBannerBound) {
+                        this._tableBannerBound = true;
+                        banner.addEventListener('click', (e) => {
+                            const b = e.target.closest('[data-act]');
+                            if (!b || !this.atTable()) return;
+                            const act = b.dataset.act;
+                            if (act === 'go') DojoTable.answer(true);
+                            else if (act === 'stay') DojoTable.answer(false);
+                            else if (act === 'cancel') DojoTable.cancel();
+                            else if (act === 'link') this.copyText(DojoTable.info().url);
+                        });
+                    }
+                }
+                // The pen arrived while this tab was in the background.
+                if (yours && !this._tableWasYours && document.hidden) { this._tableNudge = true; this.syncSessionTitle(); }
+                this._tableWasYours = yours;
             },
 
             // Library · Shared: the links this browser created.
@@ -3885,6 +4475,7 @@
                     this._accountSessions = acc;
                 }
                 const accById = new Map((acc || []).map(r => [r.id, r]));
+                this.refreshTableRows(rows, () => this.renderHomeSessions());
                 const accountOnly = (acc || []).filter(r => !rows.some(d => d.id === r.id));
                 const esc = (v) => this.escapeHtml(v);
                 const live = this.hasLiveMatch() && this.session ? this.session.id : null;
@@ -3921,7 +4512,7 @@
                     return `
                     <div class="lib-row${isLive ? ' is-live' : ''}" data-id="${esc(r.id)}">
                         <div class="lib-top">
-                            <div class="lib-title">${esc(r.title)}${isLive ? '<span class="lib-badge">on the board</span>' : ''}</div>
+                            <div class="lib-title">${this.tableBadgeHtml(r)}${esc(r.title)}${isLive ? '<span class="lib-badge">on the board</span>' : ''}</div>
                             <div class="lib-actions">${placeBtn}<button class="btn ${isLive ? 'btn-primary' : 'btn-ghost'}" data-act="open">${isLive ? 'Back to it' : 'Open'}</button>${menu}</div>
                         </div>
                         ${note}
@@ -4412,6 +5003,7 @@
             },
 
             undo() {
+                if (this.tableLocked()) return;
                 if (this.history.length === 0) return;
                 const prevCompressed = JSON.parse(this.history.pop());
                 this.state = this.decompressState(prevCompressed, this.state.log);
@@ -4526,6 +5118,7 @@
                 // The match on the board keeps everything up to now; then it lets go,
                 // so nothing below can autosave into it.
                 this.flushDeviceSave();
+                this.detachTable();
                 this.session = null;
                 this.endSharedView();
 
@@ -4609,6 +5202,7 @@
             },
 
             endTurn() {
+                if (this.tableLocked()) return;
                 if (this.state.mulliganPending) return; // the opening hand comes first (Feature 54)
                 this.saveState();
 
@@ -4690,7 +5284,8 @@
 
                 // Feature 8: Auto-save timeline on turn start
                 const autoSaveCheckbox = document.getElementById('auto-save-turn');
-                if (autoSaveCheckbox && autoSaveCheckbox.checked) {
+                // At a table every turn is a node: the other player arrives on it (ARCH-two-player §5).
+                if ((autoSaveCheckbox && autoSaveCheckbox.checked) || this.atTable()) {
                     // Save AFTER the state has fully resolved to the start of the new turn
                     // The save should be named in a way that indicates the turn number and the player that is playing.
                     const name = `Turn ${this.state.turn} - ${p.name} Active`;
@@ -4802,7 +5397,8 @@
                     this.state.players[1 - this.state.activePlayer].hand.forEach(c => th.appendChild(this.createCardElement(c, false)));
 
                     if (!this._hasLoggedReveal) {
-                        this.logAction(`You peeked at the opponent's hand.`, true);
+                        const t = this.atTable() && DojoTable.info();
+                        this.logAction(t ? `${t.me} looked at ${t.other}'s hand.` : `You peeked at the opponent's hand.`, true);
                         this._hasLoggedReveal = true; // Prevent spamming log if they click rapidly
                     }
                 } else {
@@ -4817,6 +5413,7 @@
                     this.state.players[1 - this.state.activePlayer].hand.forEach(c => th.appendChild(this.createCardElement(c, true)));
                     this._hasLoggedReveal = false;
                 }
+                this.tableAfterRender(); // at a table, the other player sees their hand is being looked at
             },
 
             // --- Timelines & Bookmarks System ---
@@ -6040,6 +6637,7 @@
             // same card sections an end-of-turn auto-save would.
             openSaveTurn() {
                 if (!this.state || !this.state.players) return;
+                if (this.tableLocked()) return;
                 if (document.getElementById('tree-modal').classList.contains('hidden')) this.openTreeModal();
                 const ap = this.state.players[this.state.activePlayer];
                 const turnNote = this.state.turnComments[`${this.state.turn}-${this.state.activePlayer}`]
@@ -6062,6 +6660,7 @@
             },
 
             saveTimeline() {
+                if (this.tableLocked()) return;
                 const nameInput = document.getElementById('bookmark-name').value.trim();
                 const commentInput = document.getElementById('bookmark-comment').value.trim();
                 const ap = this.state.players[this.state.activePlayer];
@@ -6105,23 +6704,25 @@
                 this.saveToDevice();
             },
 
-            autoSaveTimeline() {
+            // The board as a "Left here" snapshot, not yet added anywhere.
+            _leftHereEntry() {
                 const p1 = this.state.players[0];
                 const p2 = this.state.players[1];
                 const now = new Date();
                 const ap = this.state.players[this.state.activePlayer];
                 const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-                const name = `Auto-Save: Left Turn ${this.state.turn} (${timeStr})`;
-                const stats = `Turn ${this.state.turn} | ${ap.name} Active | P1: ${p1.lore} - P2: ${p2.lore}`;
-
-                this.autoSaves.unshift({
+                return {
                     id: this.uuid(),
-                    name: name,
-                    stats: stats,
+                    name: `Auto-Save: Left Turn ${this.state.turn} (${timeStr})`,
+                    stats: `Turn ${this.state.turn} | ${ap.name} Active | P1: ${p1.lore} - P2: ${p2.lore}`,
                     cardsPlayedData: [...(this.state.cardsPlayedThisTurn || [])],
                     state: JSON.stringify(this.compressState(this.state, true)),
                     timestamp: now.getTime()
-                });
+                };
+            },
+
+            autoSaveTimeline() {
+                this.autoSaves.unshift(this._leftHereEntry());
 
                 // Ensure newest is always strictly on top
                 this.autoSaves.sort((a, b) => b.timestamp - a.timestamp);
@@ -6134,6 +6735,8 @@
             // opts.quiet: the mini multiverse's steps (no toast or flash unless the
             // board you left was kept); opts.trail: the line ahead of you there.
             restoreTimeline(id, isAuto = false, opts = {}) {
+                // At a table, moving the table is a proposal the other player accepts (Feature 64).
+                if (this.atTable() && !opts.agreed) { this.proposeTableMove(id, isAuto, opts); return; }
                 // Find it first: the safety net below can push the oldest auto-save out.
                 const list = isAuto ? this.autoSaves : this.bookmarks;
                 const bookmark = list.find(b => b.id === id);
@@ -6182,6 +6785,7 @@
             },
 
             deleteTimeline(id, isAuto = false) {
+                if (this.tableLocked()) return;
                 // Deletes are guarded by an Undo toast: snapshot the list, delete
                 // immediately, and restore the snapshot if the user taps Undo.
                 const wasSelected = this.treeNavActiveId === id;
@@ -6237,6 +6841,7 @@
 
             // A pre-jump auto-save becomes a real node, where it hangs in the tree.
             keepAutoSave(id) {
+                if (this.tableLocked()) return;
                 const a = (this.autoSaves || []).find(x => x.id === id);
                 if (!a) return;
                 const info = this.autoSaveInfo(a);
@@ -7369,6 +7974,7 @@
 
             startTreeEdit(field) {
                 if (!this.treeNavActiveId) return;
+                if (this.tableLocked()) return;
                 this._tpEdit = { id: this.treeNavActiveId, field };
                 this.renderTreePanel();
             },
@@ -7682,6 +8288,8 @@
                     return;
                 }
                 if (isOpen('setup-modal') || isOpen('craft-hand-modal')) return;
+                // At a table the other seat's opening hand is theirs to look at (Feature 64).
+                if (this.isWatching()) { if (isOpen('mulligan-modal')) this.closeMulligan(); return; }
                 // Open, and still showing the hand on the board: leave the marks alone.
                 if (isOpen('mulligan-modal') && this._mullHandKey === this._mulliganHandKey()) return;
                 this.openMulligan();
@@ -11121,6 +11729,12 @@
             inspectDeck(playerIndex) {
                 this._inspectingPlayerIndex = playerIndex;
                 const p = this.state.players[playerIndex];
+                // At a table, looking through the other seat's deck is never secret (Feature 64).
+                if (this.atTable() && playerIndex !== this.session.table.seat) {
+                    const t = DojoTable.info();
+                    this.logAction(`${t.me} looked through ${t.other}'s deck.`, true);
+                    this.render();
+                }
                 this._tempDeckOrder = [...p.deck];
 
                 document.getElementById('inspect-deck-title').innerText = `Inspecting ${p.name}'s Deck (${p.deck.length} Cards)`;
@@ -12157,7 +12771,9 @@
                     th.classList.add('scale-[0.85]');
                 }
                 th.style.setProperty('--hand-overlap', this.calcHandOverlap(ip.hand.length));
-                ip.hand.forEach(c => th.appendChild(this.createCardElement(c, !this.state.opponentHandRevealed)));
+                // At a table your own hand is face up wherever it sits (Feature 64).
+                const ipMine = this.atTable() && ip.id === this.session.table.seat;
+                ip.hand.forEach(c => th.appendChild(this.createCardElement(c, !this.state.opponentHandRevealed && !ipMine)));
 
                 // Top Field (opponent — Feature 19: isOpponent=true for challenge targeting)
                 const tf = document.getElementById('top-field');
@@ -12208,7 +12824,9 @@
                 const bh = document.getElementById('bottom-hand');
                 bh.innerHTML = '';
                 bh.style.setProperty('--hand-overlap', this.calcHandOverlap(ap.hand.length));
-                ap.hand.forEach(c => bh.appendChild(this.createCardElement(c, false, false, { chips: true, loc: 'hand' })));
+                // Watching at a table: the hand at the bottom is the other player's, face down.
+                const apHidden = this.isWatching() && ap.id !== this.session.table.seat;
+                ap.hand.forEach(c => bh.appendChild(apHidden ? this.createCardElement(c, true) : this.createCardElement(c, false, false, { chips: true, loc: 'hand' })));
                 // Feature 37: phone hand fan (geometry vars + the count label)
                 this.layoutHandFan(bh, ap.hand.length);
                 const bhWrap = bh.closest('.hand-wrap');
@@ -12241,6 +12859,9 @@
 
                 // Guided tours (Feature 58): a step waiting on the player checks here.
                 if (window.DojoTour && DojoTour.onRender) DojoTour.onRender();
+
+                // Two-player tables (Feature 64): a change on this side goes to the table.
+                this.tableAfterRender();
             },
 
             renderFeature37Overlays() {
@@ -12629,6 +13250,25 @@
             }, true);
         })();
 
+        // Two-player tables (Feature 64): while the pen is the other seat's, the board only
+        // looks. One capture-phase gate in front of every board control, so no handler
+        // behind it needs to know. Hover (the preview) and scrolling still work.
+        (function TableWatchLock() {
+            const LOCKED = '#play, .turn-ctl, .sidebar-foot, #context-menu, #card-sheet, #ink-panel, #chal-keys, #hand-scrim, '
+                + '#mulligan-modal, #craft-hand-modal, #inspect-deck-modal, #card-search-modal, #inspect-discard-grid, #mod-pop';
+            const gate = (e) => {
+                if (!App.isWatching()) return;
+                const el = e.target && e.target.nodeType === 1 ? e.target : e.target && e.target.parentElement;
+                if (!el || !el.closest || !el.closest(LOCKED) || el.closest('[data-watch-ok]')) return;
+                e.stopPropagation();
+                // A press keeps its default on touch, so the board still scrolls.
+                if (e.cancelable && e.type !== 'pointerdown' && e.type !== 'touchstart') e.preventDefault();
+                if (e.type === 'click' || e.type === 'dragstart') App.tableLocked();
+            };
+            ['click', 'dblclick', 'contextmenu', 'dragstart', 'drop', 'pointerdown', 'mousedown', 'touchstart']
+                .forEach(t => window.addEventListener(t, gate, true));
+        })();
+
         // Global Keyboard Hotkeys & Multiverse Tree Navigation Support
         document.addEventListener('keydown', (e) => {
             // Disable all hotkeys if we're actively typing in a text input or textarea
@@ -12636,6 +13276,8 @@
             // Never hijack browser shortcuts, and stay quiet while a styled dialog is up
             if (e.ctrlKey || e.metaKey || e.altKey) return;
             if (document.querySelector('.dlg-backdrop')) return;
+            // Watching at a two-player table: keys that only look (Feature 64).
+            if (App.isWatching() && !['Escape', 'm', 'M', '?', '/', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Enter', 'Home', 'End'].includes(e.key)) return;
 
             // A guided tour (Feature 58) sees keys first: Esc ends it.
             if (window.DojoTour && DojoTour.onKey && DojoTour.onKey(e)) return;

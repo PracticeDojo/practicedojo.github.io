@@ -7,7 +7,7 @@ aliases: [definitions, terms, what does it mean, meaning, vocabulary, drying, dr
 targets: []
 related: [multiverse, what-is-the-dojo]
 order: 30
-verified: v3.11.0
+verified: v4.0.0
 ---
 
 The words this manual uses: first the Dojo's own, then Lorcana's.
@@ -24,6 +24,7 @@ The words this manual uses: first the Dojo's own, then Lorcana's.
 - **Left here.** A dashed snapshot of a board you jumped away from before saving it. [Left here snapshots](help:left-here)
 - **Library.** Your sessions, decks and links, on shelves by where they're kept: this device, your account, built in, public links. [The Library](help:library)
 - **Share link.** A short link to a frozen copy of a deck or a session. Anyone with it can open it. [Share a deck or a session](help:share-links)
+- **Table.** A match two people share, live or by turns. Only the player whose turn it is moves cards. [Play with a friend](help:play-with-a-friend)
 - **Practice board.** The board a guided tour runs on. Nothing on it is saved, and your own match is kept as it was. [Guided tours](help:tours)
 - **Unknown card.** A card an imported game never showed. It reads **Unknown card** until you fill it in. [Unknown cards](help:unknown-cards)
 
