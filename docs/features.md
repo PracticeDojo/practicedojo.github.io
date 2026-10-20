@@ -702,7 +702,7 @@ Implements version 2 of `docs/DESIGN-field-unit.md` (Kiln dark mode, signal fami
 
 ## Release v4.0.0: Two-player tables
 
-Two people can now share a match, live or by turns, so the Dojo moves to a major version. It bundles Feature 64 (tables by turns) and Feature 65 (live tables), built on `claude/feat-64-two-player-tables`. Plan and as-built notes: `docs/ARCH-two-player.md`; checklist: `docs/TODO-two-player.md`; test protocol: `docs/TEST-PROTOCOL-v4.0.0.md`. Solo play, sessions, decks, share links and session files from v3 work as before. Tables need the Supabase migration `supabase/migrations/20261020120000_tables.sql`, applied when this reaches `main`.
+Two people can now share a match, live or by turns, so the Dojo moves to a major version. It bundles Feature 64 (tables by turns) and Feature 65 (live tables), built on `claude/feat-64-two-player-tables`. Plan and as-built notes: `docs/ARCH-two-player.md`; checklist: `docs/TODO-two-player.md`; test protocol: `docs/TEST-PROTOCOL-v4.0.0.md`. Solo play, sessions, decks, share links and session files from v3 work as before. Tables need the Supabase migration `supabase/migrations/20261020120000_tables.sql` (run by hand on 2026-10-20; the GitHub integration runs it again on merge, which is safe). Also fixed: *Get newer copy* for an account session could download an older copy, because Storage served overwritten files from a cache.
 
 ## Feature 65: Live tables — play together at the same time (v4.0.0)
 
@@ -730,7 +730,7 @@ Two people can now share a match, live or by turns, so the Dojo moves to a major
 - **Nothing lost:** writes carry the revision they started from. When the other seat wrote first, their table wins and your board is kept as a "Left here" snapshot in the shared Multiverse.
 - **The table sheet** (the chip): the seats and who's here, **Copy link**, **Take a copy** (a solo session to try things in), **Free Sam's seat** (invite someone else), **Leave the table** (your copy stays yours; the last one out closes the table).
 - Every board and file from the other seat goes through `sanitizeSessionData()`. Hidden cards are hidden on screen, not secret: both browsers hold the whole board.
-- Code: `app/js/table.js` (`DojoTable`, the rules), the table transport in `app/js/cloud.js`, hooks and UI in `app/index.html`, styles in `app/css/field-unit.css`. Tests: `tools/table-checks.mjs` (two browsers, run by `tools/app-checks.mjs`) and `supabase/tests/run.sh` (the SQL on Postgres 16).
+- Code: `app/js/table.js` (`DojoTable`, the rules), the table transport in `app/js/cloud.js`, hooks and UI in `app/index.html`, styles in `app/css/field-unit.css`. Tests: `tools/table-checks.mjs` (two browsers and a stranger, run by `tools/app-checks.mjs`; `--live` runs it against the real project) and `supabase/tests/run.sh` (the SQL on Postgres 16).
 
 ## Patch: Decklists with Duels.ink's printing suffix (v3.16.2)
 

@@ -310,6 +310,21 @@ const DojoCloud = (() => {
         return { sb, uid: u.id };
     }
 
+    // A private file, fresh. Storage answers an overwritten file from a cache for a
+    // while (checked live, 2026-10-20: three overwrites later download() still gave
+    // the first), so each read asks for a new URL and skips the browser's cache.
+    async function downloadFresh(sb, bucket, path) {
+        const { data } = await sb.auth.getSession();
+        const token = data && data.session ? data.session.access_token : '';
+        const url = `${URL}/storage/v1/object/authenticated/${bucket}/${path.split('/').map(encodeURIComponent).join('/')}?v=${Date.now()}`;
+        let r;
+        try { r = await fetch(url, { headers: { apikey: KEY, Authorization: `Bearer ${token}` }, cache: 'no-store' }); }
+        catch (e) { throw fail('offline', 'network', e); }
+        if (r.status === 400 || r.status === 404) throw fail('gone', 'file missing');
+        if (!r.ok) throw fail('unavailable', `download HTTP ${r.status}`);
+        return r.arrayBuffer();
+    }
+
     // Revision-checked write (§8.3): insert when the device has no revision;
     // otherwise update only if the account is still at that revision. A row
     // deleted from the account meanwhile is simply inserted again.
@@ -391,9 +406,7 @@ const DojoCloud = (() => {
 
     async function downloadAccountSession(id) {
         const { sb, uid } = await realUser();
-        const { data, error } = await sb.storage.from('sessions').download(`${uid}/${id}.json.gz`);
-        if (error) throw fail(/not.?found/i.test(error.message || '') ? 'gone' : 'unavailable', error.message, error);
-        return data.arrayBuffer();
+        return downloadFresh(sb, 'sessions', `${uid}/${id}.json.gz`);
     }
 
     async function deleteAccountSession(id) {
@@ -513,9 +526,7 @@ const DojoCloud = (() => {
 
     async function downloadTable(id) {
         const { sb } = await ensureUser();
-        const { data, error } = await sb.storage.from('tables').download(tableFile(id));
-        if (error) throw fail(/not.?found|400|404/i.test(String(error.message || error.statusCode || '')) ? 'gone' : 'unavailable', error.message, error);
-        return data.arrayBuffer();
+        return downloadFresh(sb, 'tables', tableFile(id));
     }
 
     // Revision-checked write (§9): claim revision + 1, then upload. → the new revision.

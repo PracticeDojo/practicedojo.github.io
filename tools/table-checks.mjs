@@ -293,6 +293,30 @@ export async function runTableChecks(page, { base }, { live = false } = {}) {
         check('live: Ann\'s move reaches Bea', await until(B, ([s, n]) => App.state.players[s].hand.length === n, [ap, handBefore + 1]), true);
         check('live: boards match after the move', await same(B, A), 'same');
 
+        // 3b. A stranger with the link, once both seats are taken: no row, no file, no live boards.
+        const ctxC = await browser.newContext({ viewport: vp, deviceScaleFactor: 1 });
+        const C = await open(ctxC, 'cy', base + '/app/');
+        await C.waitForSelector('#setup-modal:not(.hidden)', { timeout: 90000 });
+        const tid = new URL(url).searchParams.get('t');
+        const stranger = await C.evaluate(async (id) => {
+            const seen = [];
+            let ch = null, chErr = null;
+            try { ch = await DojoCloud.tableChannel(id, { seat: 0, name: 'Cy' }, { board: (p) => seen.push(p) }); } catch (e) { chErr = e.code || 'error'; }
+            let file;
+            try { await DojoCloud.downloadTable(id); file = 'read'; } catch (e) { file = 'refused'; }
+            const inv = await DojoCloud.tableInvite(id);
+            window.__strangerSeen = seen;
+            window.__strangerChan = ch;
+            return { row: await DojoCloud.getTable(id), file, free: inv && inv.free_seats.length, chErr };
+        }, tid);
+        check('stranger: no row', stranger.row, null);
+        check('stranger: no file', stranger.file, 'refused');
+        check('stranger: the invite shows no free seat', stranger.free, 0);
+        await val(A, (s) => App.drawCard(s), ap);
+        await sleep(3000);
+        check('stranger: no live boards', await C.evaluate(() => window.__strangerSeen.length), 0);
+        await ctxC.close();
+
         // 4. The pen: Bea can't act on Ann's turn.
         const before = await sig(B);
         await B.click('#btn-end-turn', { force: true });
