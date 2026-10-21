@@ -26,7 +26,7 @@ This file provides system instructions and context for AI agents working in this
 | `app/fonts/` | Self-hosted Field Unit fonts, used by the app and the landing page: Inter and Inter Display (built from Inter 4.1, OFL — see `Inter-OFL.txt`) and Liberation Mono (OFL — see `OFL.txt`). Never load fonts from a font CDN |
 | `img/` | Images used by the landing page and the app |
 | `docs/` | Feature list, dev guide, architecture, implementation and research notes, test protocols |
-| `.claude/skills/` | Agent skills. `dojo-screenshots/` = the screenshot tool (see below) |
+| `.claude/skills/` | Agent skills. `dojo-screenshots/` = the screenshot tool (see below), `stream-to-log/` = turns a match video into a log the Dojo imports |
 | `tools/` | Node scripts for the repo, never loaded by the site. `refresh-landing.mjs` = keeps the landing page in step with the app, `help.mjs` = builds and checks the manual (see below), `app-checks.mjs` = headless checks of imports, challenges, session files and the device library |
 | `docs/samples/` | Sample Duels.ink logs and replays for testing imports |
 
