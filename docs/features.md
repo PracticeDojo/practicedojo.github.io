@@ -86,6 +86,7 @@ As a player, I want the practice dojo to automatically save the game state every
 - There should be a custom tickbox that allows the practice dojo to automatically save the game state every turn.
 - The state save should be stored in the same way as the current saves.
 - The save should be named in a way that indicates the turn number and the player that was playing.
+- **One node per turn (v3.18.1):** a node holds the board its turn starts from and, once the turn ends, that turn's note, recap and card sections (as a Duels.ink import does). Each player's turn 1 node holds the dealt hand before the mulligan, so loading it lets them mulligan or build again. Ending a turn played from a node that was already played adds a node beside it (a branch), so the old line stays. An undo keeps the turn's recap.
 
 ## Feature 9: Cloud Session Saving/Loading
 

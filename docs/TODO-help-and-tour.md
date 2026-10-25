@@ -156,7 +156,7 @@ App bugs the writers noticed while checking articles. The manual describes today
 - Q and Space act on the board while the Multiverse (and likely Inspect deck/discard, log import, card search) is open
 - After opening the Multiverse with the mouse, Enter re-presses the focused top-bar button instead of playing from the selected node
 - The auto-save switch isn't remembered across reloads
-- Playing from an auto-save node copies its stock line and raw `**Turn recap**` Markdown into the turn note
+- ~~Playing from an auto-save node copies its stock line and raw `**Turn recap**` Markdown into the turn note~~ Fixed in v3.18.1: only the node's note is copied, and it is that turn's note
 - Esc with card search open over the deck grid closes the deck grid first (unsaved order lost)
 - Esc doesn't close card search / log import while their text field has focus
 - The deck grid's card menu needs `contextmenu`, which iOS Safari never fires (no swap from the deck grid on iPhone)
