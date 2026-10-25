@@ -7,6 +7,7 @@
 //   - Untrusted files: session sanitising, the session codec, replay patches.
 //   - Device library: the two-tab guard and sign-out removal.
 //   - Replay openings: rebuilt from saves that predate them, and safe from hostile files.
+//   - Auto-save: one node per turn, holding its start board, note and recap.
 //
 // An import fingerprint changed on purpose (a parser fix)? Run with --update to print the
 // new ones, check them, and paste them into IMPORTS below.
@@ -118,6 +119,26 @@ export default async (page) => {
         const left = (await L.listDecks()).map(x => x.name).filter(n => n.startsWith('check-')).sort().join();
         check('library: sign-out keeps unsynced and other accounts\' copies', `${left} kept ${removed.kept}`, 'check-dirty,check-other kept 1');
         await Promise.all(['dirty', 'other'].map(n => L.deleteDeck('check-' + n)));
+
+        // Auto-save: each turn's node is its start board (turn 1: before the mulligan) and,
+        // once it ends, that turn's note and recap. Replaying a played turn branches beside it.
+        document.getElementById('auto-save-turn').checked = true;
+        const settle = () => { if (App.state.mulliganPending) { App.state.players[App.state.activePlayer].hasMulliganed = true; App._finishMulligan(); } };
+        const node = (b) => `${b.name}${JSON.parse(b.state).mulliganPending ? ' (mull)' : ''}: ${b.comment.replace(/\s+/g, ' ')}`;
+        App.startGame({ asked: true });
+        settle();
+        App.updateTurnComment(1, 0, 'P1 note');
+        App.saveState(); App._trackAction('inked', App.state.players[0].hand[0].cardId);
+        App.saveState(); App.undo(); // an undo keeps the turn's recap
+        App.endTurn(); settle(); App.endTurn();
+        check('auto-save: a node per turn, with its own recap', App.bookmarks.map(node).join(' | ').replace(/Drew:\*\* .*$/, 'Drew:** …'),
+            'Turn 1 - Player 1 Active (mull): P1 note **Turn recap** - **Inked:** ' + App.cardDB[App.bookmarks[0].sections.inked[0]].name
+            + ' | Turn 1 - Player 2 Active (mull): **Turn recap** - **Drew:** …');
+        App.restoreTimeline(App.bookmarks[0].id, false, { quiet: true });
+        const reopened = App.state.mulliganPending && App.state.turnComments['1-0'] === 'P1 note';
+        settle(); App.endTurn();
+        const twins = App.bookmarks.filter(b => b.name === 'Turn 1 - Player 1 Active');
+        check('auto-save: turn 1 replays from the mulligan, as a branch', `${reopened} ${twins.length} ${twins[0].parentId === twins[1].parentId}`, 'true 2 true');
         return out;
     }, IMPORTS);
     writeFileSync(process.env.APP_CHECKS_OUT, JSON.stringify(results));

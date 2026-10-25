@@ -7,7 +7,7 @@ aliases: [timeline, timelines, tree, save points, what if, replay a turn, go bac
 targets: [multiverse, tree-canvas, tree-panel]
 related: [auto-save, branches, nodes, multiverse-panel]
 order: 10
-verified: v3.11.0
+verified: v3.18.1
 ---
 
 The Multiverse keeps every turn you've saved, so you can go back to any of them and play it another way.
@@ -35,7 +35,7 @@ Tap the branch icon in the top bar. Tap ✕ to go back to the board.
 
 ## Good to know
 
-- Nodes come from [auto-save](help:auto-save) at the end of each turn, from [saving the turn you're in](help:save-unfinished-turn), and from imported Duels.ink games. When a player reaches 20 lore, the Dojo also saves a **Game Over** node that closes the branch.
+- Nodes come from [auto-save](help:auto-save) at the start of each turn, from [saving the turn you're in](help:save-unfinished-turn), and from imported Duels.ink games. When a player reaches 20 lore, the Dojo also saves a **Game Over** node that closes the branch.
 - Selecting a node only shows it. Your board changes when you press **Play from here**.
 - Jumping never loses the board you leave: see ["Left here" snapshots](help:left-here).
 - The tree is part of the session: it's saved with it, and **Export** in the Multiverse header writes the session to a file, tree included.

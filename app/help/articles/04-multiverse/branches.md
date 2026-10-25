@@ -7,7 +7,7 @@ aliases: [branch, alternate line, what if, replay a turn, try again, take back a
 targets: [tree-canvas]
 related: [multiverse, multiverse-panel, left-here, undo]
 order: 60
-verified: v3.11.0
+verified: v3.18.1
 ---
 
 To try another line, go back to an earlier node and play on from it. The new turns grow a new branch, and the line you played before stays exactly as it was.
@@ -16,7 +16,7 @@ To try another line, go back to an earlier node and play on from it. The new tur
 
 1. Open the Multiverse and select the node to go back to. An auto-save named **Turn 6 - Player 1 Active** is the board at the start of Player 1's turn 6, so pick it to replay that turn.
 2. Press **Play from here**. You're back on the board, at that point in the game.
-3. Play the turn differently and end it. With auto-save on, the new node hangs off the one you played from, beside the turn that followed before: that's a branch.
+3. Play the turn differently and end it. With auto-save on, your new line gets a node of its own beside the one you played from (same board, your new recap), and the next turn hangs off it: that's a branch. On turn 1 this is where you mulligan again or build a different hand.
 4. Keep playing. Every turn you end adds to the new line.
 
 [Show me](show:tree-canvas)

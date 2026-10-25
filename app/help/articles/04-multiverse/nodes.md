@@ -7,7 +7,7 @@ aliases: [node card, saved turn, game over node, you are here, turn recap]
 targets: [tree-canvas]
 related: [multiverse-panel, multiverse-views, turn-notes]
 order: 40
-verified: v3.11.0
+verified: v3.18.1
 ---
 
 A node is one saved board. In the cards view each node is a small card; this is how to read it. (A phone opens the Multiverse on the plot; tap **Plot**, the grid of dots in the header, for the cards. See [Cards and plot](help:multiverse-views).)
@@ -37,4 +37,4 @@ Select a node to see all its card sections in the panel: **Played**, **Inked**, 
 ## Good to know
 
 - The name and the note are yours to change: see [The panel](help:multiverse-panel).
-- On an auto-save, **Turn recap** lists the turn that just ended, not the one the board is about to play.
+- On an auto-save, **Turn recap** lists what was done in that node's turn. A turn still being played has no recap yet.

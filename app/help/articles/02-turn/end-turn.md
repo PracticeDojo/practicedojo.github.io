@@ -1,13 +1,13 @@
 ---
 id: end-turn
 title: End your turn
-summary: End the turn: the other player readies, draws, and the turn is saved to the Multiverse if auto-save is on.
+summary: End the turn: it's saved to the Multiverse if auto-save is on, then the other player readies and draws.
 devices: [desktop, phone]
 aliases: [pass, pass turn, next turn, finish turn, ready step, draw step]
 targets: [end-turn, auto-save]
 related: [auto-save, you-play-both-sides, undo]
 order: 120
-verified: v3.11.0
+verified: v3.18.1
 ---
 
 When you're done, end the turn. The other player's turn begins, and the board swaps so they're at the bottom.
@@ -29,7 +29,7 @@ Press **End turn** in the hand tray, right of your hand. It's also in the **☰*
 1. The other player becomes the player to play. The turn number goes up when Player 1's turn comes round.
 2. **Ready step:** their characters and items ready, drying ends, and their ink readies. Cards they inked last turn turn face down. Locations aren't readied.
 3. **Draw step:** they draw a card.
-4. **Auto-save:** the Multiverse gets a node for the new turn, named like `Turn 4 - Player 1 Active`. It keeps your turn note and a recap of what you did (drew, inked, played, quested, banished). See [Every turn is saved](help:auto-save).
+4. **Auto-save:** the node of the turn you ended gets your turn note and a recap of what you did (drew, inked, played, quested, banished). The new turn gets its own node, named like `Turn 4 - Player 1 Active`. See [Every turn is saved](help:auto-save).
 
 Challenge mode ends, and the other player's hand is hidden again.
 

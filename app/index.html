@@ -799,10 +799,10 @@
             <div class="sidebar-foot">
                 <div class="toggle-row" id="auto-save-row">
                     <span class="toggle-label"
-                        title="Automatically save the game state to the Multiverse Tree before ending each turn">Auto-save
+                        title="Automatically save the game state to the Multiverse Tree at the start of each turn">Auto-save
                         every turn</span>
                     <label class="switch"
-                        title="Automatically save the game state to the Multiverse Tree before ending each turn">
+                        title="Automatically save the game state to the Multiverse Tree at the start of each turn">
                         <input type="checkbox" id="auto-save-turn" checked>
                         <span class="slider"></span>
                     </label>
@@ -1206,7 +1206,7 @@
     <script>
         let cardFuse = null;
 
-        const APP_VERSION = "v3.18.0"; // Centralized version string (v3: Field Unit)
+        const APP_VERSION = "v3.18.1"; // Centralized version string (v3: Field Unit)
 
         // Tweaks panel accent presets (hue values for the OKLCH accent ramp)
         // Tweaks → Accent: the approved Field Unit signals only (design.md ·
@@ -1313,6 +1313,9 @@
                     activeTimelineColor: stateObj.activeTimelineColor,
                     turnComments: stateObj.turnComments,
                     turnStartHand: stateObj.turnStartHand,
+                    // The turn so far, so an undo or a restored save keeps its recap.
+                    turnActions: stateObj.turnActions,
+                    cardsPlayedThisTurn: stateObj.cardsPlayedThisTurn,
                     players: stateObj.players.map(p => ({
                         id: p.id,
                         name: p.name,
@@ -1335,6 +1338,7 @@
                 if (stateObj.mulliganDrawn && stateObj.mulliganDrawn.length) compressed.mulliganDrawn = stateObj.mulliganDrawn.slice();
                 // Each seat's settled opening (Feature 64), for copying into another game.
                 if (stateObj.openings) compressed.openings = stateObj.openings;
+                if (stateObj.turnNodeId) compressed.turnNodeId = stateObj.turnNodeId; // the auto-save node of this turn
                 if (includeLog) {
                     compressed.log = stateObj.log;
                 } else {
@@ -1357,6 +1361,9 @@
                     drawPending: !!compressed.drawPending,
                     mulliganDrawn: Array.isArray(compressed.mulliganDrawn) ? compressed.mulliganDrawn.slice() : null,
                     openings: compressed.openings || null,
+                    turnNodeId: compressed.turnNodeId || null,
+                    turnActions: this._readTurnActions(compressed.turnActions),
+                    cardsPlayedThisTurn: Array.isArray(compressed.cardsPlayedThisTurn) ? compressed.cardsPlayedThisTurn.slice() : [],
                     log: compressed.log !== undefined ? [...compressed.log] : currentLog.slice(0, compressed.logLength || 0),
                     players: compressed.players.map(p => ({
                         id: p.id,
@@ -4443,6 +4450,16 @@
                 return { drawn: [], inked: [], played: [], shifted: [], discarded: [], banished: [], quested: [] };
             },
 
+            // A saved turn's actions, from a session file that may come from anyone
+            // (§9.4): only arrays of card ids, and the opening's label.
+            _readTurnActions(ta) {
+                const out = this._emptyTurnActions();
+                if (!ta || typeof ta !== 'object') return out;
+                Object.keys(out).forEach(k => { if (Array.isArray(ta[k])) out[k] = ta[k].slice(); });
+                if (typeof ta.opening === 'string') out.opening = ta.opening;
+                return out;
+            },
+
             // Snapshot the active player's hand for the "Turn Starting Hand" node section.
             // Called at the point a turn's hand is settled: after the draw step in endTurn,
             // after the opening draw in startGame, and after a mulligan / crafted hand
@@ -4598,6 +4615,7 @@
                 // The first player opens on their mulligan (Feature 54). Set only now,
                 // after the draw, so the dialog never opens on an empty hand.
                 this.state.mulliganPending = true;
+                this._openTurnNode();
                 this.render();
                 this._startNewSession(this.defaultSessionTitle(deckNames));
             },
@@ -4628,6 +4646,7 @@
             endTurn() {
                 if (this.state.mulliganPending) return; // the opening hand comes first (Feature 54)
                 this.saveState();
+                this._closeTurnNode();
 
                 this.expireModifiers('end'); // Feature 61: "this turn" ends with the turn
 
@@ -4671,110 +4690,94 @@
                 });
                 p.inkReady = p.inkTotal;
 
+                // The new turn's buffers. Cleared whether or not auto-save is on, so a
+                // manual bookmark shows only this turn's cards.
+                this.state.cardsPlayedThisTurn = [];
+                this.state.turnActions = this._emptyTurnActions();
+                this.state.turnStartHand = null;
+
                 // Feature 54: the second player's first turn opens on their mulligan,
                 // before the draw step, so they choose from the seven they were dealt.
-                // The draw and the auto-save of the turn that just ended wait for the
-                // decision (_finishMulligan), so that node holds the board they play from.
+                // The draw waits for the decision (_finishMulligan). The turn's node is
+                // saved before it, so loading it brings the mulligan back.
                 if (this.state.turn === 1 && !p.hasMulliganed) {
                     this.state.mulliganPending = true;
                     this.state.drawPending = true;
+                    this._openTurnNode();
                     this.render();
                     return;
                 }
 
-                this._drawStepAndAutoSave();
+                this._drawStep();
+                this._openTurnNode();
+                this.render();
             },
 
-            // The rest of the turn change: the draw step, then the auto-save node for
-            // the turn that just ended. Run by endTurn(), or by _finishMulligan() when
-            // the new player's first turn opened on their mulligan.
-            _drawStepAndAutoSave() {
-                const p = this.state.players[this.state.activePlayer];
-
+            // The draw step, and the hand the player then acts from (compared with
+            // their hand when the turn's node is filled in). Run by endTurn(), or by
+            // _finishMulligan() when the player's first turn opened on their mulligan.
+            _drawStep() {
                 this.logAction(`Draw step`, true);
-                // The draw step belongs to the turn that is STARTING, but the auto-save node
-                // below records the turn that just ENDED — so hold it aside and re-seed the
-                // (cleared) buffer with it afterwards.
-                const drawStepCard = this._internalDraw(this.state.activePlayer, false);
-                const drawStepIds = drawStepCard ? [drawStepCard.cardId] : [];
-                // The hand this player will act from — captured now, compared against
-                // their hand at the end of this turn when the next node is written.
-                const turnStartHandSnap = {
-                    player: this.state.activePlayer,
-                    cards: this.state.players[this.state.activePlayer].hand
-                        .map(c => ({ id: c.cardId, iid: c.instanceId }))
+                this._internalDraw(this.state.activePlayer, true);
+                this._captureTurnStartHand(this.state.activePlayer);
+            },
+
+            // Feature 8: with auto-save on, each turn gets a node holding the board it
+            // starts from (before the mulligan on turn 1, so loading it lets the player
+            // redo their opening). Its note and recap are written when the turn ends.
+            _openTurnNode() {
+                const box = document.getElementById('auto-save-turn');
+                this.state.turnNodeId = null;
+                if (!box || !box.checked) return;
+                const p1 = this.state.players[0];
+                const p2 = this.state.players[1];
+                const id = this.uuid();
+                const parentId = this.state.activeBookmarkId || null;
+                this.state.turnNodeId = id;
+                this.state.activeBookmarkId = id;
+                this.bookmarks.push({
+                    id,
+                    parentId,
+                    name: `Turn ${this.state.turn} - ${this.state.players[this.state.activePlayer].name} Active`,
+                    stats: `Turn ${this.state.turn} | P1: ${p1.lore} - P2: ${p2.lore}`,
+                    comment: '',
+                    color: this.playerBookmarkColor(this.state.activePlayer),
+                    cardsPlayedData: [],
+                    turnStart: true,
+                    state: JSON.stringify(this.compressState(this.state, true)),
+                    timestamp: Date.now(),
+                    isDeckEdit: false
+                });
+                this.markBoardKept(id); // Feature 53's "already saved"
+                this.showToast("Auto-Saved Timeline");
+            },
+
+            // As a turn ends: its node gets the turn's note, recap and card sections.
+            // A turn already played from that board (you went back to it) gets a new
+            // node beside it instead, so the line played before stays as it was.
+            _closeTurnNode() {
+                const box = document.getElementById('auto-save-turn');
+                const node = this.state.turnNodeId && this.bookmarks.find(b => b.id === this.state.turnNodeId);
+                if (!node || !box || !box.checked) return;
+                const note = this.splitNodeComment(this.state.turnComments[`${this.state.turn}-${this.state.activePlayer}`]).note
+                    || (node.turnPlayed ? '' : this.splitNodeComment(node.comment).note); // a note typed into the node itself
+                const filled = {
+                    comment: (note + this._formatTurnActions()).trim(),
+                    cardsPlayedData: [...(this.state.cardsPlayedThisTurn || [])],
+                    sections: this._buildNodeSections(),
+                    turnPlayed: true
                 };
-
-                // Feature 8: Auto-save timeline on turn start
-                const autoSaveCheckbox = document.getElementById('auto-save-turn');
-                if (autoSaveCheckbox && autoSaveCheckbox.checked) {
-                    // Save AFTER the state has fully resolved to the start of the new turn
-                    // The save should be named in a way that indicates the turn number and the player that is playing.
-                    const name = `Turn ${this.state.turn} - ${p.name} Active`;
-
-                    const p1 = this.state.players[0];
-                    const p2 = this.state.players[1];
-                    const stats = `Turn ${this.state.turn} | P1: ${p1.lore} - P2: ${p2.lore}`;
-
-                    const bColor = this.playerBookmarkColor(this.state.activePlayer);
-
-                    const newId = this.uuid();
-
-                    // Check if the PREVIOUS player left a note for the turn that just ended
-                    let prevTurn = this.state.turn;
-                    let prevPlayerId = this.state.inactivePlayer;
-
-                    // If we just ticked over to player 1's turn (activePlayer === 0), the previous turn number is turn - 1
-                    if (this.state.activePlayer === 0 && this.state.turn > 1) {
-                        prevTurn = this.state.turn - 1;
-                    }
-
-                    const commentKey = `${prevTurn}-${prevPlayerId}`;
-                    const customComment = this.state.turnComments[commentKey];
-                    // Duels.ink-style recap of the turn that just ended (inked / played / banished),
-                    // appended BELOW whatever note the user wrote manually.
-                    const recap = this._formatTurnActions();
-                    let baseComment = customComment && customComment.trim() !== "" ? customComment.trim() : "Auto-saved at start of turn.";
-                    // Strip any previously-appended recap so restoring a node then replaying doesn't nest recaps.
-                    const recapMarker = '\n\n**Turn recap**';
-                    const mIdx = baseComment.indexOf(recapMarker);
-                    if (mIdx !== -1) baseComment = baseComment.slice(0, mIdx).trim();
-                    if (!baseComment) baseComment = "Auto-saved at start of turn.";
-                    const finalComment = baseComment + recap;
-
-                    this.bookmarks.push({
-                        id: newId,
-                        parentId: this.state.activeBookmarkId || null,
-                        name: name,
-                        stats: stats,
-                        comment: finalComment,
-                        color: bColor,
-                        cardsPlayedData: [...(this.state.cardsPlayedThisTurn || [])],
-                        sections: this._buildNodeSections(),
-                        state: JSON.stringify(this.compressState(this.state, true)),
-                        timestamp: Date.now(),
-                        isDeckEdit: false
-                    });
-
-                    this.state.activeBookmarkId = newId;
-                    this._turnNodeId = newId;
-                    this.showToast("Auto-Saved Timeline");
+                // Ending the turn again after an undo rewrites what the first end wrote.
+                const again = this._turnClosed && this._turnClosed.from === node.id
+                    && this.bookmarks.find(b => b.id === this._turnClosed.to);
+                let target = again || (node.turnPlayed ? null : node);
+                if (!target) {
+                    target = { ...node, id: this.uuid(), timestamp: Date.now() };
+                    this.bookmarks.push(target);
                 }
-
-                // Clear the per-turn buffers. This runs whether or not auto-save is on —
-                // otherwise they accumulate across the whole game and a manual bookmark
-                // shows every card played since turn 1.
-                this.state.cardsPlayedThisTurn = [];
-                this.state.turnActions = this._emptyTurnActions();
-                this.state.turnActions.drawn = drawStepIds; // the draw that opened this turn
-                // Swap in the new turn's starting hand only now — the node above still
-                // needed the previous turn's capture to compute what left that hand.
-                this.state.turnStartHand = turnStartHandSnap;
-                // The board is the auto-saved node now (Feature 53's "already saved").
-                if (this._turnNodeId) this.markBoardKept(this._turnNodeId);
-                this._turnNodeId = null;
-
-                this.render();
+                Object.assign(target, filled);
+                this._turnClosed = { from: node.id, to: target.id };
+                if (this.state.activeBookmarkId === node.id) this.state.activeBookmarkId = target.id;
             },
 
             exertInk() {
@@ -5453,6 +5456,7 @@
                         state: JSON.stringify(this.compressState(snapshot, true)),
                         timestamp: Date.now(),
                         isDeckEdit: false,
+                        turnStart: true, turnPlayed: true, // a turn's start board and what was played from it
                         cardsPlayedData,
                         sections: nodeSections
                     });
@@ -5785,6 +5789,7 @@
                         state: JSON.stringify(this.compressState(segSnapshot, true)),
                         timestamp: Date.now(),
                         isDeckEdit: false,
+                        turnStart: true, turnPlayed: true, // a turn's start board and what was played from it
                         cardsPlayedData: segPlayed.slice(),
                         // drawn/discarded: a replay has no semantic frame for either (draws
                         // ride inside the END_TURN patch, and the opponent's are hidden).
@@ -6171,18 +6176,23 @@
                 // Restore State
                 this.state = this.decompressState(JSON.parse(bookmark.state));
                 this.history = []; // Reset micro-undo history on branch jump to prevent temporal anomalies
+                this._turnClosed = null; // a turn played from here again is a new line
 
                 // CRUCIAL: If it's a manual tree node, we must explicitly tell the state we are now physically located AT this node.
                 if (!isAuto) {
                     this.state.activeBookmarkId = id;
                     this.state.activeTimelineColor = this.resolveBookmarkColor(bookmark.color);
 
-                    // Seed the turn comment textarea with the bookmark's comment if the state
-                    // has nothing for this turn yet (covers log-imported nodes and manual bookmark comments).
-                    if (bookmark.comment) {
+                    // A turn's auto-save node: ending this turn writes to it (or beside it).
+                    if (bookmark.turnStart) this.state.turnNodeId = id;
+
+                    // Seed the turn comment textarea with the bookmark's note (not its recap) if
+                    // the state has nothing for this turn yet (covers log-imported nodes too).
+                    const note = this.splitNodeComment(bookmark.comment).note;
+                    if (note) {
                         const commentKey = `${this.state.turn}-${this.state.activePlayer}`;
                         if (!this.state.turnComments[commentKey] && !this.state.turnComments[this.state.turn]) {
-                            this.state.turnComments[commentKey] = bookmark.comment;
+                            this.state.turnComments[commentKey] = note;
                         }
                     }
                 }
@@ -8054,19 +8064,16 @@
             },
 
             // The opening hand is settled (kept, mulliganed or crafted): mulligan mode
-            // ends. The second player then gets the draw step and the auto-save that
-            // endTurn() held back; the first player just plays.
+            // ends. The second player then gets the draw step endTurn() held back; the
+            // first player just plays.
             _finishMulligan() {
                 this._recordOpening();
                 const drawStep = this.state.drawPending;
                 this.state.mulliganPending = false;
                 this.state.drawPending = false;
                 this.state.mulliganDrawn = null;
-                if (drawStep) {
-                    this._drawStepAndAutoSave(); // captures the turn's starting hand after the draw, and renders
-                    return;
-                }
-                this._captureTurnStartHand(this.state.activePlayer); // the settled hand is the real opener
+                if (drawStep) this._drawStep(); // captures the turn's starting hand after the draw
+                else this._captureTurnStartHand(this.state.activePlayer); // the settled hand is the real opener
                 this.render();
             },
 

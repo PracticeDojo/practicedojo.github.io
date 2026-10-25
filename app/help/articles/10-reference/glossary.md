@@ -7,7 +7,7 @@ aliases: [definitions, terms, what does it mean, meaning, vocabulary, drying, dr
 targets: []
 related: [multiverse, what-is-the-dojo]
 order: 30
-verified: v3.11.0
+verified: v3.18.1
 ---
 
 The words this manual uses: first the Dojo's own, then Lorcana's.
@@ -20,7 +20,7 @@ The words this manual uses: first the Dojo's own, then Lorcana's.
 - **Line.** A run of turns, one after another, from the start to where it ends.
 - **Branch.** A line that splits off an earlier node, when you play from there and do something different. [Branching](help:branches)
 - **The line you're on.** The line that leads to the board in front of you. The Dojo marks it, and the node you're on, in the signal colour.
-- **Auto-save.** With **Auto-save every turn** on, ending a turn saves the board as a node. [Every turn is saved](help:auto-save)
+- **Auto-save.** With **Auto-save every turn** on, every turn gets a node: the board it starts from, and its note and recap once it ends. [Every turn is saved](help:auto-save)
 - **Left here.** A dashed snapshot of a board you jumped away from before saving it. [Left here snapshots](help:left-here)
 - **Library.** Your sessions, decks and links, on shelves by where they're kept: this device, your account, built in, public links. [The Library](help:library)
 - **Share link.** A short link to a frozen copy of a deck or a session. Anyone with it can open it. [Share a deck or a session](help:share-links)
