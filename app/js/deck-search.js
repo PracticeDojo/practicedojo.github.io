@@ -8,7 +8,8 @@
 //       letter (0.5: "lvthn" finds Leviathan). spans: [start, end) of each hit in text.
 //   DeckSearch.query(entries, q, inks) -> [{ entry, score, name, cards }]
 //       entries: [{ name, inks: [ink], cards: [cardName] }]. inks: picked inks; a deck
-//       must have all of them, and two picked means that exact pair.
+//       must have all of them, and two picked means that exact pair. A session gives
+//       inkSets: [[ink], [ink]] (its two decks) instead, and passes when either deck does.
 //       name: the name's match or null; cards: [{ card, spans }], best first.
 //       No words: every entry that passes the ink filter, in order, with no matches.
 window.DeckSearch = (function () {
@@ -72,7 +73,8 @@ window.DeckSearch = (function () {
 
     function query(entries, q, inks) {
         const want = [...(inks || [])];
-        const pass = (e) => want.every(i => e.inks.includes(i)) && (want.length < 2 || e.inks.length === want.length);
+        const fits = (inks) => want.every(i => inks.includes(i)) && (want.length < 2 || inks.length === want.length);
+        const pass = (e) => (e.inkSets ? e.inkSets.some(s => fits(s || [])) : fits(e.inks || []));
         const qs = words(q);
         const list = entries.filter(pass);
         if (!qs.length) return list.map(entry => ({ entry, score: 0, name: null, cards: [] }));
@@ -80,7 +82,7 @@ window.DeckSearch = (function () {
         list.forEach(entry => {
             const name = match(qs, entry.name);
             const cards = [];
-            new Set(entry.cards).forEach(card => { const m = match(qs, card); if (m) cards.push({ card, spans: m.spans, score: m.score }); });
+            new Set(entry.cards || []).forEach(card => { const m = match(qs, card); if (m) cards.push({ card, spans: m.spans, score: m.score }); });
             if (!name && !cards.length) return;
             cards.sort((a, b) => a.score - b.score);
             // A name hit ranks above a card hit of the same quality.

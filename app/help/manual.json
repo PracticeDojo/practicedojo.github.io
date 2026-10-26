@@ -2328,6 +2328,7 @@
    ],
    "targets": [
     "recent",
+    "recent-find",
     "all-sessions",
     "session-title"
    ],
@@ -2336,7 +2337,7 @@
     "library",
     "storage"
    ],
-   "verified": "v3.16.1",
+   "verified": "v3.21.0",
    "todo": false,
    "headings": [
     {
@@ -2360,7 +2361,7 @@
      "slug": "good-to-know"
     }
    ],
-   "body": "A session is one match with its whole Multiverse. The Dojo keeps every session on this device as you play, so you never lose a match by closing the tab.\n\n## What makes a session\n\nA new session starts when you:\n\n- press **Start match** on the home screen,\n- open a saved session file,\n- study a Duels.ink log or replay,\n- open a demo (it opens as your own copy).\n\nIt gets a name from the date and the decks, like *Oct 13 · Steelsong Tempo vs Ruby/Sapphire*: a deck's name, or its inks when it has no name. You can rename it: see [Save, save as copy, rename](help:save-and-rename).\n\n## Saving happens by itself\n\nEvery change you make is saved to this device about a second later, and again when you switch tabs or close the page. You don't have to press **Save**. Leaving to the home screen keeps the match too.\n\n## Pick up again\n\nThe home screen's **Pick up again** box lists your last session first (**Resume**), then your most recent ones, then the demos (**Explore**). The match on the board says **Back to it**. **All sessions** opens the [Library](help:library) with every session you have.\n\n[Show me](show:recent)\n\n## Good to know\n\n- Sessions live in this browser on this device. Clearing the site's data or closing a private window deletes them, and another browser or device doesn't have them. Export a file to keep a backup, or [sign in](help:account) to keep them in an account. See [Where your things are kept](help:storage).\n- **Auto-save every turn** (in the side rail, or the ☰ menu on a phone) is different: it saves a node in the [Multiverse](help:auto-save) at each turn.\n- If the Dojo can't save to this device, it tells you once: \"Couldn't save to this device. Export the session to keep it.\"\n"
+   "body": "A session is one match with its whole Multiverse. The Dojo keeps every session on this device as you play, so you never lose a match by closing the tab.\n\n## What makes a session\n\nA new session starts when you:\n\n- press **Start match** on the home screen,\n- open a saved session file,\n- study a Duels.ink log or replay,\n- open a demo (it opens as your own copy).\n\nIt gets a name from the date and the decks, like *Oct 13 · Steelsong Tempo vs Ruby/Sapphire*: a deck's name, or its inks when it has no name. You can rename it: see [Save, save as copy, rename](help:save-and-rename).\n\n## Saving happens by itself\n\nEvery change you make is saved to this device about a second later, and again when you switch tabs or close the page. You don't have to press **Save**. Leaving to the home screen keeps the match too.\n\n## Pick up again\n\nThe home screen's **Pick up again** box lists **Your sessions**, the last one first (**Resume**), then your most recent ones, and then the **Demos** (**Explore**). The match on the board says **Back to it**. **All sessions** opens the [Library](help:library) with every session you have.\n\n**Find a session or a card in it** searches all your sessions and the demos, by title or by a card in either deck. Type in the search to find one by its name or by a card in it, with typos and missing letters (`lvthn` finds The Leviathan); a row found by a card says which. The ink buttons narrow the list: one ink shows what uses it, two show that exact pair. The arrow on **Demos** folds them away, and they stay folded next time.\n\n[Show me](show:recent)\n\n## Good to know\n\n- Sessions live in this browser on this device. Clearing the site's data or closing a private window deletes them, and another browser or device doesn't have them. Export a file to keep a backup, or [sign in](help:account) to keep them in an account. See [Where your things are kept](help:storage).\n- **Auto-save every turn** (in the side rail, or the ☰ menu on a phone) is different: it saves a node in the [Multiverse](help:auto-save) at each turn.\n- If the Dojo can't save to this device, it tells you once: \"Couldn't save to this device. Export the session to keep it.\"\n"
   },
   {
    "id": "save-and-rename",
@@ -2428,7 +2429,11 @@
     "my decks",
     "saved sessions",
     "shelves",
-    "all sessions"
+    "all sessions",
+    "find a session",
+    "search sessions",
+    "search decks",
+    "find a card"
    ],
    "targets": [
     "library-button",
@@ -2437,7 +2442,9 @@
     "lib-sessions",
     "lib-decks",
     "lib-links",
-    "lib-import"
+    "lib-import",
+    "lib-sessions-find",
+    "lib-decks-find"
    ],
    "related": [
     "sessions",
@@ -2445,7 +2452,7 @@
     "share-links",
     "account-sync"
    ],
-   "verified": "v3.11.0",
+   "verified": "v3.21.0",
    "todo": false,
    "headings": [
     {
@@ -2460,6 +2467,11 @@
     },
     {
      "level": 2,
+     "text": "Find a session or a deck",
+     "slug": "find-a-session-or-a-deck"
+    },
+    {
+     "level": 2,
      "text": "The shelves",
      "slug": "the-shelves"
     },
@@ -2469,7 +2481,7 @@
      "slug": "good-to-know"
     }
    ],
-   "body": "The Library holds every session and deck you keep, sorted onto shelves by where each one lives.\n\n## Open the Library\n\nOn the home screen, press **Library** at the top, or **All sessions** in **Pick up again**. The figures on the button count your sessions on this device and, signed in, in your account. {key:Esc} or **×** closes it.\n\n[Show me](show:library-button)\n\nFrom a match, leave to the home screen first (see [The screen at a glance](help:screen-at-a-glance)).\n\n## Three tabs\n\n- **Sessions**: every match you've kept. **Open** loads one (**Back to it** for the match on the board). Its **⋯** menu has **Rename**, **Share a link**, **Duplicate**, **Export file (.dojo.json.gz)** and **Delete…**. **Import file** adds a session file: see [Export and import session files](help:files).\n- **Decks**: your decks and the **Built in** ones. **You** and **Opponent** seat a deck for the next match. **New deck**, **Import .txt** and **From a replay** add one. See [Your decks](help:decks).\n- **Links**: the share links you made, under **Public links**. See [Share a deck or a session](help:share-links).\n\n## The shelves\n\nSigned out, your sessions and decks sit on **On this device**, with an empty **Your account** shelf that offers **Sign in**. Signed in, they sort into **In your account + this device**, **Only on this device** and **Only in your account**. Each shelf says in one line what that means.\n\nA row only adds a note when it's out of step, like **Changed here since your last Save**. See [What goes to your account](help:account-sync).\n\n:::phone\nEach row's buttons sit at the foot of its card.\n:::\n\n## Good to know\n\n- **Delete…** on a session or deck can't be undone. Export a session first if you might want it back.\n- **On this device** means this browser only: clearing its site data deletes them. See [Where your things are kept](help:storage).\n"
+   "body": "The Library holds every session and deck you keep, sorted onto shelves by where each one lives.\n\n## Open the Library\n\nOn the home screen, press **Library** at the top, or **All sessions** in **Pick up again**. The figures on the button count your sessions on this device and, signed in, in your account. {key:Esc} or **×** closes it.\n\n[Show me](show:library-button)\n\nFrom a match, leave to the home screen first (see [The screen at a glance](help:screen-at-a-glance)).\n\n## Three tabs\n\n- **Sessions**: every match you've kept. **Open** loads one (**Back to it** for the match on the board). Its **⋯** menu has **Rename**, **Share a link**, **Duplicate**, **Export file (.dojo.json.gz)** and **Delete…**. **Import file** adds a session file: see [Export and import session files](help:files).\n- **Decks**: your decks and the **Built in** ones. **You** and **Opponent** seat a deck for the next match. **New deck**, **Import .txt** and **From a replay** add one. See [Your decks](help:decks).\n- **Links**: the share links you made, under **Public links**. See [Share a deck or a session](help:share-links).\n\n## Find a session or a deck\n\n**Sessions** and **Decks** each have a search at the top: **Find a session or a card in it** and **Find a deck or a card in one**. Type in the search to find one by its name or by a card in it, with typos and missing letters (`lvthn` finds The Leviathan); a row found by a card says which. The ink buttons narrow the list: one ink shows what uses it, two show that exact pair. A session matches when either of its decks does; its cards are read the first time you search. While you search, only the shelves with matches show.\n\n[Show me](show:lib-decks-find)\n\n## The shelves\n\nSigned out, your sessions and decks sit on **On this device**, with an empty **Your account** shelf that offers **Sign in**. Signed in, they sort into **In your account + this device**, **Only on this device** and **Only in your account**. Each shelf says in one line what that means.\n\nThe **Built in** shelf folds away with the arrow on its heading, and stays folded next time; searching shows it again.\n\nA row only adds a note when it's out of step, like **Changed here since your last Save**. See [What goes to your account](help:account-sync).\n\n:::phone\nEach row's buttons sit at the foot of its card.\n:::\n\n## Good to know\n\n- **Delete…** on a session or deck can't be undone. Export a session first if you might want it back.\n- **On this device** means this browser only: clearing its site data deletes them. See [Where your things are kept](help:storage).\n"
   },
   {
    "id": "files",
@@ -3841,6 +3853,11 @@
    "screen": "home",
    "any": "#home-recent"
   },
+  "recent-find": {
+   "label": "Find a session or a card in it",
+   "screen": "home",
+   "any": "#recent-find"
+  },
   "all-sessions": {
    "label": "All sessions",
    "screen": "home",
@@ -3875,6 +3892,16 @@
    "label": "Decks",
    "screen": "library",
    "any": "#lib-tab-decks"
+  },
+  "lib-sessions-find": {
+   "label": "Find a session or a card in it",
+   "screen": "library",
+   "any": "#lib-sessions-find"
+  },
+  "lib-decks-find": {
+   "label": "Find a deck or a card in one",
+   "screen": "library",
+   "any": "#lib-decks-find"
   },
   "lib-links": {
    "label": "Links",

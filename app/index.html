@@ -283,8 +283,8 @@
                         <label class="dp-find"><i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i><input
                                 type="search" id="deck-find" placeholder="Find a deck or a card in one"
                                 autocomplete="off" aria-label="Find a deck or a card in one"
-                                oninput="App.setDeckQuery(this.value)"></label>
-                        <div class="dp-inks" id="deck-inks" role="group" aria-label="Filter by ink"></div>
+                                oninput="App.setFindQuery('deck', this.value)"></label>
+                        <div class="dp-inks" id="deck-inks" data-find-inks="deck" role="group" aria-label="Filter by ink"></div>
                     </div>
                     <div class="dp-list" id="home-chips"></div>
                     <div class="start-row">
@@ -299,6 +299,13 @@
                         <button class="link-btn" id="btn-all-sessions" onclick="App.openLibrary('sessions')">All
                             sessions</button>
                     </h3>
+                    <div class="dp-tools rec-find" id="recent-find">
+                        <label class="dp-find"><i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i><input
+                                type="search" placeholder="Find a session or a card in it" autocomplete="off"
+                                aria-label="Find a session or a card in it"
+                                oninput="App.setFindQuery('recent', this.value)"></label>
+                        <div class="dp-inks" data-find-inks="recent" role="group" aria-label="Filter by ink"></div>
+                    </div>
                     <div id="home-recent"></div>
                 </section>
             </div>
@@ -366,6 +373,12 @@
                     <i class="fa-solid fa-file-import"></i> Import file
                 </button>
             </div>
+            <div class="dp-tools lib-find" id="lib-sessions-find">
+                <label class="dp-find"><i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i><input type="search"
+                        placeholder="Find a session or a card in it" autocomplete="off" aria-label="Find a session or a card in it"
+                        oninput="App.setFindQuery('libSessions', this.value)"></label>
+                <div class="dp-inks" data-find-inks="libSessions" role="group" aria-label="Filter by ink"></div>
+            </div>
             <div id="home-sessions-list"></div>
         </section>
 
@@ -406,6 +419,12 @@
                 </div>
             </form>
 
+            <div class="dp-tools lib-find" id="lib-decks-find">
+                <label class="dp-find"><i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i><input type="search"
+                        placeholder="Find a deck or a card in one" autocomplete="off" aria-label="Find a deck or a card in one"
+                        oninput="App.setFindQuery('libDecks', this.value)"></label>
+                <div class="dp-inks" data-find-inks="libDecks" role="group" aria-label="Filter by ink"></div>
+            </div>
             <div id="home-mydecks-list"></div>
             <div id="home-defaultdecks"></div>
         </section>
@@ -1229,7 +1248,7 @@
     <script>
         let cardFuse = null;
 
-        const APP_VERSION = "v3.20.0"; // Centralized version string (v3: Field Unit)
+        const APP_VERSION = "v3.21.0"; // Centralized version string (v3: Field Unit)
 
         // Tweaks panel accent presets (hue values for the OKLCH accent ramp)
         // Tweaks → Accent: the approved Field Unit signals only (design.md ·
@@ -2086,96 +2105,193 @@
                 this.renderDeckPicker();
             },
 
-            // --- Deck picker (Feature 66): your decks, then the default ones (folds away,
-            // remembered), filtered by ink and found by name or by a card in them. ---
-            _deckQuery: '',
-            _deckInks: new Set(),
+            // --- Find (Features 66–67): one search and six ink keys per list. The home
+            // deck picker, Pick up again, and the Library's Sessions and Decks each keep
+            // their own. Default decks, built-in decks and demos fold away (remembered in
+            // Tweaks); searching or picking an ink shows them again. ---
+            _finds: {},
 
-            setDeckQuery(q) {
-                this._deckQuery = q;
-                this.renderDeckPicker();
+            findState(id) {
+                return this._finds[id] || (this._finds[id] = { q: '', inks: new Set() });
             },
 
-            toggleDeckInk(ink) {
-                if (!this._deckInks.delete(ink)) this._deckInks.add(ink);
-                this.renderDeckPicker();
+            findActive(id) {
+                const f = this.findState(id);
+                return DeckSearch.words(f.q).length > 0 || f.inks.size > 0;
             },
 
-            toggleDefaultDecks() {
+            setFindQuery(id, q) {
+                this.findState(id).q = q;
+                this.repaintFind(id);
+            },
+
+            toggleFindInk(id, ink) {
+                const inks = this.findState(id).inks;
+                if (!inks.delete(ink)) inks.add(ink);
+                this.repaintFind(id);
+            },
+
+            repaintFind(id) {
+                if (id === 'deck') this.renderDeckPicker();
+                else if (id === 'libDecks') this.paintHomeDecks();
+                else if (id === 'libSessions') this.paintHomeSessions();
+                else if (id === 'recent') this.paintRecent();
+            },
+
+            // key: a Tweaks flag (defaultDecksCollapsed, libBuiltinCollapsed, recentDemosCollapsed).
+            toggleFold(key, id) {
                 const t = this.loadTweaks();
-                t.defaultDecksCollapsed = !t.defaultDecksCollapsed;
+                t[key] = !t[key];
                 this.saveTweaks(t);
-                this.renderDeckPicker();
+                this.repaintFind(id);
             },
 
-            // A deck's inks and card names, for the search. Memoised on the list, like deckInfo.
-            deckEntry(key) {
-                const d = this._deckIndex[key];
-                this._deckEntryCache = this._deckEntryCache || new Map();
-                let e = this._deckEntryCache.get(d.decklist);
-                if (!e) {
+            isFolded(key, id) {
+                return !this.findActive(id) && !!this.loadTweaks()[key];
+            },
+
+            // The fold key on a heading: a chevron, hidden while a search shows everything.
+            foldBtnHtml(key, id, label) {
+                const open = !this.isFolded(key, id);
+                return `<button type="button" class="fold-btn" data-act="fold" data-fold="${key}" aria-expanded="${open}"
+                    aria-label="${open ? 'Fold away' : 'Show'} ${this.escapeHtml(label)}"${this.findActive(id) ? ' disabled' : ''}><i class="fa-solid fa-chevron-down" aria-hidden="true"></i></button>`;
+            },
+
+            paintFindInks(id) {
+                const el = document.querySelector(`[data-find-inks="${id}"]`);
+                if (!el) return;
+                const f = this.findState(id), esc = (v) => this.escapeHtml(v);
+                el.innerHTML = ['amber', 'amethyst', 'emerald', 'ruby', 'sapphire', 'steel'].map(ink => {
+                    const label = this.inkSlashLabel([ink]);
+                    return `<button type="button" class="dp-ink" aria-pressed="${f.inks.has(ink)}" title="${esc(label)}" aria-label="${esc(label)}"
+                        style="--ink:${this.inkCss(ink)}" onclick="App.toggleFindInk('${id}', '${ink}')"><i></i></button>`;
+                }).join('');
+                el.classList.toggle('is-filtering', f.inks.size > 0);
+            },
+
+            // → null when the list isn't narrowed, else Map(id → { score, name, cards }).
+            findHits(id, entries) {
+                if (!this.findActive(id)) return null;
+                const f = this.findState(id);
+                return new Map(DeckSearch.query(entries, f.q, f.inks).map(r => [r.entry.id, r]));
+            },
+
+            // Rows that pass, best match first; all of them, in order, when not narrowed.
+            findKeep(hits, list, idOf) {
+                if (!hits) return list;
+                return list.filter(x => hits.has(idOf(x))).sort((a, b) => hits.get(idOf(a)).score - hits.get(idOf(b)).score);
+            },
+
+            markedHtml(text, spans) {
+                const esc = (v) => this.escapeHtml(v);
+                let out = '', at = 0;
+                (spans || []).slice().sort((a, b) => a[0] - b[0]).forEach(([a, b]) => {
+                    if (a < at) return;
+                    out += esc(text.slice(at, a)) + '<mark>' + esc(text.slice(a, b)) + '</mark>';
+                    at = b;
+                });
+                return out + esc(text.slice(at));
+            },
+
+            findNameHtml(hit, name) {
+                return hit && hit.name ? this.markedHtml(name, hit.name.spans) : this.escapeHtml(name);
+            },
+
+            // The cards a row was found by: "The Leviathan - Guardian of Atlantis ×4".
+            findWhyText(hit, qty) {
+                if (!hit || !hit.cards.length) return '';
+                return hit.cards.slice(0, 2).map(c => this.markedHtml(c.card, c.spans) + (qty && qty[c.card] ? ` ×${qty[c.card]}` : '')).join(' · ');
+            },
+
+            // A decklist's card names and counts, for the search. Memoised on the list.
+            deckCards(decklist) {
+                this._deckCardsCache = this._deckCardsCache || new Map();
+                const key = String(decklist || '');
+                let c = this._deckCardsCache.get(key);
+                if (!c) {
                     const cards = [], qty = {};
-                    String(d.decklist || '').split('\n').forEach(line => {
+                    key.split('\n').forEach(line => {
                         const m = line.trim() && this.parseDeckLine(line.trim());
                         if (!m) return;
                         const name = m.card ? m.card.name + (m.card.version ? ' - ' + m.card.version : '') : m.name;
-                        cards.push(name);
+                        if (!qty[name]) cards.push(name);
                         qty[name] = (qty[name] || 0) + m.qty;
                     });
-                    const info = this.deckInfo(d.decklist);
-                    e = { inks: info.inks || [], count: info.count, cards, qty };
-                    this._deckEntryCache.set(d.decklist, e);
+                    c = { cards, qty };
+                    this._deckCardsCache.set(key, c);
                 }
-                return { ...e, key, name: d.name, notes: d.notes || '', mine: key.startsWith('my:') };
+                return c;
             },
 
+            deckEntryOf(d, id) {
+                const info = this.deckInfo(d.decklist);
+                return { id, name: d.name, notes: d.notes || '', inks: info.inks || [], count: info.count, ...this.deckCards(d.decklist) };
+            },
+
+            // A session's (or demo's) cards, both decks, read from its file the first time
+            // a search needs them and kept until the session changes.
+            _sessionCards: new Map(),
+
+            sessionCards(key, at) {
+                const c = this._sessionCards.get(key);
+                return c && c.at === at ? c.cards : [];
+            },
+
+            // A demo's two decks' inks (its manifest has none), once read.
+            sessionInks(key, at) {
+                const c = this._sessionCards.get(key);
+                return c && c.at === at ? c.inks : [];
+            },
+
+            // rows: [{ key, at, load: () => data }]. Loads the missing ones, then repaints.
+            async ensureSessionCards(rows, id) {
+                const missing = rows.filter(r => !this._sessionCards.has(r.key) || this._sessionCards.get(r.key).at !== r.at);
+                if (!missing.length || this._sessionCardsLoading) return;
+                this._sessionCardsLoading = true;
+                try {
+                    for (const r of missing) {
+                        let cards = [], inks = [];
+                        try {
+                            const data = await r.load();
+                            cards = [...new Set(this.deckCards(data.deck1).cards.concat(this.deckCards(data.deck2).cards))];
+                            inks = [this.deckInfo(data.deck1).inks, this.deckInfo(data.deck2).inks];
+                        } catch (e) { /* unreadable: found by title only */ }
+                        this._sessionCards.set(r.key, { at: r.at, cards, inks });
+                    }
+                } finally { this._sessionCardsLoading = false; }
+                this.repaintFind(id);
+            },
+
+            // --- Deck picker (Feature 66): your decks, then the default ones. ---
             renderDeckPicker() {
                 const list = document.getElementById('home-chips');
-                const inksEl = document.getElementById('deck-inks');
                 if (!list || !window.DeckSearch) return;
                 const esc = (v) => this.escapeHtml(v);
-                const marked = (text, spans) => {
-                    let out = '', at = 0;
-                    (spans || []).slice().sort((a, b) => a[0] - b[0]).forEach(([a, b]) => {
-                        if (a < at) return;
-                        out += esc(text.slice(at, a)) + '<mark>' + esc(text.slice(a, b)) + '</mark>';
-                        at = b;
-                    });
-                    return out + esc(text.slice(at));
-                };
-                inksEl.innerHTML = ['amber', 'amethyst', 'emerald', 'ruby', 'sapphire', 'steel'].map(ink => {
-                    const on = this._deckInks.has(ink), label = this.inkSlashLabel([ink]);
-                    return `<button type="button" class="dp-ink" aria-pressed="${on}" title="${esc(label)}" aria-label="${esc(label)}"
-                        style="--ink:${this.inkCss(ink)}" onclick="App.toggleDeckInk('${ink}')"><i></i></button>`;
-                }).join('');
-                inksEl.classList.toggle('is-filtering', this._deckInks.size > 0);
-
+                this.paintFindInks('deck');
                 const keys = Object.keys(this._deckIndex);
                 if (!keys.length) {
                     list.innerHTML = '<span class="home-empty">Default decks couldn\'t be loaded. Paste a list above instead.</span>';
                     return;
                 }
-                const found = DeckSearch.query(keys.map(k => this.deckEntry(k)), this._deckQuery, this._deckInks);
-                if (!found.length) {
+                const entries = keys.map(k => this.deckEntryOf(this._deckIndex[k], k));
+                const hits = this.findHits('deck', entries);
+                const shown = this.findKeep(hits, entries, e => e.id);
+                if (!shown.length) {
                     list.innerHTML = '<div class="dp-none">No deck matches. Paste a list above instead.</div>';
                     return;
                 }
-                const row = (r) => {
-                    const e = r.entry;
-                    const why = r.cards.slice(0, 2).map(c => `${marked(c.card, c.spans)} ×${e.qty[c.card]}`).join(' · ');
-                    const sub = why || esc(this.inkPairLabel(this.sortInks(e.inks)));
-                    return `<button type="button" class="dp-row" data-key="${esc(e.key)}" title="${esc(e.notes)}">${this.inkPipsHtml(e.inks)}
-                        <span class="dp-text"><span class="dp-name">${r.name ? marked(e.name, r.name.spans) : esc(e.name)}</span><span class="dp-sub">${sub}</span></span>
+                const row = (e) => {
+                    const hit = hits && hits.get(e.id);
+                    const sub = this.findWhyText(hit, e.qty) || esc(this.inkPairLabel(this.sortInks(e.inks)));
+                    return `<button type="button" class="dp-row" data-key="${esc(e.id)}" title="${esc(e.notes)}">${this.inkPipsHtml(e.inks)}
+                        <span class="dp-text"><span class="dp-name">${this.findNameHtml(hit, e.name)}</span><span class="dp-sub">${sub}</span></span>
                         <span class="dp-count">${e.count}</span></button>`;
                 };
-                const mine = found.filter(r => r.entry.mine), defs = found.filter(r => !r.entry.mine);
-                // Searching or filtering shows the default decks even when they're folded away.
-                const narrowed = DeckSearch.words(this._deckQuery).length > 0 || this._deckInks.size > 0;
-                const open = narrowed || !this.loadTweaks().defaultDecksCollapsed;
+                const mine = shown.filter(e => e.id.startsWith('my:')), defs = shown.filter(e => !e.id.startsWith('my:'));
+                const open = !this.isFolded('defaultDecksCollapsed', 'deck');
                 list.innerHTML = (mine.length ? `<div class="dp-shelf is-mine"><div class="dp-head">Your decks <span class="dp-n">${mine.length}</span></div>${mine.map(row).join('')}</div>` : '')
                     + (defs.length ? `<div class="dp-shelf is-default">
-                        <button type="button" class="dp-head" data-act="toggle-defaults" aria-expanded="${open}"${narrowed ? ' disabled' : ''}>Default decks <span class="dp-n">${defs.length}</span>
-                            <i class="fa-solid fa-chevron-down" aria-hidden="true"></i></button>
+                        <div class="dp-head">Default decks <span class="dp-n">${defs.length}</span>${this.foldBtnHtml('defaultDecksCollapsed', 'deck', 'the default decks')}</div>
                         ${open ? defs.map(row).join('') : ''}</div>` : '');
             },
 
@@ -2916,7 +3032,9 @@
                 on('home-defaultdecks', (act, id) => this.onDeckAction(act, 'def', id));
                 on('lib-shared-list', (act, id) => this.onSharedAction(act, id));
                 on('home-recent', (act, id, row) => {
-                    if (act === 'open-session') this.openDeviceSession(id);
+                    if (act === 'fold') this.toggleFold('recentDemosCollapsed', 'recent');
+                    else if (act === 'all-sessions') this.openLibrary('sessions');
+                    else if (act === 'open-session') this.openDeviceSession(id);
                     else if (act === 'open-demo') this.openDemo(id, row);
                     else if (act === 'sign-in') this.openAccount();
                 });
@@ -2926,7 +3044,7 @@
                     if (btn) this.onIntakeAction(btn.dataset.act);
                 });
                 document.getElementById('home-chips').addEventListener('click', (e) => {
-                    if (e.target.closest('[data-act="toggle-defaults"]')) return this.toggleDefaultDecks();
+                    if (e.target.closest('[data-act="fold"]')) return this.toggleFold('defaultDecksCollapsed', 'deck');
                     const chip = e.target.closest('[data-key]');
                     if (chip) this.seatDeck(chip.dataset.key);
                 });
@@ -3217,11 +3335,35 @@
                 let demos = [];
                 try { demos = await DojoLibrary.loadDemoManifest(); } catch (e) { demos = []; }
 
-                const esc = (v) => this.escapeHtml(v);
                 const lastId = await DojoLibrary.getPref('lastSessionId');
+                this._recent = { rows, demos, lastId };
+                this.paintRecent();
+            },
+
+            // Pick up again from what renderRecent read, narrowed by its find bar: your
+            // sessions (the last one first), then the demos, which fold away.
+            paintRecent() {
+                const el = document.getElementById('home-recent');
+                if (!el || !this._recent) return;
+                const { rows, demos: allDemos, lastId } = this._recent;
+                const esc = (v) => this.escapeHtml(v);
                 const list = rows || [];
                 const cont = list.find(r => r.id === lastId) || null;
-                const shown = (cont ? [cont] : []).concat(list.filter(r => r !== cont)).slice(0, 4);
+                this.paintFindInks('recent');
+                const narrowed = this.findActive('recent');
+                const words = DeckSearch.words(this.findState('recent').q).length > 0;
+                const demoKey = (d) => 'demo:' + d.id;
+                const hits = this.findHits('recent', list.map(r => this.sessionEntry(r.id, r.title, r.summary, r.updatedAt))
+                    .concat(allDemos.map(d => ({ id: demoKey(d), name: d.title, inkSets: this.sessionInks(demoKey(d), 'demo'), cards: this.sessionCards(demoKey(d), 'demo') }))));
+                if (narrowed) {
+                    this.ensureSessionCards((words ? list.map(r => ({ key: r.id, at: r.updatedAt, load: async () => (await DojoLibrary.loadSession(r.id)).data })) : [])
+                        .concat(allDemos.map(d => ({ key: demoKey(d), at: 'demo', load: async () => (await DojoLibrary.fetchDemo(d)).data }))), 'recent');
+                }
+                const MAX = 6;
+                const found = narrowed ? this.findKeep(hits, list, r => r.id) : null;
+                const shown = found ? found.slice(0, MAX) : (cont ? [cont] : []).concat(list.filter(r => r !== cont)).slice(0, 4);
+                const demos = this.findKeep(hits, allDemos, demoKey);
+                const why = (id) => { const w = this.findWhyText(hits && hits.get(id)); return w ? `<span class="rec-why">${w}</span>` : ''; };
                 const live = this.hasLiveMatch() && this.session ? this.session.id : null;
                 const go = (label) => `<span class="rec-go">${label} <i class="fa-solid fa-arrow-right"></i></span>`;
                 const linked = (r) => !!this.account && this.isLinked(r);
@@ -3242,22 +3384,34 @@
                 let html = '';
                 if (rows === null) {
                     html += `<div class="home-empty">This browser isn't letting the Dojo keep sessions (private window?). Use Export in the Multiverse to keep a match.</div>`;
-                } else if (!shown.length) {
+                } else if (narrowed && !shown.length && !demos.length) {
+                    html += `<div class="home-empty">No session or demo matches.</div>`;
+                } else if (!list.length) {
                     html += `<div class="home-empty">Every match you play is kept here, on this device. Nothing yet.</div>`;
                 }
+                if (shown.length) {
+                    html += `<div class="rec-head is-mine">Your sessions <span class="dp-n">${found ? found.length : list.length}</span></div>`;
+                }
                 html += shown.map(r => `
-                    <button class="rec${r === cont ? ' is-continue' : ''}${linked(r) ? ' is-both' : ''}" data-act="open-session" data-id="${esc(r.id)}">
-                        <span class="rec-main"><span class="rec-title">${esc(r.title)}</span>
-                        <span class="rec-meta">${this.sessionMetaHtml(r.summary, r.updatedAt)}</span></span>
+                    <button class="rec${r === cont && !found ? ' is-continue' : ''}${linked(r) ? ' is-both' : ''}" data-act="open-session" data-id="${esc(r.id)}">
+                        <span class="rec-main"><span class="rec-title">${this.findNameHtml(hits && hits.get(r.id), r.title)}</span>
+                        <span class="rec-meta">${this.sessionMetaHtml(r.summary, r.updatedAt)}</span>${why(r.id)}</span>
                         ${go(r.id === live ? 'Back to it' : r === cont ? 'Resume' : 'Open')}
                     </button>`).join('');
-                html += demos.map(d => `
+                if (found && found.length > MAX) {
+                    html += `<div class="rec-more">${found.length - MAX} more in <button type="button" class="link-btn" data-act="all-sessions" data-id="more">All sessions</button></div>`;
+                }
+                if (demos.length) {
+                    const open = !this.isFolded('recentDemosCollapsed', 'recent');
+                    html += `<div class="rec-head is-default" data-id="demos">Demos <span class="dp-n">${demos.length}</span>${this.foldBtnHtml('recentDemosCollapsed', 'recent', 'the demos')}</div>`;
+                    if (open) html += demos.map(d => `
                     <button class="rec is-builtin" data-act="open-demo" data-id="${esc(d.id)}">
-                        <span class="rec-main"><span class="rec-title">${esc(d.title)}</span>
-                        <span class="rec-meta">Demo · opens as your own copy</span></span>
+                        <span class="rec-main"><span class="rec-title">${this.findNameHtml(hits && hits.get(demoKey(d)), d.title)}</span>
+                        <span class="rec-meta">Demo · opens as your own copy</span>${why(demoKey(d))}</span>
                         ${go('Explore')}
                     </button>`).join('');
-                if (list.length) {
+                }
+                if (list.length && !narrowed) {
                     const bars = (...places) => `<span class="rec-bars" aria-hidden="true">${places.map(p => `<i class="is-${p}"></i>`).join('')}</span>`;
                     const parts = this.account
                         ? [both && `<span>${bars('device', 'account')}${both} in your account</span>`,
@@ -4018,11 +4172,36 @@
                     try { acc = await DojoCloud.listAccountSessions(); } catch (e) { console.warn('Account sessions unavailable:', e); }
                     this._accountSessions = acc;
                 }
+                this._libSessions = { rows, acc };
+                this.paintHomeSessions();
+            },
+
+            // A session's search entry: its title, its two decks' inks, and (once read) its cards.
+            sessionEntry(id, title, summary, at) {
+                return { id, name: title || '', inkSets: (summary && summary.inks) || [], cards: at != null ? this.sessionCards(id, at) : [] };
+            },
+
+            // The Sessions tab from what renderHomeSessions read, narrowed by its find bar.
+            paintHomeSessions() {
+                if (!this._libSessions) return;
+                const list = document.getElementById('home-sessions-list');
+                const { acc } = this._libSessions;
+                const allRows = this._libSessions.rows;
                 const accById = new Map((acc || []).map(r => [r.id, r]));
-                const accountOnly = (acc || []).filter(r => !rows.some(d => d.id === r.id));
+                const allAccountOnly = (acc || []).filter(r => !allRows.some(d => d.id === r.id));
+                this.paintFindInks('libSessions');
+                const narrowed = this.findActive('libSessions');
+                const hits = this.findHits('libSessions', allRows.map(r => this.sessionEntry(r.id, r.title, r.summary, r.updatedAt))
+                    .concat(allAccountOnly.map(r => this.sessionEntry(r.id, r.title, r.summary, null))));
+                if (DeckSearch.words(this.findState('libSessions').q).length) this.ensureSessionCards(allRows.map(r => ({ key: r.id, at: r.updatedAt, load: async () => (await DojoLibrary.loadSession(r.id)).data })), 'libSessions');
+                const rows = this.findKeep(hits, allRows, r => r.id);
+                const accountOnly = this.findKeep(hits, allAccountOnly, r => r.id);
+                const nameOf = (r) => this.findNameHtml(hits && hits.get(r.id), r.title);
+                const whyOf = (r) => { const w = this.findWhyText(hits && hits.get(r.id)); return w ? `<div class="lib-why">${w}</div>` : ''; };
                 const esc = (v) => this.escapeHtml(v);
                 const live = this.hasLiveMatch() && this.session ? this.session.id : null;
-                const empty = `<div class="lib-empty">No sessions yet. Start a match or study a Duels.ink game, and it shows up here.</div>`;
+                const empty = narrowed ? `<div class="lib-empty">No session matches.</div>`
+                    : `<div class="lib-empty">No sessions yet. Start a match or study a Duels.ink game, and it shows up here.</div>`;
                 const lst = (html) => `<div class="lib-list">${html}</div>`;
 
                 // device (only here) · synced · ahead (account is behind) · behind (account is newer)
@@ -4055,17 +4234,18 @@
                     return `
                     <div class="lib-row${isLive ? ' is-live' : ''}" data-id="${esc(r.id)}">
                         <div class="lib-top">
-                            <div class="lib-title">${esc(r.title)}${isLive ? '<span class="lib-badge">on the board</span>' : ''}</div>
+                            <div class="lib-title">${nameOf(r)}${isLive ? '<span class="lib-badge">on the board</span>' : ''}</div>
                             <div class="lib-actions">${placeBtn}<button class="btn ${isLive ? 'btn-primary' : 'btn-ghost'}" data-act="open">${isLive ? 'Back to it' : 'Open'}</button>${menu}</div>
                         </div>
                         ${note}
                         <div class="lib-meta">${this.sessionMetaHtml(r.summary, r.updatedAt)}</div>
+                        ${whyOf(r)}
                     </div>`;
                 };
                 const accountRow = (r) => `
                     <div class="lib-row" data-id="${esc(r.id)}">
                         <div class="lib-top">
-                            <div class="lib-title">${esc(r.title)}</div>
+                            <div class="lib-title">${nameOf(r)}</div>
                             <div class="lib-actions"><button class="btn btn-ghost" data-act="open-account">Download &amp; open</button>${this.rowMenuHtml(r.title, [
                     ['pull', 'fa-solid fa-arrow-down', 'Download to this device'],
                     '-',
@@ -4077,17 +4257,19 @@
 
                 if (!this.account) {
                     this._libDeviceOnly.sessions = [];
-                    list.innerHTML = this.libShelfHtml('device', 'On this device', rows.length,
+                    list.innerHTML = narrowed && !rows.length ? empty : this.libShelfHtml('device', 'On this device', rows.length,
                         '<b>Kept in this browser, and only here.</b> Every match saves itself as you play. Clearing site data or switching browser loses them, so Export a file to keep a backup.',
                         rows.length ? lst(rows.map(r => deviceRow(r, 'device')).join('')) : empty) +
-                        this.libSignInShelfHtml('your sessions and decks');
+                        (narrowed ? '' : this.libSignInShelfHtml('your sessions and decks'));
                     return;
                 }
                 if (!rows.length && !accountOnly.length) { list.innerHTML = empty; return; }
                 const placed = rows.map(r => ({ r, place: placeOf(r) }));
                 const both = placed.filter(x => x.place !== 'device');
                 const here = placed.filter(x => x.place === 'device');
-                this._libDeviceOnly.sessions = here.map(x => x.r);
+                // Save all saves every device-only session, not just the ones a search shows.
+                const hereAll = allRows.filter(r => placeOf(r) === 'device');
+                this._libDeviceOnly.sessions = hereAll;
                 list.innerHTML =
                     (both.length ? this.libShelfHtml('both', 'In your account <span class="and">+ this device</span>', both.length,
                         acc ? "Safe in your account. Save sends this device's changes there."
@@ -4095,7 +4277,7 @@
                         lst(both.map(x => deviceRow(x.r, x.place)).join(''))) : '') +
                     (here.length ? this.libShelfHtml('device', 'Only on this device', here.length,
                         "<b>Not in your account yet.</b> Clearing this browser's data would delete them.",
-                        lst(here.map(x => deviceRow(x.r, 'device')).join('')), this.libSaveAllHtml(here.length)) : '') +
+                        lst(here.map(x => deviceRow(x.r, 'device')).join('')), this.libSaveAllHtml(hereAll.length)) : '') +
                     (accountOnly.length ? this.libShelfHtml('account', 'Only in your account', accountOnly.length,
                         'Saved from another device. Open downloads a copy here.',
                         lst(accountOnly.map(accountRow).join(''))) : '');
@@ -4253,6 +4435,8 @@
                 meta.push(esc(`${info.count} cards`));
                 if (info.unmatched.length) meta.push(`<span class="is-warn">⚠ ${esc(info.unmatched.length)} not recognised</span>`);
                 const notes = d.notes ? ` title="${esc(d.notes)}"` : '';
+                const hit = this._libDeckHits && this._libDeckHits.get(`${src}:${d.id}`);
+                const why = this.findWhyText(hit, hit && this.deckCards(d.decklist).qty);
                 const mine = src === 'my';
                 const linked = mine && this.isLinked(d);
                 const dirty = linked && d.accountDirty;
@@ -4267,54 +4451,82 @@
                 return `
                     <div class="lib-row" data-id="${esc(d.id)}">
                         <div class="lib-top">
-                            <div class="lib-title"${notes}>${esc(d.name)}</div>
+                            <div class="lib-title"${notes}>${this.findNameHtml(hit, d.name)}</div>
                             <div class="lib-actions">${dirty ? `<button class="btn place-act" data-act="push"><i class="fa-solid fa-arrow-up"></i> Save to account</button>` : ''}<button class="btn btn-ghost" data-act="p1" title="Seat as your deck">You</button><button class="btn btn-ghost" data-act="p2" title="Seat as the opponent's deck">Opponent</button>${menu}</div>
                         </div>
                         ${dirty ? this.libNoteHtml('up', "Changed here; not in your account yet") : ''}
                         <div class="lib-meta">${meta.join(sep)}</div>
+                        ${why ? `<div class="lib-why">${why}</div>` : ''}
                     </div>`;
             },
 
             async renderHomeDecks() {
-                const mineEl = document.getElementById('home-mydecks-list');
-                const defEl = document.getElementById('home-defaultdecks');
                 let mine = [];
                 let mineFailed = false;
                 try { mine = await DojoLibrary.listDecks(); } catch (e) { mineFailed = true; }
+                this._libDecks = { mine, mineFailed, groups: await this.getDefaultDecks() };
+                this.paintHomeDecks();
+            },
+
+            // The Decks tab from what renderHomeDecks read, narrowed by its find bar.
+            paintHomeDecks() {
+                if (!this._libDecks) return;
+                const mineEl = document.getElementById('home-mydecks-list');
+                const defEl = document.getElementById('home-defaultdecks');
+                const { mineFailed, groups } = this._libDecks;
+                this.paintFindInks('libDecks');
+                const narrowed = this.findActive('libDecks');
+                const all = this._libDecks.mine.map(d => this.deckEntryOf(d, 'my:' + d.id))
+                    .concat((groups || []).flatMap(g => g.decks.map(d => this.deckEntryOf(d, 'def:' + d.id))));
+                const hits = this.findHits('libDecks', all);
+                this._libDeckHits = hits;
+                const mine = this.findKeep(hits, this._libDecks.mine, d => 'my:' + d.id);
                 const lst = (decks) => `<div class="lib-list">${decks.map(d => this.deckRowHtml(d, 'my')).join('')}</div>`;
-                const empty = `<div class="lib-empty">No decks yet. Paste a list on the home screen and choose Save to My decks, or use New deck.</div>`;
+                const empty = narrowed ? `<div class="lib-empty">None of your decks match.</div>`
+                    : `<div class="lib-empty">No decks yet. Paste a list on the home screen and choose Save to My decks, or use New deck.</div>`;
                 this._libDeviceOnly.decks = [];
                 if (mineFailed) {
                     mineEl.innerHTML = `<div class="lib-empty">This browser isn't letting the Dojo keep a library (private window?).</div>`;
                 } else if (!this.account) {
-                    mineEl.innerHTML = this.libShelfHtml('device', 'On this device', mine.length,
+                    // A search shows only the shelves with matches, without the sign-in nudge.
+                    mineEl.innerHTML = narrowed && !mine.length ? '' : this.libShelfHtml('device', 'On this device', mine.length,
                         "<b>Kept in this browser, and only here.</b> Clearing its site data deletes your decks.", mine.length ? lst(mine) : empty) +
-                        this.libSignInShelfHtml('your decks');
+                        (narrowed ? '' : this.libSignInShelfHtml('your decks'));
                 } else {
                     const both = mine.filter(d => this.isLinked(d));
                     const here = mine.filter(d => !this.isLinked(d));
-                    this._libDeviceOnly.decks = here;
+                    // Save all saves every device-only deck, not just the ones a search shows.
+                    const hereAll = this._libDecks.mine.filter(d => !this.isLinked(d));
+                    this._libDeviceOnly.decks = hereAll;
                     mineEl.innerHTML =
-                        (both.length || !here.length ? this.libShelfHtml('both', 'In your account <span class="and">+ this device</span>', both.length,
+                        (both.length || (!here.length && !narrowed) ? this.libShelfHtml('both', 'In your account <span class="and">+ this device</span>', both.length,
                             "Decks follow your account by themselves: save one here and it's on your other devices too.", both.length ? lst(both) : empty) : '') +
                         (here.length ? this.libShelfHtml('device', 'Only on this device', here.length,
-                            '<b>Not in your account yet.</b>', lst(here), this.libSaveAllHtml(here.length)) : '');
+                            '<b>Not in your account yet.</b>', lst(here), this.libSaveAllHtml(hereAll.length)) : '');
                 }
 
-                const groups = await this.getDefaultDecks();
                 if (!groups) {
                     defEl.innerHTML = this.libShelfHtml('builtin', 'Built in', null, "Built-in decks couldn't be loaded. Check your connection.", '');
                     return;
                 }
-                const shown = groups.filter(g => g.decks.length);
-                defEl.innerHTML = this.libShelfHtml('builtin', 'Built in', shown.reduce((n, g) => n + g.decks.length, 0),
-                    'Comes with the Dojo, the same for everyone. Seat one, or copy it to make your own.',
-                    shown.map(g => `<div class="shelf-sub">${this.escapeHtml(g.title)}</div>
-                    <div class="lib-list">${g.decks.map(d => this.deckRowHtml(d, 'def')).join('')}</div>`).join(''));
+                const shown = groups.map(g => ({ title: g.title, decks: this.findKeep(hits, g.decks, d => 'def:' + d.id) })).filter(g => g.decks.length);
+                const n = shown.reduce((k, g) => k + g.decks.length, 0);
+                if (narrowed && !n) {
+                    defEl.innerHTML = '';
+                    if (!mine.length && !mineFailed) mineEl.innerHTML = `<div class="lib-empty">No deck matches.</div>`;
+                    return;
+                }
+                const open = !this.isFolded('libBuiltinCollapsed', 'libDecks');
+                defEl.innerHTML = this.libShelfHtml('builtin', 'Built in', n,
+                    open ? 'Comes with the Dojo, the same for everyone. Seat one, or copy it to make your own.' : '',
+                    open ? shown.map(g => `<div class="shelf-sub">${this.escapeHtml(g.title)}</div>
+                    <div class="lib-list">${g.decks.map(d => this.deckRowHtml(d, 'def')).join('')}</div>`).join('') : '',
+                    this.foldBtnHtml('libBuiltinCollapsed', 'libDecks', 'the built-in decks'));
             },
 
             async onDeckAction(act, src, id) {
                 if (act === 'sign-in') { this.openAccount(); return; }
+                if (act === 'fold') { this.toggleFold('libBuiltinCollapsed', 'libDecks'); return; }
                 if (act === 'push-all') { await this.uploadToAccount(this._libDeviceOnly.decks, []); return; }
                 const deck = this._deckIndex[`${src}:${id}`] || (src === 'my' ? await DojoLibrary.getDeck(id) : null);
                 if (!deck) { this.refreshDeckIndex().then(() => this.renderHomeDecks()); return; }

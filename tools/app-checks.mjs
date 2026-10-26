@@ -113,6 +113,9 @@ export default async (page) => {
         check('deck search: typo and letters in order', `${ds('leviatan')} / ${ds('lvthn')} / ${ds('lantrn')}`,
             'Retro Leviathan <The Leviathan - Guardian of Atlantis> / Retro Leviathan <The Leviathan - Guardian of Atlantis> / Rockstar Aggro <Lantern - Birthday Surprise>');
         check('deck search: one ink, an exact pair', `${ds('', ['amber'])} / ${ds('', ['amber', 'steel'])}`, 'Rockstar Aggro | Mono / Rockstar Aggro');
+        // Sessions (Feature 67): either deck's inks pass the filter.
+        const S2 = [{ name: 'A vs B', inkSets: [['amber', 'steel'], ['ruby', 'emerald']], cards: [] }, { name: 'C', inkSets: [], cards: [] }];
+        check('session search: either deck passes', DeckSearch.query(S2, '', ['emerald', 'ruby']).map(r => r.entry.name).join(), 'A vs B');
 
         // Device library.
         const L = DojoLibrary, data = App.buildSessionData(), id = L.newId();
