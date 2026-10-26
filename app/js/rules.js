@@ -72,7 +72,8 @@ window.DojoRules = (function () {
                             damage: c.damage || 0,
                             drying: !!c.drying,
                             location: at >= 0 ? at : null,
-                            under: (c.stackedCards || []).map(sn)
+                            under: (c.stackedCards || []).map(sn),
+                            mods: (c.mods || []).map(m => ({ stat: m.stat, value: m.value, until: m.until }))
                         };
                     }),
                     inkwell: inkwell.map((c, i) => ({ sn: sn(c), exerted: i >= inkwell.length - spent })),
