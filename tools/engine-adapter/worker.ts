@@ -164,17 +164,22 @@ function botGame(args: { deck1: string; deck2: string; seed?: string; strategy?:
 // Dojo board → engine. Engine instance ids are the fixture's t000001… in ingestion order
 // (deck, hand, play + each card's cardsUnder, inkwell, discard; player one then two), so they
 // can be computed up front: that's how locations are pointed at, and how `pos` maps each engine
-// card back to its Dojo place ("<player>:<zone>:<index>"). Unknown cards get no place.
+// card back to its Dojo place ("<player>:<zone>:<index>"). Cards the engine doesn't know become
+// cost-0 placeholders; their ids are in `unknownIds`.
 function hydrate(board: Board, seed = "dojo-hydrate") {
   const t0 = now();
   const unknown: string[] = [];
+  const unknownIds = new Set<string>();
   const pos = new Map<string, string>();
   let seq = 1;
   const at = (place: string, sn: string) => {
     const id = `t${String(seq++).padStart(6, "0")}`;
     const d = defsBySn.get(sn);
-    if (d) pos.set(id, place);
-    else unknown.push(sn);
+    pos.set(id, place);
+    if (!d) {
+      unknown.push(sn);
+      unknownIds.add(id);
+    }
     return { id, def: d ?? { id: `unknown:${sn}`, name: `Unknown ${sn}`, cardType: "item", cost: 0, inkable: true } };
   };
   const inkIds: string[][] = [];
@@ -216,7 +221,7 @@ function hydrate(board: Board, seed = "dojo-hydrate") {
   const inked = Math.min(board.inkedThisTurn ?? 0, inkIds[board.active].length);
   state.G.turnMetadata.inkedThisTurn = inked ? inkIds[board.active].slice(-inked) : [];
   match.loadState(state as never);
-  return { match, pos, ms: now() - t0, unknown };
+  return { match, pos, unknownIds, ms: now() - t0, unknown };
 }
 
 const PLAYS = new Set(["playCard", "singCard", "shiftCard"]);
@@ -227,7 +232,8 @@ const WITH_TARGETS = new Set(["challenge", "shiftCard", "singCard", "moveCharact
 //     why?: <the engine's PlayCardDisabledReason> } }, moves: ["passTurn", ...] (no card needed) }
 function analyze(args: { board: Board }) {
   const t0 = now();
-  const { match, pos, unknown } = hydrate(args.board);
+  const { match, pos: allPos, unknownIds, unknown } = hydrate(args.board);
+  const pos = new Map([...allPos].filter(([id]) => !unknownIds.has(id)));
   const hydrateMs = now() - t0;
   const client = match.asLorcanaPlayer(PIDS[args.board.active]);
   type CardView = { moves: string[]; targets?: Record<string, string[]>; why?: unknown };
@@ -335,6 +341,248 @@ function roundTrip(args: { board: Board }) {
   };
 }
 
+// ---------------------------------------------------------------------------------------------
+// Proposed plays (Feature 68, docs/RSC-lorcana-engine.md §8). Searches the rest of this turn for the
+// player whose turn it is: a beam over the bot's legal candidates in its strategy's order, positions
+// reached twice merged, the opponent's choices mid-turn made by the bot. Every position that could
+// end the turn is scored by `evaluate`; the best few lines that differ (inking aside) come back.
+// An idea generator, not a solver: no hidden information, a greedy opponent, hand-set weights.
+
+type Server = ReturnType<typeof bareServer>;
+type RawState = {
+  ctx: {
+    status: { turnOwnerId?: string };
+    zones: { private: { zoneCards: Record<string, string[]>; cardIndex: Record<string, { zoneKey: string }>; cardMeta: Record<string, Record<string, unknown>> } };
+  };
+  G: { lore: Record<string, number>; inkDrops?: Record<string, number>; loreToWin?: Record<string, number>; turnMetadata?: { inkedThisTurn?: unknown[] }; continuousEffects?: { instances?: unknown[] } };
+};
+type ActCard = { id: string; name: string; version?: string };
+type Act = { by: "me" | "opp"; family: string; card?: ActCard; target?: ActCard; via?: string; with?: ActCard[]; targets?: ActCard[]; ability?: string; skipped?: boolean };
+
+// Score = sum of these, from the side of the player whose turn it is.
+const WEIGHTS = {
+  lore: 1, // lore difference now
+  potential: 0.6, // lore the characters (and locations) in play can bring next turn, mine minus theirs
+  body: 0.08, // strength + willpower left, mine minus theirs
+  exposed: 0.6, // value of my exerted characters an opposing character could banish next turn
+  hand: 0.25, // cards in my hand
+  ink: 0.35, // cards in my inkwell
+  win: 1000, // reaching the lore to win
+};
+
+function evaluate(server: Server, me: string, opp: string) {
+  const st = server.getState() as unknown as RawState;
+  const { zoneCards, cardMeta } = st.ctx.zones.private;
+  const cards = (pid: string) =>
+    (zoneCards[`play:${pid}`] ?? []).map((id) => {
+      const c = server.getCardByInstance(id) as unknown as { strength?: number; willpower?: number; lore?: number };
+      const type = (server.getCardDefinitionByInstanceId(id as never) as { cardType?: string } | undefined)?.cardType;
+      const m = cardMeta[id] ?? {};
+      const left = Math.max(0, (c.willpower ?? 0) - Number(m.damage ?? 0));
+      return { type, str: c.strength ?? 0, left, lore: c.lore ?? 0, exerted: m.state === "exerted" };
+    });
+  const mine = cards(me);
+  const theirs = cards(opp);
+  const isChar = (c: { type?: string }) => c.type === "character";
+  const potential = (cs: typeof mine) => cs.filter((c) => isChar(c) || c.type === "location").reduce((n, c) => n + c.lore, 0);
+  const body = (cs: typeof mine) => cs.filter(isChar).reduce((n, c) => n + c.str + c.left, 0);
+  const reach = Math.max(0, ...theirs.filter(isChar).map((c) => c.str));
+  const exposed = mine
+    .filter((c) => isChar(c) && c.exerted && reach >= c.left)
+    .reduce((n, c) => n + WEIGHTS.potential * c.lore + WEIGHTS.body * (c.str + c.left) + 1, 0);
+  const lore = st.G.lore;
+  const parts = {
+    lore: WEIGHTS.lore * ((lore[me] ?? 0) - (lore[opp] ?? 0)),
+    potential: WEIGHTS.potential * (potential(mine) - potential(theirs)),
+    body: WEIGHTS.body * (body(mine) - body(theirs)),
+    exposed: -WEIGHTS.exposed * exposed,
+    hand: WEIGHTS.hand * (zoneCards[`hand:${me}`]?.length ?? 0),
+    ink: WEIGHTS.ink * (zoneCards[`inkwell:${me}`]?.length ?? 0),
+    win: (lore[me] ?? 0) >= (st.G.loreToWin?.[me] ?? 20) ? WEIGHTS.win : 0,
+  };
+  return { score: Object.values(parts).reduce((a, b) => a + b, 0), parts };
+}
+
+// The same board reached by two orders of play is one position (decks aside: only their sizes).
+function positionKey(server: Server) {
+  const st = server.getState() as unknown as RawState;
+  const { cardIndex, cardMeta, zoneCards } = st.ctx.zones.private;
+  const cards: string[] = [];
+  for (const id of Object.keys(cardIndex).sort()) {
+    const zone = cardIndex[id].zoneKey;
+    if (zone.startsWith("deck:")) continue;
+    const m = cardMeta[id] ?? {};
+    cards.push(`${id}@${zone}:${m.state ?? ""}:${m.damage ?? 0}:${m.isDrying ? 1 : 0}:${m.atLocationId ?? ""}`);
+  }
+  const decks = PIDS.map((p) => zoneCards[`deck:${p}`]?.length ?? 0);
+  const extra = [st.G.lore, st.G.inkDrops, st.G.turnMetadata?.inkedThisTurn?.length, st.G.continuousEffects?.instances?.length, server.getBagCount(), server.getPendingEffects().length, decks];
+  return JSON.stringify(extra) + cards.join("|");
+}
+
+function describe(server: Server, c: Record<string, unknown>, by: Act["by"]): Act {
+  const card = (id: unknown): ActCard => {
+    const d = server.getCardDefinitionByInstanceId(id as never) as { name?: string; version?: string } | undefined;
+    return { id: String(id), name: d?.name ?? "?", version: d?.version };
+  };
+  const cardsOf = (ids: unknown) => (Array.isArray(ids) ? ids.filter((x) => /^t\d+$/.test(String(x))).map(card) : []);
+  const family = String(c.family);
+  switch (family) {
+    case "playCard": {
+      const cost = c.cost as string | { cost: string; shiftTarget?: string; singer?: string; singers?: string[] };
+      const via = typeof cost === "object" ? cost.cost : cost;
+      const with_ = via === "shift" && typeof cost === "object" ? [card(cost.shiftTarget)] : via === "sing" && typeof cost === "object" ? [card(cost.singer)] : via === "singTogether" && typeof cost === "object" ? (cost.singers ?? []).map(card) : undefined;
+      return { by, family, card: card(c.cardId), via, with: with_, targets: cardsOf(c.targets) };
+    }
+    case "quest":
+    case "putCardIntoInkwell":
+      return { by, family, card: card(c.cardId) };
+    case "challenge":
+      return { by, family, card: card(c.attackerId), target: card(c.defenderId) };
+    case "moveCharacterToLocation":
+      return { by, family, card: card(c.characterId), target: card(c.locationId) };
+    case "activateAbility":
+      return { by, family, card: card(c.cardId), targets: cardsOf(c.targets) };
+    default: {
+      // resolveBag / resolveEffect: name the ability and the card it comes from.
+      const id = c.bagId ?? c.effectId;
+      const item = [...server.getBagEffects(), ...server.getPendingEffects()].find((b) => (b as { id?: unknown }).id === id) as
+        | { sourceId?: string; payload?: { abilityName?: string } }
+        | undefined;
+      return { by, family, card: item?.sourceId ? card(item.sourceId) : undefined, ability: item?.payload?.abilityName, targets: cardsOf(c.targets), skipped: c.resolveOptional === false };
+    }
+  }
+}
+
+// While the opponent has to choose something during my turn, the bot chooses for them.
+function settle(server: Server, me: string): Act[] | null {
+  const acts: Act[] = [];
+  for (let i = 0; i < 12 && !server.isGameOver(); i++) {
+    const owner = (server.getState() as unknown as RawState).ctx.status.turnOwnerId;
+    const actor = server.getCurrentActorId();
+    if (owner !== me || !actor || actor === me) break;
+    // The bot's first choice, as takeAutomatedAction would make it. None, or refused: drop the line.
+    const pick = server.enumerateAutomatedActionsForCurrentActor().candidates[0];
+    if (!pick) return null;
+    const act = describe(server, pick as never, "opp");
+    if (!applyCandidate(server, actor, pick).success) return null;
+    acts.push(act);
+  }
+  return acts;
+}
+
+// Where every card ends a line: engine ids per zone (decks top last), and the state of the cards in
+// play and in the inkwell.
+function endOf(st: RawState) {
+  const { zoneCards, cardMeta } = st.ctx.zones.private;
+  const zones = PIDS.map((p) => Object.fromEntries(["deck", "hand", "play", "inkwell", "discard"].map((z) => [z, zoneCards[`${z}:${p}`] ?? []])));
+  const meta: Record<string, unknown> = {};
+  for (const z of zones) for (const id of [...z.play, ...z.inkwell]) {
+    const m = cardMeta[id] ?? {};
+    meta[id] = { exerted: m.state === "exerted", damage: Number(m.damage ?? 0), drying: !!m.isDrying, at: m.atLocationId ?? null, under: (m.cardsUnder as string[] | undefined) ?? [], faceUp: m.publicFaceState === "faceUp" };
+  }
+  return { lore: PIDS.map((p) => st.G.lore[p] ?? 0), inkDrops: PIDS.map((p) => st.G.inkDrops?.[p] ?? 0), zones, meta };
+}
+
+function explore(args: { board: Board; beam?: number; perNode?: number; depth?: number; timeMs?: number; lines?: number }) {
+  const t0 = now();
+  const beamWidth = args.beam ?? 6;
+  const perNode = args.perNode ?? 8;
+  const budget = args.timeMs ?? 2500;
+  const { match, pos } = hydrate(args.board);
+  const server = bareServer(match);
+  const me = PIDS[args.board.active];
+  const opp = PIDS[1 - args.board.active];
+  type Line = { state: unknown; acts: Act[]; score: number; parts: Record<string, number>; quiet: boolean };
+  const load = (st: unknown) => server.loadState(structuredClone(st) as never);
+  const owner = () => (server.getState() as unknown as RawState).ctx.status.turnOwnerId;
+  // A turn can only end with nothing left to resolve.
+  const line = (acts: Act[]): Line => {
+    const e = evaluate(server, me, opp);
+    return { state: structuredClone(server.getState()), acts, score: e.score, parts: e.parts, quiet: !server.getBagCount() && !server.getPendingEffects().length };
+  };
+
+  const root = line(settle(server, me) ?? []);
+  const seen = new Set([positionKey(server)]);
+  const ends: Line[] = root.quiet ? [root] : [];
+  let beam = [root];
+  let nodes = 0;
+  let outOfTime = false;
+  for (let depth = 0; depth < (args.depth ?? 12) && beam.length && !outOfTime; depth++) {
+    const next: Line[] = [];
+    for (const from of beam) {
+      load(from.state);
+      if (server.isGameOver() || owner() !== me) continue;
+      const en = server.enumerateAutomatedActionsForCurrentActor();
+      if (en.actorId !== me) continue;
+      // Inking one card or another rarely changes the plan: the strategy's two favourites will do.
+      let inks = 0;
+      const picks = en.candidates.filter((c) => c.family !== "putCardIntoInkwell" || ++inks <= 2).slice(0, perNode);
+      for (const c of picks) {
+        if (now() - t0 > budget) {
+          outOfTime = true;
+          break;
+        }
+        load(from.state);
+        const act = describe(server, c as never, "me");
+        nodes++;
+        if (!applyCandidate(server, me, c).success) continue;
+        const after = settle(server, me);
+        if (!after) continue;
+        const key = positionKey(server);
+        if (seen.has(key)) continue;
+        seen.add(key);
+        const l = line([...from.acts, act, ...after]);
+        next.push(l);
+        if (l.quiet) ends.push(l);
+      }
+      if (outOfTime) break;
+    }
+    beam = next.sort((a, b) => b.score - a.score).slice(0, beamWidth);
+  }
+
+  // The best few, each a different plan: the same moves in another order, or another card inked, are one.
+  // Cards by name, so two copies of a card make one plan.
+  const plan = (l: Line) =>
+    l.acts
+      .filter((a) => a.family !== "putCardIntoInkwell")
+      .map((a) => JSON.stringify(a, (k, v) => (k === "id" ? undefined : v)))
+      .sort()
+      .join("|");
+  const plans = new Set<string>();
+  const best: Line[] = [];
+  for (const l of ends.sort((a, b) => b.score - a.score)) {
+    if (best.length >= (args.lines ?? 3)) break;
+    const p = plan(l);
+    if (plans.has(p)) continue;
+    plans.add(p);
+    best.push(l);
+  }
+  return {
+    ms: now() - t0,
+    nodes,
+    positions: seen.size,
+    outOfTime,
+    base: { score: root.score, parts: root.parts },
+    ids: Object.fromEntries(pos),
+    lines: best.map((l) => ({ score: l.score, parts: l.parts, acts: l.acts, end: endOf(l.state as RawState) })),
+  };
+}
+
+// A LorcanaServer on the harness's current state, without the two mirroring clients: what search uses.
+function bareServer(match: LorcanaMultiplayerTestEngine) {
+  const cardsMaps = match.getCardsMaps();
+  const defs: Record<string, unknown> = {};
+  for (const id of Object.keys(cardsMaps.cardInstances)) {
+    const def = match.getCardDefinition(id);
+    defs[(def as Def).id] = def;
+  }
+  return loadLorcanaServerAuthoritativeState(
+    structuredClone(match.asServer().getState()) as never,
+    cardsMaps,
+    createRecordCardCatalog("dojo", defs as never),
+  );
+}
+
 // What one search node costs: restore a snapshot, apply one candidate, list the next candidates,
 // serialise the result. Bot-plays to `turn` first, until the actor has a few candidates. Measured on
 // the test harness (which mirrors every move to two clients) and on a bare server built from it.
@@ -355,17 +603,8 @@ function searchCost(args: { deck1: string; deck2: string; seed?: string; turn?: 
   }
   const snapshot = structuredClone(harness.getState());
   const cardsMaps = match.getCardsMaps();
-  const defs: Record<string, unknown> = {};
-  for (const id of Object.keys(cardsMaps.cardInstances)) {
-    const def = match.getCardDefinition(id);
-    defs[(def as Def).id] = def;
-  }
   const t0 = now();
-  const bare = loadLorcanaServerAuthoritativeState(
-    structuredClone(snapshot) as never,
-    cardsMaps,
-    createRecordCardCatalog("dojo", defs as never),
-  );
+  const bare = bareServer(match);
   const bareMs = now() - t0;
 
   const measure = (server: typeof harness) => {
@@ -403,7 +642,7 @@ function searchCost(args: { deck1: string; deck2: string; seed?: string; turn?: 
   };
 }
 
-const ops: Record<string, (args: never) => unknown> = { init, analyze, botGame, roundTrip, searchCost };
+const ops: Record<string, (args: never) => unknown> = { init, analyze, explore, botGame, roundTrip, searchCost };
 (globalThis as Record<string, unknown>).DojoEngine = ops;
 
 const scope = globalThis as unknown as { WorkerGlobalScope?: unknown; onmessage: unknown; postMessage(m: unknown): void };

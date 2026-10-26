@@ -304,7 +304,7 @@ Each phase is one or more entries in `docs/features.md` and ends in a decision.
 | **1a · Bridge, read-only**. **First cut 2026-10-26** (§12) | Card and state bridge, highlights, "why not" | The demos round-trip |
 | **1b · Assist** | Execute, effects, prompts, translation, persistence | §6 done |
 | **2 · Bot** | Seats, loop, Step mode, perspective, hint | §7 done |
-| **3 · Explorer** | Search, scoring, ghost branches | §8 done |
+| **3 · Explorer**. **First cut 2026-10-26: proposed plays** (§12), ahead of 1b at the owner's call | Search, scoring, ghost branches | §8 done |
 | **Upkeep** | Re-pin when upstream fixes card bugs or adds a set. Contract tests guard each re-pin. | — |
 
 Tiers 2 and 3 only need the read side of tier 1 (hydrate and project) plus the engine's own moves. **If tier 1 Assist ends up looking less valuable than the bot, phase 2 can come straight after 1a.**
@@ -336,6 +336,46 @@ Tiers 2 and 3 only need the read side of tier 1 (hydrate and project) plus the e
 ## 12. Spike log
 
 Measured results, newest first. The work itself lives on `feat/68-rules-engine` (AGENTS.md, *Long-lived branch*).
+
+### 2026-10-26 · Tier 3, first cut: proposed plays
+
+**On the board.** With Tweaks → *Rules engine: Assist* on, the sidebar gets a **Suggest** key beside Quest. It opens *Proposed plays*, a paper panel beside the board (a bottom sheet on phones) with up to three lines for the rest of this turn. Each line shows:
+- its steps ("Play Elinor · Quest with Vixey · Ink The Queen"). The opponent's forced choices are dimmed, as "Opponent: …";
+- the lore it gains (or *Wins*), and its score against doing nothing more;
+- the two parts of the score that moved most ("lore +2.0 · exposed −1.5");
+- **Play it**, which puts the line's end on the board as one Undo step. The turn recap, played-this-turn and log are recorded as the sandbox records its own moves.
+- **Save as branch**, which adds a Multiverse node beside the one you're on and leaves the board alone.
+
+If the board changes while the panel is open, the panel says so and offers *Suggest again*.
+
+**The search** (`explore` in the worker; §8 had the plan):
+- It's a beam over the bot's legal candidates, in its strategy's order. The default beam is 6 lines; each position tries at most 8 moves, of which at most 2 are inks.
+- Positions reached by two orders of play are merged (`positionKey`). When the opponent must choose during my turn, the bot chooses for them; if it can't, that line is dropped.
+- Only positions with nothing left to resolve can end the turn. The best ones that are different plans come back; another order or another inked card doesn't count as a different plan.
+- The time budget is 2.5 s on desktop and 1.2 s on phones.
+- `evaluate` scores a position for the player whose turn it is. The weights are in `WEIGHTS`:
+  - lore difference;
+  - lore on board next turn, mine minus theirs (0.6);
+  - strength plus willpower left (0.08);
+  - exerted characters that the strongest opposing character could banish next turn (−0.6 × their worth);
+  - cards in hand (0.25);
+  - ink (0.35);
+  - reaching the lore to win (+1000).
+- `DojoRules.explore` maps each line's end back to a Dojo state with the same card objects, modifiers included. `stateForLine` throws rather than drop a card.
+
+**Checked**
+- On all 76 Set 14 demo boards, every proposed line (208 lines) maps back to a Dojo board that the engine reads back identically.
+- In Node, a search takes 0.55 s median and 1.5 s at most, at a 1.5 s budget. In the browser it was 0.6–0.8 s on the demo board.
+- On one demo board it finds a win: Play Angel, use Angel's ability on Don Karnage, quest with Darkwing Duck and Elinor, reaching 20.
+- In the app: Suggest, Play it (16 → 18 lore, all 120 cards accounted for, recap and log written), Undo, and Save as branch all work.
+- `app-checks` passes 30/30. `help.mjs --check` and `refresh-landing.mjs --check` pass.
+
+**Limits (to say in the manual when it ships)**
+- It plans one turn, mine. The opponent's reply isn't searched; only the "exposed" term guesses at it.
+- The weights are hand-set and don't model Evasive, Bodyguard, Ward or Resist.
+- No hidden information is used: it sees the hand as the Dojo shows it.
+- Bot planner gaps (spike log, finding 4) can make a line drop out.
+- Suggest on phones sits in the ☰ drawer.
 
 ### 2026-10-26 · Phase 1a, first cut: the engine reads the live board
 

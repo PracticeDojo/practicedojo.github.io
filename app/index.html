@@ -861,6 +861,11 @@
                         <span class="gi gi-lore" aria-hidden="true"></span> Quest <span class="mono dim"
                             id="quest-count">0</span>
                     </button>
+                    <!-- Feature 68 (experimental): proposed plays, while Tweaks → Rules engine is on -->
+                    <button class="btn" id="btn-suggest" onclick="App.suggestPlays()"
+                        title="Proposed plays: the rules engine tries orders of play for the rest of this turn">
+                        <i class="fa-solid fa-route" aria-hidden="true"></i> Suggest
+                    </button>
                 </div>
                 <div class="action-row three">
                     <button class="icon-btn" onclick="App.openTreeModal()" title="Multiverse (M)"
@@ -1147,6 +1152,17 @@
 
     <!-- Context Menu -->
     <div id="context-menu"></div>
+
+    <!-- Feature 68 (experimental): proposed plays for the rest of the turn -->
+    <section id="rules-plays" class="rules-plays" hidden aria-labelledby="rules-plays-title">
+        <div class="rp-head">
+            <span class="rp-title" id="rules-plays-title">Proposed plays</span>
+            <span class="rp-meta" id="rules-plays-meta"></span>
+            <button class="icon-btn" onclick="App.closePlays()" title="Close" aria-label="Close proposed plays"><i
+                    class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div id="rules-plays-body"></div>
+    </section>
 
     <!-- Feature 37: challenge mode banner + forecast -->
     <div id="challenge-banner" class="chal-banner" role="status" aria-live="polite" onclick="event.stopPropagation()">
@@ -6703,6 +6719,154 @@
                 });
                 box.title = [...new Set(moves.map(m => (DojoRules.VERBS[m] || {}).label).filter(Boolean))].join(' · ');
                 return box;
+            },
+
+            // --- Feature 68 (experimental): proposed plays ---
+            // The rules engine searches the rest of this turn (DojoRules.explore) and the best few
+            // lines show in a panel. Play it puts a line on the board as one Undo step; Save as
+            // branch keeps it in the Multiverse and leaves the board alone.
+            _plays: null, // { sig, result, error } for the board the search started from
+
+            async suggestPlays() {
+                if (!this.rulesOn || !this.state || !this.state.players || this.state.mulliganPending) return;
+                const sig = this.boardSig(this.state);
+                this._plays = { sig, result: null, error: null };
+                this.$('rules-plays').hidden = false;
+                this.renderPlays();
+                try {
+                    const r = await DojoRules.explore(this.state, id => this.snOf(id), { timeMs: this.isPhoneUI() ? 1200 : 2500 });
+                    if (this._plays && this._plays.sig === sig) this._plays.result = r;
+                } catch (e) {
+                    console.warn('Proposed plays:', e);
+                    if (this._plays && this._plays.sig === sig) this._plays.error = String(e && e.message || e);
+                }
+                if (this._plays && this._plays.sig === sig) this.renderPlays();
+            },
+
+            closePlays() {
+                this._plays = null;
+                this.$('rules-plays').hidden = true;
+            },
+
+            renderPlays() {
+                const p = this._plays;
+                if (!p) return;
+                const meta = this.$('rules-plays-meta');
+                const body = this.$('rules-plays-body');
+                const esc = (t) => this._esc(String(t));
+                // rulesRefresh keeps _rulesSig on the board on screen.
+                if (this._rulesSig && this._rulesSig !== p.sig) {
+                    meta.textContent = '';
+                    body.innerHTML = `<p class="rp-note">The board has changed since.</p>
+                        <button class="btn" onclick="App.suggestPlays()">Suggest again</button>`;
+                    return;
+                }
+                if (p.error) {
+                    meta.textContent = '';
+                    body.innerHTML = `<p class="rp-note">The rules engine couldn't search this board.</p>`;
+                    return;
+                }
+                if (!p.result) {
+                    meta.textContent = '';
+                    body.innerHTML = '<p class="rp-note">Trying orders of play…</p>';
+                    return;
+                }
+                const r = p.result;
+                meta.textContent = `${r.positions} positions · ${(r.ms / 1000).toFixed(1)} s${r.outOfTime ? ' · out of time' : ''}`;
+                const me = this.state.activePlayer;
+                const loreNow = this.state.players[me].lore;
+                const sign = (n) => (n > 0 ? '+' : n < 0 ? '−' : '±') + Math.abs(n).toFixed(1);
+                const PARTS = { lore: 'lore', potential: 'lore on board', body: 'board', exposed: 'exposed', hand: 'hand', ink: 'ink' };
+                body.innerHTML = r.lines.map((l, i) => {
+                    const lore = l.state.players[me].lore - loreNow;
+                    const wins = l.parts.win > 0;
+                    // The two parts that moved most against doing nothing more: why this line scores.
+                    const why = Object.keys(PARTS)
+                        .map(k => [k, l.parts[k] - r.base.parts[k]])
+                        .filter(([, d]) => Math.abs(d) >= 0.05)
+                        .sort((a, b) => Math.abs(b[1]) - Math.abs(a[1])).slice(0, 2)
+                        .map(([k, d]) => `${PARTS[k]} ${sign(d)}`).join(' · ');
+                    const steps = l.acts.length
+                        ? l.acts.map(a => `<li class="${a.by === 'opp' ? 'is-opp' : ''}">${esc(DojoRules.actText(a))}</li>`).join('')
+                        : '<li class="is-opp">Nothing more: end the turn</li>';
+                    return `<div class="rp-line">
+                        <div class="rp-line-head"><span class="rp-n">Line ${i + 1}</span>
+                            <span class="rp-gain">${wins ? 'Wins' : `${lore >= 0 ? '+' : '−'}${Math.abs(lore)} lore`}</span>
+                            <span class="rp-score" title="Score against doing nothing more">${sign(l.delta)}</span></div>
+                        <ol class="rp-steps">${steps}</ol>
+                        ${why ? `<div class="rp-why">${esc(why)}</div>` : ''}
+                        <div class="rp-acts"><button class="btn" onclick="App.playLine(${i})">Play it</button>
+                            <button class="btn" onclick="App.saveLine(${i})">Save as branch</button></div>
+                    </div>`;
+                }).join('') || '<p class="rp-note">Nothing to propose on this board.</p>';
+            },
+
+            // Put a line on the board as one Undo step, and record it the way the sandbox's own
+            // moves are recorded (turn recap, played-this-turn, log).
+            playLine(i) {
+                const l = this._plays && this._plays.result && this._plays.result.lines[i];
+                if (!l) return;
+                const was = {};
+                const cardId = {};
+                this.state.players.forEach(p => ['deck', 'hand', 'field', 'inkwell', 'discard'].forEach(z => p[z].forEach(c => {
+                    was[c.instanceId] = z;
+                    cardId[c.instanceId] = c.cardId;
+                })));
+                this.saveState();
+                this.state.players = l.state.players;
+                const played = new Set();
+                l.acts.filter(a => a.by === 'me' && a.card && a.card.iid).forEach(a => {
+                    const id = cardId[a.card.iid];
+                    if (a.family === 'putCardIntoInkwell' || a.family === 'playCard') {
+                        if (!this.state.cardsPlayedThisTurn) this.state.cardsPlayedThisTurn = [];
+                        this.state.cardsPlayedThisTurn.push(id);
+                    }
+                    if (a.family === 'putCardIntoInkwell') this._trackAction('inked', id);
+                    if (a.family === 'playCard') {
+                        played.add(a.card.iid);
+                        this._trackAction(a.via === 'shift' ? 'shifted' : 'played', id);
+                    }
+                    if (a.family === 'quest') this._trackAction('quested', id);
+                });
+                // Draws, banishes and discards the effects made, from where each card went.
+                this.state.players.forEach(p => ['hand', 'discard'].forEach(z => p[z].forEach(c => {
+                    const from = was[c.instanceId];
+                    if (z === 'hand' && from === 'deck') this._trackAction('drawn', c.cardId);
+                    if (z === 'discard' && from === 'field') this._trackAction('banished', c.cardId);
+                    if (z === 'discard' && from === 'hand' && !played.has(c.instanceId)) this._trackAction('discarded', c.cardId);
+                })));
+                l.acts.forEach(a => this.logAction(DojoRules.actText(a)));
+                this.logAction(`Played proposed line ${i + 1} (rules engine).`, true);
+                this.closePlays();
+                this.render();
+                this.saveToDevice();
+            },
+
+            // Keep a line as a Multiverse node beside the board, which stays as it is.
+            saveLine(i) {
+                const l = this._plays && this._plays.result && this._plays.result.lines[i];
+                if (!l) return;
+                const ap = this.state.players[this.state.activePlayer];
+                const st = Object.assign({}, this.state, { players: l.state.players });
+                const [p1, p2] = st.players;
+                const name = `Turn ${this.state.turn} - ${ap.name} (proposed line ${i + 1})`;
+                const played = l.acts.filter(a => a.by === 'me' && a.family === 'playCard' && a.card && a.card.iid)
+                    .map(a => { const f = this.findCard(a.card.iid); return f ? f.card.cardId : null; }).filter(x => x !== null);
+                this.bookmarks.push({
+                    id: this.uuid(),
+                    parentId: this.state.activeBookmarkId || null,
+                    name,
+                    stats: `Turn ${st.turn} | P1: ${p1.lore} - P2: ${p2.lore}`,
+                    comment: l.acts.map(a => `- ${DojoRules.actText(a)}`).join('\n'),
+                    color: this.playerBookmarkColor(this.state.activePlayer),
+                    cardsPlayedData: [...(this.state.cardsPlayedThisTurn || []), ...played],
+                    state: JSON.stringify(this.compressState(st, true)),
+                    timestamp: Date.now(),
+                    isDeckEdit: false
+                });
+                this.renderTree();
+                this.saveToDevice();
+                this.showToast(`Saved “${name}” in the Multiverse.`);
             },
 
             markBoardKept(id) {
@@ -13198,6 +13362,8 @@
 
                 // Feature 37: keep the open overlays in step with the new state.
                 this.renderFeature37Overlays();
+                // Feature 68: proposed plays say so when the board has moved on.
+                if (this._plays) this.renderPlays();
 
                 // Guided tours (Feature 58): a step waiting on the player checks here.
                 if (window.DojoTour && DojoTour.onRender) DojoTour.onRender();
@@ -13298,6 +13464,8 @@
 
                 // Feature 68 (experimental): the rules engine reads the board, or stays asleep.
                 this.rulesOn = t.rules === 'assist';
+                document.body.classList.toggle('rules-on', this.rulesOn);
+                if (!this.rulesOn && this._plays) this.closePlays();
                 const ru = this.$('tweak-rules');
                 if (ru) ru.querySelectorAll('button').forEach(b => b.classList.toggle('is-active', b.dataset.val === (this.rulesOn ? 'assist' : 'off')));
 
