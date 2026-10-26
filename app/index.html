@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lorcana Practice Dojo</title>
-    <link rel="icon" type="image/svg+xml" href="../img/deck_icon.svg">
+    <link rel="icon" type="image/svg+xml" href="../img/favicon.svg">
     <!-- The site moved to practicedojo.win. GitHub Pages still serves this repo, so
          send its visitors there, keeping the path, ?s= share code and #hash. -->
     <script>
@@ -467,6 +467,9 @@
                         <div class="mull-fig" id="mulligan-deck-count">0</div>
                     </div>
                     <button type="button" class="help-q" data-help="mulligan" aria-label="Help: mulligan">?</button>
+                    <button type="button" class="icon-btn ghost mull-leave" id="mull-leave" onclick="App.leaveMulligan()"
+                        title="Leave to the dojo (Esc). The match stays saved and opens on this mulligan."
+                        aria-label="Leave to the dojo"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
                 </div>
             </div>
             <div class="mull-body">
@@ -1152,7 +1155,7 @@
             <button type="button" data-fc="light" onclick="App.setChallengeForecast('light')">Light</button>
             <button type="button" data-fc="full" onclick="App.setChallengeForecast('full')">Full</button>
         </div>
-        <button type="button" class="cb-done" onclick="App.exitChallengeMode()">Done · Esc</button>
+        <button type="button" class="cb-done" onclick="App.exitChallengeMode()" aria-label="Done (Esc)">Done<kbd aria-hidden="true">Esc</kbd></button>
     </div>
     <div id="challenge-forecast" class="chal-fc" aria-hidden="true"></div>
     <!-- Feature 62: phones get thumb keys in challenge mode, two rows of three like the
@@ -1248,7 +1251,7 @@
     <script>
         let cardFuse = null;
 
-        const APP_VERSION = "v3.21.0"; // Centralized version string (v3: Field Unit)
+        const APP_VERSION = "v3.21.1"; // Centralized version string (v3: Field Unit)
 
         // Tweaks panel accent presets (hue values for the OKLCH accent ramp)
         // Tweaks → Accent: the approved Field Unit signals only (design.md ·
@@ -8100,6 +8103,13 @@
                 document.getElementById('mulligan-modal').classList.remove('hidden');
             },
 
+            // The way out of the mulligan (× or Esc): back to the dojo. The match is already
+            // saved, still waiting on its mulligan, so Back to match or Resume reopens it here.
+            leaveMulligan() {
+                this.closeMulligan();
+                this.confirmShowSetup();
+            },
+
             closeMulligan() {
                 this.hideMulliganPeek();
                 this.closeMulliganLook();
@@ -13527,7 +13537,9 @@
                 // A mulligan card looked at goes back; the mulligan itself stays (it gates the game).
                 if (App._mullLookSlot) { App.closeMulliganLook(); return; }
                 if (App.isMulliganPeekOpen()) { App.hideMulliganPeek(); return; }
-                // Dismissible overlay modals (the mulligan stays open — it gates game state)
+                // The mulligan gates the board, so Escape leaves to the dojo instead (the match stays saved).
+                if (!document.getElementById('mulligan-modal').classList.contains('hidden')) { App.leaveMulligan(); return; }
+                // Dismissible overlay modals
                 const escapable = [
                     ['inspect-deck-modal', () => App.closeInspectDeck()],
                     ['inspect-discard-modal', () => App.closeInspectDiscard()],

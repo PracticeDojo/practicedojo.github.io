@@ -241,6 +241,11 @@
       "screen": "mulligan",
       "any": "#mulligan-dialog"
     },
+    "mulligan-leave": {
+      "label": "Leave to the dojo (×)",
+      "screen": "mulligan",
+      "any": "#mull-leave"
+    },
     "mulligan-hand": {
       "label": "the opening hand",
       "screen": "mulligan",

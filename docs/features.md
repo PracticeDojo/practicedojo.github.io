@@ -709,6 +709,11 @@ Duels.ink exports a deck with the printing at the end of each line, `4 Ursula - 
 - **The printing wins.** The `(set-number)` (or `(set-group-number)` for promos, like `9-P3-8`) is looked up first, so an Enchanted or promo printing resolves to its card. If it isn't found, the name is used. Lists without a suffix work as before.
 - The readout names a skipped line without its suffix.
 
+## Patch: Challenge banner on narrower screens, and a way out of the mulligan (v3.21.1)
+
+- **Challenge banner (desktop):** redrawn in the top bar's tool language: a paper module (12px radius) with a coral spine and a coral **Challenge mode** label (Coral is Challenge's key colour), the text, the Forecast switch and **Done** with an `Esc` key cap. Every control is 28px tall with an 8px radius, on a grid, so they line up at any width. It was centred with `left: 50%`, so it could only grow to half the screen and squeezed its text into a column; it now centres across the whole width. Under about 1060px, Forecast and Done move under the text, on the right. Phones are unchanged (no key cap).
+- **Leaving the mulligan:** the dialog gates the board, so there was no way out. **×** at the top right, or Esc, now leaves for the home screen. The match stays saved on its mulligan; Back to match or Resume opens the dialog again.
+
 ## Feature 67: Find a session or a deck in the Library and in Pick up again (v3.21.0)
 
 ### User Story
@@ -1208,3 +1213,4 @@ The public page (`index.html`) follows Field Unit too, as `docs/DESIGN-field-uni
 - [x] Feature 65: Lore race graph under the mini multiverse and in the Multiverse panel
 - [x] Feature 66: Find a deck — search by name or card, ink filter, your decks apart from the defaults
 - [x] Feature 67: Find a session or a deck in the Library and in Pick up again
+- [x] Patch: Challenge banner on narrower screens, and a way out of the mulligan
