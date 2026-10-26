@@ -1,4 +1,4 @@
-// Landing page multiverse: the Set 13 demo session, drawn with the app's own tree.
+// Landing page multiverse: the Set 14 demo session, drawn with the app's own tree.
 // Renderer first (MV), then the sections that use it: the hero map + lore race,
 // the mock log and imported-turns list, the explorable tree, and the step-3 slice.
 //
@@ -7,7 +7,7 @@
 // same Field Unit node card (deck icon, subline, the note as glass, the Played
 // strip or every label · value section),
 // same edges (#6A655E hairlines, the path to the node you're on in signal).
-// Data: window.MV_DATA (the Set 13 demo). Colours come from css/landing.css
+// Data: window.MV_DATA (the Set 14 demo). Colours come from css/landing.css
 // classes, so switching day / night restyles everything without a re-render.
 window.MV = (function () {
   const D = window.MV_DATA;
@@ -202,7 +202,8 @@ window.MV = (function () {
   const fill = (k, v) => document.querySelectorAll(`[data-mv="${k}"]`).forEach(el => { el.textContent = v; });
   const TURN_RE = /^Turn (\d+) - Player (\d) Active$/;
   const short = (n) => { const m = TURN_RE.exec(n.name); return m ? `T${m[1]}·P${m[2]}` : n.name; };
-  const isAuto = (n) => !n.comment || /^Auto-saved/.test(n.comment);
+  // No note of the player's own: auto-saved, or only the turn recap.
+  const isAuto = (n) => !n.comment || /^(Auto-saved|\*\*Turn recap\*\*)/.test(n.comment);
   // What the player wrote on a node: a custom name, or the first line of a hand-written comment.
   const note = (n) => !TURN_RE.test(n.name) ? n.name : (!isAuto(n) ? n.comment.split('\n')[0].trim() : '');
   const two = (i) => String(i).padStart(2, '0');
@@ -503,7 +504,7 @@ window.MV = (function () {
   })();
 
   // ---------- Import: one row per imported turn ----------
-  const recapLine = (n) => md(n.comment.replace(/^Auto-saved at start of turn\.\s*(\*\*Turn recap\*\*)?\s*/, ''))
+  const recapLine = (n) => md(n.comment.replace(/^(Auto-saved at start of turn\.\s*)?(\*\*Turn recap\*\*)?\s*/, ''))
     .replace(/<\/?(ul|p)>/g, '').replace(/<li>/g, '').replace(/<\/li>/g, ' · ').replace(/ · $/, '');
   $('ledger').innerHTML = mainLine.map(n => {
     const m = TURN_RE.exec(n.name);
@@ -577,7 +578,7 @@ window.MV = (function () {
         </div>
         <div class="side-open">
           <a href="app/" class="tool strong"><i class="fa-solid fa-play" aria-hidden="true"></i> Play it in the Dojo</a>
-          <p>This match is under “Pick up again”, as “Set 13 example: PY vs GY”.</p>
+          <p>This match is under “Pick up again”, as “Set 14 example: Amber/Emerald Circle vs Emerald/Steel Control”.</p>
         </div>
         <div class="side-note${c ? '' : ' is-empty'}"><div class="side-note-head">Turn ${n.turn} note · Player ${n.player}</div>
           <div class="side-note-body">${c ? md(c) : 'No note on this node.'}</div></div>

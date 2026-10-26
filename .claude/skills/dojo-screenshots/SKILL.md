@@ -1,6 +1,6 @@
 ---
 name: dojo-screenshots
-description: Screenshot the Practice Dojo app or landing page in headless Chromium — the board with the Set 13 demo loaded, any panel, phone and desktop widths, day and night — plus before/after against any git ref, mock-ups injected into the live app, and labelled comparison sheets. Use whenever you need to see a UI change, show the user what something looks like, compare layouts, or check a width or theme. Do not write your own Playwright or http-server script; use these.
+description: Screenshot the Practice Dojo app or landing page in headless Chromium — the board with the Set 14 demo loaded, any panel, phone and desktop widths, day and night — plus before/after against any git ref, mock-ups injected into the live app, and labelled comparison sheets. Use whenever you need to see a UI change, show the user what something looks like, compare layouts, or check a width or theme. Do not write your own Playwright or http-server script; use these.
 ---
 
 # Dojo screenshots
@@ -9,7 +9,7 @@ Two scripts in this folder. Both need only Node and Playwright (already in
 cloud sessions; the scripts find it themselves).
 
 - `shoot.mjs` serves the repo on a free local port, opens the app (or the
-  landing page), optionally opens the **Set 13 demo**, and saves PNGs.
+  landing page), optionally opens the **Set 14 demo**, and saves PNGs.
 - `compose.mjs` lays labelled PNGs out on one sheet (before/after, a stack
   of variants, a grid of widths).
 

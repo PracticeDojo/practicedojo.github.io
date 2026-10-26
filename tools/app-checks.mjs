@@ -90,10 +90,11 @@ export default async (page) => {
         App.applyJsonPatch({}, [{ op: 'add', path: '/__proto__/dojoPolluted', value: 1 }, { op: 'add', path: '/constructor/prototype/dojoPolluted', value: 1 }]);
         check('replay patch: no prototype pollution', ({}).dojoPolluted, undefined);
 
-        // Replay openings (Feature 64): the Set 13 demo predates recorded openings, so they
-        // are rebuilt. Player 1 drew 4 on turn 1 and put 3 on the bottom; the rebuilt deck
-        // must start with those 4 in draw order. Player 2's draw-step card goes back on top.
-        const demo = (await DojoLibrary.loadDemoManifest())[0];
+        // Replay openings (Feature 64): the old Set 13 demo (no longer in the manifest, kept
+        // as a fixture) predates recorded openings, so they are rebuilt. Player 1 drew 4 on
+        // turn 1 and put 3 on the bottom; the rebuilt deck must start with those 4 in draw
+        // order. Player 2's draw-step card goes back on top.
+        const demo = { file: 'set13_example.dojo.json.gz' };
         const decks = App._openingsFromSession((await DojoLibrary.fetchDemo(demo)).data);
         const o1 = decks[0].openings[0] || {}, o2 = decks[1].openings[0] || {};
         check('openings: P1 rebuilt with turn 1 draws on top', `${o1.how} ${(o1.hand || []).length}+${(o1.deck || []).length} ${(o1.deck || []).slice(0, 4).join(',')}`, 'mull 3 7+53 2244,2726,2501,33');

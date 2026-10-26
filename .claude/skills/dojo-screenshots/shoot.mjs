@@ -2,7 +2,7 @@
 // Screenshot the Practice Dojo (app or landing page) in headless Chromium.
 //
 // Serves the repo (or any git ref of it) on a local port, opens the page,
-// optionally opens the Set 13 demo, and shoots every width × theme you ask
+// optionally opens the Set 14 demo, and shoots every width × theme you ask
 // for. A --steps module can drive the page and take named shots itself
 // (open a panel, inject a mock-up, click through a flow).
 //
@@ -27,7 +27,7 @@ const REPO = path.resolve(HERE, '../../..');
 const HELP = `
 Options
   --page app|landing     Which page to open (default app). --path /x/ opens any path.
-  --demo                 Open the Set 13 demo from the app's home screen first.
+  --demo                 Open the Set 14 demo from the app's home screen first.
   --widths 1440,390      Viewport widths. Under 761 is treated as a phone (touch, 844 tall).
   --height 900           Desktop viewport height.
   --themes day,night     Themes to shoot: day, night, or auto (leave the app's choice).
