@@ -102,6 +102,11 @@
       "screen": "board",
       "desktop": "#mmv-ctl"
     },
+    "lore-race": {
+      "label": "the lore race",
+      "screen": "board",
+      "desktop": "#lore-race"
+    },
     "card-preview": {
       "label": "the card preview",
       "screen": "board",

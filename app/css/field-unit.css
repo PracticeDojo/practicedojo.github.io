@@ -1215,9 +1215,101 @@ body:has(#tweaks-panel.is-open) #btn-tweaks i {
     background: var(--border-soft);
 }
 
+/* Lore race (Feature 65): both players' lore along one line, on glass.
+   The landing page's chart: P1 solid, P2 dashed, 20 wins dashed, the lore
+   numerals in signal. The turns ahead of you show faint. */
+.lore-race {
+    gap: 5px;
+}
+
+.lore-race[hidden] {
+    display: none;
+}
+
+.lore-race .section-head {
+    gap: 8px;
+}
+
+.lore-race .section-head h3 {
+    flex: 0 0 auto;
+}
+
+.lr-well {
+    padding-top: 4px;
+    background: var(--fu-glass);
+    border-radius: var(--radius-inset);
+}
+
+.lr-svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    overflow: visible;
+    font-family: var(--font-mono);
+}
+
+.lr-grid {
+    stroke: var(--fu-glass-rule);
+    stroke-width: 1;
+}
+
+.lr-grid.is-win {
+    stroke: var(--fu-glass-line);
+    stroke-dasharray: 3 3;
+}
+
+.lr-p1,
+.lr-p2 {
+    fill: none;
+    stroke-width: 1.6;
+    stroke-linejoin: round;
+    stroke-linecap: round;
+}
+
+.lr-p1 {
+    stroke: var(--fu-glass-2);
+}
+
+.lr-p2 {
+    stroke: var(--fu-glass-mute);
+    stroke-dasharray: 4 3;
+}
+
+.lr-p1.is-ahead,
+.lr-p2.is-ahead {
+    opacity: 0.35;
+}
+
+.lr-now {
+    stroke: var(--accent);
+    stroke-width: 1;
+    opacity: 0.6;
+}
+
+.lr-end {
+    fill: var(--fu-glass-2);
+}
+
+.lr-tick {
+    font-size: 9px;
+    letter-spacing: 0.06em;
+    fill: var(--fu-glass-mute);
+}
+
+.lr-who {
+    font-size: 10px;
+    fill: var(--fu-glass-mute);
+}
+
+.lr-num {
+    font-size: 11.5px;
+    fill: var(--accent);
+}
+
 /* Phones get their own multiverse navigation later: not in the drawer. */
 @media (max-width: 760px) {
-    .mini-mv {
+    .mini-mv,
+    .lore-race {
         display: none;
     }
 }
@@ -5159,42 +5251,6 @@ body.palette-competition .tree-node.tn-p2::before {
     display: flex;
     flex-direction: column;
     gap: 6px;
-}
-
-.tp-meter {
-    display: grid;
-    grid-template-columns: auto 20px minmax(0, 1fr) 22px;
-    align-items: center;
-    gap: 8px;
-}
-
-.tp-meter-p,
-.tp-meter-v {
-    font-family: var(--font-mono);
-    font-size: 11px;
-    color: var(--text);
-    font-variant-numeric: tabular-nums;
-}
-
-.tp-meter-v {
-    text-align: right;
-}
-
-.tp-track {
-    position: relative;
-    height: 3px;
-    border-radius: 999px;
-    background: var(--fu-line-soft);
-}
-
-.tp-mark {
-    position: absolute;
-    top: 50%;
-    width: 7px;
-    height: 7px;
-    margin: -3.5px 0 0 -3.5px;
-    border-radius: 50%;
-    background: var(--text);
 }
 
 .tp-recap {

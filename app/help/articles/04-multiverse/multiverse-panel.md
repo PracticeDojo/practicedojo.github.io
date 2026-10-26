@@ -7,7 +7,7 @@ aliases: [load a turn, restore, jump to turn, load save, rename node, delete nod
 targets: [tree-panel, selected-node, tree-dock]
 related: [nodes, branches, left-here]
 order: 50
-verified: v3.11.0
+verified: v3.19.0
 ---
 
 The panel shows the node you select. Read it there first, then play from it, rename it, change its note or delete it.
@@ -22,7 +22,7 @@ Click a node, or a dot in the plot. The arrow keys move the selection (see [Movi
 Tap a node or a dot, or move the cursor with the thumb keys. The panel is under the canvas: scroll down to read all of it.
 :::
 
-Selecting doesn't touch your board. The panel shows **Selected** (with **· you are here** on the node you're on), the name, the turn, lore and time, the note, **Lore race to 20** and the **Turn recap** as cards.
+Selecting doesn't touch your board. The panel shows **Selected** (with **· you are here** on the node you're on), the name, the turn, lore and time, the note, **Lore race · this line** (both players' lore turn by turn, from turn 1 to this node; P1 solid, P2 dashed, 20 wins) and the **Turn recap** as cards.
 
 [Show me](show:selected-node)
 

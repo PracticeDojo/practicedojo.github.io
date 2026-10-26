@@ -47,6 +47,9 @@
     <!-- Mini Multiverse: the tree as lines in the sidebar, and its step moves -->
     <script src="js/mini-multiverse.js"></script>
 
+    <!-- Lore race (Feature 65): both players' lore along one line, under the mini multiverse and in the Multiverse panel -->
+    <script src="js/lore-race.js"></script>
+
     <!-- Card modifiers (Feature 61): +/- stats, Challenger / Resist, and when they end -->
     <script src="js/modifiers.js"></script>
 
@@ -779,6 +782,16 @@
                 </div>
             </section>
 
+            <!-- Lore race (Feature 65): lore along the line the mini multiverse is
+                 on; the turns ahead of you show faint. Hidden on phones. -->
+            <section class="sidebar-section is-module lore-race" id="lore-race" aria-label="Lore race" hidden>
+                <div class="section-head">
+                    <h3>Lore race</h3>
+                    <span class="mmv-read">T1 → here</span>
+                </div>
+                <div class="lr-well" id="lore-race-well"></div>
+            </section>
+
             <!-- Hover details: the card on a glass inset -->
             <div class="hover-module" id="card-preview">
                 <!-- Card Preview Panel -->
@@ -1206,7 +1219,7 @@
     <script>
         let cardFuse = null;
 
-        const APP_VERSION = "v3.18.1"; // Centralized version string (v3: Field Unit)
+        const APP_VERSION = "v3.19.0"; // Centralized version string (v3: Field Unit)
 
         // Tweaks panel accent presets (hue values for the OKLCH accent ramp)
         // Tweaks → Accent: the approved Field Unit signals only (design.md ·
@@ -6396,8 +6409,24 @@
                     this._mmv = MiniVerse.build(this.mmvItems(), here, this._mmvTrail);
                     if (this._mmvHover && !this._mmv.byId[this._mmvHover]) this._mmvHover = null;
                     MiniVerse.show(this._mmv, { edited: this._mmvEdited });
+                    this.renderLoreRace();
                 }
                 this.updateMiniVerseChrome();
+            },
+
+            // The lore race under the mini multiverse: the line it's on, root to
+            // here, then the trail ahead (faint).
+            renderLoreRace() {
+                const host = document.getElementById('lore-race');
+                if (!host || !window.LoreRace) return;
+                const M = this._mmv;
+                const pick = (ids) => ids.map(id => M.byId[id]).filter(it => it && it.lore);
+                const past = M ? pick(M.path) : [];
+                const pts = past.concat(M ? pick(M.ahead) : []).map(it => ({ turn: it.turn, lore: it.lore }));
+                host.hidden = !pts.length;
+                if (!pts.length) return;
+                const well = document.getElementById('lore-race-well');
+                well.innerHTML = LoreRace.svg(pts, { width: well.clientWidth, height: 74, now: past.length - 1 });
             },
 
             // "T12 · P2 · 10–11" for a node on the map.
@@ -7371,14 +7400,18 @@
                         title="${auto ? 'Discard this snapshot (Undo available)' : 'Delete node (its branches move up; Undo available)'}"
                         aria-label="${auto ? 'Discard snapshot' : 'Delete node'}"><i class="fa-solid fa-trash"></i></button>`;
 
-                const lore = this.nodeLore(b, !!auto);
-                const meter = (i) => {
-                    const v = lore[i];
-                    return `<div class="tp-meter"><span class="deck-icon is-p${i + 1}"></span><span class="tp-meter-p">P${i + 1}</span>
-                        <div class="tp-track"><span class="tp-mark" style="left:${Math.min(100, Math.max(0, v / 20 * 100))}%"></span></div>
-                        <span class="tp-meter-v">${v}</span></div>`;
-                };
-                const loreHtml = lore ? `<div class="tp-lore"><div class="tp-label">Lore race to 20</div>${meter(0)}${meter(1)}</div>` : '';
+                // Lore race (Feature 65) along this node's line, from the first turn.
+                const line = [];
+                if (auto) line.push({ turn: this.autoSaveInfo(b).turn, lore: this.nodeLore(b, true) });
+                const byId = new Map(this.bookmarks.map(x => [x.id, x]));
+                const seenIds = new Set();
+                for (let n = auto ? byId.get(this.autoSaveInfo(b).parentId) : b; n && !seenIds.has(n.id); n = byId.get(n.parentId)) {
+                    seenIds.add(n.id);
+                    line.unshift({ turn: this.treeTurnInfo(n).turn, lore: this.nodeLore(n) });
+                }
+                const pts = line.filter(p => p.lore);
+                const loreHtml = pts.length ? `<div class="tp-lore"><div class="tp-label">Lore race · this line</div>
+                    <div class="lr-well" id="tp-lore-well"></div></div>` : '';
 
                 const recapHead = `
                     <div class="tp-recap-head">
@@ -7396,6 +7429,8 @@
                     ${noteHtml}
                     ${loreHtml}
                     <div class="tp-recap">${recapHead}${recapCards}</div>`;
+                const well = pts.length && document.getElementById('tp-lore-well');
+                if (well) well.innerHTML = LoreRace.svg(pts, { width: well.clientWidth, height: 96 });
 
                 if (editing) this.bindTreeEdit(b.id, editing);
             },
