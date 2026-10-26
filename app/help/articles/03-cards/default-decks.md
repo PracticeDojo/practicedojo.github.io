@@ -3,18 +3,18 @@ id: default-decks
 title: Built-in decks and demos
 summary: Ready-made decks for each set and example sessions to explore, all without signing in.
 devices: [desktop, phone]
-aliases: [default decks, sample deck, example deck, demo, example game, precon, starter deck]
+aliases: [default decks, sample deck, example deck, demo, example game, precon, starter deck, find a deck, deck search, ink filter]
 targets: [deck-chips, recent]
 related: [decks, sessions]
 order: 80
-verified: v3.11.0
+verified: v3.20.0
 ---
 
 The Dojo comes with a few decks and example games, so you can start without a list of your own.
 
 ## Play a built-in deck
 
-On the home screen, under **On the table**, pick a deck chip. It goes to the first open seat (**You**, then **Opponent**). Press **Start match**.
+On the home screen, under **On the table**, pick a deck under **Default decks**. It goes to the first open seat (**You**, then **Opponent**). Press **Start match**. The heading folds the default decks away, and the Dojo remembers it; searching or picking an ink shows them again.
 
 [Show me](show:deck-chips)
 

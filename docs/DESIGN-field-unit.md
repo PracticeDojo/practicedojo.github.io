@@ -135,6 +135,8 @@ The Library sorts decks and sessions by where they live. Each place takes one co
 - **Public links** — Coral `#ED3F1C`. Coloured words `#C23315` by day, `#F26446` on Kiln.
 - **Built in** — no colour: the strong line `#BDB6AA` (`#3E3933` on Kiln).
 
+The home screen's deck list uses the same spines: **Your decks** in Trace, **Default decks** built in.
+
 Places are a reading, not the signal: the signal stays for the match on the board. A place shows as a spine (3px bars, two when it's in both places, like an ink pair), as a mono shelf name, and as the outline of the one action that moves something between places (*Save to account*, *Get newer copy*). Don't fill a row or a panel with a place colour.
 
 ### Dark mode — Kiln

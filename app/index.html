@@ -50,6 +50,9 @@
     <!-- Lore race (Feature 65): both players' lore along one line, under the mini multiverse and in the Multiverse panel -->
     <script src="js/lore-race.js"></script>
 
+    <!-- Deck search (Feature 66): find a deck by name or by a card in it, on the home screen -->
+    <script src="js/deck-search.js"></script>
+
     <!-- Card modifiers (Feature 61): +/- stats, Challenger / Resist, and when they end -->
     <script src="js/modifiers.js"></script>
 
@@ -276,7 +279,14 @@
                     <h3 id="home-table-title">On the table</h3>
                     <div class="seats" id="home-seats"></div>
                     <div class="chips-label">Or pick a deck. It goes to the first open seat.</div>
-                    <div class="chips" id="home-chips"></div>
+                    <div class="dp-tools">
+                        <label class="dp-find"><i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i><input
+                                type="search" id="deck-find" placeholder="Find a deck or a card in one"
+                                autocomplete="off" aria-label="Find a deck or a card in one"
+                                oninput="App.setDeckQuery(this.value)"></label>
+                        <div class="dp-inks" id="deck-inks" role="group" aria-label="Filter by ink"></div>
+                    </div>
+                    <div class="dp-list" id="home-chips"></div>
                     <div class="start-row">
                         <button class="btn btn-primary start-btn" id="btn-start-match" onclick="App.startGame()">
                             Start match <i class="fa-solid fa-arrow-right"></i>
@@ -1219,7 +1229,7 @@
     <script>
         let cardFuse = null;
 
-        const APP_VERSION = "v3.19.0"; // Centralized version string (v3: Field Unit)
+        const APP_VERSION = "v3.20.0"; // Centralized version string (v3: Field Unit)
 
         // Tweaks panel accent presets (hue values for the OKLCH accent ramp)
         // Tweaks → Accent: the approved Field Unit signals only (design.md ·
@@ -2073,13 +2083,100 @@
                         <span class="seat-count${warn ? ' is-warn' : ''}" title="${esc(`${info.count} cards recognised`)}">${info.count}</span>
                         <button class="icon-btn ghost" data-act="clear" aria-label="${esc(`Clear ${who.toLowerCase()} seat`)}"><i class="fa-solid fa-xmark"></i></button></div>`;
                 }).join('');
-                if (chipsEl) {
-                    const keys = Object.keys(this._deckIndex);
-                    chipsEl.innerHTML = keys.length ? keys.map(k => {
-                        const d = this._deckIndex[k];
-                        return `<button class="chip" data-key="${esc(k)}" title="${esc(d.notes || '')}">${this.inkPipsHtml(this.deckInfo(d.decklist).inks)} ${esc(d.name)}</button>`;
-                    }).join('') : '<span class="home-empty">Default decks couldn\'t be loaded. Paste a list above instead.</span>';
+                this.renderDeckPicker();
+            },
+
+            // --- Deck picker (Feature 66): your decks, then the default ones (folds away,
+            // remembered), filtered by ink and found by name or by a card in them. ---
+            _deckQuery: '',
+            _deckInks: new Set(),
+
+            setDeckQuery(q) {
+                this._deckQuery = q;
+                this.renderDeckPicker();
+            },
+
+            toggleDeckInk(ink) {
+                if (!this._deckInks.delete(ink)) this._deckInks.add(ink);
+                this.renderDeckPicker();
+            },
+
+            toggleDefaultDecks() {
+                const t = this.loadTweaks();
+                t.defaultDecksCollapsed = !t.defaultDecksCollapsed;
+                this.saveTweaks(t);
+                this.renderDeckPicker();
+            },
+
+            // A deck's inks and card names, for the search. Memoised on the list, like deckInfo.
+            deckEntry(key) {
+                const d = this._deckIndex[key];
+                this._deckEntryCache = this._deckEntryCache || new Map();
+                let e = this._deckEntryCache.get(d.decklist);
+                if (!e) {
+                    const cards = [], qty = {};
+                    String(d.decklist || '').split('\n').forEach(line => {
+                        const m = line.trim() && this.parseDeckLine(line.trim());
+                        if (!m) return;
+                        const name = m.card ? m.card.name + (m.card.version ? ' - ' + m.card.version : '') : m.name;
+                        cards.push(name);
+                        qty[name] = (qty[name] || 0) + m.qty;
+                    });
+                    const info = this.deckInfo(d.decklist);
+                    e = { inks: info.inks || [], count: info.count, cards, qty };
+                    this._deckEntryCache.set(d.decklist, e);
                 }
+                return { ...e, key, name: d.name, notes: d.notes || '', mine: key.startsWith('my:') };
+            },
+
+            renderDeckPicker() {
+                const list = document.getElementById('home-chips');
+                const inksEl = document.getElementById('deck-inks');
+                if (!list || !window.DeckSearch) return;
+                const esc = (v) => this.escapeHtml(v);
+                const marked = (text, spans) => {
+                    let out = '', at = 0;
+                    (spans || []).slice().sort((a, b) => a[0] - b[0]).forEach(([a, b]) => {
+                        if (a < at) return;
+                        out += esc(text.slice(at, a)) + '<mark>' + esc(text.slice(a, b)) + '</mark>';
+                        at = b;
+                    });
+                    return out + esc(text.slice(at));
+                };
+                inksEl.innerHTML = ['amber', 'amethyst', 'emerald', 'ruby', 'sapphire', 'steel'].map(ink => {
+                    const on = this._deckInks.has(ink), label = this.inkSlashLabel([ink]);
+                    return `<button type="button" class="dp-ink" aria-pressed="${on}" title="${esc(label)}" aria-label="${esc(label)}"
+                        style="--ink:${this.inkCss(ink)}" onclick="App.toggleDeckInk('${ink}')"><i></i></button>`;
+                }).join('');
+                inksEl.classList.toggle('is-filtering', this._deckInks.size > 0);
+
+                const keys = Object.keys(this._deckIndex);
+                if (!keys.length) {
+                    list.innerHTML = '<span class="home-empty">Default decks couldn\'t be loaded. Paste a list above instead.</span>';
+                    return;
+                }
+                const found = DeckSearch.query(keys.map(k => this.deckEntry(k)), this._deckQuery, this._deckInks);
+                if (!found.length) {
+                    list.innerHTML = '<div class="dp-none">No deck matches. Paste a list above instead.</div>';
+                    return;
+                }
+                const row = (r) => {
+                    const e = r.entry;
+                    const why = r.cards.slice(0, 2).map(c => `${marked(c.card, c.spans)} ×${e.qty[c.card]}`).join(' · ');
+                    const sub = why || esc(this.inkPairLabel(this.sortInks(e.inks)));
+                    return `<button type="button" class="dp-row" data-key="${esc(e.key)}" title="${esc(e.notes)}">${this.inkPipsHtml(e.inks)}
+                        <span class="dp-text"><span class="dp-name">${r.name ? marked(e.name, r.name.spans) : esc(e.name)}</span><span class="dp-sub">${sub}</span></span>
+                        <span class="dp-count">${e.count}</span></button>`;
+                };
+                const mine = found.filter(r => r.entry.mine), defs = found.filter(r => !r.entry.mine);
+                // Searching or filtering shows the default decks even when they're folded away.
+                const narrowed = DeckSearch.words(this._deckQuery).length > 0 || this._deckInks.size > 0;
+                const open = narrowed || !this.loadTweaks().defaultDecksCollapsed;
+                list.innerHTML = (mine.length ? `<div class="dp-shelf is-mine"><div class="dp-head">Your decks <span class="dp-n">${mine.length}</span></div>${mine.map(row).join('')}</div>` : '')
+                    + (defs.length ? `<div class="dp-shelf is-default">
+                        <button type="button" class="dp-head" data-act="toggle-defaults" aria-expanded="${open}"${narrowed ? ' disabled' : ''}>Default decks <span class="dp-n">${defs.length}</span>
+                            <i class="fa-solid fa-chevron-down" aria-hidden="true"></i></button>
+                        ${open ? defs.map(row).join('') : ''}</div>` : '');
             },
 
             // A fresh home screen seats last match's decks again.
@@ -2829,6 +2926,7 @@
                     if (btn) this.onIntakeAction(btn.dataset.act);
                 });
                 document.getElementById('home-chips').addEventListener('click', (e) => {
+                    if (e.target.closest('[data-act="toggle-defaults"]')) return this.toggleDefaultDecks();
                     const chip = e.target.closest('[data-key]');
                     if (chip) this.seatDeck(chip.dataset.key);
                 });
