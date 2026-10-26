@@ -4,10 +4,10 @@ title: Sessions save themselves
 summary: Every match is a session, kept on this device as you play, and listed under Pick up again.
 devices: [desktop, phone]
 aliases: [continue, resume, my matches, saved games, autosave]
-targets: [recent, all-sessions, session-title]
+targets: [recent, recent-find, all-sessions, session-title]
 related: [save-and-rename, library, storage]
 order: 10
-verified: v3.16.1
+verified: v3.21.0
 ---
 
 A session is one match with its whole Multiverse. The Dojo keeps every session on this device as you play, so you never lose a match by closing the tab.
@@ -29,7 +29,9 @@ Every change you make is saved to this device about a second later, and again wh
 
 ## Pick up again
 
-The home screen's **Pick up again** box lists your last session first (**Resume**), then your most recent ones, then the demos (**Explore**). The match on the board says **Back to it**. **All sessions** opens the [Library](help:library) with every session you have.
+The home screen's **Pick up again** box lists **Your sessions**, the last one first (**Resume**), then your most recent ones, and then the **Demos** (**Explore**). The match on the board says **Back to it**. **All sessions** opens the [Library](help:library) with every session you have.
+
+**Find a session or a card in it** searches all your sessions and the demos, by title or by a card in either deck. Type in the search to find one by its name or by a card in it, with typos and missing letters (`lvthn` finds The Leviathan); a row found by a card says which. The ink buttons narrow the list: one ink shows what uses it, two show that exact pair. The arrow on **Demos** folds them away, and they stay folded next time.
 
 [Show me](show:recent)
 

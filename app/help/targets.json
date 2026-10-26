@@ -381,6 +381,11 @@
       "screen": "home",
       "any": "#home-recent"
     },
+    "recent-find": {
+      "label": "Find a session or a card in it",
+      "screen": "home",
+      "any": "#recent-find"
+    },
     "all-sessions": {
       "label": "All sessions",
       "screen": "home",
@@ -415,6 +420,16 @@
       "label": "Decks",
       "screen": "library",
       "any": "#lib-tab-decks"
+    },
+    "lib-sessions-find": {
+      "label": "Find a session or a card in it",
+      "screen": "library",
+      "any": "#lib-sessions-find"
+    },
+    "lib-decks-find": {
+      "label": "Find a deck or a card in one",
+      "screen": "library",
+      "any": "#lib-decks-find"
     },
     "lib-links": {
       "label": "Links",

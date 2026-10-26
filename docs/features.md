@@ -709,6 +709,18 @@ Duels.ink exports a deck with the printing at the end of each line, `4 Ursula - 
 - **The printing wins.** The `(set-number)` (or `(set-group-number)` for promos, like `9-P3-8`) is looked up first, so an Enchanted or promo printing resolves to its card. If it isn't found, the name is used. Lists without a suffix work as before.
 - The readout names a skipped line without its suffix.
 
+## Feature 67: Find a session or a deck in the Library and in Pick up again (v3.21.0)
+
+### User Story
+- As a player with many sessions and decks, I want the same search and ink filter in the Library and in Pick up again, and to fold away the built-in decks and the demos, so I find the game or deck I mean without scrolling.
+
+### Details
+- **One find bar per list:** a search and the six ink keys on the Library's **Sessions** and **Decks** tabs and in **Pick up again**, each with its own state. Same matching as Feature 66 (`DeckSearch`): a deck by its name or a card; a session by its title or a card in either deck, and the ink filter passes a session when either deck does (`inkSets`).
+- **Cards read lazily:** a session's (or demo's) two decklists are read from its file the first time a search needs them, then kept until the session changes. Demos have no inks in their manifest, so their inks come from the same read.
+- **Library:** while you search, only the shelves with matches show (no empty shelf, no sign-in nudge); **Save all to account** still saves every device-only row, not just the ones shown. The **Built in** shelf folds away from its heading (`libBuiltinCollapsed`).
+- **Pick up again:** **Your sessions** (Trace heading) and **Demos** (built in, folds away: `recentDemosCollapsed`). Searching looks through all your sessions, shows up to six, and points to **All sessions** for the rest.
+- Fold keys are hidden while a search or ink filter shows everything.
+
 ## Feature 66: Find a deck — search by name or card, ink filter, your decks apart from the defaults (v3.20.0)
 
 ### User Story
@@ -1195,3 +1207,4 @@ The public page (`index.html`) follows Field Unit too, as `docs/DESIGN-field-uni
 - [x] Feature 64: Build or replay an opening hand — Draw · Build · Replay
 - [x] Feature 65: Lore race graph under the mini multiverse and in the Multiverse panel
 - [x] Feature 66: Find a deck — search by name or card, ink filter, your decks apart from the defaults
+- [x] Feature 67: Find a session or a deck in the Library and in Pick up again

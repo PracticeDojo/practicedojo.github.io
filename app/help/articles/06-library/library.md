@@ -3,11 +3,11 @@ id: library
 title: The Library: sessions, decks, links
 summary: Everything you keep, on shelves by where it lives: this device, your account, built in, public links.
 devices: [desktop, phone]
-aliases: [my sessions, my decks, saved sessions, shelves, all sessions]
-targets: [library-button, all-sessions, library, lib-sessions, lib-decks, lib-links, lib-import]
+aliases: [my sessions, my decks, saved sessions, shelves, all sessions, find a session, search sessions, search decks, find a card]
+targets: [library-button, all-sessions, library, lib-sessions, lib-decks, lib-links, lib-import, lib-sessions-find, lib-decks-find]
 related: [sessions, decks, share-links, account-sync]
 order: 30
-verified: v3.11.0
+verified: v3.21.0
 ---
 
 The Library holds every session and deck you keep, sorted onto shelves by where each one lives.
@@ -26,9 +26,17 @@ From a match, leave to the home screen first (see [The screen at a glance](help:
 - **Decks**: your decks and the **Built in** ones. **You** and **Opponent** seat a deck for the next match. **New deck**, **Import .txt** and **From a replay** add one. See [Your decks](help:decks).
 - **Links**: the share links you made, under **Public links**. See [Share a deck or a session](help:share-links).
 
+## Find a session or a deck
+
+**Sessions** and **Decks** each have a search at the top: **Find a session or a card in it** and **Find a deck or a card in one**. Type in the search to find one by its name or by a card in it, with typos and missing letters (`lvthn` finds The Leviathan); a row found by a card says which. The ink buttons narrow the list: one ink shows what uses it, two show that exact pair. A session matches when either of its decks does; its cards are read the first time you search. While you search, only the shelves with matches show.
+
+[Show me](show:lib-decks-find)
+
 ## The shelves
 
 Signed out, your sessions and decks sit on **On this device**, with an empty **Your account** shelf that offers **Sign in**. Signed in, they sort into **In your account + this device**, **Only on this device** and **Only in your account**. Each shelf says in one line what that means.
+
+The **Built in** shelf folds away with the arrow on its heading, and stays folded next time; searching shows it again.
 
 A row only adds a note when it's out of step, like **Changed here since your last Save**. See [What goes to your account](help:account-sync).
 
