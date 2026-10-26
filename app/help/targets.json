@@ -362,9 +362,14 @@
       "any": "#home-seats"
     },
     "deck-chips": {
-      "label": "the deck chips",
+      "label": "the deck list",
       "screen": "home",
       "any": "#home-chips"
+    },
+    "deck-find": {
+      "label": "Find a deck or a card in one",
+      "screen": "home",
+      "any": "#deck-find"
     },
     "start-match": {
       "label": "Start match",

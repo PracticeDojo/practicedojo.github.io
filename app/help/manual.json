@@ -195,6 +195,7 @@
     "intake",
     "seats",
     "deck-chips",
+    "deck-find",
     "start-match"
    ],
    "related": [
@@ -202,7 +203,7 @@
     "decks",
     "screen-at-a-glance"
    ],
-   "verified": "v3.16.2",
+   "verified": "v3.20.0",
    "todo": false,
    "headings": [
     {
@@ -221,7 +222,7 @@
      "slug": "good-to-know"
     }
    ],
-   "body": "A match starts on the home screen: put a deck in each seat under **On the table**, then press **Start match**.\n\n## Seat two decks\n\n**On the table** has two seats: **You** (Player 1) and **Opponent** (Player 2).\n\n- **Pick a built-in or saved deck:** press one of the deck chips under the seats. It goes to the first open seat. With both seats taken, it replaces the opponent.\n- **Paste a decklist:** paste it into the big field at the top (one card per line, like `4 Tinker Bell - Giant Fairy`; a list copied from Duels.ink, with `(1-193)` after each name, works too). The readout under it says how many cards it recognised. Press **Play it as you** or **Play against it**, or **Save to My decks** to keep it.\n- **No list to hand?** Press **A decklist** under the field to try an example.\n\n[Show me](show:seats)\n\nEach seat shows the deck's name and card count. The count is marked when it isn't 60. Press **×** on a seat to empty it.\n\n## Start the match\n\nPress **Start match**. Both players draw seven, and Player 1's turn opens on the mulligan: keep the hand or send cards back. See [Mulligan and your opening hand](help:mulligan).\n\n[Show me](show:start-match)\n\n## Good to know\n\n- **You** is Player 1 and goes first. You play both sides; see [You play both sides](help:you-play-both-sides).\n- An empty seat plays 60 random cards.\n- Next time, the home screen seats the same saved decks again (a pasted list isn't kept unless you save it).\n- The match saves itself to this device as you play. Come back to it from **Pick up again** on the home screen.\n"
+   "body": "A match starts on the home screen: put a deck in each seat under **On the table**, then press **Start match**.\n\n## Seat two decks\n\n**On the table** has two seats: **You** (Player 1) and **Opponent** (Player 2).\n\n- **Pick a built-in or saved deck:** press one in the deck list under the seats. It goes to the first open seat. With both seats taken, it replaces the opponent. **Your decks** come first; **Default decks** fold away with their heading, and stay folded next time.\n- **Find one:** type in **Find a deck or a card in one**. It matches deck names and the cards in each deck, with typos and missing letters (`lvthn` finds The Leviathan); a deck found by a card says which, and how many. The ink buttons beside it narrow the list: one ink shows the decks that use it, two show that exact pair.\n- **Paste a decklist:** paste it into the big field at the top (one card per line, like `4 Tinker Bell - Giant Fairy`; a list copied from Duels.ink, with `(1-193)` after each name, works too). The readout under it says how many cards it recognised. Press **Play it as you** or **Play against it**, or **Save to My decks** to keep it.\n- **No list to hand?** Press **A decklist** under the field to try an example.\n\n[Show me](show:seats)\n\nEach seat shows the deck's name and card count. The count is marked when it isn't 60. Press **×** on a seat to empty it.\n\n## Start the match\n\nPress **Start match**. Both players draw seven, and Player 1's turn opens on the mulligan: keep the hand or send cards back. See [Mulligan and your opening hand](help:mulligan).\n\n[Show me](show:start-match)\n\n## Good to know\n\n- **You** is Player 1 and goes first. You play both sides; see [You play both sides](help:you-play-both-sides).\n- An empty seat plays 60 random cards.\n- Next time, the home screen seats the same saved decks again (a pasted list isn't kept unless you save it).\n- The match saves itself to this device as you play. Come back to it from **Pick up again** on the home screen.\n"
   },
   {
    "id": "screen-at-a-glance",
@@ -1568,7 +1569,10 @@
     "demo",
     "example game",
     "precon",
-    "starter deck"
+    "starter deck",
+    "find a deck",
+    "deck search",
+    "ink filter"
    ],
    "targets": [
     "deck-chips",
@@ -1578,7 +1582,7 @@
     "decks",
     "sessions"
    ],
-   "verified": "v3.11.0",
+   "verified": "v3.20.0",
    "todo": false,
    "headings": [
     {
@@ -1597,7 +1601,7 @@
      "slug": "good-to-know"
     }
    ],
-   "body": "The Dojo comes with a few decks and example games, so you can start without a list of your own.\n\n## Play a built-in deck\n\nOn the home screen, under **On the table**, pick a deck chip. It goes to the first open seat (**You**, then **Opponent**). Press **Start match**.\n\n[Show me](show:deck-chips)\n\nThe Library's **Decks** tab lists them on the **Built in** shelf, grouped by set, with **You** and **Opponent** to seat them. To make your own version, open its **⋯** menu and choose **Copy to my decks and edit**.\n\n## Explore a demo\n\nUnder **Pick up again**, the demos are marked *Demo · opens as your own copy*. Press **Explore** to open one: a full game with its Multiverse, to step through and play from any turn.\n\n[Show me](show:recent)\n\n## Good to know\n\n- A demo opens as a copy in your sessions. Change it as much as you like; the demo itself stays the same.\n- Built-in decks are the same for everyone and can't be edited in place.\n- **A decklist**, under the paste field, puts a built-in list in the field to try.\n- An empty seat plays 60 random cards.\n"
+   "body": "The Dojo comes with a few decks and example games, so you can start without a list of your own.\n\n## Play a built-in deck\n\nOn the home screen, under **On the table**, pick a deck under **Default decks**. It goes to the first open seat (**You**, then **Opponent**). Press **Start match**. The heading folds the default decks away, and the Dojo remembers it; searching or picking an ink shows them again.\n\n[Show me](show:deck-chips)\n\nThe Library's **Decks** tab lists them on the **Built in** shelf, grouped by set, with **You** and **Opponent** to seat them. To make your own version, open its **⋯** menu and choose **Copy to my decks and edit**.\n\n## Explore a demo\n\nUnder **Pick up again**, the demos are marked *Demo · opens as your own copy*. Press **Explore** to open one: a full game with its Multiverse, to step through and play from any turn.\n\n[Show me](show:recent)\n\n## Good to know\n\n- A demo opens as a copy in your sessions. Change it as much as you like; the demo itself stays the same.\n- Built-in decks are the same for everyone and can't be edited in place.\n- **A decklist**, under the paste field, puts a built-in list in the field to try.\n- An empty seat plays 60 random cards.\n"
   },
   {
    "id": "multiverse",
@@ -3818,9 +3822,14 @@
    "any": "#home-seats"
   },
   "deck-chips": {
-   "label": "the deck chips",
+   "label": "the deck list",
    "screen": "home",
    "any": "#home-chips"
+  },
+  "deck-find": {
+   "label": "Find a deck or a card in one",
+   "screen": "home",
+   "any": "#deck-find"
   },
   "start-match": {
    "label": "Start match",

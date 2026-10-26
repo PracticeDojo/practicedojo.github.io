@@ -6037,6 +6037,245 @@ body.palette-competition .tree-node.tn-p2::before {
     color: var(--text-dim);
 }
 
+/* Deck picker (Feature 66): find a deck by name or by a card in it, filter by
+   ink, then your decks and the default ones as two shelves. A shelf's place
+   (design.md · Place colours) is a spine down its left and the colour of its
+   name: this device in Trace, built in neutral. The default shelf folds away. */
+.dp-tools {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+}
+
+.dp-find {
+    flex: 1 1 200px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    height: 32px;
+    padding: 0 10px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--surface-2);
+    color: var(--text-dim);
+}
+
+.dp-find input {
+    flex: 1;
+    min-width: 0;
+    border: 0;
+    outline: 0;
+    background: none;
+    color: var(--text);
+    font: inherit;
+    font-size: 13px;
+}
+
+.dp-find:focus-within {
+    border-color: var(--text);
+}
+
+.dp-inks {
+    display: flex;
+    gap: 4px;
+}
+
+.dp-ink {
+    display: grid;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--surface);
+    cursor: pointer;
+}
+
+.dp-ink i {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--ink);
+}
+
+.dp-ink:hover {
+    border-color: var(--border-strong);
+}
+
+.dp-ink[aria-pressed="true"] {
+    background: var(--fu-glass);
+    border-color: var(--fu-glass);
+}
+
+.dp-inks.is-filtering .dp-ink[aria-pressed="false"] i {
+    opacity: 0.35;
+}
+
+.dp-ink:focus-visible,
+.dp-row:focus-visible,
+.dp-head:focus-visible {
+    outline: 2px solid var(--text);
+    outline-offset: 1px;
+}
+
+.dp-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    max-height: 340px;
+    overflow-y: auto;
+}
+
+.dp-shelf {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    padding-left: 11px;
+}
+
+.dp-shelf::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: var(--spine);
+}
+
+.dp-shelf.is-mine {
+    --spine: var(--place-device);
+    --shelf-hd: var(--place-device-text);
+}
+
+.dp-shelf.is-default {
+    --spine: var(--place-builtin);
+    --shelf-hd: var(--text-2);
+}
+
+.dp-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    padding: 4px 0 6px;
+    border: 0;
+    background: none;
+    color: var(--shelf-hd);
+    font: 500 10px var(--font-mono);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    text-align: left;
+}
+
+button.dp-head {
+    cursor: pointer;
+}
+
+button.dp-head:disabled {
+    cursor: default;
+}
+
+.dp-head .dp-n {
+    color: var(--text-dim);
+    letter-spacing: 0.04em;
+}
+
+.dp-head i {
+    margin-left: auto;
+    font-size: 10px;
+    color: var(--text-dim);
+    transition: transform 0.15s var(--ease);
+}
+
+.dp-head[aria-expanded="false"] i {
+    transform: rotate(-90deg);
+}
+
+button.dp-head:disabled i {
+    visibility: hidden;
+}
+
+.dp-row {
+    display: grid;
+    grid-template-columns: 16px minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 6px 10px;
+    border: 1px solid var(--border-soft);
+    border-top-width: 0;
+    background: var(--surface);
+    color: var(--text);
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+.dp-head + .dp-row {
+    border-top-width: 1px;
+    border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+}
+
+.dp-row:last-child {
+    border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+}
+
+.dp-head + .dp-row:last-child {
+    border-radius: var(--radius-sm);
+}
+
+.dp-row:hover {
+    background: var(--surface-2);
+}
+
+.dp-text {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.dp-name {
+    overflow: hidden;
+    font-size: 13px;
+    font-weight: 520;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.dp-sub,
+.dp-count {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    color: var(--text-dim);
+}
+
+.dp-sub {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.dp-count {
+    font-variant-numeric: tabular-nums;
+}
+
+.dp-row mark {
+    background: none;
+    color: var(--accent);
+    font-weight: 600;
+}
+
+.dp-none {
+    padding: 12px;
+    font-size: 13px;
+    color: var(--text-dim);
+    border: 1px dashed var(--border);
+    border-radius: var(--radius-sm);
+}
+
 .rec:hover {
     background: var(--surface-2);
     border-color: var(--border-soft);

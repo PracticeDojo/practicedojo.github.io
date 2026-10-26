@@ -709,6 +709,18 @@ Duels.ink exports a deck with the printing at the end of each line, `4 Ursula - 
 - **The printing wins.** The `(set-number)` (or `(set-group-number)` for promos, like `9-P3-8`) is looked up first, so an Enchanted or promo printing resolves to its card. If it isn't found, the name is used. Lists without a suffix work as before.
 - The readout names a skipped line without its suffix.
 
+## Feature 66: Find a deck — search by name or card, ink filter, your decks apart from the defaults (v3.20.0)
+
+### User Story
+- As a player with many decks, I want to find one fast on the home screen, by its name or by a card in it, narrow the list by ink, and tell my decks from the built-in ones at a glance.
+
+### Details
+- **Deck list:** under **On the table** the deck chips became a list of rows: the deck icon, the name, its inks (or the card it was found by) and the card count. It scrolls past about eight rows.
+- **Two shelves:** **Your decks** first, then **Default decks**. Each shelf has a place spine and a coloured name (design.md · Place colours): Trace for this device, neutral for built in. The default shelf's heading folds it away; the choice is kept (`defaultDecksCollapsed` in Tweaks). Searching or picking an ink shows it again.
+- **Find a deck or a card in one:** as you type, every word has to hit a word of the deck's name or of one of its cards: its start, inside it, a typo (1 edit, 2 from 7 letters) or its letters in order with the same first letter (`lvthn` → The Leviathan). Best match first; a name beats a card. A deck found by a card shows it, the hit marked in signal, with its count (*The Leviathan - Guardian of Atlantis ×4*).
+- **Ink filter:** six ink keys beside the search. One ink shows the decks that use it; two show that exact pair.
+- `app/js/deck-search.js` (`DeckSearch`) does the matching, with no DOM; `tools/app-checks.mjs` checks it.
+
 ## Feature 65: Lore race graph under the mini multiverse and in the Multiverse panel (v3.19.0)
 
 ### User Story
@@ -1182,3 +1194,4 @@ The public page (`index.html`) follows Field Unit too, as `docs/DESIGN-field-uni
 - [x] Patch: Decklists with Duels.ink's printing suffix
 - [x] Feature 64: Build or replay an opening hand — Draw · Build · Replay
 - [x] Feature 65: Lore race graph under the mini multiverse and in the Multiverse panel
+- [x] Feature 66: Find a deck — search by name or card, ink filter, your decks apart from the defaults

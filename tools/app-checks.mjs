@@ -103,6 +103,17 @@ export default async (page) => {
         const bad = App._openingsFromSession({ bookmarks: [], currentState: { players: [], openings: { 0: { hand: [1, 2, 3, 4, 5, 6, 'x'], deck: [], how: 'kept' }, 1: { ...o1, how: '<img onerror=alert(1)>' } } } });
         check('openings: unknown ids and markup dropped', `${bad[0].openings.length} ${bad[1].openings[0] && bad[1].openings[0].how}`, '0 kept');
 
+        // Deck search (Feature 66): words match by start, typo or letters in order; a card
+        // match names the card; two inks mean that exact pair.
+        const E = [{ name: 'Retro Leviathan', inks: ['ruby', 'emerald'], cards: ['The Leviathan - Guardian of Atlantis', 'Mickey Mouse - Best in Town'] },
+            { name: 'Rockstar Aggro', inks: ['amber', 'steel'], cards: ['Mike Wazowski - Heroic Climber', 'Lantern - Birthday Surprise'] },
+            { name: 'Mono', inks: ['amber'], cards: [] }];
+        const ds = (q, inks) => DeckSearch.query(E, q, inks).map(r => r.entry.name + (r.cards[0] ? ' <' + r.cards[0].card + '>' : '')).join(' | ');
+        check('deck search: a card, not a look-alike', ds('mickey'), 'Retro Leviathan <Mickey Mouse - Best in Town>');
+        check('deck search: typo and letters in order', `${ds('leviatan')} / ${ds('lvthn')} / ${ds('lantrn')}`,
+            'Retro Leviathan <The Leviathan - Guardian of Atlantis> / Retro Leviathan <The Leviathan - Guardian of Atlantis> / Rockstar Aggro <Lantern - Birthday Surprise>');
+        check('deck search: one ink, an exact pair', `${ds('', ['amber'])} / ${ds('', ['amber', 'steel'])}`, 'Rockstar Aggro | Mono / Rockstar Aggro');
+
         // Device library.
         const L = DojoLibrary, data = App.buildSessionData(), id = L.newId();
         const first = await L.saveSession({ id, title: 'check' }, { data });
