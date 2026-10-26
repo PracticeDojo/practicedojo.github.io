@@ -4,12 +4,12 @@
   "order": 3,
   "minutes": 3,
   "start": {
-    "demo": "s13-amber-amethyst-vs-amethyst-ruby"
+    "demo": "s14-circle-vs-control"
   },
   "steps": [
     {
       "id": "welcome",
-      "text": "A practice copy of the Set 13 demo: a whole game, with the other ways it could have gone. Nothing you do here is saved."
+      "text": "A practice copy of the Set 14 demo: a whole game, with the other ways it could have gone. Nothing you do here is saved."
     },
     {
       "id": "open",

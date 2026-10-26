@@ -5,9 +5,9 @@
 //     --themes day,night --steps tools/landing-shots.mjs --out <scratch dir>
 //
 // It writes WebP files straight into img/ (the PNGs stay in --out):
-//   dojo_board_<theme>.webp         desktop, 1440×900 at 2×, Dumbo hovered, 2400 wide
+//   dojo_board_<theme>.webp         desktop, 1440×900 at 2×, Vixey hovered, 2400 wide
 //   dojo_phone_board_<theme>.webp   phone, 390×844 at 2×, the board
-//   dojo_phone_drawer_<theme>.webp  phone, Dumbo tapped: the card drawer
+//   dojo_phone_drawer_<theme>.webp  phone, Vixey tapped: the card drawer
 // The browser encodes the WebP itself, so nothing else needs installing.
 import fs from 'node:fs';
 import path from 'node:path';
@@ -35,10 +35,10 @@ async function toWebp(page, png, name, width) {
 }
 
 export default async (page, { shot, phone, theme, wait }) => {
-    // The Dumbo on the board (the discard list and the tree have one too).
-    const dumbo = page.locator('.play .card.card-face[aria-label="Dumbo"]:visible').last();
+    // Vixey in play (the first match: the phone's discard pile has one on top too).
+    const card = page.locator('.play .card.card-face[aria-label="Vixey"]:visible').first();
     if (!phone) {
-        await dumbo.hover({ force: true });
+        await card.hover({ force: true });
         await wait(700);
         await toWebp(page, await shot('board'), `dojo_board_${theme}.webp`, 2400);
         await page.mouse.move(2, 2);
@@ -46,7 +46,7 @@ export default async (page, { shot, phone, theme, wait }) => {
         return;
     }
     await toWebp(page, await shot('phone-board'), `dojo_phone_board_${theme}.webp`, 780);
-    await dumbo.tap();
+    await card.tap();
     await wait(900);
     await toWebp(page, await shot('phone-drawer'), `dojo_phone_drawer_${theme}.webp`, 780);
     await page.keyboard.press('Escape');

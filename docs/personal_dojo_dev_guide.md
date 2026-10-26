@@ -1348,7 +1348,7 @@ in-memory stand-in with the same revision and quota behaviour; the SQL with Post
 
 ## **24\. Landing page: real multiverse data, Field Unit**
 
-The landing page (`index.html`) shows the Set 13 demo session (`app/defaults/demos/set13_example.dojo.json.gz`)
+The landing page (`index.html`) shows the demo session (now the Set 14 demo, `app/defaults/demos/set14_example2.dojo.json.gz`)
 in place of the hand-drawn trees it used to have.
 
 * **`js/landing-multiverse-data.js`** is a snapshot of that demo: every bookmark (name, stats, recap,
@@ -1382,9 +1382,9 @@ in place of the hand-drawn trees it used to have.
   Every colour in the trees and the map comes from a class, so switching theme needs no re-render.
 * **Theme:** the page uses the app's own Tweaks → Theme (`lorcana_dojo_tweaks.theme`, read before first paint).
   Its Auto / Day / Night switch writes back only that key, so the site and the Dojo always match.
-* **Screenshots:** `img/dojo_board_day.webp` and `img/dojo_board_night.webp` are the Set 13 demo at turn 16 with
-  Dumbo hovered, 1440×900 at 2×, scaled to 2400px wide. `img/dojo_phone_board_*.webp` and
-  `img/dojo_phone_drawer_*.webp` are the same match on a 390×844 phone at 2×: the board, and Dumbo tapped (the
+* **Screenshots:** `img/dojo_board_day.webp` and `img/dojo_board_night.webp` are the demo (Set 14, turn 8) with
+  Vixey hovered, 1440×900 at 2×, scaled to 2400px wide. `img/dojo_phone_board_*.webp` and
+  `img/dojo_phone_drawer_*.webp` are the same match on a 390×844 phone at 2×: the board, and Vixey tapped (the
   card drawer). The page shows the ones that match the theme, with numbered pins over them.
 * **Keeping it current:** `node tools/refresh-landing.mjs` does all of it after a visible change to the app:
   the version (every `data-app-version` element in `index.html` gets `APP_VERSION`), the demo data, and the

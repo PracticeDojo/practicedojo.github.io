@@ -1,7 +1,7 @@
 // `node tools/help.mjs --live`: is every target in app/help/targets.json a visible element
 // in the running app, on its devices? docs/ARCH-help-and-tour.md §10.
 //
-// Opens the app headless at 1440 and 390 with the Set 13 demo through the dojo-screenshots
+// Opens the app headless at 1440 and 390 with the Set 14 demo through the dojo-screenshots
 // tool (.claude/skills/dojo-screenshots/shoot.mjs, with tools/help-live-steps.mjs as its
 // steps module), opens each target's screen and asks DojoSpotlight.resolve() for it.
 // Screens it can open: board, multiverse, tweaks, library, home. Targets on the others
