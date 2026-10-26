@@ -258,7 +258,7 @@
     "keyboard-shortcuts",
     "gestures"
    ],
-   "verified": "v3.11.0",
+   "verified": "v3.19.0",
    "todo": false,
    "headings": [
     {
@@ -282,7 +282,7 @@
      "slug": "good-to-know"
     }
    ],
-   "body": "The board is split in two: the player whose turn it is sits at the bottom, the other player at the top. When the turn ends, the two halves swap.\n\n## The top bar\n\n:::desktop\n- **Left:** **‹ Dojo** back to the home screen, the session's title (click to rename), then **Save**, **Save as copy** and **Share**.\n- **Centre:** **Undo**, the turn chip (`TURN 16 → Player 2`) and **Challenge**.\n- **Right:** **Multiverse** and **Tweaks**.\n:::\n\n:::phone\nFrom left to right: **☰** (the side panel), **Undo**, the turn chip, **Challenge**, **Multiverse** and **⋯**. The **⋯** menu holds **Save**, **Save as copy**, **Share link**, **Tweaks** and **Leave to the dojo**.\n:::\n\n[Show me](show:topbar)\n\n## Each player's half\n\n:::desktop\nEach half is labelled `P1 · TO PLAY` or `P2 · WAITING`. It holds:\n\n- **The play area**, where characters, items and locations sit.\n- **Discard**: a list of the cards in it, with a magnifier to look through them.\n- **The ink bar**: ready ink (`4 /7 READY`), **−** / **+**, **Ready all** and the ink cards.\n- **Deck**: the count. Click it to draw.\n- **Lore**: the big number, with **−** and **+**.\n\nThe bottom half also has your hand and the **Turn N notes** box. The top half has the other player's hand face down, with **Hold to Reveal Hand**.\n:::\n\n:::phone\nEach player has one bar: **Lore** with **−** / **+**, **Ink** with its count and pips (tap it for the inkwell), then the discard (its top card and count) and the deck (tap to draw, **⋮** for more). Under the board, the hand tray holds **Quest**, `Hand · N` and **End turn**, with your hand peeking up from the bottom edge.\n:::\n\n[Show me](show:board)\n\n## The side panels\n\n:::desktop\nThe left rail holds the players (deck and hand counts), the mini multiverse, the card preview (hover a card for details), the game log, **Auto-save every turn**, **Quest** and **End turn**. The right pane shows **Draw Odds** for the player to play.\n:::\n\n:::phone\n**☰** opens the side panel: the players, the card preview, the game log, **Auto-save every turn**, **Quest** and **End turn**. Phones have no draw odds pane, mini multiverse or notes box; see [Turn notes](help:turn-notes) for writing a note.\n:::\n\n[Show me](show:sidebar)\n\n## Good to know\n\n- The colour of a half follows the player, not the position: Player 1 keeps their colour when they move to the top.\n- On a phone or tablet, tap a card to open the card drawer with all its actions. See [Act on a card in play](help:card-actions).\n"
+   "body": "The board is split in two: the player whose turn it is sits at the bottom, the other player at the top. When the turn ends, the two halves swap.\n\n## The top bar\n\n:::desktop\n- **Left:** **‹ Dojo** back to the home screen, the session's title (click to rename), then **Save**, **Save as copy** and **Share**.\n- **Centre:** **Undo**, the turn chip (`TURN 16 → Player 2`) and **Challenge**.\n- **Right:** **Multiverse** and **Tweaks**.\n:::\n\n:::phone\nFrom left to right: **☰** (the side panel), **Undo**, the turn chip, **Challenge**, **Multiverse** and **⋯**. The **⋯** menu holds **Save**, **Save as copy**, **Share link**, **Tweaks** and **Leave to the dojo**.\n:::\n\n[Show me](show:topbar)\n\n## Each player's half\n\n:::desktop\nEach half is labelled `P1 · TO PLAY` or `P2 · WAITING`. It holds:\n\n- **The play area**, where characters, items and locations sit.\n- **Discard**: a list of the cards in it, with a magnifier to look through them.\n- **The ink bar**: ready ink (`4 /7 READY`), **−** / **+**, **Ready all** and the ink cards.\n- **Deck**: the count. Click it to draw.\n- **Lore**: the big number, with **−** and **+**.\n\nThe bottom half also has your hand and the **Turn N notes** box. The top half has the other player's hand face down, with **Hold to Reveal Hand**.\n:::\n\n:::phone\nEach player has one bar: **Lore** with **−** / **+**, **Ink** with its count and pips (tap it for the inkwell), then the discard (its top card and count) and the deck (tap to draw, **⋮** for more). Under the board, the hand tray holds **Quest**, `Hand · N` and **End turn**, with your hand peeking up from the bottom edge.\n:::\n\n[Show me](show:board)\n\n## The side panels\n\n:::desktop\nThe left rail holds the players (deck and hand counts), the mini multiverse, the lore race, the card preview (hover a card for details), the game log, **Auto-save every turn**, **Quest** and **End turn**. The right pane shows **Draw Odds** for the player to play.\n:::\n\n:::phone\n**☰** opens the side panel: the players, the card preview, the game log, **Auto-save every turn**, **Quest** and **End turn**. Phones have no draw odds pane, mini multiverse, lore race or notes box; see [Turn notes](help:turn-notes) for writing a note.\n:::\n\n[Show me](show:sidebar)\n\n## Good to know\n\n- The colour of a half follows the player, not the position: Player 1 keeps their colour when they move to the top.\n- On a phone or tablet, tap a card to open the card drawer with all its actions. See [Act on a card in play](help:card-actions).\n"
   },
   {
    "id": "you-play-both-sides",
@@ -1815,7 +1815,7 @@
     "branches",
     "left-here"
    ],
-   "verified": "v3.11.0",
+   "verified": "v3.19.0",
    "todo": false,
    "headings": [
     {
@@ -1849,7 +1849,7 @@
      "slug": "good-to-know"
     }
    ],
-   "body": "The panel shows the node you select. Read it there first, then play from it, rename it, change its note or delete it.\n\n## Select a node\n\n:::desktop\nClick a node, or a dot in the plot. The arrow keys move the selection (see [Moving around](help:multiverse-navigate)).\n:::\n\n:::phone\nTap a node or a dot, or move the cursor with the thumb keys. The panel is under the canvas: scroll down to read all of it.\n:::\n\nSelecting doesn't touch your board. The panel shows **Selected** (with **· you are here** on the node you're on), the name, the turn, lore and time, the note, **Lore race to 20** and the **Turn recap** as cards.\n\n[Show me](show:selected-node)\n\n## Play from here\n\nPress **Play from here**. The board becomes that node's board and the Multiverse closes.\n\n:::desktop\nOr double-click the node, or press {key:Enter}.\n:::\n\nIf the board you left wasn't saved, it's kept as a [\"Left here\" snapshot](help:left-here).\n\n## Rename a node\n\nClick its name in the panel, type, and press {key:Enter} (or click away). {key:Esc} cancels.\n\n## Edit the note\n\nClick the note, or **Add a note…** when it's empty. The whole text is yours to edit, turn recap included; Markdown works. Click away to save. {key:Esc} cancels.\n\n:::desktop\n{key:Ctrl+Enter} saves too. Clicking a note on a node opens it here.\n:::\n\n## Delete a node\n\nPress the bin, in the panel or on the node. Its later turns aren't lost: they move up to hang off the node before it. The toast offers **Undo**.\n\n## Good to know\n\n:::desktop\nThe panel docks on the right. The columns button in the Multiverse header moves it to the left (or back), and the Dojo remembers the side. [Show me](show:tree-dock)\n:::\n\n- A \"Left here\" snapshot has **Keep as node** instead of a name and note to edit.\n"
+   "body": "The panel shows the node you select. Read it there first, then play from it, rename it, change its note or delete it.\n\n## Select a node\n\n:::desktop\nClick a node, or a dot in the plot. The arrow keys move the selection (see [Moving around](help:multiverse-navigate)).\n:::\n\n:::phone\nTap a node or a dot, or move the cursor with the thumb keys. The panel is under the canvas: scroll down to read all of it.\n:::\n\nSelecting doesn't touch your board. The panel shows **Selected** (with **· you are here** on the node you're on), the name, the turn, lore and time, the note, **Lore race · this line** (both players' lore turn by turn, from turn 1 to this node; P1 solid, P2 dashed, 20 wins) and the **Turn recap** as cards.\n\n[Show me](show:selected-node)\n\n## Play from here\n\nPress **Play from here**. The board becomes that node's board and the Multiverse closes.\n\n:::desktop\nOr double-click the node, or press {key:Enter}.\n:::\n\nIf the board you left wasn't saved, it's kept as a [\"Left here\" snapshot](help:left-here).\n\n## Rename a node\n\nClick its name in the panel, type, and press {key:Enter} (or click away). {key:Esc} cancels.\n\n## Edit the note\n\nClick the note, or **Add a note…** when it's empty. The whole text is yours to edit, turn recap included; Markdown works. Click away to save. {key:Esc} cancels.\n\n:::desktop\n{key:Ctrl+Enter} saves too. Clicking a note on a node opens it here.\n:::\n\n## Delete a node\n\nPress the bin, in the panel or on the node. Its later turns aren't lost: they move up to hang off the node before it. The toast offers **Undo**.\n\n## Good to know\n\n:::desktop\nThe panel docks on the right. The columns button in the Multiverse header moves it to the left (or back), and the Dojo remembers the side. [Show me](show:tree-dock)\n:::\n\n- A \"Left here\" snapshot has **Keep as node** instead of a name and note to edit.\n"
   },
   {
    "id": "branches",
@@ -1878,7 +1878,7 @@
     "left-here",
     "undo"
    ],
-   "verified": "v3.18.1",
+   "verified": "v3.19.0",
    "todo": false,
    "headings": [
     {
@@ -1897,7 +1897,7 @@
      "slug": "good-to-know"
     }
    ],
-   "body": "To try another line, go back to an earlier node and play on from it. The new turns grow a new branch, and the line you played before stays exactly as it was.\n\n## Try another line\n\n1. Open the Multiverse and select the node to go back to. An auto-save named **Turn 6 - Player 1 Active** is the board at the start of Player 1's turn 6, so pick it to replay that turn.\n2. Press **Play from here**. You're back on the board, at that point in the game.\n3. Play the turn differently and end it. With auto-save on, your new line gets a node of its own beside the one you played from (same board, your new recap), and the next turn hangs off it: that's a branch. On turn 1 this is where you mulligan again or build a different hand.\n4. Keep playing. Every turn you end adds to the new line.\n\n[Show me](show:tree-canvas)\n\n## Compare the lines\n\nThe path to the node you're on is highlighted; the other lines are grey. Select nodes on each line and compare their **Lore race to 20** and **Turn recap** in the panel. The plot shows the whole game at once (see [Cards and plot](help:multiverse-views)).\n\n\n## Good to know\n\n- Branching never changes or deletes the nodes you already have.\n- The board you leave is kept as a [\"Left here\" snapshot](help:left-here) if it wasn't saved.\n- **Undo** doesn't reach across a jump: its history starts fresh from the node you play from.\n- When a player reaches 20 lore, a **Game Over** node closes the branch, and the Dojo offers **View Multiverse** or **Stay Here**. You can still go back and play a branch where the other player wins.\n"
+   "body": "To try another line, go back to an earlier node and play on from it. The new turns grow a new branch, and the line you played before stays exactly as it was.\n\n## Try another line\n\n1. Open the Multiverse and select the node to go back to. An auto-save named **Turn 6 - Player 1 Active** is the board at the start of Player 1's turn 6, so pick it to replay that turn.\n2. Press **Play from here**. You're back on the board, at that point in the game.\n3. Play the turn differently and end it. With auto-save on, your new line gets a node of its own beside the one you played from (same board, your new recap), and the next turn hangs off it: that's a branch. On turn 1 this is where you mulligan again or build a different hand.\n4. Keep playing. Every turn you end adds to the new line.\n\n[Show me](show:tree-canvas)\n\n## Compare the lines\n\nThe path to the node you're on is highlighted; the other lines are grey. Select nodes on each line and compare their **Lore race** and **Turn recap** in the panel. The plot shows the whole game at once (see [Cards and plot](help:multiverse-views)).\n\n\n## Good to know\n\n- Branching never changes or deletes the nodes you already have.\n- The board you leave is kept as a [\"Left here\" snapshot](help:left-here) if it wasn't saved.\n- **Undo** doesn't reach across a jump: its history starts fresh from the node you play from.\n- When a player reaches 20 lore, a **Game Over** node closes the branch, and the Dojo offers **View Multiverse** or **Stay Here**. You can still go back and play a branch where the other player wins.\n"
   },
   {
    "id": "left-here",
@@ -2069,18 +2069,22 @@
     "small map",
     "sidebar map",
     "branch point",
-    "step through turns"
+    "step through turns",
+    "lore race",
+    "lore graph",
+    "lore chart"
    ],
    "targets": [
     "mini-multiverse",
-    "mini-multiverse-keys"
+    "mini-multiverse-keys",
+    "lore-race"
    ],
    "related": [
     "multiverse-navigate",
     "left-here",
     "branches"
    ],
-   "verified": "v3.11.0",
+   "verified": "v3.19.0",
    "todo": false,
    "headings": [
     {
@@ -2100,11 +2104,16 @@
     },
     {
      "level": 2,
+     "text": "Lore race",
+     "slug": "lore-race"
+    },
+    {
+     "level": 2,
      "text": "Good to know",
      "slug": "good-to-know"
     }
    ],
-   "body": "The mini multiverse is a small map of the whole tree in the side rail, under the players. Jump to any turn with one click, or step through a line, without opening the full Multiverse.\n\n![The mini multiverse: the line you're on in orange, other lines in grey, and the step keys under the map](img/mini-multiverse-{theme}.webp)\n\n## Read the map\n\n- Each dot is a saved turn; each row is a line. A branch takes the nearest free row.\n- The line you're on is highlighted, with filled dots. Turns ahead of you on it (a line you stepped back along) are dashed rings.\n- The node you're on has a ring, dashed once the board has changed since it.\n- \"Left here\" snapshots are dashed hollow dots. A won branch ends in a square dot and a bar.\n- The head reads like **T14 · P2 · 8–8** (turn, player, lore) for the node you're on, or the dot under the pointer, whose name shows at the foot.\n- **Edited · kept if you jump** at the foot means your board has changed since its node.\n\n[Show me](show:mini-multiverse)\n\n## Jump to a turn\n\nClick a dot: the board becomes that turn straight away, with no **Play from here**. Drag or scroll the map to pan. The button in the head opens the full Multiverse.\n\n## Step through a line\n\nThe keys under the map load the turn they step to:\n\n- **⏮** back to the last branch point behind you, or the start.\n- **◀** the turn before. **▶** the next turn on the line.\n- **⏭** on to the next branch point ahead, or the end of the line.\n- **↑** **↓** the nearest turn on the line above or below.\n\nClick the map first and {key:←} {key:→} {key:↑} {key:↓}, {key:Home} and {key:End} do the same.\n\n[Show me](show:mini-multiverse-keys)\n\n## Good to know\n\n- Stepping back keeps the rest of the line ahead of you, so **▶** retraces it.\n- On a board you've changed since its node, **◀** reloads that node and **▶** goes on to the next turn.\n- A board you leave unsaved is kept as a [\"Left here\" snapshot](help:left-here).\n- Phones don't show the map. Use the [thumb keys](help:multiverse-navigate) in the Multiverse instead.\n"
+   "body": "The mini multiverse is a small map of the whole tree in the side rail, under the players. Jump to any turn with one click, or step through a line, without opening the full Multiverse.\n\n![The mini multiverse: the line you're on in orange, other lines in grey, and the step keys under the map](img/mini-multiverse-{theme}.webp)\n\n## Read the map\n\n- Each dot is a saved turn; each row is a line. A branch takes the nearest free row.\n- The line you're on is highlighted, with filled dots. Turns ahead of you on it (a line you stepped back along) are dashed rings.\n- The node you're on has a ring, dashed once the board has changed since it.\n- \"Left here\" snapshots are dashed hollow dots. A won branch ends in a square dot and a bar.\n- The head reads like **T14 · P2 · 8–8** (turn, player, lore) for the node you're on, or the dot under the pointer, whose name shows at the foot.\n- **Edited · kept if you jump** at the foot means your board has changed since its node.\n\n[Show me](show:mini-multiverse)\n\n## Jump to a turn\n\nClick a dot: the board becomes that turn straight away, with no **Play from here**. Drag or scroll the map to pan. The button in the head opens the full Multiverse.\n\n## Step through a line\n\nThe keys under the map load the turn they step to:\n\n- **⏮** back to the last branch point behind you, or the start.\n- **◀** the turn before. **▶** the next turn on the line.\n- **⏭** on to the next branch point ahead, or the end of the line.\n- **↑** **↓** the nearest turn on the line above or below.\n\nClick the map first and {key:←} {key:→} {key:↑} {key:↓}, {key:Home} and {key:End} do the same.\n\n[Show me](show:mini-multiverse-keys)\n\n## Lore race\n\nUnder the map, **Lore race** draws both players' lore turn by turn along the line you're on, from turn 1. P1 is the solid line, P2 the dashed one, and the dashed line at the top is 20, the win. The orange numbers at the right are the lore at the node you're on, marked by the thin orange line. Turns ahead of you on the line show faint. It follows every jump and step.\n\n[Show me](show:lore-race)\n\n## Good to know\n\n- Stepping back keeps the rest of the line ahead of you, so **▶** retraces it.\n- On a board you've changed since its node, **◀** reloads that node and **▶** goes on to the next turn.\n- A board you leave unsaved is kept as a [\"Left here\" snapshot](help:left-here).\n- Phones don't show the map or the lore race. Use the [thumb keys](help:multiverse-navigate) in the Multiverse instead.\n"
   },
   {
    "id": "import-overview",
@@ -3548,6 +3557,11 @@
    "label": "the mini multiverse step keys",
    "screen": "board",
    "desktop": "#mmv-ctl"
+  },
+  "lore-race": {
+   "label": "the lore race",
+   "screen": "board",
+   "desktop": "#lore-race"
   },
   "card-preview": {
    "label": "the card preview",

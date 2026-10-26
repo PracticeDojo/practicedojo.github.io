@@ -3,11 +3,11 @@ id: mini-multiverse
 title: The mini multiverse
 summary: The small map beside the board: click a dot to jump, step through a line, find branch points.
 devices: [desktop]
-aliases: [mini map, minimap, small map, sidebar map, branch point, step through turns]
-targets: [mini-multiverse, mini-multiverse-keys]
+aliases: [mini map, minimap, small map, sidebar map, branch point, step through turns, lore race, lore graph, lore chart]
+targets: [mini-multiverse, mini-multiverse-keys, lore-race]
 related: [multiverse-navigate, left-here, branches]
 order: 100
-verified: v3.11.0
+verified: v3.19.0
 ---
 
 The mini multiverse is a small map of the whole tree in the side rail, under the players. Jump to any turn with one click, or step through a line, without opening the full Multiverse.
@@ -42,9 +42,15 @@ Click the map first and {key:←} {key:→} {key:↑} {key:↓}, {key:Home} and 
 
 [Show me](show:mini-multiverse-keys)
 
+## Lore race
+
+Under the map, **Lore race** draws both players' lore turn by turn along the line you're on, from turn 1. P1 is the solid line, P2 the dashed one, and the dashed line at the top is 20, the win. The orange numbers at the right are the lore at the node you're on, marked by the thin orange line. Turns ahead of you on the line show faint. It follows every jump and step.
+
+[Show me](show:lore-race)
+
 ## Good to know
 
 - Stepping back keeps the rest of the line ahead of you, so **▶** retraces it.
 - On a board you've changed since its node, **◀** reloads that node and **▶** goes on to the next turn.
 - A board you leave unsaved is kept as a ["Left here" snapshot](help:left-here).
-- Phones don't show the map. Use the [thumb keys](help:multiverse-navigate) in the Multiverse instead.
+- Phones don't show the map or the lore race. Use the [thumb keys](help:multiverse-navigate) in the Multiverse instead.

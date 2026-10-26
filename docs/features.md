@@ -709,6 +709,16 @@ Duels.ink exports a deck with the printing at the end of each line, `4 Ursula - 
 - **The printing wins.** The `(set-number)` (or `(set-group-number)` for promos, like `9-P3-8`) is looked up first, so an Enchanted or promo printing resolves to its card. If it isn't found, the name is used. Lists without a suffix work as before.
 - The readout names a skipped line without its suffix.
 
+## Feature 65: Lore race graph under the mini multiverse and in the Multiverse panel (v3.19.0)
+
+### User Story
+- As a player, I want to see both players' lore turn by turn along the line I'm on, right beside the board and when I read a node in the Multiverse, so I can see at a glance who is winning the race to 20 and where it swung.
+
+### Details
+- **Sidebar:** a **Lore race** module sits under the mini multiverse, above the card preview (desktop only, like the mini multiverse). It draws the line the mini multiverse is on, from turn 1 to the node you're on; turns ahead of you (a line you stepped back along) show faint. It follows every jump and step.
+- **Multiverse panel:** **Lore race · this line** replaces the two "Lore race to 20" sliders: the same chart from turn 1 to the selected node.
+- **Look:** the landing page's chart on glass: P1 solid, P2 dashed, 20 wins dashed, turn ticks T1, T4, T7…, a thin signal line at the node you're on, the lore numerals in signal. `app/js/lore-race.js` (`LoreRace.svg`) draws it from plain points.
+
 ## Feature 64: Build or replay an opening hand — Draw · Build · Replay (v3.18.0)
 
 ### User Story
@@ -1171,3 +1181,4 @@ The public page (`index.html`) follows Field Unit too, as `docs/DESIGN-field-uni
 - [x] Feature 63: Challenge mode arrow keys on desktop
 - [x] Patch: Decklists with Duels.ink's printing suffix
 - [x] Feature 64: Build or replay an opening hand — Draw · Build · Replay
+- [x] Feature 65: Lore race graph under the mini multiverse and in the Multiverse panel

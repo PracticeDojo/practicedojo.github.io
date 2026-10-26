@@ -7,7 +7,7 @@ aliases: [layout, board, interface, where is, ui, sidebar, player bar]
 targets: [topbar, board, hand, ink-bar, lore, deck, discard, sidebar, draw-odds, more-menu]
 related: [you-play-both-sides, keyboard-shortcuts, gestures]
 order: 30
-verified: v3.11.0
+verified: v3.19.0
 ---
 
 The board is split in two: the player whose turn it is sits at the bottom, the other player at the top. When the turn ends, the two halves swap.
@@ -49,11 +49,11 @@ Each player has one bar: **Lore** with **−** / **+**, **Ink** with its count a
 ## The side panels
 
 :::desktop
-The left rail holds the players (deck and hand counts), the mini multiverse, the card preview (hover a card for details), the game log, **Auto-save every turn**, **Quest** and **End turn**. The right pane shows **Draw Odds** for the player to play.
+The left rail holds the players (deck and hand counts), the mini multiverse, the lore race, the card preview (hover a card for details), the game log, **Auto-save every turn**, **Quest** and **End turn**. The right pane shows **Draw Odds** for the player to play.
 :::
 
 :::phone
-**☰** opens the side panel: the players, the card preview, the game log, **Auto-save every turn**, **Quest** and **End turn**. Phones have no draw odds pane, mini multiverse or notes box; see [Turn notes](help:turn-notes) for writing a note.
+**☰** opens the side panel: the players, the card preview, the game log, **Auto-save every turn**, **Quest** and **End turn**. Phones have no draw odds pane, mini multiverse, lore race or notes box; see [Turn notes](help:turn-notes) for writing a note.
 :::
 
 [Show me](show:sidebar)
