@@ -1,0 +1,420 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Turn Replay · D · Fork</title>
+<link rel="stylesheet" href="../../../app/css/field-unit.css">
+<link rel="stylesheet" href="_shared.css">
+<style>
+  /* D · FORK. Replay the turn differently without playing it again. The
+     turn as played sits on the left; your version on the right is the same
+     script, and you edit it: move a decision earlier or later, swap it for
+     another, drop it, add one. The engine replays your version from the same
+     board at once, refuses what the rules refuse, and the right column
+     compares the two endings. A line you already saved in the multiverse
+     (T9 · P2 has two) loads as your version, with the rest of its game. */
+  body { min-height: 100%; }
+  .d-main { padding: 10px; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 420px; grid-template-rows: auto 1fr; gap: 10px; }
+  .d-try { grid-column: 1 / 3; display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 2px 2px 0; }
+  .d-try .lbl { margin-right: 4px; }
+  .chipb { height: 28px; padding: 0 11px; border-radius: 999px; border: 1px solid var(--border); background: var(--surface); color: var(--text); font: 500 12px/1 var(--font-sans); cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
+  .chipb:hover { border-color: var(--border-strong); }
+  .chipb.is-on { background: var(--fu-glass); color: var(--fu-light); border-color: var(--fu-glass); }
+  .chipb:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .chipb .ico { width: 12px; height: 12px; }
+
+  .col { background: var(--surface); border: 1px solid var(--border-soft); border-radius: var(--radius); padding: 12px; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+  .col h3 { margin: 0; display: flex; align-items: baseline; gap: 8px; font: 600 15px/1.2 var(--font-display); letter-spacing: -0.02em; }
+  .col h3 .lbl { margin-left: auto; }
+  .col .sub { font-size: 12px; color: var(--text-dim); margin-top: -4px; }
+  .list { display: flex; flex-direction: column; }
+  .row { display: grid; grid-template-columns: 20px 26px minmax(0, 1fr) auto; gap: 8px; align-items: center; padding: 6px 6px; border-radius: 8px; font-size: 12.5px; cursor: default; }
+  .is-edit .row.is-dec { cursor: pointer; }
+  .is-edit .row.is-dec:hover { background: var(--surface-2); }
+  .row .n { font: 600 10px/1 var(--font-mono); color: var(--text-dim); }
+  .row .sq { width: 26px; height: 26px; border-radius: 7px; display: grid; place-items: center; box-shadow: inset 0 -2px 0 var(--key-edge); }
+  .row .sq .ico, .row .sq .gi { width: 12px; height: 12px; }
+  .row .t { min-width: 0; }
+  .row .t b { font-weight: 600; }
+  .row .f { font: 400 10px/1 var(--font-mono); color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap; display: flex; gap: 6px; align-items: center; }
+  .row.kid { grid-template-columns: 20px 18px minmax(0, 1fr) auto; padding: 2px 6px 2px 40px; font-size: 11.5px; color: var(--text-2); }
+  .row.kid .sq { width: 18px; height: 18px; border-radius: 5px; }
+  .row.kid .sq .ico, .row.kid .sq .gi { width: 9px; height: 9px; }
+  .row.is-sel { background: var(--surface-2); box-shadow: inset 0 0 0 1.5px var(--accent); }
+  .row.is-cant .sq { background: transparent !important; color: var(--text-faint) !important; box-shadow: inset 0 0 0 1px var(--border); }
+  .row.is-cant .t { color: var(--text-dim); text-decoration: line-through; text-decoration-color: var(--border-strong); }
+  .why-no { grid-column: 3 / -1; font-size: 11.5px; color: var(--danger); margin-top: -2px; }
+  .why-no b { font: 700 9.5px/1 var(--font-mono); letter-spacing: 0.1em; margin-right: 4px; }
+  .tag { font: 600 9.5px/1 var(--font-mono); letter-spacing: 0.08em; padding: 3px 5px; border-radius: 4px; text-transform: uppercase; }
+  .tag.moved { box-shadow: inset 0 0 0 1px var(--border-strong); color: var(--text-2); }
+  .tag.new { background: var(--accent); color: var(--accent-ink); }
+  .gone { font-size: 11.5px; color: var(--text-dim); padding: 6px; border-top: 1px dashed var(--border); margin-top: 4px; }
+  .gone s { text-decoration-color: var(--border-strong); }
+  .tools { display: flex; flex-wrap: wrap; gap: 4px; padding: 4px 6px 8px 40px; }
+  .tb { height: 26px; padding: 0 9px; border-radius: 7px; border: 0; background: var(--key-bone); color: var(--key-bone-ink); box-shadow: inset 0 -2px 0 var(--key-edge); font: 500 11.5px/1 var(--font-sans); cursor: pointer; display: inline-flex; align-items: center; gap: 5px; }
+  .tb:disabled { background: transparent; color: var(--text-faint); box-shadow: inset 0 0 0 1px var(--border); cursor: default; }
+  .tb .ico { width: 11px; height: 11px; }
+  .tb.is-x { background: var(--key-graphite); color: var(--key-graphite-ink); }
+  .menu { display: flex; flex-direction: column; gap: 2px; margin: 0 6px 8px 40px; padding: 6px; border-radius: 10px; background: var(--surface-2); box-shadow: inset 0 0 0 1px var(--border-soft); }
+  .menu .lbl { padding: 2px 4px 4px; }
+  .menu button { all: unset; display: flex; align-items: center; gap: 8px; padding: 5px 6px; border-radius: 6px; font-size: 12px; cursor: pointer; }
+  .menu button:hover, .menu button:focus-visible { background: var(--surface); }
+  .menu button .sq { width: 18px; height: 18px; border-radius: 5px; display: grid; place-items: center; }
+  .menu button .sq .ico, .menu button .sq .gi { width: 9px; height: 9px; }
+  .add { margin-top: 2px; align-self: flex-start; }
+
+  /* Outcome: the two endings side by side */
+  .out { grid-row: 1 / 3; grid-column: 3; background: var(--fu-glass); color: var(--g-text); border-radius: var(--radius-well); padding: 14px; display: flex; flex-direction: column; gap: 12px; align-self: start; }
+  .out .lbl { color: var(--g-mute); }
+  .verdict { font: 520 16px/1.35 var(--font-display); letter-spacing: -0.015em; text-wrap: pretty; }
+  .verdict em { font-style: normal; color: var(--accent-num); }
+  .cmp { display: grid; grid-template-columns: 92px 1fr 1fr; gap: 8px 10px; align-items: start; }
+  .cmp .hd { font: 500 9.5px/1.2 var(--font-mono); letter-spacing: 0.12em; text-transform: uppercase; color: var(--g-mute); padding-bottom: 4px; border-bottom: 1px solid var(--g-rule); }
+  .cmp .k { font: 500 9.5px/1.4 var(--font-mono); letter-spacing: 0.12em; text-transform: uppercase; color: var(--g-mute); padding-top: 3px; }
+  .cmp .v { font: 400 12px/1.35 var(--font-mono); color: var(--g-2); font-variant-numeric: tabular-nums; }
+  .cmp .v.big { font: 520 26px/1 var(--font-display); color: var(--accent-num); letter-spacing: -0.03em; }
+  .cmp .v .d { font: 600 11px/1 var(--font-mono); margin-left: 6px; color: var(--g-text); letter-spacing: 0; }
+  .cmp .v.is-diff { color: var(--g-text); }
+  .faces { display: flex; flex-wrap: wrap; gap: 5px; }
+  .fc { display: grid; justify-items: center; gap: 3px; }
+  .fc .cc { --cw: 34px; border-radius: 3px; }
+  .fc .cc.is-ex { opacity: 0.55; }
+  .fc .segs { display: flex; gap: 1px; }
+  .fc .segs i { width: 4px; height: 2px; background: #3A3631; border-radius: 1px; }
+  .fc .segs i.on { background: var(--g-dmg); }
+  .fc.is-lost .cc { opacity: 0.25; filter: grayscale(1); }
+  .fc.is-lost::after { content: '×'; position: relative; margin-top: -32px; font: 700 14px/1 var(--font-mono); color: var(--key-graphite-ink); }
+  .fc.is-extra .cc { box-shadow: 0 0 0 2px var(--fu-glass), 0 0 0 3.5px var(--accent); }
+  .race { border-top: 1px solid var(--g-rule); padding-top: 10px; }
+  .race svg { display: block; width: 100%; height: auto; overflow: visible; }
+  .race text { font: 400 9.5px var(--font-mono); fill: var(--g-mute); }
+  .out .go { display: flex; flex-direction: column; gap: 6px; }
+  .out .go small { color: var(--g-mute); font-size: 11.5px; line-height: 1.4; }
+
+  @media (max-width: 1100px) {
+    .d-main { grid-template-columns: 1fr 1fr; }
+    .out { grid-column: 1 / -1; grid-row: auto; }
+  }
+  @media (max-width: 760px) {
+    .d-main { grid-template-columns: 1fr; padding: 8px max(8px, env(safe-area-inset-left, 0px)); }
+    .d-try { grid-column: 1; }
+  }
+</style>
+</head>
+<body>
+<header class="tr-top" id="top"></header>
+<main class="d-main">
+  <div class="d-try" id="try"></div>
+  <section class="col" id="left"></section>
+  <section class="col is-edit" id="right"></section>
+  <aside class="out" id="out" aria-live="polite"></aside>
+</main>
+<script src="_data.js"></script>
+<script src="_engine.js"></script>
+<script src="_shared.js"></script>
+<script>
+(function () {
+  const { get, verb, title, figure, icon, face, nm, short, list, cardOf, CARDS, TURNS, FORK } = Object.assign({}, TR, { FORK: window.FORK });
+  const clone = o => JSON.parse(JSON.stringify(o));
+  const fullName = c => c.v ? `${c.n} - ${c.v}` : c.n;
+  // What a song does when it's sung or paid for, for the songs in this demo,
+  // so a swap can bring the effect with it. Targets pick their biggest threat.
+  const SONG = {
+    'Strength of a Raging Fire': st => [{ v: 'dmg', target: biggest(st), n: 'chars', why: 'one for each character you have in play' }],
+    'To Wither a Flower': () => [{ v: 'dmg', all: 'damaged', n: 2, why: 'each opposing damaged character' }],
+    'Malicious, Mean, and Scary': () => [{ v: 'dmg', all: true, n: 1 }],
+    'Akood et Emuti': () => [{ v: 'draw' }],
+    'Strike a Good Match': () => [{ v: 'draw', n: 2 }],
+  };
+  // Experiments worth a click, per turn.
+  const TRY = {
+    t4p2: [
+      ['Elinor after the song', s => { const e = s.splice(1, 1)[0]; s.splice(2, 0, e); }],
+      ['Vixey quests instead of singing', s => { s[2] = { v: 'quest', card: 'Vixey' }; }],
+      ['No challenge', s => { s.splice(3, 1); }],
+      ['Darkwing quests instead', s => { s[3] = { v: 'quest', card: 'Darkwing Duck' }; }],
+    ],
+    t4p1: [
+      ['Karnage before Akood', s => { const k = s.splice(3, 1)[0]; delete k.cost; s.splice(2, 0, k); }],
+      ['Tod quests instead of singing', s => { s[0] = { v: 'quest', card: 'Tod - Clever Fox' }; }],
+    ],
+    t8p1: [
+      ['Quest with Max Goof first', s => { const q = s.splice(2, 1)[0]; s.splice(1, 0, q); }],
+      ['Keep Circle of Life', s => { s.splice(1, 1); }],
+    ],
+    t10p1: [
+      ['Wither before Max Goof quests', s => { const w = s.splice(1, 1)[0]; s.splice(0, 0, w); }],
+      ['Prince Phillip sings Wither', s => { s[1] = { v: 'sing', singers: ['Prince Phillip'], card: 'To Wither a Flower', then: s[1].then }; s.splice(2, 1); }],
+    ],
+    t9p2a: [
+      ['Fight back · your saved line', 'saved'],
+      ['Pressure, but The Queen takes Max Goof', s => { s[2] = { v: 'challenge', att: 'The Queen', def: 'Max Goof - Chart Topper' }; }],
+    ],
+    t9p2b: [
+      ['Put pressure · your saved line', 'saved'],
+    ],
+  };
+  const SAVED = { t9p2a: 't9p2b', t9p2b: 't9p2a' };
+
+  let P, A, sel = null, menu = null, preset = null;
+  const startH = TR.readHash('t4p2');
+  TR.topbar(document.getElementById('top'), 'D', id => load(id), startH.id);
+
+  function load(id) {
+    P = get(id);
+    sel = null; menu = null;
+    const first = (TRY[id] || [])[0];
+    if (first && first[1] === 'saved') usePreset(0); else { preset = null; setAlt(clone(P.turn.script)); }
+    renderTry();
+  }
+  function setAlt(script) {
+    const t = clone(P.turn);
+    t.script = script;
+    const steps = Tape.compile(t, CARDS);
+    A = { turn: t, script, steps, acc: Tape.account(t, steps, CARDS) };
+    TR.writeHash(P.turn.id);
+    render();
+  }
+  function usePreset(i) {
+    const [label, f] = TRY[P.turn.id][i];
+    preset = i; sel = null; menu = null;
+    if (f === 'saved') setAlt(clone(TURNS.find(t => t.id === SAVED[P.turn.id]).script));
+    else { const s = clone(P.turn.script); f(s); setAlt(s); }
+    renderTry();
+  }
+  function renderTry() {
+    const tries = TRY[P.turn.id] || [];
+    const el = document.getElementById('try');
+    el.innerHTML = `<span class="lbl">Try</span>${tries.map(([l], i) => `<button class="chipb${preset === i ? ' is-on' : ''}" data-p="${i}">${l}</button>`).join('')}
+      <button class="chipb${preset == null && sameAsPlayed() ? ' is-on' : ''}" id="reset">${icon('first')} As played</button>
+      <span class="lbl" style="margin-left:auto">Or edit your version: click a decision</span>`;
+    el.querySelectorAll('[data-p]').forEach(b => b.onclick = () => usePreset(+b.dataset.p));
+    el.querySelector('#reset').onclick = () => { preset = null; sel = null; menu = null; setAlt(clone(P.turn.script)); renderTry(); };
+  }
+  const sameAsPlayed = () => A && JSON.stringify(A.script) === JSON.stringify(P.turn.script);
+
+  // ---------- Lists ----------
+  // A script entry's compiled step, and the steps under it.
+  function rootsOf(C) { return C.steps.filter(s => s.depth === 0 && s.phase !== 'start' && s.v !== 'end'); }
+  function under(C, r) { return C.steps.filter(s => { for (let x = s; x; x = x.cause != null ? C.steps[x.cause] : null) if (x.cause === r.i) return true; return false; }); }
+  const sig = a => [a.v, TR.nameOf(a.card), (a.singers || []).map(TR.nameOf).join('+'), TR.nameOf(a.att), TR.nameOf(a.def)].join('|');
+
+  function render() {
+    const pSig = P.turn.script.map(sig), aSig = A.script.map(sig);
+    document.getElementById('left').innerHTML = `<h3>As played <span class="lbl">T${P.turn.turn} · P${P.turn.active + 1}</span></h3><div class="sub">${P.turn.title}${P.turn.note ? ` · “${P.turn.note}”` : ''}</div><div class="list">${listHtml(P, null)}</div>`;
+    const savedNote = preset != null && TRY[P.turn.id][preset][1] === 'saved' ? TURNS.find(t => t.id === SAVED[P.turn.id]) : null;
+    const gone = pSig.filter(x => !aSig.includes(x)).map(x => P.turn.script[pSig.indexOf(x)]);
+    document.getElementById('right').innerHTML = `<h3>Your version <span class="lbl">same board</span></h3>
+      <div class="sub">${savedNote ? `Your saved line “${savedNote.title}”${savedNote.note ? ` · “${savedNote.note}”` : ''}` : sameAsPlayed() ? 'A copy of the turn. Change it and watch the ending.' : 'Replayed from the same board, by the rules.'}</div>
+      <div class="list">${listHtml(A, { pSig })}</div>
+      ${gone.length ? `<div class="gone">Not in your version: ${gone.map(a => `<s>${TR.rawTitle(a)}</s>`).join(', ')}</div>` : ''}
+      <button class="chipb add" id="add">${icon('play')} Add a decision</button>${menu && menu.kind === 'add' ? menuHtml(addOptions()) : ''}`;
+    const R = document.getElementById('right');
+    R.querySelectorAll('.row.is-dec').forEach(r => r.onclick = () => { sel = sel === +r.dataset.j ? null : +r.dataset.j; menu = null; render(); });
+    R.querySelector('#add').onclick = () => { menu = menu && menu.kind === 'add' ? null : { kind: 'add' }; sel = null; render(); };
+    R.querySelectorAll('[data-act]').forEach(b => b.onclick = e => { e.stopPropagation(); act(b.dataset.act); });
+    R.querySelectorAll('[data-opt]').forEach(b => b.onclick = e => { e.stopPropagation(); pickOption(+b.dataset.opt); });
+    outcome();
+  }
+
+  function listHtml(C, edit) {
+    const roots = rootsOf(C);
+    let j = -1;
+    return roots.map(r => {
+      // trigger entries in the script are roots too; keep their script index
+      j = (C.script || C.turn.script).indexOf(r.raw);
+      const v = verb(r), cant = r.skipped || r.fizzled;
+      let tag = '';
+      if (edit) {
+        const s = sig(r.raw), pi = edit.pSig.indexOf(s);
+        if (pi === -1) tag = '<span class="tag new">new</span>';
+        else if (pi !== j) tag = `<span class="tag moved">${pi > j ? '↑' : '↓'} moved</span>`;
+      }
+      const isSel = edit && sel === j;
+      const kids = under(C, r).map(k => {
+        const kv = verb(k);
+        return `<div class="row kid${k.skipped ? ' is-cant' : ''}"><span></span><span class="sq vk is-${kv.k}">${icon(kv.i)}</span><span class="t">${title(k)}</span><span class="f">${figure(k)}</span>${k.skipped ? `<span class="why-no"><b>CAN'T</b>${k.skipped}</span>` : ''}</div>`;
+      }).join('');
+      const no = r.skipped ? `<span class="why-no"><b>CAN'T</b>${r.skipped}</span>` : r.fizzled ? `<span class="why-no"><b>DOESN'T FIRE</b>needs ${r.cond.need} exerted, has ${r.cond.cards.length}</span>` : '';
+      return `<div class="row is-dec${cant ? ' is-cant' : ''}${isSel ? ' is-sel' : ''}" data-j="${j}"><span class="n">${String(j + 1).padStart(2, '0')}</span><span class="sq vk is-${v.k}">${icon(v.i)}</span><span class="t">${r.depth === 0 && r.decision ? `<b>${title(r)}</b>` : title(r)}</span><span class="f">${tag}${figure(r)}</span>${no}</div>`
+        + (isSel ? tools(j) : '') + (isSel && menu && menu.kind === 'swap' ? menuHtml(swapOptions(j)) : '') + kids;
+    }).join('');
+  }
+
+  // ---------- Editing ----------
+  function tools(j) {
+    const n = A.script.length, endAt = A.script.findIndex(a => a.phase === 'end');
+    const last = (endAt < 0 ? n : endAt) - 1, isEnd = A.script[j].phase === 'end';
+    const opts = swapOptions(j);
+    return `<div class="tools"><button class="tb" data-act="up" ${j === 0 || isEnd ? 'disabled' : ''}>↑ Earlier</button>
+      <button class="tb" data-act="down" ${j >= last || isEnd ? 'disabled' : ''}>↓ Later</button>
+      <button class="tb" data-act="swap" ${opts.length ? '' : 'disabled'}>⇄ Do something else</button>
+      <button class="tb is-x" data-act="drop">${icon('banish')} Drop</button></div>`;
+  }
+  function act(what) {
+    const s = clone(A.script), j = sel;
+    if (what === 'up') { s.splice(j - 1, 0, s.splice(j, 1)[0]); sel = j - 1; }
+    else if (what === 'down') { s.splice(j + 1, 0, s.splice(j, 1)[0]); sel = j + 1; }
+    else if (what === 'drop') { s.splice(j, 1); sel = null; }
+    else if (what === 'swap') { menu = menu && menu.kind === 'swap' ? null : { kind: 'swap' }; render(); return; }
+    preset = null; menu = null; renderTry(); setAlt(s); renderTry();
+  }
+  let OPTS = [];
+  function menuHtml(opts) {
+    OPTS = opts;
+    if (!opts.length) return `<div class="menu"><span class="lbl">Nothing else is possible here</span></div>`;
+    return `<div class="menu"><span class="lbl">${menu.kind === 'add' ? 'Add at the end of the main phase' : 'Instead'}</span>${opts.map((o, i) => { const v = verb({ v: o.a.v, from: o.a.from }); return `<button data-opt="${i}"><span class="sq vk is-${v.k}">${icon(v.i)}</span>${o.label}</button>`; }).join('')}</div>`;
+  }
+  function pickOption(i) {
+    const o = OPTS[i], s = clone(A.script);
+    if (menu.kind === 'swap') s[sel] = o.a;
+    else { const at = s.findIndex(a => a.phase === 'end'); s.splice(at < 0 ? s.length : at, 0, o.a); }
+    preset = null; menu = null; sel = null;
+    setAlt(s); renderTry();
+  }
+  // The board just before script entry j of your version.
+  function boardBefore(j) {
+    const t = clone(A.turn); t.script = A.script.slice(0, j);
+    const steps = Tape.compile(t, CARDS);
+    return steps[steps.length - 2].state; // before the end marker
+  }
+  function biggest(st) {
+    const op = 1 - st.active;
+    const ids = st.p[op].field.filter(i => CARDS[st.c[i].id].type === 'Character').sort((a, b) => CARDS[st.c[b].id].cost - CARDS[st.c[a].id].cost);
+    return ids.length ? fullName(CARDS[st.c[ids[0]].id]) : '';
+  }
+  function readyChars(st) { const me = st.active; return st.p[me].field.filter(i => CARDS[st.c[i].id].type === 'Character' && !st.c[i].ex && !st.c[i].dry); }
+  function exertedTheirs(st) { const op = 1 - st.active; return st.p[op].field.filter(i => CARDS[st.c[i].id].type === 'Character' && st.c[i].ex); }
+  const singVal = c => { const m = /Singer (\d+)/.exec(c.text); return m ? +m[1] : c.cost; };
+
+  function swapOptions(j) {
+    const a = A.script[j];
+    if (!a || a.phase === 'end') return [];
+    const st = boardBefore(j), out = [];
+    const N = q => TR.nameOf(q);
+    const fn = iid => fullName(CARDS[st.c[iid].id]);
+    if (a.v === 'sing') {
+      a.singers.forEach(x => out.push({ label: `${N(x)} quests instead`, a: { v: 'quest', card: x } }));
+      out.push({ label: `Pay ink for ${N(a.card)} instead`, a: { v: 'play', card: a.card, then: a.then } });
+    }
+    if (a.v === 'quest' || a.v === 'challenge') {
+      const who = a.v === 'quest' ? a.card : a.att;
+      if (a.v === 'challenge') out.push({ label: `${N(who)} quests instead`, a: { v: 'quest', card: who } });
+      exertedTheirs(st).forEach(d => { if (a.v !== 'challenge' || N(a.def) !== CARDS[st.c[d].id].n) out.push({ label: `${N(who)} challenges ${CARDS[st.c[d].id].n}`, a: { v: 'challenge', att: who, def: fn(d) } }); });
+      const me = st.active, singerCard = st.p[me].field.map(i => CARDS[st.c[i].id]).find(c => c.n === N(who));
+      st.p[me].hand.forEach(h => { const c = CARDS[st.c[h].id]; if (SONG[c.n] && singerCard && singVal(singerCard) >= c.cost) out.push({ label: `${N(who)} sings ${c.n}`, a: { v: 'sing', singers: [who], card: fullName(c), then: SONG[c.n](st) } }); });
+    }
+    if (a.v === 'ink') st.p[st.active].hand.forEach(h => { const c = CARDS[st.c[h].id]; if (c.inkable && c.n !== N(a.card)) out.push({ label: `Ink ${c.n} instead`, a: { v: 'ink', card: fullName(c) } }); });
+    if (a.v === 'play' && SONG[N(a.card)]) {
+      const song = CARDS[st.c[st.p[st.active].hand.find(h => CARDS[st.c[h].id].n === N(a.card)) || ''] ? st.c[st.p[st.active].hand.find(h => CARDS[st.c[h].id].n === N(a.card))].id : 0];
+      readyChars(st).forEach(r => { const c = CARDS[st.c[r].id]; if (song && singVal(c) >= song.cost) out.push({ label: `${c.n} sings it instead`, a: { v: 'sing', singers: [fullName(c)], card: a.card, then: a.then } }); });
+    }
+    return out;
+  }
+  function addOptions() {
+    const st = A.steps[A.steps.length - 1].state, me = st.active, out = [];
+    const fn = iid => fullName(CARDS[st.c[iid].id]);
+    readyChars(st).forEach(r => out.push({ label: `${CARDS[st.c[r].id].n} quests`, a: { v: 'quest', card: fn(r) } }));
+    readyChars(st).forEach(r => exertedTheirs(st).forEach(d => out.push({ label: `${CARDS[st.c[r].id].n} challenges ${CARDS[st.c[d].id].n}`, a: { v: 'challenge', att: fn(r), def: fn(d) } })));
+    const inked = A.steps.some(s => s.v === 'ink' && !s.skipped);
+    st.p[me].hand.forEach(h => {
+      const c = CARDS[st.c[h].id];
+      if (!inked && c.inkable) out.push({ label: `Ink ${c.n}`, a: { v: 'ink', card: fullName(c) } });
+      if (c.type === 'Character' && c.cost <= st.p[me].inkReady) out.push({ label: `Play ${c.n} (${c.cost})`, a: { v: 'play', card: fullName(c) } });
+      if (SONG[c.n]) {
+        if (c.cost <= st.p[me].inkReady) out.push({ label: `Play ${c.n} (${c.cost})`, a: { v: 'play', card: fullName(c), then: SONG[c.n](st) } });
+        readyChars(st).forEach(r => { const s = CARDS[st.c[r].id]; if (singVal(s) >= c.cost) out.push({ label: `${s.n} sings ${c.n}`, a: { v: 'sing', singers: [fn(r)], card: fullName(c), then: SONG[c.n](st) } }); });
+      }
+    });
+    return out.slice(0, 14);
+  }
+
+  // ---------- The two endings ----------
+  function outcome() {
+    const a = P.steps[P.steps.length - 1].state, b = A.steps[A.steps.length - 1].state;
+    const me = a.active, op = 1 - me;
+    const chars = (st, p) => st.p[p].field.filter(i => CARDS[st.c[i].id].type === 'Character');
+    const loreOnBoard = (st, p) => chars(st, p).reduce((x, i) => x + (CARDS[st.c[i].id].l || 0), 0);
+    const names = (st, ids) => ids.map(i => CARDS[st.c[i].id].n);
+    const aTheirs = names(a, chars(a, op)), bTheirs = names(b, chars(b, op));
+    const survive = bTheirs.filter(x => !aTheirs.includes(x) || bTheirs.filter(y => y === x).length > aTheirs.filter(y => y === x).length);
+    const extraKill = aTheirs.filter(x => !bTheirs.includes(x));
+    const aMine = names(a, chars(a, me)), bMine = names(b, chars(b, me));
+    const keep = bMine.filter(x => !aMine.includes(x)), lose = aMine.filter(x => !bMine.includes(x));
+    const dmgOf = (st, p, n) => { const i = chars(st, p).find(x => CARDS[st.c[x].id].n === n); return i ? ` (${st.c[i].dmg}/${CARDS[st.c[i].id].w})` : ''; };
+    const dl = b.p[me].lore - a.p[me].lore;
+    const cant = A.steps.filter(s => s.skipped || s.fizzled).length;
+
+    let v;
+    if (JSON.stringify(A.script) === JSON.stringify(P.turn.script)) v = 'Same turn. Pick something to try, or click a decision in your version and change it.';
+    else {
+      const parts = [];
+      parts.push(dl > 0 ? `<em>+${dl} lore</em>` : dl < 0 ? `<em>${dl} lore</em>` : 'Same lore');
+      if (survive.length) parts.push(`but ${list([...new Set(survive)].map(x => x + dmgOf(b, op, x)))} ${survive.length > 1 ? 'survive' : 'survives'}`);
+      if (extraKill.length) parts.push(`${survive.length ? 'while' : 'and'} ${list(extraKill)} ${extraKill.length > 1 ? 'are' : 'is'} banished`);
+      if (keep.length && lose.length) parts.push(`you end with ${list(keep)} where you had ${list(lose)}`);
+      else if (keep.length) parts.push(`you keep ${list(keep)}`);
+      else if (lose.length) parts.push(`you end without ${list(lose)}`);
+      v = parts.join(', ') + '.';
+      if (!survive.length && !extraKill.length && !keep.length && !lose.length && !dl) v = 'Same ending. The order of these steps didn’t matter.';
+      if (cant) v += ` ${cant} step${cant > 1 ? 's' : ''} can’t happen as written.`;
+    }
+    const lostTheirs = st => [...new Set(Tape.account(A.turn, st === a ? P.steps : A.steps, CARDS).theirLost)];
+    const faces = (st, p, steps) => {
+      const s0 = steps[0].state;
+      const gone = s0.p[p].field.filter(i => !st.p[p].field.includes(i) && CARDS[s0.c[i].id].type === 'Character');
+      const other = st === a ? b : a;
+      const otherNames = names(other, chars(other, p));
+      return `<div class="faces">${chars(st, p).map(i => {
+        const c = CARDS[st.c[i].id], extra = st === b && !names(a, chars(a, p)).includes(c.n);
+        return `<div class="fc${extra ? ' is-extra' : ''}">${face(st, i, { cls: st.c[i].ex ? 'is-ex' : '' })}<div class="segs">${Array.from({ length: c.w || 0 }, (_, k) => `<i class="${k < st.c[i].dmg ? 'on' : ''}"></i>`).join('')}</div></div>`;
+      }).join('')}${gone.map(i => `<div class="fc is-lost">${face(s0, i)}</div>`).join('')}</div>`;
+    };
+    const dv = (x, y, unit = '') => { const d = y - x; return d ? `<span class="d">${d > 0 ? '+' : ''}${d}${unit}</span>` : ''; };
+    const race = raceHtml();
+    document.getElementById('out').innerHTML = `
+      <span class="lbl">The two endings</span>
+      <div class="verdict">${v}</div>
+      <div class="cmp">
+        <span></span><span class="hd">As played</span><span class="hd">Yours</span>
+        <span class="k">Lore</span><span class="v big">${a.p[me].lore}</span><span class="v big">${b.p[me].lore}${dv(a.p[me].lore, b.p[me].lore)}</span>
+        <span class="k">Their board</span>${faces(a, op, P.steps)}${faces(b, op, A.steps)}
+        <span class="k">Their lore next turn</span><span class="v">${loreOnBoard(a, op)} on the board</span><span class="v${loreOnBoard(a, op) !== loreOnBoard(b, op) ? ' is-diff' : ''}">${loreOnBoard(b, op)} on the board${dv(loreOnBoard(a, op), loreOnBoard(b, op))}</span>
+        <span class="k">Your board</span>${faces(a, me, P.steps)}${faces(b, me, A.steps)}
+        <span class="k">Ink left</span><span class="v">${a.p[me].inkReady} of ${a.p[me].inkTotal}</span><span class="v${a.p[me].inkReady !== b.p[me].inkReady ? ' is-diff' : ''}">${b.p[me].inkReady} of ${b.p[me].inkTotal}${dv(a.p[me].inkReady, b.p[me].inkReady)}</span>
+        <span class="k">Hand</span><span class="v">${names(a, a.p[me].hand).join(', ') || '—'}</span><span class="v${names(a, a.p[me].hand).join() !== names(b, b.p[me].hand).join() ? ' is-diff' : ''}">${names(b, b.p[me].hand).join(', ') || '—'}</span>
+      </div>
+      ${race}
+      <div class="go"><button class="sig-key" id="go">${icon('branch')} Play your version from here</button><small>Opens the board after your version of the turn as a new line in the multiverse, so you can play on and see where it goes.</small></div>`;
+    document.getElementById('go').onclick = () => TR.toast('In the app this saves your version as a new branch off this turn and opens its board. (Prototype.)');
+  }
+
+  // For the saved fork: both lines to the end of their game.
+  function raceHtml() {
+    const ids = ['t9p2a', 't9p2b'];
+    if (!ids.includes(P.turn.id) || preset == null || TRY[P.turn.id][preset][1] !== 'saved') return '';
+    const lines = P.turn.id === 't9p2a' ? [FORK.a, FORK.b] : [FORK.b, FORK.a];
+    const from = l => l.line.slice(l.line.findIndex(p => p.id === l.node));
+    const L = lines.map(from);
+    const n = Math.max(...L.map(l => l.length)), W = 380, H = 150, px = 26, py = 16;
+    const x = i => px + i * (W - px - 128) / (n - 1), y = v => H - py - Math.min(v, 28) / 28 * (H - py * 2);
+    let g = '';
+    [0, 10, 20].forEach(v => g += `<line x1="${px}" x2="${W - 128}" y1="${y(v)}" y2="${y(v)}" stroke="${v === 20 ? 'var(--g-2)' : 'var(--g-rule)'}"${v === 20 ? ' stroke-dasharray="3 3"' : ''}/><text x="${px - 6}" y="${y(v) + 3}" text-anchor="end">${v}</text>`);
+    const labels = ['as played', 'yours'];
+    L.forEach((l, k) => [0, 1].forEach(p => {
+      const d = l.map((pt, i) => `${i ? 'L' : 'M'}${x(i)},${y(pt.lore[p])}`).join(' ');
+      g += `<path d="${d}" fill="none" stroke="var(--p${p + 1})" stroke-width="${k ? 1.8 : 2.2}"${k ? ' stroke-dasharray="5 4"' : ''}/>`;
+      const last = l[l.length - 1];
+      g += `<circle cx="${x(l.length - 1)}" cy="${y(last.lore[p])}" r="3" fill="var(--p${p + 1})"/>`;
+    }));
+    L.forEach((l, k) => { const last = l[l.length - 1]; const win = last.lore[0] >= 20 ? 0 : 1; g += `<text x="${x(l.length - 1) + 8}" y="${y(last.lore[win]) + (k ? 12 : -4)}" style="fill:var(--g-text)">P${win + 1} wins T${last.turn} · ${last.lore[0]}–${last.lore[1]}</text>`; });
+    return `<div class="race"><span class="lbl">Where each line went · lore to 20</span>
+      <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Lore race for both lines">${g}</svg>
+      <div class="lbl" style="display:flex;gap:14px;margin-top:6px"><span><b style="color:var(--p1)">━</b> P1</span><span><b style="color:var(--p2)">━</b> P2</span><span>━ as played</span><span>╍ yours</span></div></div>`;
+  }
+  load(startH.id);
+})();
+</script>
+</body>
+</html>

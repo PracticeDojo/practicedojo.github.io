@@ -1,0 +1,353 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Turn Replay · B · Lanes</title>
+<link rel="stylesheet" href="../../../app/css/field-unit.css">
+<link rel="stylesheet" href="_shared.css">
+<style>
+  /* B · LANES. The turn as a score: one column per step, one lane per
+     resource (lore, ink, each character, each card in hand, each of theirs).
+     A character's lane is a line while it's ready, dotted while it's new, and
+     once it's spent it becomes a band in the colour of what spent it: Olive
+     quested, Trace sang, Coral challenged. Read down a column for a moment,
+     across a lane for a card's story, and the last column for what was left. */
+  body { min-height: 100%; }
+  .b-main { padding: 10px; display: flex; flex-direction: column; gap: 10px; }
+
+  .receipt { display: flex; flex-wrap: wrap; gap: 0; background: var(--surface); border: 1px solid var(--border-soft); border-radius: var(--radius); }
+  .rc { padding: 10px 14px; display: flex; flex-direction: column; gap: 4px; border-right: 1px solid var(--border-soft); min-width: 0; }
+  .rc:last-child { border-right: 0; flex: 1; }
+  .rc .v { font: 520 20px/1.05 var(--font-display); letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
+  .rc .v small { font: 400 11px/1 var(--font-mono); letter-spacing: 0; color: var(--text-dim); margin-left: 4px; }
+  .rc .s { font-size: 11.5px; color: var(--text-2); line-height: 1.35; }
+  .rc .v.is-sig { color: var(--accent); }
+  .rc.is-title .v { font-size: 16px; font-weight: 600; letter-spacing: -0.02em; }
+
+  .lanes-well { position: relative; background: var(--fu-glass); border-radius: var(--radius-well); color: var(--g-text); overflow-x: auto; box-shadow: inset 0 1px 0 oklch(0 0 0 / 0.5); }
+  .lanes { position: relative; }
+  .lanes > svg { position: absolute; inset: 0; overflow: visible; }
+  .lanes .hl { position: absolute; inset: 0; }
+
+  .ln-lbl { position: absolute; left: 14px; display: flex; align-items: center; gap: 8px; transform: translateY(-50%); }
+  .ln-lbl .cc { --cw: 22px; border-radius: 3px; }
+  .ln-lbl .nm { font-size: 12px; font-weight: 560; color: var(--g-text); white-space: nowrap; max-width: 140px; overflow: hidden; text-overflow: ellipsis; }
+  .ln-lbl .st { font: 400 10px/1 var(--font-mono); color: var(--g-mute); white-space: nowrap; }
+  .ln-lbl .wp { display: flex; gap: 1.5px; margin-top: 3px; }
+  .ln-lbl .wp i { width: 6px; height: 3px; border-radius: 1px; background: #3A3631; }
+  .ln-lbl .wp i.on { background: var(--g-dmg); }
+  .sec { position: absolute; left: 14px; right: 14px; display: flex; align-items: center; gap: 8px; transform: translateY(-50%); color: var(--g-mute); }
+  .sec::after { content: ''; flex: 1; height: 1px; background: var(--g-rule); }
+  .sec .lbl { color: var(--g-mute); }
+  .sec .tick { width: 3px; height: 12px; border-radius: 1px; }
+
+  .hd { position: absolute; transform: translate(-50%, -50%); display: grid; justify-items: center; gap: 4px; cursor: pointer; border: 0; background: none; padding: 2px; color: inherit; }
+  .hd .n { font: 400 9.5px/1 var(--font-mono); color: var(--g-mute); }
+  .hd .sq { width: 22px; height: 22px; border-radius: 6px; display: grid; place-items: center; box-shadow: inset 0 -2px 0 oklch(0 0 0 / 0.25); }
+  .hd .sq .ico, .hd .sq .gi { width: 11px; height: 11px; }
+  .hd.is-sub .sq { width: 16px; height: 16px; border-radius: 5px; }
+  .hd.is-sub .sq .ico, .hd.is-sub .sq .gi { width: 9px; height: 9px; }
+  .hd:focus-visible { outline: 2px solid var(--accent); border-radius: 6px; }
+  .ph { position: absolute; transform: translateY(-50%); color: var(--g-mute); white-space: nowrap; border-left: 1px solid var(--g-line); padding-left: 6px; }
+
+  .mk { position: absolute; transform: translate(-50%, -50%); display: inline-flex; align-items: center; justify-content: center; gap: 3px; height: 20px; min-width: 20px; padding: 0 5px; border-radius: 6px; font: 700 10px/1 var(--font-mono); white-space: nowrap; box-shadow: inset 0 -2px 0 oklch(0 0 0 / 0.25); }
+  .mk .ico, .mk .gi { width: 10px; height: 10px; }
+  .mk.dmg { background: var(--v-dmg); color: var(--v-dmg-ink); }
+  .mk.x { background: #2B2925; color: var(--key-graphite-ink); box-shadow: 0 0 0 1px #3E3933; }
+  .num { position: absolute; transform: translate(-50%, -50%); font: 600 11px/1 var(--font-mono); color: var(--g-text); font-variant-numeric: tabular-nums; }
+  .num.lore { color: var(--accent-num); font: 520 15px/1 var(--font-display); }
+  .end { position: absolute; transform: translateY(-50%); font: 500 9.5px/1 var(--font-mono); letter-spacing: 0.1em; text-transform: uppercase; white-space: nowrap; padding: 4px 6px; border-radius: 5px; }
+  .end.is-idle { color: var(--g-trace); box-shadow: inset 0 0 0 1.5px var(--g-trace); }
+  .end.is-plain { color: var(--g-mute); padding-left: 0; }
+
+  .caption { display: grid; grid-template-columns: auto 1fr auto; gap: 14px; align-items: center; background: var(--surface); border: 1px solid var(--border-soft); border-radius: var(--radius); padding: 10px 12px; }
+  .caption .vk { width: 34px; height: 34px; border-radius: 9px; display: grid; place-items: center; box-shadow: inset 0 -3px 0 var(--key-edge); }
+  .caption .vk .ico, .caption .vk .gi { width: 15px; height: 15px; }
+  .caption h2 { margin: 0; font: 600 15px/1.25 var(--font-display); letter-spacing: -0.02em; }
+  .caption p { margin: 2px 0 0; font-size: 12px; color: var(--text-2); }
+  .caption .lbl b { color: var(--accent); }
+  .legend { display: flex; flex-wrap: wrap; gap: 14px; padding: 0 4px; color: var(--text-dim); font-size: 11.5px; align-items: center; }
+  .legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .legend i { display: inline-block; width: 22px; height: 8px; border-radius: 2px; }
+  .legend .ln { height: 2px; background: var(--text-2); }
+  .legend .dot { height: 0; border-top: 2px dotted var(--text-dim); }
+  @media (max-width: 760px) {
+    .rc { flex: 1 1 45%; border-bottom: 1px solid var(--border-soft); }
+    .caption { grid-template-columns: auto 1fr; }
+    .caption .sig-key { grid-column: 1 / -1; }
+  }
+</style>
+</head>
+<body>
+<header class="tr-top" id="top"></header>
+<main class="b-main">
+  <section class="receipt" id="receipt"></section>
+  <section class="caption" id="caption" aria-live="polite"></section>
+  <div class="lanes-well"><div class="lanes" id="lanes"></div></div>
+  <div class="legend">
+    <span><i class="ln"></i>ready</span>
+    <span><i class="dot"></i>new this turn, can't act</span>
+    <span><i style="background:var(--v-olive)"></i>quested</span>
+    <span><i style="background:var(--v-trace)"></i>sang</span>
+    <span><i style="background:var(--v-coral)"></i>challenged</span>
+    <span><i style="background:repeating-linear-gradient(45deg,var(--border-strong) 0 2px,transparent 2px 5px)"></i>exerted before the turn</span>
+    <span><i style="height:2px;background:var(--fu-edge)"></i>in hand</span>
+    <span style="margin-left:auto"><kbd style="font:500 10px/1 var(--font-mono);padding:3px 5px;border:1px solid var(--border);border-radius:4px">←</kbd> <kbd style="font:500 10px/1 var(--font-mono);padding:3px 5px;border:1px solid var(--border);border-radius:4px">→</kbd> step</span>
+  </div>
+</main>
+<script src="_data.js"></script>
+<script src="_engine.js"></script>
+<script src="_shared.js"></script>
+<script>
+(function () {
+  const { get, verb, chip, title, figure, icon, face, nm, short, list, cardOf, CARDS } = TR;
+  const el = document.getElementById('lanes');
+  const TICK = { amber: 'var(--ink-amber)', emerald: 'var(--ink-emerald)', steel: 'var(--ink-steel)' };
+  const INKS = [['emerald', 'amber'], ['steel', 'emerald']];
+  const BAND = { quest: 'var(--v-olive)', sing: 'var(--v-trace)', challenge: 'var(--v-coral)' };
+  const SQ = { coral: ['var(--v-coral)', 'var(--v-coral-ink)'], olive: ['var(--v-olive)', 'var(--v-olive-ink)'], trace: ['var(--v-trace)', 'var(--v-trace-ink)'],
+    graphite: ['#2B2925', 'var(--key-graphite-ink)'], dmg: ['var(--v-dmg)', 'var(--v-dmg-ink)'], bone: ['#E7E2D8', '#161513'] };
+  let T, k = 0;
+  const start = TR.readHash('t4p2');
+  TR.topbar(document.getElementById('top'), 'B', id => load(id, null), start.id);
+  load(start.id, start.step);
+  window.addEventListener('resize', () => draw());
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight') { sel(k + 1); e.preventDefault(); }
+    else if (e.key === 'ArrowLeft') { sel(k - 1); e.preventDefault(); }
+  });
+
+  function load(id, step) {
+    T = get(id);
+    k = step ?? T.steps.length - 1;
+    receipt();
+    draw();
+    sel(k);
+  }
+  function sel(i) {
+    k = Math.max(0, Math.min(i, T.steps.length - 1));
+    TR.writeHash(T.turn.id, k);
+    const c = document.getElementById('cur');
+    if (c) { c.setAttribute('x', G.colX(k) + 1); }
+    el.querySelectorAll('.hd').forEach(h => h.style.opacity = +h.dataset.i > k ? 0.45 : 1);
+    caption();
+  }
+
+  // ---------- Geometry and lanes ----------
+  var G = {};
+  function lanesOf() {
+    const S = T.steps, me = S[0].state.active, op = 1 - me;
+    const seen = (p, zone, extra) => {
+      const out = [];
+      S.forEach(s => s.state.p[p][zone].forEach(iid => { if (!out.includes(iid) && (!extra || extra(iid, s))) out.push(iid); }));
+      return out;
+    };
+    const isChar = (s, iid) => ['Character'].includes(CARDS[s.state.c[iid].id].type);
+    const mine = seen(me, 'field', (iid, s) => isChar(s, iid));
+    const theirs = seen(op, 'field', (iid, s) => isChar(s, iid));
+    const cards = seen(me, 'hand');
+    S.forEach(s => { if ((s.v === 'play' || s.v === 'sing') && s.from === 'discard' && !cards.includes(s.card)) cards.push(s.card); });
+    // A card that was only ever played from the discard goes after the hand cards.
+    return { me, op, mine, theirs, cards: cards.filter(iid => !(mine.includes(iid) && !S.some(s => s.state.p[me].hand.includes(iid)))) };
+  }
+
+  function draw() {
+    if (!T) return;
+    const S = T.steps, n = S.length, L = lanesOf();
+    const W = Math.max(el.parentElement.clientWidth, 900);
+    const labelW = 210, endW = 104;
+    const colW = Math.max(40, Math.min(78, (W - labelW - endW - 20) / n));
+    const colX = i => labelW + i * colW, cx = i => colX(i) + colW / 2;
+    G = { colX, colW };
+    let y = 0, svg = '', html = '';
+    const row = h => { const c = y + h / 2; y += h; return c; };
+
+    // Header: phases, step numbers, verb squares
+    const hy = row(52);
+    let ph = null;
+    S.forEach((s, i) => {
+      if (s.phase !== ph) { ph = s.phase; html += `<span class="ph lbl" style="left:${colX(i) + 2}px;top:${hy - 20}px">${{ start: 'Start', main: 'Main phase', end: 'End of turn' }[ph]}</span>`; }
+      const v = verb(s), [bg, fg] = SQ[v.k];
+      html += `<button class="hd${s.depth ? ' is-sub' : ''}" data-i="${i}" style="left:${cx(i)}px;top:${hy + 8}px" title="${String(i).padStart(2, '0')} · ${title(s)}"><span class="n">${String(i).padStart(2, '0')}</span><span class="sq" style="background:${bg};color:${fg}">${icon(v.i)}</span></button>`;
+    });
+    html += `<span class="end lbl is-plain" style="left:${colX(n) + 12}px;top:${hy + 8}px">At the end</span>`;
+    const top = y;
+
+    // LORE: a stair
+    const ly = row(56), lmax = Math.max(...S.map(s => s.state.p[L.me].lore)), lmin = S[0].state.p[L.me].lore;
+    html += label(ly, `<span class="nm">Lore</span><span class="st">P${L.me + 1}</span>`);
+    svg += stair(S.map(s => s.state.p[L.me].lore), ly, 24, lmin, Math.max(lmin + 1, lmax), 'var(--accent)', 'var(--accent-faint)');
+    const LY = v => ly + 12 - (v - lmin) / Math.max(1, Math.max(lmin + 1, lmax) - lmin) * 24;
+    S.forEach((s, i) => { const v = s.state.p[L.me].lore; if (i === 0 || v !== S[i - 1].state.p[L.me].lore) html += `<span class="num lore" style="left:${cx(i)}px;top:${LY(v) - 11}px">${v}</span>`; });
+    html += `<span class="num lore" style="left:${colX(n) + 24}px;top:${ly}px">${S[n - 1].state.p[L.me].lore}</span>`;
+
+    // INK ready: a stair down
+    const iy = row(40), imax = Math.max(...S.map(s => s.state.p[L.me].inkReady), 1);
+    html += label(iy, `<span class="nm">Ink ready</span><span class="st">of ${S[n - 1].state.p[L.me].inkTotal}</span>`);
+    svg += stair(S.map(s => s.state.p[L.me].inkReady), iy, 24, 0, imax, 'var(--g-olive)', 'oklch(0.62 0.11 108 / 0.18)');
+    S.forEach((s, i) => { const v = s.state.p[L.me].inkReady; if (i === 0 || v !== S[i - 1].state.p[L.me].inkReady) html += `<span class="num" style="left:${cx(i)}px;top:${iy + 12 - 24 * v / imax - 9}px">${v}</span>`; });
+    const left = S[n - 1].state.p[L.me].inkReady;
+    html += left ? `<span class="end is-idle" style="left:${colX(n) + 12}px;top:${iy}px">${left} unused</span>` : `<span class="end is-plain" style="left:${colX(n) + 12}px;top:${iy}px">all spent</span>`;
+
+    const laneY = {};
+    // YOUR CHARACTERS
+    html += sec(row(30), L.me, 'Your characters');
+    L.mine.forEach(iid => { const c = row(36); laneY[iid] = c; html += label(c, cardLabel(iid)); const r = charLane(iid, c); svg += r.svg; html += r.html; });
+    // CARDS
+    html += sec(row(30), L.me, 'Hand, and cards played from the discard');
+    L.cards.forEach(iid => { const c = row(29); laneY['h' + iid] = c; html += label(c, cardLabel(iid, true)); const r = cardLane(iid, c); svg += r.svg; html += r.html; });
+    // THEIR CHARACTERS
+    html += sec(row(30), L.op, 'Their characters');
+    L.theirs.forEach(iid => { const c = row(36); laneY[iid] = c; html += label(c, cardLabel(iid)); const r = charLane(iid, c); svg += r.svg; html += r.html; });
+    y += 12;
+
+    // Connectors: who acted on whom, at the step's column
+    let links = '';
+    S.forEach((s, i) => {
+      const x = cx(i);
+      const from = s.actors && s.actors[0];
+      if (s.v === 'sing') s.actors.forEach(a => links += vline(x, laneY[a], laneY['h' + s.card], 'var(--g-trace)', 2));
+      if (s.v === 'challenge') links += vline(x, laneY[from], laneY[s.targets[0]], 'var(--g-coral)', 2.4);
+      if (s.v === 'play' && laneY[s.card] != null && laneY['h' + s.card] != null) links += vline(x, laneY['h' + s.card], laneY[s.card], 'var(--g-2)', 1.4, true);
+      if (s.v === 'dmg') {
+        const src = source(s);
+        s.targets.forEach(t => { if (src != null && laneY[t] != null) links += vline(x, src, laneY[t], 'var(--g-dmg)', 1.4); });
+      }
+      if (s.cond) s.cond.cards.forEach(c => { links += vline(x, laneY[c], laneY[s.card], 'var(--g-trace)', 1.4, true) + `<circle cx="${x}" cy="${laneY[c]}" r="4.5" fill="var(--fu-glass)" stroke="var(--g-trace)" stroke-width="1.6"/>`; });
+      if (s.v === 'banish' && S[s.cause] && S[s.cause].v === 'ability') { const src = laneY[S[s.cause].card]; s.targets.forEach(t => links += vline(x, src, laneY[t], 'var(--g-2)', 1.4)); }
+    });
+    function source(s) {
+      for (let x = s; x; x = x.cause != null ? S[x.cause] : null) {
+        if (x.v === 'ability') return laneY[x.card];
+        if (x.v === 'sing' || x.v === 'play') return laneY['h' + x.card] ?? laneY[x.card];
+      }
+      return null;
+    }
+
+    const H = y;
+    const cur = `<rect id="cur" x="${colX(k) + 1}" y="${top - 6}" width="${colW - 2}" height="${H - top}" rx="6" fill="var(--accent-faint)" stroke="var(--accent)" stroke-width="1.2" style="transition:x 160ms ease-out"/>`;
+    const grid = S.map((s, i) => `<line x1="${colX(i)}" x2="${colX(i)}" y1="${top}" y2="${H - 12}" stroke="var(--g-rule)" stroke-width="${s.depth ? 0.5 : 1}"/>`).join('')
+      + `<line x1="${colX(n)}" x2="${colX(n)}" y1="${top}" y2="${H - 12}" stroke="var(--g-line)"/>`;
+    el.style.width = (colX(n) + endW) + 'px';
+    el.style.height = H + 'px';
+    el.innerHTML = `<svg viewBox="0 0 ${colX(n) + endW} ${H}" width="${colX(n) + endW}" height="${H}">${grid}${cur}${svg}${links}</svg><div class="hl">${html}</div>`;
+    el.querySelectorAll('.hd').forEach(h => h.onclick = () => sel(+h.dataset.i));
+    el.querySelectorAll('.hd').forEach(h => h.style.opacity = +h.dataset.i > k ? 0.45 : 1);
+
+    // ---- lane painters
+    function label(yc, inner) { return `<div class="ln-lbl" style="top:${yc}px">${inner}</div>`; }
+    function sec(yc, p, text) {
+      const ticks = INKS[p].map(ink => `<i class="tick" style="background:${TICK[ink]}"></i>`).join('');
+      return `<div class="sec" style="top:${yc + 4}px">${ticks}<span class="lbl">P${p + 1} · ${text}</span></div>`;
+    }
+    function cardLabel(iid, inHand) {
+      const st = S.find(s => s.state.c[iid]).state, c = cardOf(st, iid);
+      const stats = c.type === 'Character' ? `${c.cost} · ${c.s}/${c.w} · ${c.l}◊` : `${c.type.toLowerCase()} · ${c.cost}`;
+      const d0 = S[0].state.c[iid] ? S[0].state.c[iid].dmg : 0;
+      const wp = !inHand && c.w ? `<div class="wp">${Array.from({ length: c.w }, (_, j) => `<i class="${j < d0 ? 'on' : ''}"></i>`).join('')}</div>` : '';
+      return `${face(st, iid)}<div><div class="nm">${c.n}</div><div class="st">${stats}</div>${wp}</div>`;
+    }
+    function stair(vals, yc, h, lo, hi, stroke, fill) {
+      const Y = v => yc + h / 2 - (v - lo) / Math.max(1, hi - lo) * h;
+      let d = `M${colX(0)},${Y(vals[0])}`;
+      vals.forEach((v, i) => { d += ` L${colX(i)},${Y(v)} L${colX(i) + colW},${Y(v)}`; });
+      const area = d + ` L${colX(vals.length)},${yc + h / 2} L${colX(0)},${yc + h / 2} Z`;
+      return `<path d="${area}" fill="${fill}"/><path d="${d}" fill="none" stroke="${stroke}" stroke-width="2"/>`;
+    }
+    function vline(x, a, b, color, w, dash) {
+      if (a == null || b == null) return '';
+      return `<line x1="${x}" x2="${x}" y1="${a}" y2="${b}" stroke="${color}" stroke-width="${w}"${dash ? ' stroke-dasharray="3 3"' : ''} stroke-linecap="round"/>`
+        + `<circle cx="${x}" cy="${b}" r="3" fill="${color}"/>`;
+    }
+    function charLane(iid, yc) {
+      let svg = '', html = '';
+      let spentBy = null, end = 'idle', endCls = 'is-idle';
+      const owner = S[0].state.c[iid] ? S[0].state.c[iid].owner : S.find(s => s.state.c[iid]).state.c[iid].owner;
+      for (let i = 0; i < n; i++) {
+        const st = S[i].state, on = st.p[owner].field.includes(iid), c = st.c[iid];
+        const x0 = colX(i), x1 = x0 + colW, s = S[i];
+        if ((s.actors || []).includes(iid)) spentBy = s.v;
+        if (!on) continue;
+        if (c.ex) {
+          const col = spentBy ? BAND[spentBy] : null;
+          svg += col ? `<rect x="${x0}" y="${yc - 5}" width="${colW}" height="10" fill="${col}"/>`
+            : `<rect x="${x0}" y="${yc - 4}" width="${colW}" height="8" fill="url(#hatch)"/>`;
+        } else if (c.dry && owner === S[0].state.active) svg += `<line x1="${x0}" x2="${x1}" y1="${yc}" y2="${yc}" stroke="var(--g-mute)" stroke-width="2" stroke-dasharray="2 4" stroke-linecap="round"/>`;
+        else svg += `<line x1="${x0}" x2="${x1}" y1="${yc}" y2="${yc}" stroke="var(--g-2)" stroke-width="2"/>`;
+      }
+      // events on this lane
+      S.forEach((s, i) => {
+        const x = cx(i), prev = i ? S[i - 1].state : null;
+        if ((s.actors || []).includes(iid)) { const v = verb(s), [bg, fg] = SQ[v.k]; html += `<span class="mk" style="left:${x}px;top:${yc}px;background:${bg};color:${fg}">${icon(v.i)}${s.v === 'quest' ? '+' + s.lore : ''}</span>`; }
+        if (s.v === 'play' && s.card === iid) html += `<span class="mk" style="left:${x}px;top:${yc}px;background:#E7E2D8;color:#161513">${icon('play')}</span>`;
+        if (s.v === 'ability' && s.card === iid) html += `<span class="mk" style="left:${x}px;top:${yc}px;background:#E7E2D8;color:#161513">${icon('ability')}</span>`;
+        if (prev && prev.c[iid] && s.state.c[iid] && (s.v === 'dmg' || s.v === 'challenge')) {
+          const d = s.state.c[iid].dmg - prev.c[iid].dmg;
+          if (d > 0) html += `<span class="mk dmg" style="left:${x + (s.v === 'challenge' && (s.actors || []).includes(iid) ? 0 : 0)}px;top:${yc + ((s.actors || []).includes(iid) ? 15 : 0)}px">+${d}${s.state.c[iid].dmg >= cardOf(s.state, iid).w ? '' : ' · ' + s.state.c[iid].dmg + '/' + cardOf(s.state, iid).w}</span>`;
+        }
+        if (s.v === 'banish' && s.targets.includes(iid)) { html += `<span class="mk x" style="left:${x}px;top:${yc}px">${icon('banish')}</span>`; end = 'banished'; endCls = 'is-plain'; }
+      });
+      const last = S[n - 1].state, lc = last.c[iid];
+      if (end !== 'banished') {
+        if (owner !== S[0].state.active) { end = lc.ex ? 'exerted' : 'ready'; endCls = 'is-plain'; }
+        else if (lc.ex) { end = { quest: 'quested', sing: 'sang', challenge: 'challenged' }[spentBy] || 'exerted'; endCls = 'is-plain'; }
+        else if (lc.dry) { end = 'new · can’t act'; endCls = 'is-plain'; }
+      }
+      html += `<span class="end ${endCls}" style="left:${colX(n) + 12}px;top:${yc}px">${end}</span>`;
+      return { svg, html };
+    }
+    function cardLane(iid, yc) {
+      let svg = '', html = '', end = 'kept', endCls = 'is-plain';
+      for (let i = 0; i < n; i++) {
+        const st = S[i].state, x0 = colX(i), x1 = x0 + colW;
+        if (st.p[L.me].hand.includes(iid)) svg += `<line x1="${x0}" x2="${x1}" y1="${yc}" y2="${yc}" stroke="var(--g-edge)" stroke-width="2"/>`;
+        else if (resolvingAt(i, iid)) svg += `<line x1="${x0}" x2="${x1}" y1="${yc}" y2="${yc}" stroke="var(--g-2)" stroke-width="1.5" stroke-dasharray="1 3" stroke-linecap="round"/>`;
+      }
+      S.forEach((s, i) => {
+        const x = cx(i);
+        if (s.v === 'draw' && s.targets.includes(iid)) html += `<span class="mk" style="left:${x}px;top:${yc}px;background:#E7E2D8;color:#161513">${icon('draw')}</span>`;
+        if (s.card === iid && (s.v === 'ink' || s.v === 'play' || s.v === 'sing')) {
+          const v = verb(s), [bg, fg] = SQ[v.k];
+          html += `<span class="mk" style="left:${x}px;top:${yc}px;background:${bg};color:${fg}">${icon(v.i)}</span>`;
+          end = { ink: 'inked', play: CARDS[s.state.c[iid].id].type === 'Character' ? 'played' : 'played', sing: 'sung' }[s.v];
+        }
+        if ((s.v === 'discard' || s.v === 'bottom') && s.targets.includes(iid)) { html += `<span class="mk x" style="left:${x}px;top:${yc}px">${icon(s.v)}</span>`; end = s.v === 'discard' ? 'discarded' : 'deck bottom'; }
+      });
+      html += `<span class="end ${endCls}" style="left:${colX(n) + 12}px;top:${yc}px">${end}</span>`;
+      return { svg, html };
+    }
+    function resolvingAt(i, iid) {
+      const s = S[i];
+      for (let x = s; x; x = x.cause != null ? S[x.cause] : null) if ((x.v === 'sing' || x.v === 'play') && x.card === iid && CARDS[x.state.c[iid].id].type !== 'Character') return true;
+      return false;
+    }
+  }
+
+  // ---------- Receipt and caption ----------
+  function receipt() {
+    const a = T.acc, s0 = T.steps[0].state, st = T.steps[T.steps.length - 1].state;
+    const cost = ids => ids.reduce((x, iid) => x + CARDS[s0.c[iid].id].cost, 0);
+    const names = ids => list(ids.map(iid => short(s0, iid))) || 'none';
+    const gave = a.forgone.reduce((x, f) => x + f.lore, 0);
+    document.getElementById('receipt').innerHTML = `
+      <div class="rc is-title"><span class="lbl">T${T.turn.turn} · P${T.turn.active + 1}</span><span class="v">${T.turn.title}</span><span class="s">${a.decisions} decisions · ${T.steps.length - 2} steps</span></div>
+      <div class="rc"><span class="lbl">Lore</span><span class="v is-sig">+${a.lore[1] - a.lore[0]}<small>${a.lore[0]} → ${a.lore[1]}</small></span><span class="s">P${a.op + 1} on ${a.oppLore[1]}</span></div>
+      <div class="rc"><span class="lbl">Ink</span><span class="v">${a.inkTotal - a.inkLeft}<small>of ${a.inkTotal}</small></span><span class="s">${a.inkLeft ? a.inkLeft + ' left unused' : 'all of it spent'}</span></div>
+      <div class="rc"><span class="lbl">Banished · theirs</span><span class="v">${a.theirLost.length}<small>cost ${cost(a.theirLost)}</small></span><span class="s">${names(a.theirLost)}</span></div>
+      <div class="rc"><span class="lbl">Banished · yours</span><span class="v">${a.myLost.length}<small>cost ${cost(a.myLost)}</small></span><span class="s">${names(a.myLost)}</span></div>
+      <div class="rc"><span class="lbl">Lore given up</span><span class="v">${gave}</span><span class="s">${a.forgone.length ? list(a.forgone.map(f => `${short(s0, f.iid)} ${f.v === 'sing' ? 'sang' : 'challenged'}`)) : 'every exert was a quest'}</span></div>
+      <div class="rc"><span class="lbl">Idle at the end</span><span class="v">${a.idle.length}</span><span class="s">${a.idle.length ? names(a.idle) : 'every ready character acted'}</span></div>`;
+  }
+  function caption() {
+    const s = T.steps[k], v = verb(s);
+    document.getElementById('caption').innerHTML = `<span class="vk is-${v.k}">${icon(v.i)}</span>
+      <div><span class="lbl">Step <b>${String(k).padStart(2, '0')}</b> / ${T.steps.length - 1}${figure(s) ? ' · ' + figure(s) : ''}</span><h2>${title(s)}</h2>${s.why ? `<p>${s.why.charAt(0).toUpperCase() + s.why.slice(1)}.</p>` : ''}</div>
+      <button class="sig-key" id="go">${icon('branch')} Play from here</button>`;
+    document.getElementById('go').onclick = () => TR.toast(`In the app this opens the board before step ${k} as a new line. (Prototype.)`);
+  }
+})();
+</script>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><pattern id="hatch" width="5" height="5" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="2" height="5" fill="#5A554E"/></pattern></defs></svg>
+</body>
+</html>

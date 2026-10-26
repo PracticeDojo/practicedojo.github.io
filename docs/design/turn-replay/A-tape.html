@@ -1,0 +1,686 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Turn Replay · A · Tape</title>
+<link rel="stylesheet" href="../../../app/css/field-unit.css">
+<link rel="stylesheet" href="_shared.css">
+<style>
+  /* A · TAPE. The board replays the turn one step at a time. Each step is
+     drawn on the board where it happens (an arrow for a challenge, lines from
+     the singers to the song, lore flying to the lore box), cards travel
+     between zones, and what left the board stays as a ghost in its slot.
+     Under the well, the tape: the turn's decisions as keys in the colour of
+     the key that does them, consequences hanging under their cause. Steps
+     still to come are hollow keys; the tape fills in as the turn plays. */
+  :root { --cw: 84px; --cw-hand: 50px; --cw-ghost: 58px; --cw-ink: 11px; --cw-pile: 30px; --cw-stage: 104px; }
+
+  body { display: flex; flex-direction: column; overflow: hidden; }
+  .a-main { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) 330px; gap: 10px; padding: 10px; }
+  .a-stage { min-width: 0; min-height: 0; display: flex; flex-direction: column; gap: 10px; }
+
+  /* ---------- The well ---------- */
+  .well {
+    position: relative; flex: 1; min-height: 0;
+    display: grid; grid-template-columns: minmax(0, 1fr) 160px; grid-template-rows: 1fr 1fr;
+    border-radius: var(--radius-well); background: var(--fu-glass); color: var(--g-text);
+    box-shadow: inset 0 1px 0 oklch(0 0 0 / 0.5), 0 0 0 1px oklch(0.2 0.01 80 / 0.12);
+    overflow: hidden;
+  }
+  .half { position: relative; display: flex; flex-direction: column; gap: 10px; padding: 12px 14px; min-width: 0; }
+  .half.is-top { grid-row: 1; flex-direction: column-reverse; justify-content: space-between; border-bottom: 1px solid var(--g-rule); }
+  .half.is-bottom { grid-row: 2; justify-content: space-between; }
+  .half.is-live.is-bottom { border-top: 1px solid var(--accent); margin-top: -1px; }
+
+  .h-main { display: flex; gap: 14px; align-items: center; min-width: 0; }
+  .h-left { flex: 0 0 196px; display: flex; flex-direction: column; gap: 7px; }
+  .h-tag { display: flex; align-items: center; gap: 6px; color: var(--g-mute); }
+  .h-tag .tick { width: 3px; height: 14px; border-radius: 1px; }
+  .h-tag b { color: var(--g-text); font-weight: 500; }
+  .h-row { display: flex; gap: 8px; align-items: stretch; }
+  .lore-box {
+    flex: 0 0 74px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+    padding: 8px 4px; border-radius: 10px; background: var(--fu-glass-raised); box-shadow: 0 0 0 1px var(--g-line);
+  }
+  .lore-box .lbl { color: var(--g-mute); font-size: 9.5px; }
+  .lore-box .num { font: 520 32px/1 var(--font-display); letter-spacing: -0.04em; color: var(--accent-num); font-variant-numeric: tabular-nums; }
+  .lore-box.is-bump .num { animation: bump 520ms var(--ease) 180ms both; }
+  @keyframes bump { 0% { transform: scale(1); } 40% { transform: scale(1.28); } 100% { transform: scale(1); } }
+  .piles { flex: 1; display: flex; flex-direction: column; gap: 6px; justify-content: center; }
+  .h-row .lore-box { flex-basis: 78px; }
+  .pile { display: flex; align-items: center; gap: 8px; color: var(--g-2); }
+  .pile .lbl { color: var(--g-mute); font-size: 9.5px; }
+  .pile .n { font: 400 12px/1 var(--font-mono); color: var(--g-text); }
+  .pile .cc { --cw: var(--cw-pile); }
+  .pile .slab { width: var(--cw-pile); aspect-ratio: 5/7; border-radius: 4px; background: var(--fu-glass-raised); box-shadow: 0 0 0 1px var(--g-line); }
+  .ink { display: flex; align-items: center; gap: 8px; }
+  .ink .lbl { color: var(--g-mute); font-size: 9.5px; }
+  .ink .lbl b { color: var(--g-text); font-weight: 500; letter-spacing: 0.04em; }
+  .ink-row { display: flex; gap: 2px; }
+  .ink .lbl { flex: none; }
+  .ink-row .cc { --cw: var(--cw-ink); box-shadow: 0 0 0 1px oklch(0.42 0.06 108); background: oklch(0.32 0.05 108); }
+  .ink-row .cc.is-spent { background: var(--fu-glass-raised); box-shadow: 0 0 0 1px var(--g-line); }
+  .ink-row .cc::after { display: none; }
+
+  .h-field { flex: 1; min-width: 0; display: flex; align-items: center; gap: 9px; min-height: calc(var(--cw) * 1.4 + 16px); }
+  .slot { position: relative; width: calc(var(--cw) * 1.4 + 2px); height: calc(var(--cw) * 1.4 + 2px); display: grid; place-items: center; flex: none; }
+  .slot .cc { transition: box-shadow var(--dur) var(--ease); }
+  .slot .cc.is-ex { transform: rotate(90deg); }
+  .segs { position: absolute; left: 50%; bottom: -8px; transform: translateX(-50%); display: flex; gap: 2px; }
+  .segs i { width: 9px; height: 3px; border-radius: 2px; background: #3A3631; }
+  .segs i.on { background: var(--g-dmg); }
+  .new-pip { position: absolute; top: 4px; left: 50%; transform: translateX(-50%); z-index: 2; padding: 1px 5px; border-radius: 4px; background: var(--accent); color: var(--accent-ink); font: 700 8px/1.3 var(--font-mono); letter-spacing: 0.1em; }
+  .slot.ghost { width: calc(var(--cw-ghost) + 10px); }
+  .slot.ghost .cc { --cw: var(--cw-ghost); opacity: 0.28; filter: grayscale(1); box-shadow: none; }
+  .slot.ghost::before { content: ''; position: absolute; inset: calc(50% - var(--cw-ghost) * 0.7 - 3px) 2px; border: 1px dashed var(--g-edge); border-radius: 8px; }
+  .slot.ghost .gx { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 2; display: grid; justify-items: center; gap: 3px; text-align: center; }
+  .slot.ghost .gx b { display: grid; place-items: center; width: 22px; height: 22px; border-radius: 6px; background: var(--v-graphite); color: var(--v-graphite-ink); box-shadow: 0 0 0 1px #2C2924; }
+  .slot.ghost .gx b .ico { width: 12px; height: 12px; }
+  .slot.ghost .gx span { font: 500 8.5px/1 var(--font-mono); letter-spacing: 0.1em; color: var(--g-2); background: var(--fu-glass); padding: 3px 4px; border-radius: 4px; }
+  .slot.ghost.is-fresh .cc { animation: ghost 600ms var(--ease) both; }
+  @keyframes ghost { from { opacity: 0.9; filter: none; } to { opacity: 0.28; filter: grayscale(1); } }
+
+  .h-hand { display: flex; gap: 5px; align-items: center; min-height: calc(var(--cw-hand) * 1.4); padding-left: 210px; }
+  .h-hand .cc { --cw: var(--cw-hand); }
+  .h-hand .lbl { color: var(--g-mute); font-size: 9.5px; margin-right: 6px; }
+
+  /* What the step did to a card */
+  .cc.is-actor { box-shadow: 0 0 0 2px var(--fu-glass), 0 0 0 4px var(--ring, var(--fu-light)); }
+  .cc.is-target { box-shadow: 0 0 0 2px var(--fu-glass), 0 0 0 4px var(--ring, var(--g-dmg)); }
+  .cc.is-drew { box-shadow: 0 0 0 2px var(--fu-glass), 0 0 0 4px var(--fu-light); }
+
+  /* ---------- The stage: what is resolving ---------- */
+  .stage {
+    grid-column: 2; grid-row: 1 / 3; position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;
+    padding: 14px 12px; border-left: 1px solid var(--g-rule); text-align: center;
+  }
+  .stage .lbl { color: var(--g-mute); font-size: 9.5px; }
+  .stage .cc { --cw: var(--cw-stage); }
+  .stage .empty { width: var(--cw-stage); aspect-ratio: 5/7; border-radius: 8px; border: 1px dashed var(--g-line); display: grid; place-items: center; padding: 10px; color: var(--g-mute); font-size: 10.5px; line-height: 1.35; }
+  .stage .abil { width: 136px; padding: 9px 10px; border-radius: 8px; background: var(--fu-glass-raised); box-shadow: 0 0 0 1px var(--g-line); text-align: left; }
+  .stage .abil b { display: block; font: 700 9.5px/1.3 var(--font-mono); letter-spacing: 0.1em; color: var(--g-text); margin-bottom: 4px; }
+  .stage .abil p { margin: 0; font-size: 10.5px; line-height: 1.38; color: var(--g-2); }
+  .stage .src { font-size: 11px; color: var(--g-2); }
+
+  /* ---------- Overlay: the step drawn on the board ---------- */
+  .ov, .ov-tags { position: absolute; inset: 0; pointer-events: none; }
+  .ov path { fill: none; stroke-linecap: round; }
+  .ov .draw { stroke-dasharray: var(--len); stroke-dashoffset: var(--len); animation: draw 420ms var(--ease) 260ms forwards; }
+  .ov .dash { stroke-dasharray: 5 5; }
+  @keyframes draw { to { stroke-dashoffset: 0; } }
+  .ov-tags > * { animation: pop 260ms var(--ease) 420ms both; }
+  @keyframes pop { from { opacity: 0; transform: translate(-50%, -50%) scale(0.8); } to { opacity: 1; transform: translate(-50%, -50%) scale(1); } }
+  .tag {
+    position: absolute; transform: translate(-50%, -50%); display: inline-flex; align-items: center; gap: 5px; white-space: nowrap;
+    height: 22px; padding: 0 8px; border-radius: 6px; font: 700 11px/1 var(--font-mono); letter-spacing: 0.04em;
+    box-shadow: inset 0 -2px 0 oklch(0 0 0 / 0.22), 0 6px 14px -6px oklch(0 0 0 / 0.8);
+  }
+  .tag .ico, .tag .gi { width: 11px; height: 11px; }
+  .tag.sm { height: 18px; padding: 0 6px; font-size: 9.5px; font-weight: 500; letter-spacing: 0.1em; }
+
+  /* ---------- The tape ---------- */
+  .tape-wrap { position: relative; flex: none; background: var(--surface); border: 1px solid var(--border-soft); border-radius: var(--radius); padding: 10px 12px 12px; }
+  .tape { position: relative; display: flex; gap: 12px; overflow-x: auto; scrollbar-width: thin; padding: 4px 6px 8px; }
+  .phase { display: flex; flex-direction: column; gap: 8px; flex: none; }
+  .phase > .lbl { padding-bottom: 5px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+  .phase-cols { display: flex; gap: 6px; align-items: flex-start; }
+  .col { display: flex; flex-direction: column; gap: 5px; position: relative; }
+  .col { gap: 4px; }
+  .col::before { content: ''; position: absolute; left: 12px; top: 44px; bottom: 12px; width: 1px; background: var(--border-strong); }
+  .col.is-solo::before { display: none; }
+  .tk {
+    position: relative; display: flex; flex-direction: column; justify-content: center; gap: 4px;
+    border: 0; border-radius: 10px; padding: 0 10px; height: 44px; min-width: 0; text-align: left; cursor: pointer;
+    box-shadow: inset 0 -3px 0 var(--key-edge); font: 600 12px/1.1 var(--font-sans); white-space: nowrap;
+  }
+  .tk .t1 { display: flex; align-items: center; gap: 6px; }
+  .tk .t1 .ico, .tk .t1 .gi { width: 12px; height: 12px; }
+  .tk .t2 { font: 400 10px/1 var(--font-mono); opacity: 0.78; letter-spacing: 0.02em; }
+  .tk.sub { height: 24px; min-width: 0; padding: 0 8px; border-radius: 8px; flex-direction: row; align-items: center; gap: 6px; font-size: 11px; font-weight: 560; margin-left: calc(18px + (var(--d) - 1) * 10px); box-shadow: inset 0 -2px 0 var(--key-edge); }
+  .tk.sub .t2 { display: none; }
+  .tk.sub .ico, .tk.sub .gi { width: 11px; height: 11px; }
+  .tk.is-trigger { outline: 1px dashed var(--k); outline-offset: 2px; }
+  /* Not happened yet: a hollow key. */
+  .tk.is-ahead { background: transparent; color: var(--text-faint); box-shadow: inset 0 0 0 1px var(--border); outline-color: var(--border); }
+  .tk:active { transform: translateY(1px); }
+  .cursor {
+    position: absolute; pointer-events: none; z-index: 3; transition: all 180ms var(--ease);
+    --c: var(--accent); --l: 9px; --t: 2px;
+    background:
+      linear-gradient(var(--c), var(--c)) top left / var(--l) var(--t), linear-gradient(var(--c), var(--c)) top left / var(--t) var(--l),
+      linear-gradient(var(--c), var(--c)) top right / var(--l) var(--t), linear-gradient(var(--c), var(--c)) top right / var(--t) var(--l),
+      linear-gradient(var(--c), var(--c)) bottom left / var(--l) var(--t), linear-gradient(var(--c), var(--c)) bottom left / var(--t) var(--l),
+      linear-gradient(var(--c), var(--c)) bottom right / var(--l) var(--t), linear-gradient(var(--c), var(--c)) bottom right / var(--t) var(--l);
+    background-repeat: no-repeat;
+  }
+  .tape-meters { display: flex; gap: 20px; align-items: center; padding: 8px 6px 0; border-top: 1px solid var(--border-soft); margin-top: 2px; }
+  .tape-meters .m { display: flex; align-items: center; gap: 8px; }
+  .tape-meters .m .v { font: 400 11px/1 var(--font-mono); font-variant-numeric: tabular-nums; color: var(--text); }
+  .pips { display: flex; gap: 2px; }
+  .pips i { width: 7px; height: 10px; border-radius: 2px; background: var(--v-olive); }
+  .pips i.off { background: transparent; box-shadow: inset 0 0 0 1px var(--border-strong); }
+  .pips.is-chars i { width: 10px; height: 10px; border-radius: 50%; background: var(--v-trace); }
+  .pips.is-chars i.off { background: transparent; }
+  .tape-meters .keys { margin-left: auto; display: flex; gap: 4px; color: var(--text-dim); }
+  kbd { font: 500 10px/1 var(--font-mono); padding: 3px 5px; border-radius: 4px; border: 1px solid var(--border); background: var(--surface); color: var(--text-2); }
+
+  /* ---------- Panel ---------- */
+  .a-panel { min-height: 0; overflow-y: auto; background: var(--surface); border: 1px solid var(--border-soft); border-radius: var(--radius); padding: 12px; display: flex; flex-direction: column; gap: 12px; }
+  .p-head { display: flex; align-items: center; gap: 6px; }
+  .p-head .lbl b { color: var(--accent); font-weight: 700; }
+  .p-head .sp { flex: 1; }
+  .p-btn { width: 30px; height: 28px; display: grid; place-items: center; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); color: var(--text); cursor: pointer; }
+  .p-btn:hover { border-color: var(--border-strong); }
+  .p-btn .ico { width: 13px; height: 13px; }
+  .p-btn.is-on { background: var(--fu-glass); color: var(--fu-light); border-color: var(--fu-glass); }
+  .p-title { display: grid; grid-template-columns: 38px 1fr; gap: 10px; align-items: start; }
+  .p-title .vk { width: 38px; height: 38px; border-radius: 10px; display: grid; place-items: center; box-shadow: inset 0 -3px 0 var(--key-edge); }
+  .p-title .vk .ico, .p-title .vk .gi { width: 17px; height: 17px; }
+  .p-title h2 { margin: 0; font: 600 17px/1.22 var(--font-display); letter-spacing: -0.02em; text-wrap: balance; }
+  .p-title .fig { margin-top: 4px; font: 400 11px/1.3 var(--font-mono); color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.06em; }
+  .p-why { font-size: 12.5px; line-height: 1.45; color: var(--text-2); margin: -4px 0 0; }
+  .p-sec { display: flex; flex-direction: column; gap: 6px; padding-top: 10px; border-top: 1px solid var(--border-soft); }
+  .because { display: grid; grid-template-columns: auto 1fr; gap: 6px 8px; align-items: baseline; font-size: 12.5px; line-height: 1.4; }
+  .because button { all: unset; cursor: pointer; font: 600 10px/1 var(--font-mono); padding: 3px 5px; border-radius: 5px; background: var(--surface-3); color: var(--text); }
+  .because button:hover { background: var(--border); }
+  .because button:focus-visible { outline: 2px solid var(--accent); }
+  .math { font: 400 12px/1.5 var(--font-mono); font-variant-numeric: tabular-nums; }
+  .math .row { display: flex; justify-content: space-between; gap: 10px; }
+  .math .k { color: var(--danger); font-weight: 700; }
+  .ctext { background: var(--fu-glass); color: var(--g-2); border-radius: 8px; padding: 9px 10px; font-size: 11.5px; line-height: 1.45; }
+  .ctext b { color: var(--g-text); font-weight: 600; }
+  .ctext .ab { color: var(--g-text); font: 700 10px/1 var(--font-mono); letter-spacing: 0.08em; }
+  .ctext mark { background: none; color: var(--g-text); box-shadow: inset 0 -1px 0 var(--accent); }
+  .now { display: grid; grid-template-columns: 74px 1fr; gap: 7px 10px; align-items: center; font-size: 12px; }
+  .now .v { font: 400 12px/1.2 var(--font-mono); font-variant-numeric: tabular-nums; }
+  .now .chips { display: flex; flex-wrap: wrap; gap: 4px; }
+  .now .chip { font-size: 11px; padding: 2px 6px; border-radius: 5px; background: var(--surface-3); }
+  .now .chip.is-ex { background: none; box-shadow: inset 0 0 0 1px var(--border); color: var(--text-dim); text-decoration: line-through; text-decoration-color: var(--border-strong); }
+  .lore-now { font: 520 22px/1 var(--font-display); color: var(--accent); letter-spacing: -0.03em; }
+  .p-go { display: flex; flex-direction: column; gap: 6px; }
+  .p-go small { font-size: 11.5px; color: var(--text-dim); line-height: 1.4; }
+  .receipt { display: grid; grid-template-columns: auto 1fr; gap: 6px 12px; font-size: 12.5px; line-height: 1.35; }
+  .receipt .k { font: 500 10px/1.5 var(--font-mono); letter-spacing: var(--label-track); text-transform: uppercase; color: var(--text-dim); }
+  .warn { font-size: 12px; line-height: 1.4; color: var(--text-2); padding: 8px 10px; border-radius: 8px; box-shadow: inset 0 0 0 1px var(--border); }
+  .warn b { font: 700 10px/1 var(--font-mono); letter-spacing: 0.1em; color: var(--danger); margin-right: 4px; }
+
+  /* ---------- Phones ---------- */
+  @media (max-width: 760px) {
+    :root { --cw: 46px; --cw-hand: 30px; --cw-ghost: 30px; --cw-ink: 9px; --cw-pile: 22px; --cw-stage: 54px; }
+    body { display: block; overflow: auto; height: auto; }
+    .a-main { display: flex; flex-direction: column; padding: 8px max(8px, env(safe-area-inset-left, 0px)); gap: 8px; }
+    .a-main > *, .a-stage > * { flex: none; }
+    .well { grid-template-columns: 1fr; grid-template-rows: auto auto auto; min-height: 520px; flex: none; }
+    .half { padding: 8px; gap: 6px; }
+    .half.is-bottom { grid-row: 3; }
+    .h-main { flex-direction: column; align-items: stretch; gap: 6px; }
+    .half.is-top .h-main { flex-direction: column-reverse; }
+    .h-left { flex: none; flex-direction: row; align-items: center; gap: 8px; }
+    .h-tag { display: none; }
+    .lore-box { flex: 0 0 52px; padding: 4px; }
+    .lore-box .num { font-size: 22px; }
+    .h-row { flex: 1; }
+    .piles { flex-direction: row; justify-content: flex-start; }
+    .ink { flex: 1; }
+    .h-field { min-height: calc(var(--cw) * 1.4 + 12px); gap: 2px; justify-content: center; }
+    .h-hand { padding-left: 0; justify-content: center; min-height: 0; }
+    .h-hand .lbl { display: none; }
+    .segs i { width: 5px; height: 2px; }
+    .segs { bottom: -5px; }
+    .new-pip { font-size: 6.5px; padding: 0 3px; top: 2px; }
+    .stage { grid-column: 1; grid-row: 2; flex-direction: row; border-left: 0; border-bottom: 1px solid var(--g-rule); padding: 8px; gap: 8px; min-height: 70px; justify-content: flex-start; text-align: left; }
+    .stage > .lbl { writing-mode: vertical-rl; transform: rotate(180deg); }
+    .stage .abil { width: auto; flex: 1; padding: 6px 8px; }
+    .stage .abil p { font-size: 10px; }
+    .stage .empty { width: auto; aspect-ratio: auto; flex: 1; padding: 6px; }
+    .half.is-top { border-bottom: 0; }
+    .tag { height: 18px; font-size: 9.5px; padding: 0 5px; }
+    .tag.sm { display: none; }
+    .a-stage { display: contents; }
+    .a-panel { order: 2; overflow: visible; }
+    .tape-wrap { order: 1; }
+    .tape-meters .keys { display: none; }
+    .tape-meters { flex-wrap: wrap; gap: 8px 16px; }
+    .ink-row .cc { --cw: 8px; }
+  }
+</style>
+</head>
+<body>
+<header class="tr-top" id="top"></header>
+<main class="a-main">
+  <div class="a-stage">
+    <div class="well" id="well"></div>
+    <div class="tape-wrap">
+      <div class="tape" id="tape"></div>
+      <div class="tape-meters" id="meters"></div>
+    </div>
+  </div>
+  <aside class="a-panel" id="panel" aria-live="polite"></aside>
+</main>
+<script src="_data.js"></script>
+<script src="_engine.js"></script>
+<script src="_shared.js"></script>
+<script>
+(function () {
+  const { get, verb, chip, title, figure, icon, face, back, nm, short, list, cardOf, CARDS } = TR;
+  const well = document.getElementById('well'), tapeEl = document.getElementById('tape');
+  const panel = document.getElementById('panel'), meters = document.getElementById('meters');
+  const TICK = { amber: 'var(--ink-amber)', amethyst: 'var(--ink-amethyst)', emerald: 'var(--ink-emerald)', ruby: 'var(--ink-ruby)', sapphire: 'var(--ink-sapphire)', steel: 'var(--ink-steel)' };
+  const INKS = [['emerald', 'amber'], ['steel', 'emerald']]; // the demo's decks: P1 Amber/Emerald, P2 Emerald/Steel
+  const KEYVAR = { coral: 'var(--g-coral)', olive: 'var(--g-olive)', trace: 'var(--g-trace)', graphite: 'var(--fu-light)', dmg: 'var(--g-dmg)', bone: 'var(--fu-light)' };
+  const TAGBG = { coral: ['var(--v-coral)', 'var(--v-coral-ink)'], olive: ['var(--v-olive)', 'var(--v-olive-ink)'], trace: ['var(--v-trace)', 'var(--v-trace-ink)'],
+    graphite: ['#2B2925', 'var(--key-graphite-ink)'], dmg: ['var(--v-dmg)', 'var(--v-dmg-ink)'], bone: ['#E7E2D8', '#161513'] };
+
+  let T = null, k = 0, timer = null;
+  const start = TR.readHash('t4p2');
+  TR.topbar(document.getElementById('top'), 'A', id => load(id, 0), start.id);
+  load(start.id, start.step ?? 1);
+
+  function load(id, step) {
+    T = get(id);
+    k = Math.max(0, Math.min(step, T.steps.length - 1));
+    stop();
+    renderTape();
+    go(k, true);
+  }
+
+  // ---------- Stepping ----------
+  function go(i, instant) {
+    k = Math.max(0, Math.min(i, T.steps.length - 1));
+    TR.writeHash(T.turn.id, k);
+    const s = T.steps[k];
+    renderBoard(s, instant);
+    renderPanel(s);
+    renderMeters(s);
+    placeCursor();
+  }
+  function stop() { clearInterval(timer); timer = null; const b = document.getElementById('p-play'); if (b) { b.innerHTML = icon('playback'); b.classList.remove('is-on'); } }
+  function play() {
+    if (timer) return stop();
+    if (k >= T.steps.length - 1) go(0);
+    timer = setInterval(() => { if (k >= T.steps.length - 1) stop(); else go(k + 1); }, 1500);
+    const b = document.getElementById('p-play'); b.innerHTML = icon('pause'); b.classList.add('is-on');
+  }
+  document.addEventListener('keydown', e => {
+    if (e.target.closest('input, textarea')) return;
+    if (e.key === 'ArrowRight') { stop(); go(k + 1); e.preventDefault(); }
+    else if (e.key === 'ArrowLeft') { stop(); go(k - 1); e.preventDefault(); }
+    else if (e.key === 'Home') { stop(); go(0); }
+    else if (e.key === 'End') { stop(); go(T.steps.length - 1); }
+    else if (e.key === ' ') { play(); e.preventDefault(); }
+  });
+  window.addEventListener('resize', () => go(k, true));
+  window.addEventListener('tr-theme', () => go(k, true));
+
+  // ---------- The board ----------
+  // The song or action on the stage: this step's, or the one it hangs under.
+  function resolving(s) {
+    for (let x = s; x; x = x.cause != null ? T.steps[x.cause] : null) {
+      if (x.v === 'sing') return { card: x.card, step: x };
+      if (x.v === 'play' && CARDS[x.state.c[x.card].id].type === 'Action') return { card: x.card, step: x };
+      if (x.v === 'ability') return { ability: x };
+    }
+    return null;
+  }
+  function ghostsUpTo(i) {
+    const out = [[], []];
+    for (let j = 1; j <= i; j++) {
+      const s = T.steps[j];
+      if (s.v === 'banish') s.targets.forEach(iid => out[s.state.c[iid].owner].push({ iid, j }));
+    }
+    return out;
+  }
+
+  function renderBoard(s, instant) {
+    const before = instant ? null : snapshot();
+    const st = s.state, me = st.active, op = 1 - me;
+    const res = resolving(s);
+    const onStage = res && res.card;
+    const ghosts = ghostsUpTo(k);
+    well.innerHTML = half(st, op, 'is-top', ghosts[op], onStage) + half(st, me, 'is-bottom', ghosts[me], onStage)
+      + `<div class="stage">${stage(st, res)}</div><svg class="ov" id="ov"></svg><div class="ov-tags" id="tags"></div>`;
+    mark(s);
+    if (before) flip(before);
+    requestAnimationFrame(() => overlay(s));
+  }
+
+  function half(st, p, cls, ghosts, onStage) {
+    const P = st.p[p], live = p === st.active;
+    const ticks = INKS[p].map((ink, i) => `<i class="tick" style="background:${TICK[ink]}${p === 1 ? ';background-image:repeating-linear-gradient(45deg, transparent 0 2px, oklch(0 0 0 / .35) 2px 4px)' : ''}"></i>`).join('');
+    const field = P.field.map(iid => {
+      const c = st.c[iid], card = CARDS[c.id];
+      const segs = card.w ? `<div class="segs">${Array.from({ length: card.w }, (_, i) => `<i class="${i < c.dmg ? 'on' : ''}"></i>`).join('')}</div>` : '';
+      return `<div class="slot">${face(st, iid, { cls: c.ex ? 'is-ex' : '', inner: c.dry ? '<span class="new-pip">NEW</span>' : '' })}${segs}</div>`;
+    }).join('') + ghosts.map(g => `<div class="slot ghost${g.j === k ? ' is-fresh' : ''}" data-ghost="${g.iid}">${face(T.steps[g.j - 1].state, g.iid)}<div class="gx"><b>${icon('banish')}</b><span>STEP ${g.j}</span></div></div>`).join('');
+    const disc = P.discard.filter(iid => iid !== onStage);
+    const top = disc[disc.length - 1];
+    const ink = P.inkwell.map((iid, i) => back(iid, i < P.inkReady ? '' : 'is-spent')).join('');
+    const hand = P.hand.map(iid => live ? face(st, iid) : back(iid)).join('');
+    return `<section class="half ${cls}${live ? ' is-live' : ''}" data-p="${p}">
+      <div class="h-main">
+        <div class="h-left">
+          <div class="h-tag lbl">${ticks}<b>P${p + 1}</b> · ${live ? 'to play' : 'waiting'}</div>
+          <div class="h-row">
+            <div class="lore-box" data-lore="${p}"><span class="lbl">Lore</span><span class="num">${P.lore}</span></div>
+            <div class="piles">
+              <div class="pile">${top ? face(st, top) : '<span class="slab"></span>'}<span><span class="lbl">Discard</span><br><span class="n">${P.discard.length}</span></span></div>
+              <div class="pile"><span class="slab" data-deck="${p}"></span><span><span class="lbl">Deck</span><br><span class="n">${P.deck.length}</span></span></div>
+            </div>
+          </div>
+          <div class="ink" data-ink="${p}"><span class="lbl">Ink <b>${P.inkReady}/${P.inkTotal}</b></span><div class="ink-row">${ink}</div></div>
+        </div>
+        <div class="h-field">${field}</div>
+      </div>
+      <div class="h-hand"><span class="lbl">Hand ${P.hand.length}</span>${hand}</div>
+    </section>`;
+  }
+
+  function stage(st, res) {
+    if (!res) return `<span class="lbl">Resolving</span><div class="empty">Songs, actions and abilities resolve here</div>`;
+    if (res.card) {
+      const c = cardOf(st, res.card);
+      return `<span class="lbl">${res.step.v === 'sing' ? 'Sung' : 'Resolving'}</span>${face(st, res.card)}<div class="abil"><p>${effectText(c)}</p></div>`;
+    }
+    const a = res.ability, c = cardOf(a.state, a.card);
+    return `<span class="lbl">${a.when ? 'Trigger' : 'Ability'}</span><div class="src">${c.n}</div><div class="abil"><b>${a.name}</b><p>${abilityText(c, a.name)}</p></div>`;
+  }
+  function effectText(c) { return c.text.replace(/^\([^)]*\)\s*/, '').replace(/\n/g, ' '); }
+  function abilityText(c, name) {
+    const m = new RegExp(name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\s+([^]*?)(?=\\n[A-Z][A-Z\'’ ,.!-]{3,}\\s|$)').exec(c.text);
+    return m ? m[1].replace(/\n/g, ' ') : '';
+  }
+
+  // Rings on the cards the step touched.
+  function mark(s) {
+    const v = verb(s), ring = KEYVAR[v.k];
+    const set = (iid, cls, color) => well.querySelectorAll(`[data-iid="${iid}"]`).forEach(el => { el.classList.add(cls); el.style.setProperty('--ring', color); });
+    (s.actors || []).forEach(iid => set(iid, 'is-actor', ring));
+    if (s.v === 'draw') s.targets.forEach(iid => set(iid, 'is-drew', 'var(--fu-light)'));
+    else if (s.v === 'challenge') s.targets.forEach(iid => set(iid, 'is-target', 'var(--g-coral)'));
+    else if (s.v === 'dmg') s.targets.forEach(iid => set(iid, 'is-target', 'var(--g-dmg)'));
+    if (s.v === 'ability' && s.card) set(s.card, 'is-actor', 'var(--fu-light)');
+    if (s.v === 'play' || s.v === 'ink') set(s.card, 'is-actor', ring);
+    if (s.cond) s.cond.cards.forEach(iid => set(iid, 'is-target', 'var(--g-trace)'));
+  }
+
+  // ---------- Motion: cards travel between zones ----------
+  function snapshot() {
+    const m = new Map();
+    well.querySelectorAll('[data-iid]').forEach(el => {
+      const r = el.getBoundingClientRect();
+      m.set(el.dataset.iid, { x: r.left + r.width / 2, y: r.top + r.height / 2, w: el.offsetWidth, rot: el.classList.contains('is-ex') ? 90 : 0 });
+    });
+    well.querySelectorAll('[data-deck]').forEach(el => { const r = el.getBoundingClientRect(); m.set('deck' + el.dataset.deck, { x: r.left + r.width / 2, y: r.top + r.height / 2, w: el.offsetWidth, rot: 0 }); });
+    return m;
+  }
+  function flip(before) {
+    const seen = new Set();
+    well.querySelectorAll('[data-iid]').forEach(el => {
+      const id = el.dataset.iid;
+      if (seen.has(id)) return; seen.add(id);
+      const r = el.getBoundingClientRect(), rot = el.classList.contains('is-ex') ? 90 : 0;
+      let b = before.get(id);
+      if (!b) {
+        const p = T.steps[k].state.c[id] && T.steps[k].state.c[id].owner;
+        b = before.get('deck' + p);
+        if (!b) return;
+      }
+      const dx = b.x - (r.left + r.width / 2), dy = b.y - (r.top + r.height / 2), sc = b.w / el.offsetWidth;
+      if (Math.abs(dx) < 1 && Math.abs(dy) < 1 && Math.abs(sc - 1) < 0.01 && b.rot === rot) return;
+      el.animate([
+        { transform: `translate(${dx}px, ${dy}px) scale(${sc}) rotate(${b.rot}deg)`, zIndex: 5 },
+        { transform: `translate(0, 0) scale(1) rotate(${rot}deg)`, zIndex: 5 },
+      ], { duration: 460, easing: 'cubic-bezier(.2,.7,.2,1)' });
+    });
+  }
+
+  // ---------- The step, drawn ----------
+  function overlay(s) {
+    const svg = document.getElementById('ov'), tags = document.getElementById('tags');
+    if (!svg) return;
+    const W = well.getBoundingClientRect();
+    svg.setAttribute('viewBox', `0 0 ${W.width} ${W.height}`);
+    let paths = '', html = '';
+    const el = iid => well.querySelector(`.half [data-iid="${iid}"]`) || well.querySelector(`[data-iid="${iid}"]`);
+    const ctr = n => { if (!n) return null; const r = n.getBoundingClientRect(); return { x: r.left - W.left + r.width / 2, y: r.top - W.top + r.height / 2, h: r.height, w: r.width }; };
+    const v = verb(s), col = KEYVAR[v.k];
+    const line = (a, b, color, o = {}) => {
+      if (!a || !b) return;
+      const mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2, dx = b.x - a.x, dy = b.y - a.y, len = Math.hypot(dx, dy);
+      const bend = o.bend ?? 0.18, cx = mx - dy * bend, cy = my + dx * bend;
+      paths += `<path class="draw${o.dash ? ' dash' : ''}" style="--len:${Math.ceil(len * 1.2)}" d="M${a.x},${a.y} Q${cx},${cy} ${b.x},${b.y}" stroke="${color}" stroke-width="${o.w || 2}"${o.arrow ? ` marker-end="url(#ah-${o.arrow})"` : ''}/>`;
+    };
+    const tag = (pt, text, k, sm) => { if (!pt) return; const [bg, fg] = TAGBG[k]; html += `<span class="tag${sm ? ' sm' : ''}" style="left:${pt.x}px;top:${pt.y}px;background:${bg};color:${fg}">${text}</span>`; };
+    const below = (p, d = 0.5) => p && { x: p.x, y: p.y + p.h * d + 4 };
+    const above = (p, d = 0.5) => p && { x: p.x, y: p.y - p.h * d - 4 };
+    const stageCard = well.querySelector('.stage .cc') || well.querySelector('.stage .abil');
+    const lore = ctr(well.querySelector(`[data-lore="${s.state.active}"]`));
+    const ink = ctr(well.querySelector(`[data-ink="${s.state.active}"] .ink-row`));
+    const src = (() => { // where an effect comes from
+      const r = resolving(s);
+      if (r && r.card) return ctr(stageCard);
+      if (r && r.ability) return ctr(el(r.ability.card)) || ctr(stageCard);
+      return null;
+    })();
+
+    switch (s.v) {
+      case 'sing': {
+        const song = ctr(stageCard);
+        s.actors.forEach(iid => { const a = ctr(el(iid)); line(a, song, 'var(--g-trace)', { w: 2.2, bend: -0.12, arrow: 'trace' }); tag(above(a, 0.36), `${icon('exert')}SINGS`, 'trace', true); });
+        break;
+      }
+      case 'challenge': {
+        const a = ctr(el(s.actors[0])), d = ctr(well.querySelector(`[data-ghost="${s.targets[0]}"]`) || el(s.targets[0]));
+        line(a, d, 'var(--g-coral)', { w: 3, bend: 0.1, arrow: 'coral' });
+        const at = s.state.c[s.actors[0]], dt = s.state.c[s.targets[0]];
+        tag(d, `+${s.dealt} DMG`, 'dmg');
+        tag(below(a, 0.62), `+${s.took} DMG`, 'dmg');
+        break;
+      }
+      case 'quest': {
+        const a = ctr(el(s.actors[0]));
+        line(a, lore, 'var(--g-olive)', { w: 2, dash: true, bend: 0.2, arrow: 'olive' });
+        tag(lore && { x: lore.x + 38, y: lore.y - 26 }, `+${s.lore} ${icon('lore')}`, 'olive');
+        break;
+      }
+      case 'lore': tag(lore && { x: lore.x + 38, y: lore.y - 26 }, `+${s.lore} ${icon('lore')}`, 'olive'); line(src, lore, 'var(--g-olive)', { dash: true, arrow: 'olive' }); break;
+      case 'ink': tag(ink && { x: ink.x, y: ink.y - 22 }, `+1 ${icon('ink')}`, 'olive'); break;
+      case 'play': {
+        const c = ctr(el(s.card));
+        if (s.cost) tag(ink && { x: ink.x, y: ink.y - 22 }, `−${s.cost} ${icon('ink')}`, 'olive');
+        if (s.from === 'discard') tag(above(c, 0.5), 'FROM DISCARD', 'bone', true);
+        break;
+      }
+      case 'dmg': {
+        s.targets.forEach(iid => {
+          const t = ctr(well.querySelector(`.half [data-iid="${iid}"]`) || well.querySelector(`[data-ghost="${iid}"]`));
+          line(src, t, 'var(--g-dmg)', { w: 1.8, bend: 0.08, arrow: 'dmg' });
+          tag(t, `+${s.n}`, 'dmg');
+        });
+        break;
+      }
+      case 'banish': s.targets.forEach(iid => tag(below(ctr(well.querySelector(`[data-ghost="${iid}"]`)), 0.62), 'BANISHED', 'graphite', true)); break;
+      case 'draw': s.targets.forEach(iid => tag(above(ctr(el(iid)), 0.5), 'DREW', 'bone', true)); break;
+      case 'discard': s.targets.forEach(iid => tag(above(ctr(el(iid)), 0.5), 'DISCARDED', 'graphite', true)); break;
+      case 'bottom': tag(above(ctr(well.querySelector(`[data-deck="${s.state.active}"]`)), 0.5), 'TO THE BOTTOM', 'graphite', true); break;
+      case 'ability': {
+        if (s.cond) {
+          const t = ctr(el(s.card));
+          s.cond.cards.forEach(iid => { const c = ctr(el(iid)); line(c, t, 'var(--g-trace)', { w: 1.6, dash: true, bend: 0.25 }); tag(above(c, 0.42), `${icon('check')}EXERTED`, 'trace', true); });
+        }
+        break;
+      }
+    }
+    const defs = ['coral', 'olive', 'trace', 'dmg'].map(n => `<marker id="ah-${n}" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M1,1 L9,5 L1,9 z" fill="var(--g-${n})"/></marker>`).join('');
+    svg.innerHTML = `<defs>${defs}</defs>${paths}`;
+    tags.innerHTML = html;
+    if (s.v === 'quest' || s.v === 'lore') well.querySelector(`[data-lore="${s.state.active}"]`).classList.add('is-bump');
+  }
+
+  // ---------- The tape ----------
+  function renderTape() {
+    const S = T.steps;
+    const roots = S.filter(s => s.depth === 0);
+    const phases = [['start', 'Start'], ['main', 'Main phase'], ['end', 'End of turn']];
+    let html = '';
+    for (const [ph, label] of phases) {
+      const cols = roots.filter(s => s.phase === ph);
+      if (!cols.length) continue;
+      html += `<div class="phase"><span class="lbl">${label}</span><div class="phase-cols">`;
+      for (const r of cols) {
+        const kids = S.filter(s => s.i > r.i && isUnder(s, r));
+        html += `<div class="col${kids.length ? '' : ' is-solo'}">${key(r)}${kids.map(key).join('')}</div>`;
+      }
+      html += '</div></div>';
+    }
+    tapeEl.innerHTML = html + '<div class="cursor" id="cursor"></div>';
+    tapeEl.querySelectorAll('.tk').forEach(b => b.onclick = () => { stop(); go(+b.dataset.i); });
+  }
+  function isUnder(s, r) { for (let x = s; x; x = x.cause != null ? T.steps[x.cause] : null) if (x.cause === r.i) return true; return false; }
+  function key(s) {
+    const v = verb(s), sub = s.depth > 0;
+    return `<button class="tk vk is-${v.k}${sub ? ' sub' : ''}${s.v === 'ability' && s.when ? ' is-trigger' : ''}" data-i="${s.i}" style="--d:${s.depth}" title="${title(s)}">
+      <span class="t1">${icon(v.i)}${chip(s)}</span><span class="t2">${figure(s) || v.w.toLowerCase()}</span></button>`;
+  }
+  function placeCursor() {
+    tapeEl.querySelectorAll('.tk').forEach(b => b.classList.toggle('is-ahead', +b.dataset.i > k));
+    const b = tapeEl.querySelector(`.tk[data-i="${k}"]`), c = document.getElementById('cursor');
+    if (!b || !c) return;
+    const o = 5, R = b.getBoundingClientRect(), W = tapeEl.getBoundingClientRect();
+    const x = R.left - W.left + tapeEl.scrollLeft, y = R.top - W.top + tapeEl.scrollTop;
+    c.style.left = (x - o) + 'px'; c.style.top = (y - o) + 'px';
+    c.style.width = (R.width + o * 2) + 'px'; c.style.height = (R.height + o * 2) + 'px';
+    const L = x - tapeEl.scrollLeft;
+    if (L < 40 || L + R.width > tapeEl.clientWidth - 40) tapeEl.scrollTo({ left: x - tapeEl.clientWidth / 3, behavior: 'smooth' });
+  }
+
+  function renderMeters(s) {
+    const st = s.state, me = st.active, P = st.p[me];
+    const chars = P.field.filter(iid => CARDS[st.c[iid].id].type === 'Character');
+    const ready = chars.filter(iid => !st.c[iid].ex && !st.c[iid].dry);
+    const s0 = T.steps[0].state.p[me];
+    meters.innerHTML = `
+      <div class="m"><span class="lbl">Ink</span><span class="pips">${Array.from({ length: P.inkTotal }, (_, i) => `<i class="${i < P.inkReady ? '' : 'off'}"></i>`).join('')}</span><span class="v">${P.inkReady}/${P.inkTotal}</span></div>
+      <div class="m"><span class="lbl">Can act</span><span class="pips is-chars">${chars.map(iid => `<i class="${ready.includes(iid) ? '' : 'off'}" title="${nm(st, iid)}"></i>`).join('')}</span><span class="v">${ready.length}/${chars.length}</span></div>
+      <div class="m"><span class="lbl">Lore</span><span class="v">${s0.lore} → <b style="color:var(--accent)">${P.lore}</b></span></div>
+      <div class="m"><span class="lbl">Hand</span><span class="v">${P.hand.length}</span></div>
+      <div class="keys"><kbd>←</kbd><kbd>→</kbd> step <kbd>space</kbd> play</div>`;
+  }
+
+  // ---------- The panel ----------
+  function renderPanel(s) {
+    const st = s.state, v = verb(s), n = T.steps.length - 1;
+    const phase = { start: 'Start', main: 'Main phase', end: 'End of turn' }[s.phase];
+    let body = '';
+    if (s.v === 'end') body = receipt();
+    else {
+      body += s.why || s.v === 'start' ? `<p class="p-why">${s.v === 'start' ? startText(st) : cap(s.why)}.</p>` : '';
+      body += because(s);
+      body += math(s);
+      body += cardText(s);
+    }
+    const note = T.turn.note ? `<div class="tr-note"><span class="lbl">Turn ${T.turn.turn} note · Player ${T.turn.active + 1}</span>${T.turn.note}</div>` : '';
+    const notes = (T.turn.notes || []).map(x => `<div class="warn"><b>CHECK</b>${x}</div>`).join('');
+    panel.innerHTML = `
+      <div class="p-head"><span class="lbl">Step <b>${String(k).padStart(2, '0')}</b> / ${n} · ${phase}</span><span class="sp"></span>
+        <button class="p-btn" id="p-first" aria-label="First step">${icon('first')}</button>
+        <button class="p-btn" id="p-prev" aria-label="Previous step">${icon('prev')}</button>
+        <button class="p-btn${timer ? ' is-on' : ''}" id="p-play" aria-label="Play the turn">${icon(timer ? 'pause' : 'playback')}</button>
+        <button class="p-btn" id="p-next" aria-label="Next step">${icon('next')}</button></div>
+      <div class="p-title"><span class="vk is-${v.k}">${icon(v.i)}</span><div><h2>${title(s)}</h2><div class="fig">${[v.w, figure(s)].filter(Boolean).join(' · ')}</div></div></div>
+      ${body}
+      <div class="p-sec"><span class="lbl">Board now</span>${now(st)}</div>
+      <div class="p-sec p-go"><button class="sig-key" id="p-go">${icon('branch')} Play from here</button>
+        <small>${k === 0 ? 'Opens the board at the start of this turn.' : `Opens the board as it was before step ${k}, on a new line off T${T.turn.turn} · P${T.turn.active + 1}. Do it differently from there.`}</small></div>
+      ${notes}${note}`;
+    panel.querySelector('#p-first').onclick = () => { stop(); go(0); };
+    panel.querySelector('#p-prev').onclick = () => { stop(); go(k - 1); };
+    panel.querySelector('#p-next').onclick = () => { stop(); go(k + 1); };
+    panel.querySelector('#p-play').onclick = play;
+    panel.querySelector('#p-go').onclick = () => TR.toast(`In the app this opens the board ${k ? 'before step ' + k : 'at the start of the turn'} as an unsaved line, with the multiverse on the new branch. (Prototype: nothing to open here.)`);
+    panel.querySelectorAll('[data-go]').forEach(b => b.onclick = () => { stop(); go(+b.dataset.go); });
+  }
+  function cap(t) { return t.charAt(0).toUpperCase() + t.slice(1); }
+  function startText(st) {
+    const P = st.p[st.active], chars = P.field.filter(iid => CARDS[st.c[iid].id].type === 'Character');
+    const ready = chars.filter(iid => !st.c[iid].ex && !st.c[iid].dry);
+    return `Ready step done: ${P.inkReady} ink, ${ready.length} character${ready.length === 1 ? '' : 's'} ready, ${P.hand.length} cards in hand`;
+  }
+  function stepBtn(i) { return `<button data-go="${i}">${String(i).padStart(2, '0')}</button>`; }
+
+  // Why this step happened, beyond its parent.
+  function because(s) {
+    const st = s.state, rows = [];
+    if (s.cause != null) rows.push([s.cause, `Comes from: ${title(T.steps[s.cause])}`]);
+    (s.links || []).forEach(l => {
+      const f = T.steps[l.from];
+      if (l.kind === 'counts') rows.push([l.from, `${nm(st, l.card)} was played first, so it counts: +1 damage`]);
+      if (l.kind === 'enables') rows.push([l.from, `${nm(st, l.card)} is exerted (${f.v === 'sing' ? 'sang' : f.v === 'quest' ? 'quested' : 'challenged'})`]);
+      if (l.kind === 'adds') rows.push([l.from, l.from === 0 ? `${nm(st, l.card)} already had ${l.pre} damage when the turn began`
+        : `${nm(st, l.card)} already took ${f.v === 'dmg' ? f.n : f.targets.includes(l.card) ? f.dealt : f.took} at step ${l.from}`]);
+    });
+    if (s.cond) rows.push(['', `<b>${s.cond.text}</b>: ${s.cond.cards.length} ✓`]);
+    if (!rows.length) return '';
+    return `<div class="p-sec"><span class="lbl">Why</span><div class="because">${rows.map(([i, t]) => `${i === '' ? '<span></span>' : stepBtn(i)}<span>${t}</span>`).join('')}</div></div>`;
+  }
+
+  function math(s) {
+    const st = s.state, prev = T.steps[s.i - 1].state;
+    if (s.v === 'challenge') {
+      const a = s.actors[0], d = s.targets[0], A = cardOf(st, a), D = cardOf(st, d);
+      const row = (who, card, was, add) => `<div class="row"><span>${who}</span><span>${was} + <span class="k">${add}</span> = ${was + add} / ${card.w}${was + add >= card.w ? ' ✕' : ''}</span></div>`;
+      return `<div class="p-sec"><span class="lbl">Damage · ${A.n} ${A.s} ¤ vs ${D.n} ${D.s} ¤</span><div class="math">${row(D.n, D, prev.c[d].dmg, s.dealt)}${row(A.n, A, prev.c[a].dmg, s.took)}</div></div>`;
+    }
+    if (s.v === 'dmg') {
+      return `<div class="p-sec"><span class="lbl">Damage</span><div class="math">${s.targets.map(iid => { const c = cardOf(prev, iid), was = prev.c[iid].dmg; return `<div class="row"><span>${c.n}</span><span>${was} + <span class="k">${s.n}</span> = ${was + s.n} / ${c.w}${was + s.n >= c.w ? ' ✕' : ''}</span></div>`; }).join('')}</div></div>`;
+    }
+    if (s.v === 'sing') {
+      const song = cardOf(st, s.card);
+      return `<div class="p-sec"><span class="lbl">Cost</span><div class="math">${s.actors.map(iid => { const c = cardOf(st, iid); const sing = /Singer (\d+)/.exec(c.text); return `<div class="row"><span>${c.n} ${sing ? '(Singer ' + sing[1] + ')' : ''}</span><span>${sing ? sing[1] : c.cost} ≥ ${song.cost} ✓</span></div>`; }).join('')}<div class="row"><span>Ink</span><span>0 instead of ${song.cost}</span></div></div></div>`;
+    }
+    return '';
+  }
+
+  function cardText(s) {
+    const st = s.state;
+    const iid = s.v === 'ability' || s.v === 'play' || s.v === 'sing' || s.v === 'ink' ? s.card : s.v === 'quest' ? s.actors[0] : null;
+    if (!iid) return '';
+    const c = cardOf(st, iid);
+    let t = c.text.replace(/\n/g, ' ').replace(/\(([^)]*)\)/g, '<span style="opacity:.6">($1)</span>');
+    if (s.name) t = t.replace(s.name, `<mark class="ab">${s.name}</mark>`);
+    const stats = c.type === 'Character' ? ` · ${c.s} ¤ ${c.w} ⛉ ${c.l} ◊` : '';
+    return `<div class="ctext"><b>${c.n}${c.v ? ' - ' + c.v : ''}</b><br><span style="color:var(--g-mute);font:400 10px/1.6 var(--font-mono)">${c.type.toUpperCase()} · COST ${c.cost}${stats}</span>${t ? '<br>' + t : ''}</div>`;
+  }
+
+  function now(st) {
+    const P = st.p[st.active];
+    const chars = P.field.filter(iid => CARDS[st.c[iid].id].type === 'Character');
+    const chip = iid => `<span class="chip${st.c[iid].ex ? ' is-ex' : ''}">${short(st, iid)}${st.c[iid].dry ? ' · new' : ''}</span>`;
+    return `<div class="now">
+      <span class="lbl">Lore</span><span><span class="lore-now">${P.lore}</span> <span class="v" style="color:var(--text-dim)">· P${2 - st.active} ${st.p[1 - st.active].lore}</span></span>
+      <span class="lbl">Ink</span><span class="v">${P.inkReady} of ${P.inkTotal} ready</span>
+      <span class="lbl">Characters</span><span class="chips">${chars.map(chip).join('') || '<span class="v">none</span>'}</span>
+      <span class="lbl">Hand</span><span class="chips">${P.hand.map(iid => `<span class="chip">${short(st, iid)}</span>`).join('') || '<span class="v">empty</span>'}</span>
+    </div>`;
+  }
+
+  // The end of the turn: what it made and what it spent.
+  function receipt() {
+    const a = T.acc, st = T.steps[T.steps.length - 1].state, s0 = T.steps[0].state;
+    const names = (state, ids) => list(ids.map(iid => nm(state, iid))) || 'none';
+    const costOf = ids => ids.reduce((n, iid) => n + CARDS[s0.c[iid].id].cost, 0);
+    const forgone = a.forgone.map(f => `${nm(s0, f.iid)} ${f.lore} (${f.v === 'sing' ? 'sang' : 'challenged'})`);
+    return `<div class="receipt">
+      <span class="k">Lore</span><span>${a.lore[0]} → <b>${a.lore[1]}</b> (+${a.lore[1] - a.lore[0]})</span>
+      <span class="k">Ink</span><span>${a.inkTotal - a.inkLeft} of ${a.inkTotal} used${a.inkLeft ? ` · <b>${a.inkLeft} left unused</b>` : ''}</span>
+      <span class="k">Banished</span><span>Theirs: ${names(s0, a.theirLost)}${a.theirLost.length ? ` (cost ${costOf(a.theirLost)})` : ''}<br>Yours: ${names(s0, a.myLost)}${a.myLost.length ? ` (cost ${costOf(a.myLost)})` : ''}</span>
+      <span class="k">Gave up</span><span>${forgone.length ? list(forgone) + ' lore, to do something else' : 'no quests'}</span>
+      <span class="k">Idle</span><span>${a.idle.length ? names(st, a.idle) + ' could still act' : 'every ready character acted'}</span>
+      <span class="k">Cards</span><span>${a.drawn} drawn · ${a.hand} in hand</span>
+    </div>`;
+  }
+})();
+</script>
+</body>
+</html>

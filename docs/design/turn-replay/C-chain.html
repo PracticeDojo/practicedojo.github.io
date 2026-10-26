@@ -1,0 +1,280 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Turn Replay · C · Chain</title>
+<link rel="stylesheet" href="../../../app/css/field-unit.css">
+<link rel="stylesheet" href="_shared.css">
+<style>
+  /* C · CHAIN. The turn as cause and effect, drawn as an arc diagram on one
+     timeline. Above the line, what each step set off (a song's damage, a
+     challenge's banishes). Below it, what made a later step possible: damage
+     that added up to a banish, the exerts a trigger needed, a character
+     played early enough to be counted. The panel says it in sentences. */
+  body { display: flex; flex-direction: column; overflow: hidden; }
+  .c-main { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 10px; padding: 10px; }
+  .c-well { position: relative; min-height: 0; background: var(--fu-glass); color: var(--g-text); border-radius: var(--radius-well); display: flex; flex-direction: column; overflow: hidden; }
+  .c-head { padding: 14px 18px 0; display: flex; align-items: baseline; gap: 12px; min-height: 52px; }
+  .c-head .lbl { color: var(--g-mute); }
+  .c-head .lbl b { color: var(--accent-num); }
+  .c-head h2 { margin: 0; font: 600 17px/1.25 var(--font-display); letter-spacing: -0.02em; color: var(--g-text); }
+  .c-head p { margin: 0; color: var(--g-2); font-size: 12px; }
+  .c-plot { position: relative; flex: 1; min-height: 0; overflow-x: auto; }
+  .c-plot > svg { position: absolute; left: 0; top: 0; overflow: visible; }
+  .c-plot .hl { position: absolute; left: 0; top: 0; }
+  .nd { position: absolute; transform: translate(-50%, -50%); display: grid; place-items: center; border: 0; padding: 0; cursor: pointer; border-radius: 9px; box-shadow: inset 0 -3px 0 oklch(0 0 0 / 0.25); }
+  .nd .ico, .nd .gi { width: 14px; height: 14px; }
+  .nd.sub { border-radius: 6px; box-shadow: inset 0 -2px 0 oklch(0 0 0 / 0.25); }
+  .nd.sub .ico, .nd.sub .gi { width: 10px; height: 10px; }
+  .nd.is-trigger { outline: 1.5px dashed var(--g-2); outline-offset: 3px; }
+  .nd:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+  .nn { position: absolute; transform: translate(-50%, -100%); font: 400 9.5px/1 var(--font-mono); color: var(--g-mute); }
+  .nl { position: absolute; transform: translateX(-50%); text-align: center; font-size: 10.5px; line-height: 1.25; color: var(--g-2); pointer-events: none; }
+  .nl b { color: var(--g-text); font-weight: 600; }
+  .nl.is-dim, .nd.is-dim, .nn.is-dim { opacity: 0.35; }
+  .al { position: absolute; transform: translate(-50%, -50%); white-space: nowrap; height: 18px; padding: 0 6px; border-radius: 5px; display: inline-flex; align-items: center; font: 600 9.5px/1 var(--font-mono); letter-spacing: 0.04em; background: var(--fu-glass); box-shadow: 0 0 0 1px currentColor; }
+  .al.is-dim { opacity: 0.25; }
+  .ph { position: absolute; top: 10px; transform: translateX(4px); color: var(--g-mute); white-space: nowrap; }
+  .cur { position: absolute; pointer-events: none; transform: translate(-50%, -50%); --c: var(--accent); --l: 8px; --t: 2px;
+    background: linear-gradient(var(--c), var(--c)) top left / var(--l) var(--t), linear-gradient(var(--c), var(--c)) top left / var(--t) var(--l),
+      linear-gradient(var(--c), var(--c)) top right / var(--l) var(--t), linear-gradient(var(--c), var(--c)) top right / var(--t) var(--l),
+      linear-gradient(var(--c), var(--c)) bottom left / var(--l) var(--t), linear-gradient(var(--c), var(--c)) bottom left / var(--t) var(--l),
+      linear-gradient(var(--c), var(--c)) bottom right / var(--l) var(--t), linear-gradient(var(--c), var(--c)) bottom right / var(--t) var(--l);
+    background-repeat: no-repeat; }
+  .c-key { display: flex; flex-wrap: wrap; gap: 6px 16px; padding: 10px 18px 14px; border-top: 1px solid var(--g-rule); color: var(--g-mute); font-size: 11px; }
+  .c-key span { display: inline-flex; align-items: center; gap: 6px; }
+  .c-key i { width: 22px; height: 0; border-top: 2px solid; display: inline-block; }
+
+  .c-panel { min-height: 0; overflow-y: auto; background: var(--surface); border: 1px solid var(--border-soft); border-radius: var(--radius); padding: 14px; display: flex; flex-direction: column; gap: 14px; }
+  .c-panel h3 { margin: 0; font: 600 15px/1.25 var(--font-display); letter-spacing: -0.02em; }
+  .ins { display: flex; flex-direction: column; gap: 10px; }
+  .in { display: grid; grid-template-columns: 26px 1fr; gap: 10px; font-size: 12.5px; line-height: 1.45; color: var(--text-2); }
+  .in .sq { width: 26px; height: 26px; border-radius: 7px; display: grid; place-items: center; box-shadow: inset 0 -2px 0 var(--key-edge); }
+  .in .sq .ico, .in .sq .gi { width: 12px; height: 12px; }
+  .in b { color: var(--text); font-weight: 600; }
+  .sb { all: unset; cursor: pointer; font: 600 10px/1 var(--font-mono); padding: 2px 4px; border-radius: 4px; background: var(--surface-3); color: var(--text); vertical-align: 1px; }
+  .sb:hover { background: var(--border); }
+  .sb:focus-visible { outline: 2px solid var(--accent); }
+  .dec { display: flex; flex-direction: column; }
+  .dr { display: grid; grid-template-columns: 22px 1fr auto; gap: 8px; align-items: center; padding: 7px 0; border-top: 1px solid var(--border-soft); font-size: 12.5px; cursor: pointer; }
+  .dr:first-child { border-top: 0; }
+  .dr .n { font: 700 11px/1 var(--font-mono); color: var(--text-dim); }
+  .dr .f { font: 400 10.5px/1 var(--font-mono); color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.06em; white-space: nowrap; }
+  .dr.is-on .n { color: var(--accent); }
+  .dr.is-on { font-weight: 600; }
+  .go small { display: block; margin-top: 6px; font-size: 11.5px; color: var(--text-dim); line-height: 1.4; }
+</style>
+</head>
+<body>
+<header class="tr-top" id="top"></header>
+<main class="c-main">
+  <section class="c-well">
+    <div class="c-head" id="head" aria-live="polite"></div>
+    <div class="c-plot" id="plot"></div>
+    <div class="c-key">
+      <span><i style="border-color:var(--g-edge)"></i>set off (above the line)</span>
+      <span><i style="border-color:var(--g-dmg)"></i>damage that added up</span>
+      <span><i style="border-color:var(--g-trace)"></i>exerted, so the trigger fired</span>
+      <span><i style="border-color:var(--g-2);border-top-style:dashed"></i>in play first, so it counted</span>
+      <span style="margin-left:auto">Click a step · ← →</span>
+    </div>
+  </section>
+  <aside class="c-panel" id="panel"></aside>
+</main>
+<script src="_data.js"></script>
+<script src="_engine.js"></script>
+<script src="_shared.js"></script>
+<script>
+(function () {
+  const { get, verb, chip, title, figure, icon, nm, short, list, cardOf, CARDS } = TR;
+  const plot = document.getElementById('plot');
+  const SQ = { coral: ['var(--v-coral)', 'var(--v-coral-ink)'], olive: ['var(--v-olive)', 'var(--v-olive-ink)'], trace: ['var(--v-trace)', 'var(--v-trace-ink)'],
+    graphite: ['#2B2925', 'var(--key-graphite-ink)'], dmg: ['var(--v-dmg)', 'var(--v-dmg-ink)'], bone: ['#E7E2D8', '#161513'] };
+  const LINK = { adds: 'var(--g-dmg)', enables: 'var(--g-trace)', counts: 'var(--g-2)' };
+  var T, k = null, X = [];
+  const start = TR.readHash('t4p2');
+  TR.topbar(document.getElementById('top'), 'C', id => load(id, null), start.id);
+  load(start.id, start.step);
+  window.addEventListener('resize', () => draw());
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight') { pick(k == null ? 1 : k + 1); e.preventDefault(); }
+    else if (e.key === 'ArrowLeft') { pick(k == null ? 1 : k - 1); e.preventDefault(); }
+    else if (e.key === 'Escape') pick(null);
+  });
+
+  function load(id, step) { T = get(id); k = step; draw(); panel(); head(); }
+  function pick(i) {
+    k = i == null ? null : Math.max(0, Math.min(i, T.steps.length - 1));
+    TR.writeHash(T.turn.id, k);
+    draw(); head(); panel();
+  }
+
+  // Steps connected to the picked one: its parent, children, and links both ways.
+  function related(i) {
+    if (i == null) return null;
+    const S = T.steps, set = new Set([i]);
+    if (S[i].cause != null) set.add(S[i].cause);
+    S.forEach(s => { if (s.cause === i) set.add(s.i); (s.links || []).forEach(l => { if (s.i === i) set.add(l.from); if (l.from === i) set.add(s.i); }); });
+    return set;
+  }
+
+  function draw() {
+    const S = T.steps, n = S.length;
+    const W = Math.max(plot.clientWidth, 720), H = Math.max(plot.clientHeight, 420);
+    const pad = 44, dx = Math.max(58, (W - pad * 2) / (n - 1));
+    const y0 = Math.round(H * 0.4);
+    X = S.map((s, i) => pad + i * dx);
+    const rel = related(k);
+    const dim = i => rel && !rel.has(i);
+    let svg = '', html = '';
+    // phases
+    let ph = null;
+    S.forEach((s, i) => {
+      if (s.phase !== ph) {
+        ph = s.phase;
+        const x = i ? (X[i] + X[i - 1]) / 2 : X[0] - 24;
+        if (i) svg += `<line x1="${x}" x2="${x}" y1="6" y2="${H - 10}" stroke="var(--g-rule)"/>`;
+        html += `<span class="ph lbl" style="left:${x}px">${{ start: 'Start', main: 'Main phase', end: 'End of turn' }[ph]}</span>`;
+      }
+    });
+    // the timeline
+    svg += `<line x1="${X[0]}" x2="${X[n - 1]}" y1="${y0}" y2="${y0}" stroke="var(--g-line)" stroke-width="1.5"/>`;
+    // above: what each step set off
+    S.forEach(s => {
+      if (s.cause == null) return;
+      const a = X[s.cause], b = X[s.i], h = Math.min(120, (b - a) * 0.55 + 10);
+      const on = !rel || (rel.has(s.i) && rel.has(s.cause));
+      svg += `<path d="M${a},${y0 - 14} C${a},${y0 - 14 - h} ${b},${y0 - 14 - h} ${b},${y0 - 12}" fill="none" stroke="var(--g-edge)" stroke-width="${on && rel ? 1.8 : 1.2}" opacity="${on ? 1 : 0.25}"/>`;
+    });
+    // below: what made a step possible
+    const lbls = [];
+    S.forEach(s => (s.links || []).forEach(l => {
+      const a = X[l.from], b = X[s.i], h = Math.min(H - y0 - 70, (b - a) * 0.42 + 64);
+      const on = !rel || rel.has(s.i) && rel.has(l.from) && (k === s.i || k === l.from);
+      const col = LINK[l.kind];
+      svg += `<path d="M${a},${y0 + 16} C${a},${y0 + 16 + h} ${b},${y0 + 16 + h} ${b},${y0 + 14}" fill="none" stroke="${col}" stroke-width="2"${l.kind === 'counts' ? ' stroke-dasharray="4 4"' : ''} opacity="${on ? 1 : 0.2}" marker-end="url(#ah-${l.kind})"/>`;
+      lbls.push({ x: (a + b) / 2, y: y0 + 16 + h * 0.75, t: linkText(s, l), col, on });
+    }));
+    // nodes
+    S.forEach((s, i) => {
+      const v = verb(s), [bg, fg] = SQ[v.k], sub = s.depth > 0, sz = sub ? 20 : 30;
+      html += `<span class="nn${dim(i) ? ' is-dim' : ''}" style="left:${X[i]}px;top:${y0 - sz / 2 - 6}px">${String(i).padStart(2, '0')}</span>`;
+      html += `<button class="nd${sub ? ' sub' : ''}${s.v === 'ability' && s.when ? ' is-trigger' : ''}${dim(i) ? ' is-dim' : ''}" data-i="${i}" style="left:${X[i]}px;top:${y0}px;width:${sz}px;height:${sz}px;background:${bg};color:${fg}" title="${title(s)}">${icon(v.i)}</button>`;
+      html += `<span class="nl${dim(i) ? ' is-dim' : ''}" style="left:${X[i]}px;top:${y0 + sz / 2 + 6}px;width:${dx - 6}px">${sub ? chip(s) : `<b>${chip(s)}</b>`}</span>`;
+    });
+    lbls.forEach(l => html += `<span class="al${l.on ? '' : ' is-dim'}" style="left:${l.x}px;top:${l.y}px;color:${l.col}">${l.t}</span>`);
+    if (k != null) html += `<span class="cur" style="left:${X[k]}px;top:${y0}px;width:${(T.steps[k].depth ? 20 : 30) + 14}px;height:${(T.steps[k].depth ? 20 : 30) + 14}px"></span>`;
+    const defs = Object.entries(LINK).map(([n, c]) => `<marker id="ah-${n}" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M1,1 L9,5 L1,9 z" fill="${c}"/></marker>`).join('');
+    const w = X[n - 1] + pad;
+    plot.innerHTML = `<svg width="${w}" height="${H}" viewBox="0 0 ${w} ${H}"><defs>${defs}</defs>${svg}</svg><div class="hl" style="width:${w}px;height:${H}px">${html}</div>`;
+    plot.querySelectorAll('.nd').forEach(b => b.onclick = () => pick(k === +b.dataset.i ? null : +b.dataset.i));
+  }
+
+  function linkText(s, l) {
+    const st = s.state;
+    if (l.kind === 'counts') return '+1 to the count';
+    if (l.kind === 'enables') return 'exerted';
+    if (l.from === 0) return `had ${l.pre}`;
+    const f = T.steps[l.from];
+    return `+${f.v === 'dmg' ? f.n : f.targets && f.targets.includes(l.card) ? f.dealt : f.took}`;
+  }
+
+  // Who dealt a damage step: the song, action or ability it hangs under.
+  function dealer(i) {
+    const S = T.steps;
+    if (i === 0) return 'an earlier turn';
+    for (let x = S[i]; x; x = x.cause != null ? S[x.cause] : null) {
+      if (x.v === 'challenge') return `the challenge with ${nm(x.state, x.actors[0])}`;
+      if (x.v === 'ability') return x.name;
+      if (x.v === 'sing' || x.v === 'play') return nm(x.state, x.card);
+    }
+    return title(S[i]);
+  }
+  // Lower-case a sentence's first word only when it's a verb, never a card's name.
+  function lc(t) { return /^(Plays|Inks|Draws|Discards|Gains)\b/.test(t) ? t.charAt(0).toLowerCase() + t.slice(1) : t; }
+  function sb(i) { return `<button class="sb" data-go="${i}">${String(i).padStart(2, "0")}</button>`; }
+
+  // ---------- Sentences from the links ----------
+  function insights() {
+    const S = T.steps, out = [];
+    // Damage that added up, grouped when several cards fell the same way
+    const groups = new Map();
+    S.filter(s => s.v === 'banish').forEach(b => {
+      const adds = b.links.filter(l => l.kind === 'adds');
+      if (!adds.length) return;
+      const srcs = [...adds.map(l => l.from), b.cause].sort((x, y) => x - y);
+      const key = srcs.join(',') + (S[b.cause].v === 'ability' ? '|cond' : '');
+      if (!groups.has(key)) groups.set(key, { srcs, b, cond: S[b.cause].v === 'ability', targets: [], pre: adds.find(l => l.from === 0) });
+      groups.get(key).targets.push(...b.targets.map(t => [t, b]));
+    });
+    groups.forEach(g => {
+      const names = list(g.targets.map(([t, b]) => nm(b.state, t)));
+      const many = g.targets.length > 1;
+      if (g.cond) {
+        out.push(['graphite', 'banish', `<b>${S[g.b.cause].name}</b> only banishes damaged characters. ${names} ${many ? 'were' : 'was'} still damaged from an earlier turn ${sb(0)}.`]);
+        return;
+      }
+      const parts = g.srcs.map(i => {
+        if (i === 0) return `${g.pre.pre} already on ${many ? 'each' : 'it'} from an earlier turn ${sb(0)}`;
+        const f = S[i], t = g.targets[0][0];
+        if (f.v === 'challenge') {
+          const hit = f.targets.includes(t), other = hit ? f.actors[0] : f.targets[0];
+          return `${hit ? f.dealt : f.took} from ${nm(f.state, other)} in the challenge ${sb(i)}`;
+        }
+        return `${f.n} from ${dealer(i)} ${sb(i)}`;
+      });
+      const w = cardOf(g.b.state, g.targets[0][0]).w;
+      out.push(['dmg', 'dmg', `<b>${names}</b> fell to damage that added up: ${parts.join(', then ')}. No single source was enough${many ? '' : ` for ${w} willpower`}.`]);
+    });
+    // Played first, so it counted
+    S.forEach(s => (s.links || []).filter(l => l.kind === 'counts').forEach(l => {
+      const song = dealer(s.i), t = s.targets[0];
+      const later = S.find(b => b.v === 'banish' && b.targets.includes(t));
+      out.push(['bone', 'play', `<b>Order mattered.</b> ${nm(s.state, l.card)} was played ${sb(l.from)} before ${song} ${sb(s.i)}, so it counted: ${s.n} damage, not ${s.n - 1}.${later ? ` ${nm(s.state, t)} has ${cardOf(s.state, t).w} willpower and was banished ${sb(later.i)} with nothing to spare.` : ''}`]);
+    }));
+    // A trigger's condition
+    S.filter(s => s.cond).forEach(s => {
+      const how = s.links.filter(l => l.kind === 'enables').map(l => `${nm(s.state, l.card)} ${T.steps[l.from].v === 'sing' ? 'sang' : T.steps[l.from].v === 'quest' ? 'quested' : 'challenged'} ${sb(l.from)}`);
+      out.push(['trace', 'exert', `<b>${s.name}</b> needed ${s.cond.text}. ${list(how)}. One fewer exert and it doesn't fire.`]);
+    });
+    // A step that did two jobs
+    S.forEach(s => {
+      const kids = S.filter(x => x.cause === s.i).length;
+      const feeds = S.filter(x => (x.links || []).some(l => l.from === s.i && l.kind !== 'adds')).length;
+      if (s.i && kids && feeds) out.push(['trace', 'sing', `<b>${title(s)}</b> ${sb(s.i)} did two jobs: ${S.filter(x => x.cause === s.i).map(x => lc(title(x))).join(', ')}, and it counts toward a later step.`]);
+    });
+    // Chains: a decision whose consequences go three deep
+    S.filter(s => s.decision).forEach(s => {
+      const depth = Math.max(0, ...S.filter(x => { for (let y = x; y; y = y.cause != null ? S[y.cause] : null) if (y.cause === s.i) return true; return false; }).map(x => x.depth));
+      if (depth >= 3) out.push(['bone', 'ability', `<b>${title(s)}</b> ${sb(s.i)} set off a chain ${depth} steps deep, ending in ${lc(title(S.filter(x => x.depth === depth && x.i > s.i)[0]))}.`]);
+    });
+    return out;
+  }
+
+  function panel() {
+    const S = T.steps, a = T.acc;
+    const ins = insights();
+    const decs = S.filter(s => s.decision || (s.depth === 0 && s.v === 'ability'));
+    const p = document.getElementById('panel');
+    p.innerHTML = `
+      <h3>How T${T.turn.turn} · P${T.turn.active + 1} worked</h3>
+      <div class="ins">${ins.length ? ins.map(([kk, ic, t]) => `<div class="in"><span class="sq vk is-${kk}">${icon(ic)}</span><span>${t}</span></div>`).join('') : '<div class="in"><span></span><span>Nothing in this turn depended on anything else: each step stood on its own.</span></div>'}</div>
+      <div><span class="lbl">Decisions and triggers · ${decs.length}</span><div class="dec">${decs.map((s, j) => `<div class="dr${k === s.i ? ' is-on' : ''}" data-go="${s.i}"><span class="n">${String(s.i).padStart(2, '0')}</span><span>${title(s)}</span><span class="f">${figure(s)}</span></div>`).join('')}</div></div>
+      <div class="go"><button class="sig-key" id="go" style="width:100%">${icon('branch')} Play from ${k ? 'before step ' + String(k).padStart(2, '0') : 'the start of the turn'}</button><small>Pick a step on the diagram to change where the new line starts.</small></div>
+      <div class="receipt-mini lbl" style="line-height:1.7">Lore ${a.lore[0]} → ${a.lore[1]} · ink ${a.inkTotal - a.inkLeft}/${a.inkTotal} · theirs banished ${a.theirLost.length} · yours ${a.myLost.length}</div>
+      ${T.turn.note ? `<div class="tr-note"><span class="lbl">Turn ${T.turn.turn} note · Player ${T.turn.active + 1}</span>${T.turn.note}</div>` : ''}`;
+    p.querySelectorAll('[data-go]').forEach(b => b.onclick = () => pick(+b.dataset.go));
+    p.querySelector('#go').onclick = () => TR.toast(`In the app this opens the board ${k ? 'before step ' + k : 'at the start of the turn'} as a new line. (Prototype.)`);
+  }
+
+  function head() {
+    const h = document.getElementById('head');
+    if (k == null) { h.innerHTML = `<span class="lbl">T${T.turn.turn} · P${T.turn.active + 1}</span><h2>${T.turn.title}</h2><p>${T.acc.decisions} decisions, ${T.steps.length - 2} steps. Click a step to follow its threads.</p>`; return; }
+    const s = T.steps[k];
+    h.innerHTML = `<span class="lbl">Step <b>${String(k).padStart(2, '0')}</b></span><h2>${title(s)}</h2><p>${figure(s)}</p>`;
+  }
+})();
+</script>
+</body>
+</html>
