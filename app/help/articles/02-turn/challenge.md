@@ -7,7 +7,7 @@ aliases: [attack, fight, challenge mode, combat, block]
 targets: [challenge-mode, challenge-banner, challenge-keys, field, opponent-field]
 related: [forecast, card-actions, modifiers]
 order: 90
-verified: v3.17.2
+verified: v3.21.1
 ---
 
 In a challenge, your character and the opposing card deal their strength to each other as damage. The Dojo works out the damage, exerts your character and banishes anything that ends up with damage equal to its willpower. [Modifiers](help:modifiers) on either card (+strength, Challenger, Resist, willpower) are counted.
@@ -32,7 +32,7 @@ Thumb keys sit at the bottom right of your side, like the Multiverse's. The mode
 A tap on the bare battlefield leaves challenge mode.
 :::
 
-You stay in the mode to challenge again. Press **Done · Esc** to leave. {key:Esc} first drops the picked character, then leaves. Ending the turn leaves it too.
+You stay in the mode to challenge again. Press **Done** to leave. {key:Esc} first drops the picked character, then leaves. Ending the turn leaves it too.
 
 [Show me](show:challenge-mode)
 

@@ -3002,6 +3002,15 @@ button.ctx-item:focus-visible {
     text-align: right;
 }
 
+/* The way out: back to the dojo, the match kept on its mulligan. */
+.mull-leave {
+    align-self: center;
+    width: 32px;
+    height: 32px;
+    justify-content: center;
+    padding: 0;
+}
+
 .mull-fig {
     margin-top: 4px;
     font: 400 20px/1 var(--font-display);
@@ -3882,6 +3891,117 @@ input[type="range"]::-moz-range-thumb {
 
 .chal-banner .cb-done:hover {
     background: var(--surface-2);
+}
+
+/* Desktop: a paper module in the top bar's tool language (design.md · Top bar),
+   on a grid so the label, the text and the controls line up at any width. A
+   coral spine and label mark the mode (Coral is Challenge's key colour). Every
+   control is 28px tall with an 8px radius. Centred across the whole width, not
+   from the middle: `left: 50%` let a fixed banner grow to only half the screen.
+   Too narrow for one line, Forecast and Done move under the text, on the right. */
+@media (min-width: 761px) {
+    body.challenge-mode .chal-banner {
+        display: grid;
+    }
+
+    .chal-banner {
+        left: 0;
+        right: 0;
+        width: fit-content;
+        max-width: min(1040px, calc(100vw - 32px));
+        margin: 0 auto;
+        transform: none;
+        grid-template-columns: auto minmax(0, 1fr) auto auto;
+        grid-template-areas: "key text seg done";
+        align-items: center;
+        gap: 8px 14px;
+        padding: 7px 7px 7px 20px;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow-2);
+        font-size: 13px;
+        line-height: 1.35;
+    }
+
+    .chal-banner::before {
+        content: "";
+        position: absolute;
+        left: 8px;
+        top: 8px;
+        bottom: 8px;
+        width: 3px;
+        border-radius: 2px;
+        background: var(--key-coral);
+    }
+
+    .chal-banner .cb-key {
+        grid-area: key;
+        font: 600 10px var(--font-mono);
+        letter-spacing: var(--label-track);
+        color: var(--key-coral);
+    }
+
+    .chal-banner .cb-text {
+        grid-area: text;
+        min-width: 0;
+        color: var(--text-2);
+    }
+
+    .chal-banner .cb-seg {
+        grid-area: seg;
+        height: 28px;
+        padding: 2px;
+        gap: 2px;
+        border-radius: var(--radius-sm);
+    }
+
+    .chal-banner .cb-seg span {
+        padding: 0 6px 0 8px;
+        font: 500 9.5px var(--font-mono);
+        letter-spacing: var(--label-track);
+    }
+
+    .chal-banner .cb-seg button {
+        height: 22px;
+        padding: 0 9px;
+        border-radius: 6px;
+        font: 500 12px var(--font-sans);
+    }
+
+    .chal-banner .cb-done {
+        grid-area: done;
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        height: 28px;
+        padding: 0 6px 0 11px;
+        border-radius: var(--radius-sm);
+        font: 500 12.5px var(--font-sans);
+    }
+
+    .chal-banner .cb-done kbd {
+        padding: 1px 4px;
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        font: 500 9.5px var(--font-mono);
+        letter-spacing: 0.04em;
+        color: var(--text-dim);
+    }
+}
+
+/* Phones have no Esc key. */
+@media (max-width: 760px) {
+    .chal-banner .cb-done kbd {
+        display: none;
+    }
+}
+
+@media (min-width: 761px) and (max-width: 1060px) {
+    .chal-banner {
+        grid-template-areas:
+            "key text text text"
+            ". . seg done";
+    }
 }
 
 .chal-fc {

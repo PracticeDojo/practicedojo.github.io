@@ -4,10 +4,10 @@ title: Mulligan and your opening hand
 summary: Each player's first turn opens on their mulligan: keep the seven, or mark cards to send to the bottom and draw again.
 devices: [desktop, phone]
 aliases: [mulligan, opening hand, starting hand, keep hand, redraw, alter hand]
-targets: [mulligan-dialog, mulligan-hand, mulligan-readout, mulligan-odds, mulligan-confirm]
+targets: [mulligan-dialog, mulligan-hand, mulligan-readout, mulligan-odds, mulligan-confirm, mulligan-leave]
 related: [craft-hand, draw-odds, draw]
 order: 10
-verified: v3.18.0
+verified: v3.21.1
 ---
 
 Each player's first turn opens on the mulligan. Player 1 chooses as the match starts. Player 2 chooses when Player 1 ends their first turn, before Player 2's draw, so they choose from the seven they were dealt.
@@ -48,4 +48,4 @@ The dialog stays open on your new hand. The new cards carry a **NEW** tag and th
 - Nothing else works until the hand is settled: no hotkeys, and the turn can't end.
 - **Build** and **Replay**, next to **Draw** at the top, make the hand another way: pick your seven, or copy an opening from a saved game. See [Build or replay an opening hand](help:craft-hand).
 - **Undo** after the turn has started brings the mulligan back.
-- Leave for the home screen mid-mulligan and the dialog is waiting when you come back.
+- **×** at the top right (or {key:Esc}) leaves for the home screen. The match stays saved, still on its mulligan: **Back to match** or **Resume** brings the dialog back. [Show me](show:mulligan-leave)
