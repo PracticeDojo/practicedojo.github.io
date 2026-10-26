@@ -29,6 +29,8 @@ This file provides system instructions and context for AI agents working in this
 | `.claude/skills/` | Agent skills. `dojo-screenshots/` = the screenshot tool (see below) |
 | `tools/` | Node scripts for the repo, never loaded by the site. `refresh-landing.mjs` = keeps the landing page in step with the app, `help.mjs` = builds and checks the manual (see below), `app-checks.mjs` = headless checks of imports, challenges, session files and the device library |
 | `docs/samples/` | Sample Duels.ink logs and replays for testing imports |
+| `app/vendor/lorcana-engine/` | Feature 68 (experimental): the Lorcana rules engine, built by `tools/build-engine.mjs` from a pinned tcg-engines commit. Never edit it by hand; change `tools/engine-adapter/` or the build's `PATCHES` and rebuild |
+| `app/lab/` | Feature 68 (experimental): developer pages, such as `engine.html`, which times the engine in a browser |
 
 ## Screenshots
 To see a UI change or show the user what something looks like, use the screenshot tool in `.claude/skills/dojo-screenshots/` (Claude Code loads it as the `dojo-screenshots` skill). Don't write your own Playwright or http-server script. Read its `SKILL.md` for recipes; the common one is:

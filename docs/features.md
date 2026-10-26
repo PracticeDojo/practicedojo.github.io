@@ -727,6 +727,7 @@ Duels.ink exports a deck with the printing at the end of each line, `4 Ursula - 
 - Uses the MIT-licensed Lorcana engine from `TheCardGoat/tcg-engines`, built from a pinned commit into a vendored bundle that runs in a Web Worker. Nothing runs on Cloudflare (free plan: 10 ms CPU per request).
 - The Dojo's board stays the source of truth. The engine is a shadow rebuilt from it, and the sandbox always wins.
 - Phases: 0 spike (measure) · 1a bridge, read-only · 1b rules assist · 2 bot · 3 turn explorer.
+- **Phase 0 done (2026-10-26): go.** The engine builds into a 245 KB (gzip) worker plus 517 KB of card data. All 76 boards of the Set 14 demo round-trip losslessly. Bot turns take about 50–110 ms. Details in the spike log (`docs/RSC-lorcana-engine.md` §12).
 
 ## Feature 67: Find a session or a deck in the Library and in Pick up again (v3.21.0)
 

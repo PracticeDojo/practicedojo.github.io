@@ -99,7 +99,8 @@ Limits:
 - **It does no lookahead.** Each choice is greedy and one step deep. It's decent for practice. It doesn't plan a turn.
 - The search caps (`targetPool 8`, `targetCombinationsPerFamily 16`, `choiceIndices 8`, `singerCombinations 16`) skip huge target pools.
 - It skips a few prompt shapes and leaves a diagnostic: "name a card" with no candidates, some ordered-destination choices, and multi-choice branches.
-- Speed: their 100- and 200-game bot-vs-bot benchmarks have 600 s timeouts. That suggests no more than a few seconds per game under Bun, but **it isn't measured.** Phase 0 measures it.
+- Speed (measured in Phase 0, §12): in a browser worker a bot action takes about 8–16 ms and a bot turn about 50–110 ms. A whole game takes 0.6–2 s.
+- Quality (Phase 0, §12): in 3 of 8 bot-vs-bot games, the bot hit a prompt it couldn't answer and conceded.
 
 ### 3.5 Risks in the upstream
 
@@ -287,7 +288,7 @@ The bot doesn't search, so this tier is **ours**. It's built on two things the e
 - The scoring is hand-tuned, the opponent model is greedy, and there's no reasoning about hidden information.
 - The beam can miss deep combos the strategy ranks low. Raising *k* helps, and costs time.
 
-**Cost and budget.** One node costs one restore, one apply, one fingerprint, and a light enumeration of candidates. If one node is about 2–10 ms on a desktop (to be measured in Phase 0), that's 100–500 nodes per second per worker. A typical turn has 10–40 candidates at the root and 4–8 steps, and about 1,000–3,000 nodes after deduplication. That's seconds on a desktop, so we use `navigator.hardwareConcurrency − 1` workers and split the root moves between them. Phones get a smaller *k*, one worker and no reply check.
+**Cost and budget.** One node costs one restore, one apply, one fingerprint, and a light enumeration of candidates. Measured in Phase 0 (§12): one node takes 5–6 ms on a desktop in a quiet position, which is 160–180 nodes per second per worker. On a busy board with 18 candidates it takes about 22 ms, or 45 per second. With 4× CPU throttling as a phone stand-in, it's 4–5 times slower. A typical turn has 10–40 candidates at the root and 4–8 steps, and about 1,000–3,000 nodes after deduplication. That's seconds on a desktop, so we use `navigator.hardwareConcurrency − 1` workers and split the root moves between them. Phones get a smaller *k*, one worker and no reply check.
 
 **Done when:** on 10 saved positions from the demos, the explorer finds the line a strong player picked within its top three, in under 3 s on a desktop.
 
@@ -299,7 +300,7 @@ Each phase is one or more entries in `docs/features.md` and ends in a decision.
 
 | Phase | Work | Gate (measured, not guessed) |
 |---|---|---|
-| **0 · Spike** (days) | `tools/build-engine.mjs` at a pinned SHA. A worker that hydrates the Set 14 demo and lists legal moves. A bot-vs-bot game in the worker. A timing page. | Bundle gzip ≤ 600 KB and cards gzip ≤ 1.5 MB, or split by set. Cold start ≤ 1.5 s desktop and ≤ 4 s mid-range phone. `getAvailableMoves` ≤ 20 ms. A bot turn ≤ 300 ms. One search node ≤ 10 ms. The demo's hydrate → project is lossless. **If any gate fails badly, stop and rethink.** |
+| **0 · Spike** (days). **Done 2026-10-26: go** (§12) | `tools/build-engine.mjs` at a pinned SHA. A worker that hydrates the Set 14 demo and lists legal moves. A bot-vs-bot game in the worker. A timing page. | Bundle gzip ≤ 600 KB and cards gzip ≤ 1.5 MB, or split by set. Cold start ≤ 1.5 s desktop and ≤ 4 s mid-range phone. `getAvailableMoves` ≤ 20 ms. A bot turn ≤ 300 ms. One search node ≤ 10 ms. The demo's hydrate → project is lossless. **If any gate fails badly, stop and rethink.** |
 | **1a · Bridge, read-only** | Card and state bridge, highlights, "why not" | The demos round-trip |
 | **1b · Assist** | Execute, effects, prompts, translation, persistence | §6 done |
 | **2 · Bot** | Seats, loop, Step mode, perspective, hint | §7 done |
@@ -336,4 +337,59 @@ Tiers 2 and 3 only need the read side of tier 1 (hydrate and project) plus the e
 
 Measured results, newest first. The work itself lives on `feat/68-rules-engine` (AGENTS.md, *Long-lived branch*).
 
-*(Phase 0 started 2026-10-26.)*
+### 2026-10-26 · Phase 0 spike: **go**
+
+**What was built** (all on `feat/68-rules-engine`):
+- `tools/build-engine.mjs`
+  - Takes a sparse checkout of tcg-engines at `6de59de`, installs the engine's runtime packages at upstream's locked versions, and bundles with esbuild 0.27.7.
+  - Produces `app/vendor/lorcana-engine/` (`engine.worker.js`, `cards.json`, `VERSION`, `LICENSE`).
+  - Upstream edits sit in one `PATCHES` list. The build fails if one no longer applies. `--dev` builds unminified for profiling.
+- `tools/engine-adapter/worker.ts`: the worker adapter. It runs as a classic Web Worker, or as a plain script that sets `globalThis.DojoEngine`. Ops:
+  - `init`: card index.
+  - `botGame`: a whole bot-vs-bot game from two decklists.
+  - `roundTrip`: hydrate → legal moves → project, compared field by field.
+  - `searchCost`: what one search node costs.
+- `app/js/rules.js` (`DojoRules`): `boardFromState()` turns a Dojo state into the worker's board shape, and a small worker client sends it requests.
+- How to measure:
+  - `tools/engine-spike.mjs` measures in Node.
+  - `app/lab/engine.html` measures in a browser.
+  - To run the lab headless at full speed and at 4× CPU throttling: `node .claude/skills/dojo-screenshots/shoot.mjs --path /app/lab/engine.html --widths 1440 --themes day --steps <a steps module that calls runSpike()>`.
+
+**Gates.** Browser numbers are headless Chromium in the cloud container. "Phone" means the same page with Chrome's 4× CPU throttling (its "mid-tier mobile" preset), as a stand-in.
+
+| Gate | Target | Measured | |
+|---|---|---|---|
+| Worker bundle | ≤ 600 KB gzip | 974 KB raw · **245 KB gzip** · 196 KB brotli | Pass |
+| Card data (3,374 cards, English) | ≤ 1.5 MB gzip | 3.7 MB raw · **517 KB gzip** · 303 KB brotli | Pass |
+| Cold start (script, cards, parse, index), without download time | ≤ 1.5 s desktop, ≤ 4 s phone | **105 ms** in the worker · 268 ms phone | Pass |
+| Demo round trip, every node of the Set 14 demo | lossless | **76 / 76 boards identical**. Hydrate 9.6 ms (max 19), phone 40 ms | Pass |
+| `getAvailableMoves` on those boards | ≤ 20 ms | mean **2.3 ms**, max 9.2 · phone mean 9.6, max 38 | Pass |
+| Bot turn | ≤ 300 ms | mean **47–113 ms**, worst turn 382 ms · phone mean 200–470 ms, worst 1.65 s | Pass, but a long turn can be slow on a phone |
+| One search node | ≤ 10 ms | quiet board **5–6 ms** · busy board (18 candidates) **22 ms** · phone 21–26 / 106 ms | Pass on quiet boards, **fails on busy ones** |
+
+Node 22 is about 1.3× slower than the browser on the same bundle. Its numbers are in `tools/engine-spike.mjs` output.
+
+**Findings**
+1. **The bridge works.**
+   - Hydrating the engine from Dojo states keeps every zone, exert, damage, drying, location, card under, lore and ink drop on all 76 demo boards.
+   - Engine instance ids are the fixture's `t000001…`, assigned in a known order, so Dojo ↔ engine identity can be computed up front.
+   - Every card in the demo is known to the engine, matched by `<setCode>-<number>`.
+2. **Upstream bug (to report):** the bot's scry fallback (`automation/planner.ts`, `getScryLookedAtCardIds`) looked at `deckCards.slice(0, amount)`. That's the bottom of the deck: the engine's deck top is the end of the array (`zone-operations.ts` draws with `slice(-n).reverse()`). Every "look at the top N" card with no revealed-cards snapshot made the bot's pick invalid and the bot conceded (first seen with Nani - Stage Manager). It's patched in our build, and games went from ending on turn 7 at 2–2 lore to reaching 20.
+3. **Upstream speed (to report):** `getStatePlayerIds` (`static-ability-utils.ts`) and `getProjectionPlayerIds` (`derived-state.ts`) walk every card's index entry through mutative proxies, once per static-effect check, which is quadratic. Every player is already in `G.lore` and `ctx.playerIds`. Patching both took a busy board's search node from **71 ms to 30 ms** in Node.
+   - The profile is flat now. The next spots: `buildStaticEffectRegistry` is rebuilt per check, a `Shift N` regex is parsed from card text at runtime, and proxy `get` calls.
+   - About 2× more looks reachable upstream.
+4. **The bot still gives up.** In 3 of 8 Set 14 bot-vs-bot games, the bot met a prompt it couldn't answer and conceded:
+   - **Taran - Magically Armed**: target combinations over the search cap.
+   - **Meilin Lee - Losing Control**: its scry pick fails the hand filter.
+   - One matchup (Remember Me v Retro Leviathan) plays 34 abilities, quests 3 times, and decks out on turn 24.
+
+   For the Dojo, the bot must **never concede**. When it's blocked, it hands the prompt to the player ("the bot can't resolve this; do it by hand") and carries on. Report each card upstream.
+5. **No i18n build step is needed.** The engine imports its log messages as JSON, so Paraglide isn't used. Only one upstream line stops a classic-worker build: a Bun-only top-level `await` in `testing/index.ts`, which is patched out.
+6. The test harness (server plus two in-memory clients) costs little more than a bare `LorcanaServer` restored from the same state, which costs about 0.4 ms to build. The search uses the bare one.
+7. Restore (`loadState` of a structured clone, about 21 KB of state) costs about 0.25 ms. Applying a move and listing the next candidates are what cost time.
+
+**What it means for the tiers**
+- **Tiers 1 and 2: go.** Every number is well inside budget on desktop and fine on a throttled phone.
+- **Tier 3: go, with limits.** On a desktop, a 2 s budget over 3 workers gives about 300–1,000 nodes. That's enough for a beam of 8 over a quiet turn, but thin on busy boards. Phones get "suggest the next move" (one step deep) rather than whole turns. Upstream speed fixes (finding 3) would widen this; offer them as PRs.
+
+**Next (Phase 1a, bridge read-only):** wire `DojoRules` into the board behind a hidden toggle. Hydrate the live board, highlight the legal moves, and show the "why not" reasons. Report upstream: the scry bug (finding 2), the speed fix (3) and the three bot gaps (4).
