@@ -329,3 +329,11 @@ Tiers 2 and 3 only need the read side of tier 1 (hydrate and project) plus the e
 3. Should we **contribute upstream**, for example by publishing the engine as an npm package and adding manual moves for Challenger and Resist modifiers? Reaching out to TheCardGoat early would lower the API risk a lot.
 4. For the bot: should *you* see the bot's hand, or should it be hidden in bot mode (`opponentHandRevealed` off and locked)? The bot can't see yours either way (§7).
 5. Which comes first after the spike: **Assist** (better practice for everyone) or the **bot** (the bigger "wow")?
+
+---
+
+## 12. Spike log
+
+Measured results, newest first. The work itself lives on `feat/68-rules-engine` (AGENTS.md, *Long-lived branch*).
+
+*(Phase 0 started 2026-10-26.)*

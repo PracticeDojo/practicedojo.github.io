@@ -98,5 +98,14 @@ Examples: `feat/23-share-links`, `fix/landing-pin-05-position`, `design/multiver
 
 If your session starts on a branch named for you (for example `claude/epic-meitner-blh8tb`), create the conventional branch from it before your first commit and push that instead. If the environment won't let you push to it, keep the assigned branch, give the PR a title in the form `type: what changes`, and tell the user the conventional name so they can rename the branch on GitHub.
 
+## Long-lived branch: rules engine (Feature 68)
+
+Work on the Lorcana rules engine (rules assist, bot opponent, turn explorer, the vendored `tcg-engines` build and its worker, `docs/RSC-lorcana-engine.md`) lives on **`feat/68-rules-engine`**. It is experimental and is not merged into `main` until the owner says it ships.
+
+- Start from it: `git fetch origin feat/68-rules-engine && git checkout feat/68-rules-engine`. Commit and push to it directly. Parallel sessions use `claude/feat-68-<slug>` cut from it and merge back into it. Never open a PR from it, or from its sub-branches, into `main`.
+- Keep it current: merge `main` into it (no rebase, no force-push) when `main` has moved.
+- No version bumps or landing-page refreshes on it. Those happen when it ships.
+- Record progress in the phase table of `docs/RSC-lorcana-engine.md` (§9) and its spike log (§12).
+
 ## Keeping a dev guide
 - Whenever the user asks to `update the dev guide`, add a concise distillation of the session as a section in `docs/personal_dojo_dev_guide.md`.

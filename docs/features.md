@@ -714,6 +714,20 @@ Duels.ink exports a deck with the printing at the end of each line, `4 Ursula - 
 - **Challenge banner (desktop):** redrawn in the top bar's tool language: a paper module (12px radius) with a coral spine and a coral **Challenge mode** label (Coral is Challenge's key colour), the text, the Forecast switch and **Done** with an `Esc` key cap. Every control is 28px tall with an 8px radius, on a grid, so they line up at any width. It was centred with `left: 50%`, so it could only grow to half the screen and squeezed its text into a column; it now centres across the whole width. Under about 1060px, Forecast and Done move under the text, on the right. Phones are unchanged (no key cap).
 - **Leaving the mulligan:** the dialog gates the board, so there was no way out. **×** at the top right, or Esc, now leaves for the home screen. The match stays saved on its mulligan; Back to match or Resume opens the dialog again.
 
+## Feature 68: Rules engine — rules assist, bot opponent, turn explorer (experimental)
+
+**Status:** experimental. Built on the long-lived branch `feat/68-rules-engine`, never merged into `main` until the owner says it ships. Plan, findings and phases: `docs/RSC-lorcana-engine.md`.
+
+### User Story
+- As a player, I want an optional rules mode where the Dojo knows what actions require (targets, lore, draws, triggered abilities) and does that bookkeeping for me, and I can switch it off to get today's sandbox back.
+- As a player, I want to play against a bot, fully or one action at a time.
+- As a player, I want the Dojo to explore different orders of play for a turn, score them, and show me the best lines in the Multiverse.
+
+### Details
+- Uses the MIT-licensed Lorcana engine from `TheCardGoat/tcg-engines`, built from a pinned commit into a vendored bundle that runs in a Web Worker. Nothing runs on Cloudflare (free plan: 10 ms CPU per request).
+- The Dojo's board stays the source of truth. The engine is a shadow rebuilt from it, and the sandbox always wins.
+- Phases: 0 spike (measure) · 1a bridge, read-only · 1b rules assist · 2 bot · 3 turn explorer.
+
 ## Feature 67: Find a session or a deck in the Library and in Pick up again (v3.21.0)
 
 ### User Story
@@ -1214,3 +1228,4 @@ The public page (`index.html`) follows Field Unit too, as `docs/DESIGN-field-uni
 - [x] Feature 66: Find a deck — search by name or card, ink filter, your decks apart from the defaults
 - [x] Feature 67: Find a session or a deck in the Library and in Pick up again
 - [x] Patch: Challenge banner on narrower screens, and a way out of the mulligan
+- [ ] Feature 68: Rules engine — rules assist, bot opponent, turn explorer (experimental, on `feat/68-rules-engine`)
