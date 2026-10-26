@@ -728,6 +728,7 @@ Duels.ink exports a deck with the printing at the end of each line, `4 Ursula - 
 - The Dojo's board stays the source of truth. The engine is a shadow rebuilt from it, and the sandbox always wins.
 - Phases: 0 spike (measure) · 1a bridge, read-only · 1b rules assist · 2 bot · 3 turn explorer.
 - **Phase 0 done (2026-10-26): go.** The engine builds into a 245 KB (gzip) worker plus 517 KB of card data. All 76 boards of the Set 14 demo round-trip losslessly. Bot turns take about 50–110 ms. Details in the spike log (`docs/RSC-lorcana-engine.md` §12).
+- **Phase 1a, first cut:** Tweaks → *Rules engine: Assist* marks the cards with legal moves (pips in their function-key colours). Each card's menu says what the rules allow, or why a card in hand can't be played. It never blocks a move. Desktop menu only, so far.
 
 ## Feature 67: Find a session or a deck in the Library and in Pick up again (v3.21.0)
 

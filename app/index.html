@@ -56,6 +56,9 @@
     <!-- Card modifiers (Feature 61): +/- stats, Challenger / Resist, and when they end -->
     <script src="js/modifiers.js"></script>
 
+    <!-- Rules engine (Feature 68, experimental): what the rules allow, from the Lorcana engine in a worker -->
+    <script src="js/rules.js"></script>
+
     <!-- Help (Features 57-58): manual search, the manual, "Show me", guided tours. app/help/ holds the content -->
     <script src="js/help-search.js"></script>
     <script src="js/help.js"></script>
@@ -1233,6 +1236,15 @@
                         title="Forecast card, striped ghost damage and outcome badges on every opponent">Full</button>
                 </div>
                 <div class="tweak-hint">Shown while dragging onto, or aiming at, an opponent.</div>
+            </div>
+            <div class="tweak">
+                <div class="tweak-label"><span>Rules engine</span></div>
+                <div class="tweak-radio" id="tweak-rules">
+                    <button data-val="off" class="is-active" title="The sandbox: you are the referee">Off</button>
+                    <button data-val="assist"
+                        title="Marks what the rules allow the player whose turn it is, and says why a card can't be played. Never blocks a move">Assist</button>
+                </div>
+                <div class="tweak-hint">Experimental. Marks legal moves; it never blocks one.</div>
             </div>
             <div class="tweak">
                 <div class="tweak-label"><span>Player palette</span></div>
@@ -6637,12 +6649,60 @@
             // Taken when the board is final, so a jump can tell an unsaved board.
             _boardSrc: null,
 
+            // Feature 68 (experimental): Tweaks → Rules engine. rulesView is what the engine
+            // allows on the board on screen (DojoRules.analyze), for the board whose sig is _rulesSig.
+            rulesOn: false,
+            rulesView: null,
+            _rulesSig: null,
+
             // The board as saved, minus where it sits in the tree.
             boardSig(state) {
                 const c = this.compressState(state, true);
                 delete c.activeBookmarkId;
                 delete c.activeTimelineColor;
                 return JSON.stringify(c);
+            },
+
+            // Feature 68: when the board changes, drop the old reading and ask the engine again.
+            // Read-only: cards get marks and the menu says why; nothing is blocked.
+            rulesRefresh() {
+                if (!this.rulesOn || !this.state || !this.state.players || this.state.mulliganPending) {
+                    this.rulesView = null;
+                    this._rulesSig = null;
+                    return;
+                }
+                const sig = this.boardSig(this.state);
+                if (sig === this._rulesSig) return;
+                this._rulesSig = sig;
+                this.rulesView = null;
+                DojoRules.analyze(this.state, id => this.snOf(id)).then(view => {
+                    if (this._rulesSig !== sig || !this.rulesOn) return;
+                    this.rulesView = view;
+                    this.render();
+                }).catch(e => {
+                    console.warn('Rules engine:', e);
+                    if (this._rulesSig === sig) this.rulesView = { error: String(e && e.message || e), byIid: {}, moves: [] };
+                });
+            },
+
+            // A card's printing as the engine names it, "<setCode>-<number>".
+            snOf(cardId) {
+                const c = this.cardDB[cardId];
+                return c && c.setCode != null && c.number != null ? `${c.setCode}-${c.number}` : null;
+            },
+
+            // Feature 68: one small key-coloured pip per kind of legal move, under the card.
+            rulesPips(moves) {
+                const box = this.el('div', 'rules-pips');
+                const seen = new Set();
+                moves.forEach(m => {
+                    const v = DojoRules.VERBS[m];
+                    if (!v || seen.has(v.key)) return;
+                    seen.add(v.key);
+                    box.appendChild(this.el('i', `rules-pip key-${v.key}`));
+                });
+                box.title = [...new Set(moves.map(m => (DojoRules.VERBS[m] || {}).label).filter(Boolean))].join(' · ');
+                return box;
             },
 
             markBoardKept(id) {
@@ -11410,6 +11470,12 @@
                     }
                 }
                 if (opts.loc === 'hand') wrap.dataset.handIid = c.instanceId;
+                // Feature 68: what the rules engine allows this card (Tweaks → Rules engine).
+                const rv = this.rulesView && this.rulesView.byIid[c.instanceId];
+                if (rv && rv.moves.length) {
+                    wrap.classList.add('rules-legal');
+                    wrap.appendChild(this.rulesPips(rv.moves));
+                }
                 const fx = this.takeFx(c.instanceId);
                 if (fx) this.applyFx(wrap, el, fx);
 
@@ -11863,6 +11929,35 @@
                 if (dbCard && window.matchMedia && window.matchMedia('(pointer: coarse)').matches) {
                     addOption('Preview Card', () => { this.showPreview(dbCard); this.toggleSidebar(true); });
                     addDivider();
+                }
+
+                // Feature 68 (experimental): what the rules engine allows this card. Read-only.
+                if (this.rulesOn && isActivePlayerOwned) {
+                    const rv = this.rulesView && this.rulesView.byIid[instanceId];
+                    const rows = [];
+                    if (!this.rulesView) rows.push(['Checking the rules…']);
+                    else if (this.rulesView.error) rows.push(['Rules engine unavailable']);
+                    else if (!this.snOf(found.card.cardId)) rows.push(["Not in the rules engine: it's yours to resolve"]);
+                    else {
+                        (rv ? rv.moves : []).forEach(m => {
+                            const v = DojoRules.VERBS[m];
+                            if (!v) return;
+                            const n = rv.targets[m] ? rv.targets[m].length : 0;
+                            rows.push([n ? `${v.label} · ${n} ${n === 1 ? 'target' : 'targets'}` : v.label, v.key]);
+                        });
+                        if (rv && rv.why) rows.push([DojoRules.whyText(rv.why)]);
+                        if (!rows.length && (found.loc === 'hand' || found.loc === 'field')) rows.push(['Nothing it can do right now']);
+                    }
+                    if (rows.length) {
+                        addSection('Rules');
+                        rows.forEach(([text, key]) => {
+                            const row = this.el('div', 'ctx-rule' + (key ? '' : ' is-note'));
+                            if (key) row.appendChild(this.el('i', `rules-pip key-${key}`));
+                            row.appendChild(document.createTextNode(text));
+                            menu.appendChild(row);
+                        });
+                        addDivider();
+                    }
                 }
 
                 // Build menu based on location
@@ -12917,6 +13012,9 @@
                 const ap = this.state.players[this.state.activePlayer];
                 const ip = this.state.players[this.state.inactivePlayer];
 
+                // Feature 68: a changed board drops the old rules reading before the cards are built.
+                this.rulesRefresh();
+
                 // Feature 61: the modifier picker closes when its card is no longer in play.
                 if (window.Mods && Mods.isOpen()) {
                     const mf = this.findCard(this._modPickIid);
@@ -13198,6 +13296,11 @@
                 const cm = this.$('tweak-card-mode');
                 if (cm) cm.querySelectorAll('button').forEach(b => b.classList.toggle('is-active', b.dataset.val === this.cardMode));
 
+                // Feature 68 (experimental): the rules engine reads the board, or stays asleep.
+                this.rulesOn = t.rules === 'assist';
+                const ru = this.$('tweak-rules');
+                if (ru) ru.querySelectorAll('button').forEach(b => b.classList.toggle('is-active', b.dataset.val === (this.rulesOn ? 'assist' : 'off')));
+
                 // Redraw whatever is on the pane so the switch is visible immediately.
                 if (this._lastPreviewCard) this.showPreview(this._lastPreviewCard);
             },
@@ -13261,6 +13364,13 @@
                     // Card faces are built in render(); rebuild the board and the tree.
                     if (this.state && this.state.players) this.render();
                     if (this.bookmarks) this.renderTree();
+                }));
+                const ru = this.$('tweak-rules');
+                if (ru) ru.querySelectorAll('button').forEach(b => b.addEventListener('click', () => {
+                    t.rules = b.dataset.val;
+                    this.saveTweaks(t);
+                    this.applyTweaks(t);
+                    if (this.state && this.state.players) this.render();
                 }));
                 const cf = this.$('tweak-chal-forecast');
                 if (cf) cf.querySelectorAll('button').forEach(b => b.addEventListener('click', () => {

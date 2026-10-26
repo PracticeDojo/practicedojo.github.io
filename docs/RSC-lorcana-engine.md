@@ -301,7 +301,7 @@ Each phase is one or more entries in `docs/features.md` and ends in a decision.
 | Phase | Work | Gate (measured, not guessed) |
 |---|---|---|
 | **0 · Spike** (days). **Done 2026-10-26: go** (§12) | `tools/build-engine.mjs` at a pinned SHA. A worker that hydrates the Set 14 demo and lists legal moves. A bot-vs-bot game in the worker. A timing page. | Bundle gzip ≤ 600 KB and cards gzip ≤ 1.5 MB, or split by set. Cold start ≤ 1.5 s desktop and ≤ 4 s mid-range phone. `getAvailableMoves` ≤ 20 ms. A bot turn ≤ 300 ms. One search node ≤ 10 ms. The demo's hydrate → project is lossless. **If any gate fails badly, stop and rethink.** |
-| **1a · Bridge, read-only** | Card and state bridge, highlights, "why not" | The demos round-trip |
+| **1a · Bridge, read-only**. **First cut 2026-10-26** (§12) | Card and state bridge, highlights, "why not" | The demos round-trip |
 | **1b · Assist** | Execute, effects, prompts, translation, persistence | §6 done |
 | **2 · Bot** | Seats, loop, Step mode, perspective, hint | §7 done |
 | **3 · Explorer** | Search, scoring, ghost branches | §8 done |
@@ -336,6 +336,40 @@ Tiers 2 and 3 only need the read side of tier 1 (hydrate and project) plus the e
 ## 12. Spike log
 
 Measured results, newest first. The work itself lives on `feat/68-rules-engine` (AGENTS.md, *Long-lived branch*).
+
+### 2026-10-26 · Phase 1a, first cut: the engine reads the live board
+
+**On the board.** Tweaks has a new *Rules engine: Off · Assist* switch, Off by default. With Assist on, whenever the board changes (`render()` → `App.rulesRefresh()`, keyed on `boardSig`), the worker hydrates the board and lists what the player whose turn it is may do:
+- **Cards with a legal move** get a hairline ring and one round pip per kind of move. The pips use the function-key colours: Olive for quest and ink, Coral for challenge, Bone for play, sing, shift, move and abilities.
+- **The card menu** opens with a *Rules* section, read-only:
+  - each legal move, with the target count for challenge, sing, shift and move ("Challenge · 1 target");
+  - for a hand card, why it can't be played ("Needs 4 ink, 1 ready");
+  - for a card the engine doesn't know: "Not in the rules engine: it's yours to resolve".
+- **Nothing is blocked**, and the sandbox actions are unchanged. Off drops every mark, and the worker never loads.
+
+**Code**
+- `App` (`app/index.html`, "Feature 68"): `rulesOn`, `rulesView`, `rulesRefresh()`, `snOf()` and `rulesPips()`. Plus the mark in `createCardElement`, the section in `showContextMenu` and the Tweaks switch.
+- `DojoRules` (`app/js/rules.js`) starts the worker on first use and turns its places (`"1:hand:3"`) back into instance ids.
+- The worker op is `analyze`. `hydrate` now records each card's Dojo place, and seeds `G.turnMetadata.inkedThisTurn` from `state.turnActions.inked`.
+- Styles are at the end of `field-unit.css`.
+
+**Checked** (headless, Set 14 demo):
+- A first reading takes about 50 ms in the browser.
+- In Node, `analyze` over all 76 demo boards takes 18 ms on average (p95 31 ms).
+- After inking a card in the sandbox, "Ink" disappears from the rest of the hand.
+- With 1 ink ready, Elinor says "Needs 4 ink, 1 ready", while Strength of a Raging Fire can still be sung.
+- Turning Off clears it.
+- Day and night menus were shot and look right.
+- `app-checks` passes 30/30. `help.mjs --check` and `refresh-landing.mjs --check` pass.
+
+**Not yet (the rest of 1a)**
+- **Phones:** a tap opens the card drawer, which has no Rules section yet. The pips do show.
+- **Not passed to the engine yet:**
+  - modifiers (Feature 61);
+  - cards played this turn (only the ink count is passed);
+  - mid-turn bag and pending state (there is none: the Dojo has no such thing yet).
+- **Unknown cards** become cost-0 placeholders in the engine, and are left out of the results.
+- **Not done yet:** a manual article and a tour step. Write them when it ships (AGENTS.md: no landing or version work on this branch).
 
 ### 2026-10-26 · Phase 0 spike: **go**
 

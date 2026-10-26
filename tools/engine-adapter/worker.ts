@@ -8,6 +8,7 @@
 //   { turn, active: 0|1, players: [{ deck, hand, discard: Sn[], field: FieldCard[],
 //     inkwell: { sn, exerted }[], lore, inkDrops }] }   deck[0] is the top card, as in the Dojo.
 //   FieldCard = { sn, exerted, damage, drying, location: index into field | null, under: Sn[] }
+//   inkedThisTurn (optional): how many cards the player whose turn it is has inked this turn.
 import {
   createRecordCardCatalog,
   getAutomatedActionStrategyOption,
@@ -23,7 +24,7 @@ import {
 type Def = { id: string; name: string; version?: string; printings?: { setCode: string; collectorNumber: string }[] } & Record<string, unknown>;
 type FieldCard = { sn: string; exerted?: boolean; damage?: number; drying?: boolean; location?: number | null; under?: string[] };
 type BoardPlayer = { deck: string[]; hand: string[]; discard: string[]; field: FieldCard[]; inkwell: { sn: string; exerted?: boolean }[]; lore: number; inkDrops?: number };
-type Board = { turn: number; active: 0 | 1; players: [BoardPlayer, BoardPlayer] };
+type Board = { turn: number; active: 0 | 1; inkedThisTurn?: number; players: [BoardPlayer, BoardPlayer] };
 
 const PIDS = [CANONICAL_PLAYER_ONE, CANONICAL_PLAYER_TWO] as const;
 const now = () => performance.now();
@@ -162,45 +163,99 @@ function botGame(args: { deck1: string; deck2: string; seed?: string; strategy?:
 
 // Dojo board → engine. Engine instance ids are the fixture's t000001… in ingestion order
 // (deck, hand, play + each card's cardsUnder, inkwell, discard; player one then two), so they
-// can be computed up front, which is how locations are pointed at.
+// can be computed up front: that's how locations are pointed at, and how `pos` maps each engine
+// card back to its Dojo place ("<player>:<zone>:<index>"). Unknown cards get no place.
 function hydrate(board: Board, seed = "dojo-hydrate") {
   const t0 = now();
   const unknown: string[] = [];
-  const def = (sn: string) => {
-    const d = defsBySn.get(sn);
-    if (!d) unknown.push(sn);
-    return d ?? { id: `unknown:${sn}`, name: `Unknown ${sn}`, cardType: "item", cost: 0, inkable: true };
-  };
+  const pos = new Map<string, string>();
   let seq = 1;
-  const next = () => `t${String(seq++).padStart(6, "0")}`;
-  const states = board.players.map((p) => {
-    const deck = [...p.deck].reverse().map((sn) => (next(), def(sn)));
-    const hand = p.hand.map((sn) => (next(), def(sn)));
+  const at = (place: string, sn: string) => {
+    const id = `t${String(seq++).padStart(6, "0")}`;
+    const d = defsBySn.get(sn);
+    if (d) pos.set(id, place);
+    else unknown.push(sn);
+    return { id, def: d ?? { id: `unknown:${sn}`, name: `Unknown ${sn}`, cardType: "item", cost: 0, inkable: true } };
+  };
+  const inkIds: string[][] = [];
+  const states = board.players.map((p, pi) => {
+    // The engine's deck top is the end of its array; the Dojo's is index 0.
+    const deck = p.deck.map((sn, i) => [sn, i] as const).reverse().map(([sn, i]) => at(`${pi}:deck:${i}`, sn).def);
+    const hand = p.hand.map((sn, i) => at(`${pi}:hand:${i}`, sn).def);
     const fieldIds: string[] = [];
-    const play = p.field.map((c) => {
-      fieldIds.push(next());
-      const under = (c.under ?? []).map((sn) => (next(), def(sn)));
-      return { card: def(c.sn), exerted: !!c.exerted, damage: c.damage ?? 0, isDrying: !!c.drying, cardsUnder: under, _loc: c.location };
+    const play = p.field.map((c, i) => {
+      const self = at(`${pi}:field:${i}`, c.sn);
+      fieldIds.push(self.id);
+      const under = (c.under ?? []).map((sn, j) => at(`${pi}:field:${i}:under:${j}`, sn).def);
+      return { card: self.def, exerted: !!c.exerted, damage: c.damage ?? 0, isDrying: !!c.drying, cardsUnder: under, _loc: c.location };
     });
     for (const entry of play) {
       if (entry._loc != null) (entry as Record<string, unknown>).atLocation = fieldIds[entry._loc];
       delete (entry as Record<string, unknown>)._loc;
     }
-    const inkwell = p.inkwell.map((c) => (next(), { card: def(c.sn), exerted: !!c.exerted }));
-    const discard = p.discard.map((sn) => (next(), def(sn)));
+    inkIds[pi] = [];
+    const inkwell = p.inkwell.map((c, i) => {
+      const ink = at(`${pi}:inkwell:${i}`, c.sn);
+      inkIds[pi].push(ink.id);
+      return { card: ink.def, exerted: !!c.exerted };
+    });
+    const discard = p.discard.map((sn, i) => at(`${pi}:discard:${i}`, sn).def);
     return { deck, hand, play, inkwell, discard, lore: p.lore, inkDrops: p.inkDrops ?? 0 };
   });
   const match = LorcanaMultiplayerTestEngine.createWithFixture(states[0], states[1], fixtureOptions(seed, true));
-  // Whose turn it is: the fixture always starts player one on turn 1.
+  // Whose turn it is (the fixture always starts player one on turn 1), and what they've done in it.
   const server = engineOf(match);
   const state = structuredClone(server.getState()) as unknown as {
     ctx: { status: Record<string, unknown>; priority: { holder: string } };
+    G: { turnMetadata: { inkedThisTurn: string[] } };
   };
   state.ctx.status.turn = board.turn;
   state.ctx.status.turnOwnerId = PIDS[board.active];
   state.ctx.priority.holder = PIDS[board.active];
+  // The Dojo knows how many cards were inked this turn, not which: the newest ink cards.
+  const inked = Math.min(board.inkedThisTurn ?? 0, inkIds[board.active].length);
+  state.G.turnMetadata.inkedThisTurn = inked ? inkIds[board.active].slice(-inked) : [];
   match.loadState(state as never);
-  return { match, ms: now() - t0, unknown };
+  return { match, pos, ms: now() - t0, unknown };
+}
+
+const PLAYS = new Set(["playCard", "singCard", "shiftCard"]);
+const WITH_TARGETS = new Set(["challenge", "shiftCard", "singCard", "moveCharacterToLocation"]);
+
+// What the player whose turn it is may do on this board, card by card, keyed by Dojo place:
+//   { cards: { "0:hand:2": { moves: ["playCard", "putCardIntoInkwell"], targets?: { challenge: [...] },
+//     why?: <the engine's PlayCardDisabledReason> } }, moves: ["passTurn", ...] (no card needed) }
+function analyze(args: { board: Board }) {
+  const t0 = now();
+  const { match, pos, unknown } = hydrate(args.board);
+  const hydrateMs = now() - t0;
+  const client = match.asLorcanaPlayer(PIDS[args.board.active]);
+  type CardView = { moves: string[]; targets?: Record<string, string[]>; why?: unknown };
+  const cards: Record<string, CardView> = {};
+  const view = (place: string) => (cards[place] ??= { moves: [] });
+  const free: string[] = [];
+  for (const m of client.getAvailableMoves()) {
+    if (!m.selectableCardIds.length) free.push(m.moveId);
+    for (const id of m.selectableCardIds) {
+      const place = pos.get(id);
+      if (!place) continue;
+      const v = view(place);
+      v.moves.push(m.moveId);
+      if (!WITH_TARGETS.has(m.moveId)) continue;
+      const targets = client.getMoveOptions(m.moveId, id)
+        .flatMap((o) => (o.kind === "card" ? [pos.get(o.cardId)] : o.kind === "singTogether" ? o.singers.map((s) => pos.get(s.cardId)) : []))
+        .filter((x): x is string => !!x);
+      (v.targets ??= {})[m.moveId] = targets;
+    }
+  }
+  // Why each card in hand can't be played.
+  const hand = `${args.board.active}:hand:`;
+  for (const [id, place] of pos) {
+    if (!place.startsWith(hand) || cards[place]?.moves.some((m) => PLAYS.has(m))) continue;
+    const why = client.getPlayCardDisabledReason(id);
+    if (why) view(place).why = why;
+  }
+  return { ms: now() - t0, hydrateMs, unknown, cards, moves: free };
 }
 
 // Engine → Dojo board (the same shape hydrate takes).
@@ -348,7 +403,7 @@ function searchCost(args: { deck1: string; deck2: string; seed?: string; turn?: 
   };
 }
 
-const ops: Record<string, (args: never) => unknown> = { init, botGame, roundTrip, searchCost };
+const ops: Record<string, (args: never) => unknown> = { init, analyze, botGame, roundTrip, searchCost };
 (globalThis as Record<string, unknown>).DojoEngine = ops;
 
 const scope = globalThis as unknown as { WorkerGlobalScope?: unknown; onmessage: unknown; postMessage(m: unknown): void };

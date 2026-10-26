@@ -10134,3 +10134,66 @@ body:not(.ink-drops-on) .ink-drops {
         text-align: left;
     }
 }
+
+/* ----- Rules engine (Feature 68, experimental): what the rules allow -----
+   A card with a legal move gets a hairline ring and, under it, one pip per kind of move in its
+   function-key colour (Olive quest / ink, Coral challenge, Bone the rest). Never the signal,
+   and nothing looks blocked: the player is still the referee. */
+.card-wrap.rules-legal .card {
+    box-shadow: 0 0 0 1.5px var(--fu-glass-2);
+}
+
+.rules-pips {
+    position: absolute;
+    left: 50%;
+    bottom: calc(-5px * var(--badge-scale, 1));
+    transform: translateX(-50%);
+    display: flex;
+    gap: 3px;
+    z-index: 21;
+    pointer-events: none;
+}
+
+.rules-pip {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    /* Round, so a pip never reads as a checkbox (or as a key). */
+    border-radius: 50%;
+    box-shadow: 0 0 0 1px var(--fu-glass);
+    flex: none;
+}
+
+.rules-pip.key-olive {
+    background: var(--key-olive);
+}
+
+.rules-pip.key-coral {
+    background: var(--key-coral);
+}
+
+.rules-pip.key-bone {
+    background: var(--key-bone);
+}
+
+.ctx-rule {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 10px;
+    font-size: 12px;
+    color: var(--text);
+}
+
+.ctx-rule.is-note {
+    color: var(--text-dim);
+}
+
+/* Bone vanishes on the paper menu; the neutral dot takes the dim text tone there. */
+.ctx-rule .rules-pip {
+    box-shadow: none;
+}
+
+.ctx-rule .rules-pip.key-bone {
+    background: var(--text-dim);
+}
