@@ -423,13 +423,15 @@ type Act = { by: "me" | "opp"; family: string; card?: ActCard; target?: ActCard;
 
 // Score = sum of these, from the side of the player whose turn it is. Tuned by tools/engine-tune.mjs
 // (spike log, §12); `lore` sets the scale and `win` just has to dwarf the rest.
+// 2026-10-27: exposed 0.6 → 0.4, hand 0.25 → 0.11, ink 0.35 → 0.525. On 256 fresh games against the
+// bot, the tuned weights won 18 games the old ones lost, and lost 5 they won (z 2.7).
 const WEIGHTS: Weights = {
   lore: 1, // lore difference now
   potential: 0.6, // lore the characters (and locations) in play can bring next turn, mine minus theirs
   body: 0.08, // strength + willpower left (+ Resist), mine minus theirs
-  exposed: 0.6, // worth of my exerted characters an opposing character could banish next turn
-  hand: 0.25, // cards in my hand
-  ink: 0.35, // cards in my inkwell
+  exposed: 0.4, // worth of my exerted characters an opposing character could banish next turn
+  hand: 0.11, // cards in my hand
+  ink: 0.525, // cards in my inkwell
   win: 1000, // reaching the lore to win
 };
 type Weights = { lore: number; potential: number; body: number; exposed: number; hand: number; ink: number; win: number };

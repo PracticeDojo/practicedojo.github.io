@@ -337,6 +337,40 @@ Tiers 2 and 3 only need the read side of tier 1 (hydrate and project) plus the e
 
 Measured results, newest first. The work itself lives on `feat/68-rules-engine` (AGENTS.md, *Long-lived branch*).
 
+### 2026-10-27 · Proposed plays: modifiers, keywords, the bot finishes lines, tuned weights
+
+**Modifiers reach the engine.** `hydrate` turns the Dojo's card modifiers (Feature 61, now on the board shape as `mods`) into the engine's own:
+- strength, willpower and lore become `stat-modifier` continuous effects;
+- Challenger and Resist become temporary keywords (`temporaryKeywords` / `temporaryKeywordValues`, keyed `Challenger` / `Resist`; the projection reads the values back in lower case).
+- "This turn" lasts for the turn, "until my next turn" through the next one, "always" without end.
+
+Checked on a demo board: +3 strength, +2 lore, +4 willpower and Resist each move the score by the expected amount.
+
+**The score reads keywords** from the engine's projected cards, which already count modifiers and granted keywords (`unitOf`):
+- An exerted character is *exposed* only to attackers that can challenge it: an Evasive one only to Evasive or Alert attackers.
+- An attacker banishes it if its strength + Challenger − the defender's Resist ≥ its willpower left.
+- An exerted Bodyguard halves the exposure of the others.
+- Reckless and can't-quest characters bring no lore next turn. Resist counts as body.
+
+Checked: an exerted Max Goof is exposed; with Resist 9 he isn't; give the opposing Milo Challenger +9 and he is again. Vixey and White Rabbit (Evasive) are never exposed to that board.
+
+**The bot finishes each line.** After the search, the default bot plays on from the best four lines, and from the start of the turn, until it would pass. Short and finished lines both stay, and the score picks.
+- Before this, a search cut off by the clock (the tuner's 600 ms) often skipped inking and the last quests.
+- Against the bot over 64 games, the explorer went from 34% to 52% wins.
+
+**Tuning** (`tools/engine-tune.mjs`, `selfPlay` op):
+- **Set-up:** on its own turns the explorer plays its best line with the weights under test. Everything else is the default bot. The games are every pairing of the eight Set 14 default decks, from both seats.
+- **Search:** coordinate search, ×1.5 / ÷1.5, 64 games per try, at tuning-speed search (600 ms, beam 4, 6 moves a position). It took 48 min.
+- **Result:** exposed 0.6 → 0.4, hand 0.25 → 0.11, ink 0.35 → 0.525. Lore on board and body stayed. In plain terms: ink every turn, don't hoard cards, quest a little more boldly.
+- **First check** (128 fresh games): 72 → 81 wins, margin −0.3 → +2.9. That's within one standard error.
+- **Second check** (`--compare`, 256 fresh games, game by game on the same deals): 150 → 163 wins (59% → 64%), margin −0.2 → +3.0. The tuned weights won 18 games the old ones lost and lost 5 the old ones won (sign test z = 2.71). **Adopted.**
+- **Caveats:**
+  - The weights are tuned to beat this bot, which is a proxy for good advice, not the same thing.
+  - About one game in seven ends in a forced concede from upstream bot gaps, which adds noise.
+  - Tuning at 600 ms while the app searches for 2.5 s is assumed to carry over.
+
+**After all of it:** `app-checks` 30/30. On the reported board (next entry), the app proposes "Quest with Mickey Mouse ×2 · Ink Dale · Shift Pocahontas onto Pocahontas · Quest with Pocahontas" (+6 lore).
+
 ### 2026-10-27 · Fix: proposed plays named cards that weren't in the game
 
 **Reported:** on a Set 14 Princess Aggro v Rockstar Aggro board, *Suggest* proposed "Quest with Mushu" and "Challenge Angel with Mushu". Mushu was in neither deck. It also proposed "Tip the scales" and "Play Ursula", which came from Mushu's abilities.

@@ -41,7 +41,8 @@ if (!isMainThread) {
     const OUT = arg('--out', null);
     // Search settings while tuning: cheaper than the app's, so a game takes seconds.
     const SEARCH = { timeMs: 600, beam: 4, perNode: 6, ...JSON.parse(arg('--search', '{}')) };
-    const START = { lore: 1, potential: 0.6, body: 0.08, exposed: 0.6, hand: 0.25, ink: 0.35, win: 1000 };
+    // The adapter's WEIGHTS, as last tuned (2026-10-27).
+    const START = { lore: 1, potential: 0.6, body: 0.08, exposed: 0.4, hand: 0.11, ink: 0.525, win: 1000 };
     const TUNED = ['potential', 'body', 'exposed', 'hand', 'ink'];
 
     const manifest = JSON.parse(readFileSync(join(ROOT, 'app/defaults/decks/manifest.json'), 'utf8'));
