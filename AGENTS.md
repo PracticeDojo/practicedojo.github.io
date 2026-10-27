@@ -108,6 +108,7 @@ Work on the Lorcana rules engine (rules assist, bot opponent, turn explorer, the
 - Keep it current: merge `main` into it (no rebase, no force-push) when `main` has moved.
 - No version bumps or landing-page refreshes on it. Those happen when it ships.
 - Record progress in the phase table of `docs/RSC-lorcana-engine.md` (§9) and its spike log (§12).
+- Picking it up in a new session? Read `docs/HANDOVER-rules-engine.md` first: state, commands, gotchas and next steps. Keep it current when you stop.
 
 ## Keeping a dev guide
 - Whenever the user asks to `update the dev guide`, add a concise distillation of the session as a section in `docs/personal_dojo_dev_guide.md`.
