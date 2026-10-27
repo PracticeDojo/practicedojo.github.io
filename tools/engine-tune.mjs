@@ -45,7 +45,7 @@ if (!isMainThread) {
     const SEARCH = { nodes: 60, timeMs: 10000, beam: 4, perNode: 6, ...JSON.parse(arg('--search', '{}')) };
     // The adapter's WEIGHTS, as last tuned (2026-10-27), and the scoring plan's terms (study §8.1).
     const START = { lore: 1, potential: 0.6, body: 0.08, exposed: 0.4, hand: 0.11, ink: 0.525, win: 1000,
-        threat: 0.6, inkLate: 1, cost: 0, lethal: 0, race: 0, reply: 0 };
+        threat: 0.6, cost: 0, race: 0, reply: 0 };
     const TUNED = ['potential', 'body', 'exposed', 'hand', 'ink'];
 
     const manifest = JSON.parse(readFileSync(join(ROOT, 'app/defaults/decks/manifest.json'), 'utf8'));

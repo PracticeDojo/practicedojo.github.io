@@ -447,13 +447,11 @@ const WEIGHTS: Weights = {
   win: 1000, // reaching the lore to win (theirs: minus)
   // Scoring plan (study §8.1). Each is off at these values, so tools/engine-tune.mjs --compare can A/B it.
   threat: 0.6, // their lore on board (potential is mine)
-  inkLate: 1, // ink past 7 counts this much each
   cost: 0, // ink cost of the cards in play, mine minus theirs
-  lethal: 0, // their characters in play can quest to the lore to win next turn
   race: 0, // turns each side needs to the lore to win at the rate in play, theirs minus mine
   reply: 0, // 0..1: rank the top lines by the score after their next turn (board only)
 };
-type Weights = Record<"lore" | "potential" | "body" | "exposed" | "hand" | "ink" | "win" | "threat" | "inkLate" | "cost" | "lethal" | "race" | "reply", number>;
+type Weights = Record<"lore" | "potential" | "body" | "exposed" | "hand" | "ink" | "win" | "threat" | "cost" | "race" | "reply", number>;
 
 type Projected = {
   cardType?: string;
@@ -524,17 +522,14 @@ function evaluate(server: Server, me: string, opp: string, W: Weights = WEIGHTS)
   // Turns to the lore to win if only the cards in play quest; 9 stands for "not in sight".
   const turns = (p: string, r: number) => (need(p) <= 0 ? 0 : r > 0 ? Math.min(9, Math.ceil(need(p) / r)) : 9);
   const cost = (us: Unit[]) => us.reduce((n, u) => n + u.cost, 0);
-  const ink = zoneCards[`inkwell:${me}`]?.length ?? 0;
   const parts = {
     lore: W.lore * ((lore[me] ?? 0) - (lore[opp] ?? 0)),
     potential: W.potential * rate[0] - W.threat * rate[1],
     body: W.body * (body(mine) - body(theirs)),
     exposed: -W.exposed * exposed,
     hand: W.hand * (zoneCards[`hand:${me}`]?.length ?? 0),
-    ink: W.ink * (Math.min(ink, 7) + W.inkLate * Math.max(0, ink - 7)),
+    ink: W.ink * (zoneCards[`inkwell:${me}`]?.length ?? 0),
     cost: W.cost * (cost(mine) - cost(theirs)),
-    // They quest first: enough lore on their board means they win next turn unless it's gone now.
-    lethal: need(opp) > 0 && rate[1] >= need(opp) ? -W.lethal : 0,
     race: W.race * (turns(opp, rate[1]) - turns(me, rate[0])),
     win: need(me) <= 0 ? W.win : need(opp) <= 0 ? -W.win : 0,
   };
