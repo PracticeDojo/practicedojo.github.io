@@ -5,6 +5,8 @@
 //
 //   node tools/engine-tune.mjs [--games 64] [--rounds 3] [--step 1.5] [--holdout 128] [--out file.json]
 //                              [--search '{"timeMs":600}'] [--baseline]   (--baseline: only score the start)
+//   node tools/engine-tune.mjs --compare '{"ink":0.5}' [--holdout 256] [--tag check]
+//                              the start against those weights on the same fresh games, game by game
 //
 // Coordinate search: each round tries every weight ×step and ÷step, keeping a change that wins more
 // often than the best so far on the same games (same decks, seeds and seats: less noise). Then the
@@ -21,6 +23,8 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const VENDOR = join(ROOT, 'app/vendor/lorcana-engine');
 
 if (!isMainThread) {
+    // The engine logs its own rejected candidates; the report is the main thread's.
+    console.log = console.warn = console.error = () => { };
     createRequire(import.meta.url)(join(VENDOR, 'engine.worker.js'));
     globalThis.DojoEngine.init(JSON.parse(readFileSync(join(VENDOR, 'cards.json'), 'utf8')));
     parentPort.on('message', ({ id, args }) => {
@@ -76,7 +80,7 @@ if (!isMainThread) {
         const wins = ok.filter(r => r.explorerWon).length;
         const margin = ok.reduce((n, r) => n + Math.max(-20, Math.min(20, r.lore[0] - r.lore[1])), 0) / Math.max(1, ok.length);
         const concedes = ok.filter(r => /conceded/.test(r.reason || '')).length;
-        return { wins, n: ok.length, rate: wins / Math.max(1, ok.length), margin, concedes, errors: rs.length - ok.length, fitness: wins / Math.max(1, ok.length) + 0.005 * margin };
+        return { wins, n: ok.length, rate: wins / Math.max(1, ok.length), margin, concedes, errors: rs.length - ok.length, fitness: wins / Math.max(1, ok.length) + 0.005 * margin, won: rs.map(r => !r.error && r.explorerWon) };
     }
     const show = (w) => TUNED.map(k => `${k} ${+w[k].toFixed(3)}`).join(' · ');
     const res = (e) => `${e.wins}/${e.n} wins (${(100 * e.rate).toFixed(0)}%), margin ${e.margin >= 0 ? '+' : ''}${e.margin.toFixed(1)} lore${e.concedes ? `, ${e.concedes} concedes` : ''}${e.errors ? `, ${e.errors} errors` : ''}`;
@@ -87,6 +91,28 @@ if (!isMainThread) {
     say('');
     say(`Explorer (search ${JSON.stringify(SEARCH)}) against the engine's default bot. Set 14 default decks, every pairing from both seats. ${GAMES} games per try, ${ROUNDS} rounds, step ×${STEP}.`);
     say('');
+    // Game by game on the same deals: of the games one set wins and the other loses, how lopsided
+    // is the split? (Sign test on the discordant games.)
+    const paired = (a, b) => {
+        let onlyA = 0, onlyB = 0;
+        a.won.forEach((w, i) => { if (w && !b.won[i]) onlyA++; if (!w && b.won[i]) onlyB++; });
+        const n = onlyA + onlyB;
+        const z = n ? (onlyB - onlyA) / Math.sqrt(n) : 0;
+        return `Games only the start won: ${onlyA}; only the new weights won: ${onlyB}. z = ${z.toFixed(2)} (${Math.abs(z) >= 1.96 ? 'real, 95%' : 'within noise'}).`;
+    };
+    const compareArg = arg('--compare', null);
+    if (compareArg) {
+        const other = { ...START, ...JSON.parse(compareArg) };
+        const fresh = games(HOLDOUT, arg('--tag', 'check'));
+        const [a, b] = [await evaluate(START, fresh), await evaluate(other, fresh)];
+        say(`### ${show(START)} against ${show(other)}, ${HOLDOUT} fresh games each`);
+        say(`- Start: ${res(a)}`);
+        say(`- New: ${res(b)}`);
+        say(`- ${paired(a, b)}`);
+        say(`- ${((Date.now() - t0) / 60000).toFixed(1)} min in all.`);
+        await Promise.all(pool.map(w => w.terminate()));
+        process.exit(0);
+    }
     const train = games(GAMES, 'tune');
     let best = { ...START };
     let bestEval = await evaluate(best, train);
@@ -120,6 +146,7 @@ if (!isMainThread) {
     say(`- Tuned weights: ${res(b)}`);
     const se = Math.sqrt((a.rate * (1 - a.rate) + b.rate * (1 - b.rate)) / HOLDOUT);
     say(`- Difference ${(100 * (b.rate - a.rate)).toFixed(1)} points (± ${(100 * se).toFixed(1)}, one standard error). ${b.rate - a.rate > 2 * se ? 'Real.' : 'Within noise.'}`);
+    say(`- ${paired(a, b)}`);
     say(`- ${((Date.now() - t0) / 60000).toFixed(1)} min in all.`);
     if (OUT) writeFileSync(OUT, JSON.stringify({ start: START, best, history, holdout: { start: a, best: b }, report: log }, null, 1));
     await Promise.all(pool.map(w => w.terminate()));
