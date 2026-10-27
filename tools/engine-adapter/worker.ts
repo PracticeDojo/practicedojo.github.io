@@ -41,6 +41,18 @@ let defsBySn = new Map<string, Def>(); // regular printings only
 let defsByName = new Map<string, Def[]>();
 const keysOf = new WeakMap<LorcanaMultiplayerTestEngine, Map<string, string>>(); // engine id → the key it was hydrated from
 
+// The engine caches its static-effect registry module-wide by (match id, G.staticEffectsVersion), and
+// its wrapper caches legal moves by stateID. Every hydrated board and every position a search loads
+// shares those keys with others, so one would read another's registry. Each load gets a version no
+// other load can reach (moves only add a little to it) and the wrapper's move caches are cleared.
+let loads = 0;
+function freshLoad(engine: { loadState(s: never): void }, state: unknown) {
+  const s = structuredClone(state) as { G?: { staticEffectsVersion?: number } };
+  if (s.G) s.G.staticEffectsVersion = ++loads * 1_000_000;
+  engine.loadState(s as never);
+  (engine as unknown as { invalidateMoveCaches?: () => void }).invalidateMoveCaches?.();
+}
+
 const norm = (s: string) => s.toLowerCase().replace(/[’‘`]/g, "'").replace(/\s+/g, " ").trim();
 const snOf = (setCode: string, number: string) => `${setCode.replace(/^set/, "")}-${number}`;
 const regular = (d: Def, sn?: string) => (d.printings ?? []).some((p) => REGULAR.has(p.rarity ?? "") && (!sn || snOf(p.setCode, p.collectorNumber) === sn));
@@ -284,7 +296,7 @@ function hydrate(board: Board, seed = "dojo-hydrate") {
       }
     }
   }
-  match.loadState(state as never);
+  freshLoad(match, state);
   return { match, pos, unknownIds, ms: now() - t0, unknown };
 }
 
@@ -600,7 +612,7 @@ function search(server: Server, me: string, opp: string, opts: SearchOpts) {
   const beamWidth = opts.beam ?? 6;
   const perNode = opts.perNode ?? 8;
   const budget = opts.timeMs ?? 2500;
-  const load = (st: unknown) => server.loadState(structuredClone(st) as never);
+  const load = (st: unknown) => freshLoad(server, st);
   const owner = () => (server.getState() as unknown as RawState).ctx.status.turnOwnerId;
   // A turn can only end with nothing left to resolve.
   const line = (acts: Act[]): Line => {
@@ -740,7 +752,7 @@ function selfPlay(args: SearchOpts & { deck1: string; deck2: string; seed: strin
       searchMs += r.ms;
       const pick = r.best[0];
       if (args.trace) trace.push({ turn: searched, lore: [server.getLore(me), server.getLore(opp)], positions: r.positions, outOfTime: r.outOfTime, score: pick?.score, acts: pick?.acts.map((a) => `${a.by === "opp" ? "opp:" : ""}${a.family}:${a.card?.name ?? a.ability ?? ""}${a.target ? ">" + a.target.name : ""}`) });
-      if (pick) match.loadState(pick.state as never);
+      if (pick) freshLoad(match, pick.state);
       continue;
     }
     if (myTurn && !server.getBagCount() && !server.getPendingEffects().length && server.passTurn(me).success) continue;
@@ -807,7 +819,7 @@ function searchCost(args: { deck1: string; deck2: string; seed?: string; turn?: 
     const samples = Math.min(args.samples ?? 40, first.candidates.length);
     for (let i = 0; i < samples; i++) {
       let t = now();
-      server.loadState(structuredClone(snapshot) as never);
+      freshLoad(server, snapshot);
       restore.push(now() - t);
       t = now();
       applyCandidate(server, first.actorId as string, first.candidates[i]);
