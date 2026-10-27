@@ -63,7 +63,7 @@
 
         if (opts.roundTrip !== false) {
             const db = await (await fetch(CARD_DB)).json();
-            const sn = new Map(db.cards.map(c => [c.id, c.setCode != null && c.number != null ? `${c.setCode}-${c.number}` : null]));
+            const sn = new Map(db.cards.map(c => [c.id, `${c.setCode != null && c.number != null ? `${c.setCode}-${c.number}` : ''}|${c.fullName}`]));
             const demo = await gunzipJson('../defaults/demos/set14_example2.dojo.json.gz');
             const boards = [demo.data.currentState, ...demo.data.bookmarks.map(b => JSON.parse(b.state))];
             const rt = { boards: boards.length, lossless: 0, hydrate: [], moves: [] };

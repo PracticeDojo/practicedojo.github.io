@@ -6691,7 +6691,7 @@
                 if (sig === this._rulesSig) return;
                 this._rulesSig = sig;
                 this.rulesView = null;
-                DojoRules.analyze(this.state, id => this.snOf(id)).then(view => {
+                DojoRules.analyze(this.state, id => this.cardKey(id)).then(view => {
                     if (this._rulesSig !== sig || !this.rulesOn) return;
                     this.rulesView = view;
                     this.render();
@@ -6701,10 +6701,12 @@
                 });
             },
 
-            // A card's printing as the engine names it, "<setCode>-<number>".
-            snOf(cardId) {
+            // How the rules engine is told which card this is: "<setCode>-<number>|<full name>". The name
+            // decides (the engine's promo printings reuse main-set numbers); the number is the fallback.
+            cardKey(cardId) {
                 const c = this.cardDB[cardId];
-                return c && c.setCode != null && c.number != null ? `${c.setCode}-${c.number}` : null;
+                if (!c || !c.fullName) return null;
+                return `${c.setCode != null && c.number != null ? `${c.setCode}-${c.number}` : ''}|${c.fullName}`;
             },
 
             // Feature 68: one small key-coloured pip per kind of legal move, under the card.
@@ -6734,7 +6736,7 @@
                 this.$('rules-plays').hidden = false;
                 this.renderPlays();
                 try {
-                    const r = await DojoRules.explore(this.state, id => this.snOf(id), { timeMs: this.isPhoneUI() ? 1200 : 2500 });
+                    const r = await DojoRules.explore(this.state, id => this.cardKey(id), { timeMs: this.isPhoneUI() ? 1200 : 2500 });
                     if (this._plays && this._plays.sig === sig) this._plays.result = r;
                 } catch (e) {
                     console.warn('Proposed plays:', e);
@@ -12101,7 +12103,7 @@
                     const rows = [];
                     if (!this.rulesView) rows.push(['Checking the rules…']);
                     else if (this.rulesView.error) rows.push(['Rules engine unavailable']);
-                    else if (!this.snOf(found.card.cardId)) rows.push(["Not in the rules engine: it's yours to resolve"]);
+                    else if (!this.cardKey(found.card.cardId)) rows.push(["Not in the rules engine: it's yours to resolve"]);
                     else {
                         (rv ? rv.moves : []).forEach(m => {
                             const v = DojoRules.VERBS[m];

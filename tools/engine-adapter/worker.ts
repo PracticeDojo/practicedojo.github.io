@@ -4,7 +4,7 @@
 // Runs as a classic Web Worker (messages {id, op, args} → {id, ok, result | error}) and, in Node or
 // on a page, as a plain script that sets globalThis.DojoEngine to the same ops.
 //
-// Board shape the ops take and return (Dojo-shaped, cards named by "<setCode>-<number>"):
+// Board shape the ops take and return (Dojo-shaped, cards named by their key, "<setCode>-<number>|<full name>"):
 //   { turn, active: 0|1, players: [{ deck, hand, discard: Sn[], field: FieldCard[],
 //     inkwell: { sn, exerted }[], lore, inkDrops }] }   deck[0] is the top card, as in the Dojo.
 //   FieldCard = { sn, exerted, damage, drying, location: index into field | null, under: Sn[], mods }
@@ -22,7 +22,7 @@ import {
   LorcanaMultiplayerTestEngine,
 } from "@tcg/lorcana-engine/testing";
 
-type Def = { id: string; name: string; version?: string; printings?: { setCode: string; collectorNumber: string }[] } & Record<string, unknown>;
+type Def = { id: string; name: string; version?: string; printings?: { setCode: string; collectorNumber: string; rarity?: string }[] } & Record<string, unknown>;
 type Mod = { stat: "strength" | "willpower" | "lore" | "challenger" | "resist"; value: number; until: "turn" | "next" | "always" };
 type FieldCard = { sn: string; exerted?: boolean; damage?: number; drying?: boolean; location?: number | null; under?: string[]; mods?: Mod[] };
 type BoardPlayer = { deck: string[]; hand: string[]; discard: string[]; field: FieldCard[]; inkwell: { sn: string; exerted?: boolean }[]; lore: number; inkDrops?: number };
@@ -31,28 +31,55 @@ type Board = { turn: number; active: 0 | 1; inkedThisTurn?: number; players: [Bo
 const PIDS = [CANONICAL_PLAYER_ONE, CANONICAL_PLAYER_TWO] as const;
 const now = () => performance.now();
 
-let defsBySn = new Map<string, Def>();
-let snByDefId = new Map<string, string>();
-let defsByName = new Map<string, Def>();
+// A card is named by a key, "<setCode>-<number>|<full name>" (the Dojo builds it from LorcanaJSON).
+// The name decides: in the engine's data, promo, special and challenge printings reuse main-set
+// numbers ("13-12" is Pocahontas, a special Mushu and a promo Tigger), so a number alone can name
+// another card. The number only picks among entries with that name, and is the fallback, among
+// regular printings, when the name doesn't match.
+const REGULAR = new Set(["common", "uncommon", "rare", "super_rare", "legendary", "epic", "enchanted", "iconic"]);
+let defsBySn = new Map<string, Def>(); // regular printings only
+let defsByName = new Map<string, Def[]>();
+const keysOf = new WeakMap<LorcanaMultiplayerTestEngine, Map<string, string>>(); // engine id → the key it was hydrated from
 
 const norm = (s: string) => s.toLowerCase().replace(/[’‘`]/g, "'").replace(/\s+/g, " ").trim();
 const snOf = (setCode: string, number: string) => `${setCode.replace(/^set/, "")}-${number}`;
+const regular = (d: Def, sn?: string) => (d.printings ?? []).some((p) => REGULAR.has(p.rarity ?? "") && (!sn || snOf(p.setCode, p.collectorNumber) === sn));
 
 function init(cards: Def[]) {
   const t = now();
   defsBySn = new Map();
-  snByDefId = new Map();
   defsByName = new Map();
   for (const card of cards) {
     for (const p of card.printings ?? []) {
       const sn = snOf(p.setCode, p.collectorNumber);
-      if (!defsBySn.has(sn)) defsBySn.set(sn, card);
-      if (!snByDefId.has(card.id)) snByDefId.set(card.id, sn);
+      if (REGULAR.has(p.rarity ?? "") && !defsBySn.has(sn)) defsBySn.set(sn, card);
     }
     const full = norm(card.version ? `${card.name} - ${card.version}` : card.name);
-    if (!defsByName.has(full)) defsByName.set(full, card);
+    const list = defsByName.get(full);
+    if (list) list.push(card);
+    else defsByName.set(full, [card]);
   }
   return { cards: cards.length, printings: defsBySn.size, ms: now() - t };
+}
+
+function byName(name: string, sn?: string): Def | undefined {
+  const named = defsByName.get(norm(name));
+  if (!named) return undefined;
+  return named.find((d) => regular(d, sn)) ?? named.find((d) => regular(d)) ?? named[0];
+}
+
+function defOf(key: string): Def | undefined {
+  const bar = key.indexOf("|");
+  const sn = bar < 0 ? key : key.slice(0, bar);
+  return (bar < 0 ? undefined : byName(key.slice(bar + 1), sn)) ?? defsBySn.get(sn);
+}
+
+// Which engine card each key resolves to (for checks): full names, or null.
+function names(keys: string[]) {
+  return keys.map((k) => {
+    const d = defOf(k);
+    return d ? (d.version ? `${d.name} - ${d.version}` : d.name) : null;
+  });
 }
 
 // "4 Higgins - Undercover Officer" → 4 × that definition. shortcut: exact "Name - Version" only;
@@ -63,7 +90,7 @@ function resolveDeck(text: string) {
   for (const line of text.split(/\r?\n/)) {
     const m = line.trim().match(/^(\d+)\s+(.+?)(?:\s+\([\w-]+\))?$/);
     if (!m) continue;
-    const def = defsByName.get(norm(m[2]));
+    const def = byName(m[2]);
     if (!def) missing.push(m[2]);
     else for (let i = 0; i < Number(m[1]); i++) cards.push(def);
   }
@@ -173,11 +200,13 @@ function hydrate(board: Board, seed = "dojo-hydrate") {
   const unknown: string[] = [];
   const unknownIds = new Set<string>();
   const pos = new Map<string, string>();
+  const keys = new Map<string, string>();
   let seq = 1;
   const at = (place: string, sn: string) => {
     const id = `t${String(seq++).padStart(6, "0")}`;
-    const d = defsBySn.get(sn);
+    const d = defOf(sn);
     pos.set(id, place);
+    keys.set(id, sn);
     if (!d) {
       unknown.push(sn);
       unknownIds.add(id);
@@ -212,6 +241,7 @@ function hydrate(board: Board, seed = "dojo-hydrate") {
     return { deck, hand, play, inkwell, discard, lore: p.lore, inkDrops: p.inkDrops ?? 0 };
   });
   const match = LorcanaMultiplayerTestEngine.createWithFixture(states[0], states[1], fixtureOptions(seed, true));
+  keysOf.set(match, keys);
   // Whose turn it is (the fixture always starts player one on turn 1), and what they've done in it.
   const server = engineOf(match);
   const state = structuredClone(server.getState()) as unknown as {
@@ -305,10 +335,8 @@ function project(match: LorcanaMultiplayerTestEngine): Board {
     G: { lore: Record<string, number>; inkDrops: Record<string, number> };
   };
   const { zoneCards, cardMeta } = state.ctx.zones.private;
-  const snOfInstance = (id: string) => {
-    const defId = match.getCardDefinitionId(id) ?? "";
-    return snByDefId.get(defId) ?? defId.replace(/^unknown:/, "");
-  };
+  const keys = keysOf.get(match);
+  const snOfInstance = (id: string) => keys?.get(id) ?? match.getCardDefinitionId(id) ?? "";
   const players = PIDS.map((pid) => {
     const zone = (z: string) => zoneCards[`${z}:${pid}`] ?? [];
     const playIds = zone("play");
@@ -804,7 +832,7 @@ function searchCost(args: { deck1: string; deck2: string; seed?: string; turn?: 
   };
 }
 
-const ops: Record<string, (args: never) => unknown> = { init, analyze, explore, selfPlay, botGame, roundTrip, searchCost };
+const ops: Record<string, (args: never) => unknown> = { init, names, analyze, explore, selfPlay, botGame, roundTrip, searchCost };
 (globalThis as Record<string, unknown>).DojoEngine = ops;
 
 const scope = globalThis as unknown as { WorkerGlobalScope?: unknown; onmessage: unknown; postMessage(m: unknown): void };

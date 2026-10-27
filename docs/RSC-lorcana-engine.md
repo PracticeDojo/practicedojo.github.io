@@ -160,7 +160,7 @@ app/index.html (App)                         app/js/rules.js  (DojoRules, one gl
 
 ### 5.2 Card ID bridge
 
-`dojo cardId (LorcanaJSON) → App.cardDB[id] → "<setCode>-<number>" → engine printing "set<N>"/"<number>" → engine definition id`
+`dojo cardId (LorcanaJSON) → App.cardDB[id] → key "<setCode>-<number>|<full name>" → engine definition with that name (the number picks among same-named entries, and is the fallback)`. *Corrected 2026-10-27: by number alone it named the wrong card; promo printings reuse main-set numbers in the engine data (§12).*
 
 - The map is built once in the worker from the catalogue's `printings[]`. Enchanted and promo cards already resolve to their standard printing in the Dojo (guide §7.4).
 - `-999` (unknown) cards become placeholders: the fixture accepts counts for hidden zones. Unknown cards in play can't be automated and are flagged.
@@ -336,6 +336,25 @@ Tiers 2 and 3 only need the read side of tier 1 (hydrate and project) plus the e
 ## 12. Spike log
 
 Measured results, newest first. The work itself lives on `feat/68-rules-engine` (AGENTS.md, *Long-lived branch*).
+
+### 2026-10-27 · Fix: proposed plays named cards that weren't in the game
+
+**Reported:** on a Set 14 Princess Aggro v Rockstar Aggro board, *Suggest* proposed "Quest with Mushu" and "Challenge Angel with Mushu". Mushu was in neither deck. It also proposed "Tip the scales" and "Play Ursula", which came from Mushu's abilities.
+
+**Cause: the card bridge (§5.2) matched cards by set and number alone.**
+- In the engine's card data, promo, special and challenge printings are separate entries that reuse main-set numbers. For example, `set13-12` is Pocahontas - Guiding the Tribe (rare), Mushu - Stealthy Dragon (special) and Tigger - Hunny Barbarian (promo). 160 numbers are shared like this.
+- The index kept whichever came first, so the Pocahontas on the board was hydrated as Mushu.
+- 76 out of 76 demo round trips still came back identical, because the projection turned the id back into the same number. The round trip couldn't catch a wrong card, only a lost one.
+
+**Fix: cards are named by a key, `"<setCode>-<number>|<full name>"` (`App.cardKey`).**
+- The worker's `defOf` decides by name.
+- Among engine entries with that name, it prefers a regular printing (common to legendary, epic, enchanted, iconic) with the same number. Pocahontas - Guiding the Tribe and Cinderella - Unintentional Icon are the two names whose entries differ in rules.
+- The number is only a fallback, and only among regular printings.
+- The projection hands back the key each card was hydrated from.
+
+**Checked**
+- `tools/engine-spike.mjs` now opens with a *Card bridge* check: 3,451 of 3,452 LorcanaJSON cards from sets 1–14 reach the engine card of the same name. The one left is "Has Set My Heaaaaaaart...", whose punctuation differs; it reaches the right card by its number. Matching by number alone would have got 260 wrong.
+- On the reported board, the lines now use Pocahontas ("Challenge Angel with Pocahontas", "Quest with Pocahontas"), with no Mushu, and the board round-trips identically.
 
 ### 2026-10-26 · Tier 3, first cut: proposed plays
 

@@ -40,7 +40,8 @@ if (!existsSync(dbFile)) {
     execFileSync('curl', ['-sSfL', '-o', dbFile, CARD_DB_URL]);
 }
 const db = JSON.parse(readFileSync(dbFile, 'utf8'));
-const snById = new Map(db.cards.map(c => [c.id, c.setCode != null && c.number != null ? `${c.setCode}-${c.number}` : null]));
+// The key the app sends (App.cardKey): "<setCode>-<number>|<full name>".
+const snById = new Map(db.cards.map(c => [c.id, `${c.setCode != null && c.number != null ? `${c.setCode}-${c.number}` : ''}|${c.fullName}`]));
 const snOf = (id) => snById.get(id) || null;
 
 const fmt = (n) => (n >= 100 ? n.toFixed(0) : n >= 10 ? n.toFixed(1) : n.toFixed(2));
@@ -51,6 +52,20 @@ const log = (line = '') => out.push(line);
 log(`## Engine spike (Node ${process.version}, ${new Date().toISOString().slice(0, 10)})`);
 log();
 log(`Engine ${readFileSync(join(VENDOR, 'VERSION'), 'utf8').trim().slice(0, 9)}. Catalogue: ${init.cards} cards, ${init.printings} printings; parse + index ${fmt(initMs)} ms.`);
+
+// 0. The card bridge: every LorcanaJSON card of sets 1-14 must reach the engine card of the same
+// name, whatever the engine's promo printings share its number with.
+{
+    const norm = (t) => String(t).toLowerCase().replace(/[’‘`]/g, "'").replace(/\s+/g, ' ').trim();
+    const std = db.cards.filter(c => /^\d+$/.test(String(c.setCode)) && +c.setCode <= 14);
+    const got = E.names(std.map(c => snById.get(c.id)));
+    const wrong = std.filter((c, i) => got[i] === null || norm(got[i]) !== norm(c.fullName));
+    log();
+    log('### Card bridge');
+    log();
+    log(`- ${std.length - wrong.length} of ${std.length} LorcanaJSON cards (sets 1-14) reach the engine card of the same name.`);
+    wrong.slice(0, 10).forEach((c, i) => log(`  - ${c.setCode}-${c.number} ${c.fullName} → ${got[std.indexOf(c)] ?? 'not found'}`));
+}
 
 // 1. Bot games.
 const manifest = JSON.parse(readFileSync(join(ROOT, 'app/defaults/decks/manifest.json'), 'utf8'));

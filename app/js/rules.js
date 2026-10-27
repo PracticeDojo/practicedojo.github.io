@@ -2,18 +2,19 @@
 //
 // It knows the Dojo's state but nothing about the board's DOM. The engine runs in a Web Worker
 // (app/vendor/lorcana-engine/engine.worker.js, built by tools/build-engine.mjs), started on first use.
-//   analyze(state, snOf)          → Promise of what the player whose turn it is may do:
+//   analyze(state, keyOf)         → Promise of what the player whose turn it is may do:
 //                                   { byIid: { [instanceId]: { moves, targets: { move: [instanceId] }, why } },
 //                                     moves: [moves that need no card], unknown: [cards the engine lacks], ms }
-//                                   snOf(cardId) gives a card's "<setCode>-<number>", or null.
-//   explore(state, snOf, opts)    → Promise of proposed plays for the rest of the turn:
+//                                   keyOf(cardId) names a card for the engine, "<setCode>-<number>|<full name>",
+//                                   or null (App.cardKey).
+//   explore(state, keyOf, opts)    → Promise of proposed plays for the rest of the turn:
 //                                   { lines: [{ score, delta, parts, acts, state }], ms, nodes, outOfTime }
 //                                   Each line's `state` is the Dojo state it ends on. opts go to the
 //                                   worker's search (beam, perNode, depth, timeMs, lines).
 //   actText(act)                  one step of a line as a sentence.
 //   VERBS[move]                   { label, key } for a move id (key: the function-key colour it wears).
 //   whyText(reason)               the engine's reason a card can't be played, as a sentence.
-//   boardFromState(state, snOf)   a Dojo state (full or compressed) → the worker's board shape.
+//   boardFromState(state, keyOf)   a Dojo state (full or compressed) → the worker's board shape.
 //   start(workerUrl), call(op, args)  the worker client underneath.
 window.DojoRules = (function () {
     'use strict';
@@ -49,8 +50,8 @@ window.DojoRules = (function () {
         }
     }
 
-    function boardFromState(state, snOf) {
-        const sn = (card) => (card && snOf(card.cardId)) || UNKNOWN;
+    function boardFromState(state, keyOf) {
+        const sn = (card) => (card && keyOf(card.cardId)) || UNKNOWN;
         return {
             turn: state.turn,
             active: state.activePlayer === 1 ? 1 : 0,
@@ -211,9 +212,9 @@ window.DojoRules = (function () {
         return ready;
     }
 
-    async function analyze(state, snOf) {
+    async function analyze(state, keyOf) {
         await engine();
-        const r = await call('analyze', { board: boardFromState(state, snOf) });
+        const r = await call('analyze', { board: boardFromState(state, keyOf) });
         const ids = placesOf(state);
         const byIid = {};
         for (const [place, v] of Object.entries(r.cards)) {
@@ -226,9 +227,9 @@ window.DojoRules = (function () {
         return { byIid, moves: r.moves, unknown: r.unknown, ms: r.ms };
     }
 
-    async function explore(state, snOf, opts = {}) {
+    async function explore(state, keyOf, opts = {}) {
         await engine();
-        const r = await call('explore', { board: boardFromState(state, snOf), ...opts });
+        const r = await call('explore', { board: boardFromState(state, keyOf), ...opts });
         // Each step's cards also get their Dojo instanceId (iid), as they were before the line.
         const place = placesOf(state);
         const iid = (c) => (c ? Object.assign(c, { iid: place[r.ids[c.id]] || null }) : c);
