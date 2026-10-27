@@ -292,6 +292,51 @@ The bot doesn't search, so this tier is **ours**. It's built on two things the e
 
 **Done when:** on 10 saved positions from the demos, the explorer finds the line a strong player picked within its top three, in under 3 s on a desktop.
 
+### 8.1 Scoring plan (2026-10-27)
+
+Where the score goes next. It takes the principles of *Mastering Competitive Lorcana* (DarkWings | Chupa, Metafy), a guide the owner shared, and asks of each: does the score already see it, and if not, what term would? The guide's ideas are paraphrased here; the guide isn't copied into the repo. Results are in §12.
+
+**The terms we have, checked against the guide**
+
+| Term (weight) | Guide principle | Verdict |
+|---|---|---|
+| lore (1) | Lore is the only way to win. | Keep; it sets the scale. But it's linear: 2 lore at 4–4 counts the same as at 18–17. → *lethal*, *race*. |
+| lore on board (0.6) | Pressure: what my board will quest for. Threat assessment: what theirs will. | One weight for both sides, but a defender's denied lore can be worth more than lore gained. → *threat* for theirs. |
+| board (0.08) | Card value: a character is worth what it does before it's answered. | Keep. Stats only, so a cheap answer to an expensive card looks even. → *cost*. |
+| exposed (0.4) | Trading: don't hand them free trades. | Keep. It guesses their challenges: any attacker that could banish counts, once for every target. → *reply* asks their bot instead. |
+| hand (0.11) | Card advantage: usable cards. | Keep. Only my hand counts; theirs rarely changes in my turn. Hand quality later. |
+| ink (0.525) | Resource management: ink early, but a card inked is a card lost. | Linear forever. Past the top of the curve, more ink is a card lost for little. → *inkLate*. |
+| win (1000) | — | Keep. Now also −1000 when they reach the lore to win (only possible with *reply*). |
+
+**New terms.** Each is a weight in `WEIGHTS`; at its "off" value the score is exactly as before.
+
+| Term | Off | Guide principle | What it does |
+|---|---|---|---|
+| reply | 0 | "If I play this, what does my opponent have to do next?" Threat assessment; the board after the trade. | For the best 6 distinct lines (and ending the turn now), the engine's bot plays their next turn with the cards they have in play: quests, challenges, abilities, moves. Never their hand, which the player can't see. The line is scored again after it, without *exposed* (their challenges have happened). 0 = off, 1 = the score after their turn. About 0.3 s more per search. |
+| lethal | 0 | The race: "am I winning, or do I need to slow it down?" One character can be all that stands between them and 20. | Minus `lethal` when their lore on board reaches the lore they still need: they quest first, so they win next turn unless it's dealt with now. |
+| race | 0 | Role: aggressor or defender, set by who wins if nothing changes. | Turns each side needs to the lore to win at the rate in play (capped at 9), theirs minus mine. |
+| threat | 0.6 | Defender: lore you deny can matter more than lore you gain. | Their lore on board gets its own weight. |
+| cost | 0 | Tempo and trades: what each side invested; a cheap answer to an expensive threat. | Ink cost of the cards in play, mine minus theirs. It counts items and locations, which *board* misses. |
+| inkLate | 1 | Resource management: don't ink what you'll miss. | Ink past 7 counts × `inkLate`. |
+
+**Later, if these leave room**
+- **Exposure by matching** (handover): each of their characters challenges once, and trades count. Only if *reply* loses, since it covers the same ground.
+- **Ahead or behind** (the guide's risk chapter): protect a lead (more weight on *exposed*), take risks when behind (less). Needs *race* to tell which.
+- **Threat by role:** the bot's deck profiles tag some cards `mustAnswerThreat`, `drawEngine` or `tempoThreat` (`automation/deck-profile.ts`). Their cards with those tags could count more. The tags are hand-curated, for a few dozen cards.
+- **Hand quality:** cards castable next turn count more; their hand counts too (discard).
+- **Hidden information:** the chance they hold removal ("play around it").
+
+**Not the score's job**
+- **Sequencing** (draw before you ink, plan the whole turn first) belongs to the search. The beam already tries orders, and merged positions make the order free. The steps could list inking last when it doesn't matter.
+- **Mulligans** are the bot's; the Dojo doesn't propose them.
+
+**How each change is kept or dropped**
+- The tuner now ends a search at a node cap (60, about what 600 ms covered) instead of the clock, so the same weights replay the same games. Before, two runs of the same weights disagreed on about 1 game in 16; now they agree on all. A game one side wins and the other loses is then down to the change.
+- `--compare` takes a list and plays the start once. **Screening:** each change alone against today's weights, on the same 256 fresh games.
+- **Keep** a change when the sign test on the games only one side won gives z ≥ 1.96 and the lore margin doesn't drop. Between 1 and 1.96, play 256 more on another tag and pool them. Otherwise drop it and take its code out.
+- Then the kept changes together against today's weights, on another fresh tag. Then re-run the coordinate search over all the weights (handover, next steps).
+- The caveats of §12 stay. This measures beating the engine's bot, which stands in for good advice. *Reply* uses that same bot as the opponent model, so it may look better in tuning than against people.
+
 ---
 
 ## 9. Roadmap

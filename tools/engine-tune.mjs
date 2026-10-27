@@ -6,7 +6,8 @@
 //   node tools/engine-tune.mjs [--games 64] [--rounds 3] [--step 1.5] [--holdout 128] [--out file.json]
 //                              [--search '{"timeMs":600}'] [--baseline]   (--baseline: only score the start)
 //   node tools/engine-tune.mjs --compare '{"ink":0.5}' [--holdout 256] [--tag check]
-//                              the start against those weights on the same fresh games, game by game
+//                              the start against those weights on the same fresh games, game by game;
+//                              a list ('[{"ink":0.5},{"hand":0.2}]') compares each against the start
 //
 // Coordinate search: each round tries every weight ×step and ÷step, keeping a change that wins more
 // often than the best so far on the same games (same decks, seeds and seats: less noise). Then the
@@ -39,10 +40,12 @@ if (!isMainThread) {
     const STEP = Number(arg('--step', 1.5));
     const HOLDOUT = Number(arg('--holdout', 128));
     const OUT = arg('--out', null);
-    // Search settings while tuning: cheaper than the app's, so a game takes seconds.
-    const SEARCH = { timeMs: 600, beam: 4, perNode: 6, ...JSON.parse(arg('--search', '{}')) };
-    // The adapter's WEIGHTS, as last tuned (2026-10-27).
-    const START = { lore: 1, potential: 0.6, body: 0.08, exposed: 0.4, hand: 0.11, ink: 0.525, win: 1000 };
+    // Search settings while tuning: cheaper than the app's, so a game takes seconds. A node cap, not the
+    // clock, ends a search (about what 600 ms covers), so the same weights replay the same game.
+    const SEARCH = { nodes: 60, timeMs: 10000, beam: 4, perNode: 6, ...JSON.parse(arg('--search', '{}')) };
+    // The adapter's WEIGHTS, as last tuned (2026-10-27), and the scoring plan's terms (study §8.1).
+    const START = { lore: 1, potential: 0.6, body: 0.08, exposed: 0.4, hand: 0.11, ink: 0.525, win: 1000,
+        threat: 0.6, inkLate: 1, cost: 0, lethal: 0, race: 0, reply: 0 };
     const TUNED = ['potential', 'body', 'exposed', 'hand', 'ink'];
 
     const manifest = JSON.parse(readFileSync(join(ROOT, 'app/defaults/decks/manifest.json'), 'utf8'));
@@ -83,7 +86,7 @@ if (!isMainThread) {
         const concedes = ok.filter(r => /conceded/.test(r.reason || '')).length;
         return { wins, n: ok.length, rate: wins / Math.max(1, ok.length), margin, concedes, errors: rs.length - ok.length, fitness: wins / Math.max(1, ok.length) + 0.005 * margin, won: rs.map(r => !r.error && r.explorerWon) };
     }
-    const show = (w) => TUNED.map(k => `${k} ${+w[k].toFixed(3)}`).join(' · ');
+    const show = (w) => Object.keys(w).filter(k => k !== 'lore' && k !== 'win').map(k => `${k} ${+w[k].toFixed(3)}`).join(' · ');
     const res = (e) => `${e.wins}/${e.n} wins (${(100 * e.rate).toFixed(0)}%), margin ${e.margin >= 0 ? '+' : ''}${e.margin.toFixed(1)} lore${e.concedes ? `, ${e.concedes} concedes` : ''}${e.errors ? `, ${e.errors} errors` : ''}`;
     const log = [];
     const say = (s) => { log.push(s); console.log(s); };
@@ -103,13 +106,15 @@ if (!isMainThread) {
     };
     const compareArg = arg('--compare', null);
     if (compareArg) {
-        const other = { ...START, ...JSON.parse(compareArg) };
+        // One change, or a list of them, each against the start (which plays once: games replay exactly).
         const fresh = games(HOLDOUT, arg('--tag', 'check'));
-        const [a, b] = [await evaluate(START, fresh), await evaluate(other, fresh)];
-        say(`### ${show(START)} against ${show(other)}, ${HOLDOUT} fresh games each`);
+        const a = await evaluate(START, fresh);
+        say(`### Against ${show(START)}, ${HOLDOUT} fresh games each`);
         say(`- Start: ${res(a)}`);
-        say(`- New: ${res(b)}`);
-        say(`- ${paired(a, b)}`);
+        for (const change of [JSON.parse(compareArg)].flat()) {
+            const b = await evaluate({ ...START, ...change }, fresh);
+            say(`- ${JSON.stringify(change)}: ${res(b)}. ${paired(a, b)}`);
+        }
         say(`- ${((Date.now() - t0) / 60000).toFixed(1)} min in all.`);
         await Promise.all(pool.map(w => w.terminate()));
         process.exit(0);

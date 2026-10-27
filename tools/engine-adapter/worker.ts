@@ -444,15 +444,23 @@ const WEIGHTS: Weights = {
   exposed: 0.4, // worth of my exerted characters an opposing character could banish next turn
   hand: 0.11, // cards in my hand
   ink: 0.525, // cards in my inkwell
-  win: 1000, // reaching the lore to win
+  win: 1000, // reaching the lore to win (theirs: minus)
+  // Scoring plan (study §8.1). Each is off at these values, so tools/engine-tune.mjs --compare can A/B it.
+  threat: 0.6, // their lore on board (potential is mine)
+  inkLate: 1, // ink past 7 counts this much each
+  cost: 0, // ink cost of the cards in play, mine minus theirs
+  lethal: 0, // their characters in play can quest to the lore to win next turn
+  race: 0, // turns each side needs to the lore to win at the rate in play, theirs minus mine
+  reply: 0, // 0..1: rank the top lines by the score after their next turn (board only)
 };
-type Weights = { lore: number; potential: number; body: number; exposed: number; hand: number; ink: number; win: number };
+type Weights = Record<"lore" | "potential" | "body" | "exposed" | "hand" | "ink" | "win" | "threat" | "inkLate" | "cost" | "lethal" | "race" | "reply", number>;
 
 type Projected = {
   cardType?: string;
   strength?: number;
   willpower?: number;
   lore?: number;
+  playCost?: number;
   damage?: number;
   exerted?: boolean;
   keywords?: string[];
@@ -483,6 +491,7 @@ function unitOf(server: Server, id: string) {
     bodyguard: kw.has("Bodyguard"),
     challenger: value("challenger"),
     resist,
+    cost: c.playCost ?? 0,
     // Reckless characters can't quest; some cards can't quest or can't challenge at all.
     quests: !c.hasReckless && !c.hasQuestRestriction,
     challenges: !c.hasChallengeRestriction,
@@ -510,14 +519,24 @@ function evaluate(server: Server, me: string, opp: string, W: Weights = WEIGHTS)
     if (banished) exposed += worth(d) * (guarded && !d.bodyguard ? 0.5 : 1);
   }
   const lore = st.G.lore;
+  const need = (p: string) => (st.G.loreToWin?.[p] ?? 20) - (lore[p] ?? 0);
+  const rate = [potential(mine), potential(theirs)];
+  // Turns to the lore to win if only the cards in play quest; 9 stands for "not in sight".
+  const turns = (p: string, r: number) => (need(p) <= 0 ? 0 : r > 0 ? Math.min(9, Math.ceil(need(p) / r)) : 9);
+  const cost = (us: Unit[]) => us.reduce((n, u) => n + u.cost, 0);
+  const ink = zoneCards[`inkwell:${me}`]?.length ?? 0;
   const parts = {
     lore: W.lore * ((lore[me] ?? 0) - (lore[opp] ?? 0)),
-    potential: W.potential * (potential(mine) - potential(theirs)),
+    potential: W.potential * rate[0] - W.threat * rate[1],
     body: W.body * (body(mine) - body(theirs)),
     exposed: -W.exposed * exposed,
     hand: W.hand * (zoneCards[`hand:${me}`]?.length ?? 0),
-    ink: W.ink * (zoneCards[`inkwell:${me}`]?.length ?? 0),
-    win: (lore[me] ?? 0) >= (st.G.loreToWin?.[me] ?? 20) ? W.win : 0,
+    ink: W.ink * (Math.min(ink, 7) + W.inkLate * Math.max(0, ink - 7)),
+    cost: W.cost * (cost(mine) - cost(theirs)),
+    // They quest first: enough lore on their board means they win next turn unless it's gone now.
+    lethal: need(opp) > 0 && rate[1] >= need(opp) ? -W.lethal : 0,
+    race: W.race * (turns(opp, rate[1]) - turns(me, rate[0])),
+    win: need(me) <= 0 ? W.win : need(opp) <= 0 ? -W.win : 0,
   };
   return { score: Object.values(parts).reduce((a, b) => a + b, 0), parts };
 }
@@ -589,6 +608,22 @@ function settle(server: Server, me: string): Act[] | null {
   return acts;
 }
 
+// Their next turn on a line's end, as their bot would play it with the cards they have in play
+// (quests, challenges, abilities, moves), not their hand, which the player can't see. The score from
+// my side after it, without `exposed`: their challenges have happened.
+function replyScore(server: Server, me: string, opp: string, W: Weights) {
+  if (!server.isGameOver() && server.passTurn(me).success) {
+    for (let i = 0; i < 30 && !server.isGameOver(); i++) {
+      if ((server.getState() as unknown as RawState).ctx.status.turnOwnerId !== opp) break;
+      const en = server.enumerateAutomatedActionsForCurrentActor();
+      const c = en.actorId === opp ? en.candidates.find((x) => x.family !== "playCard" && x.family !== "putCardIntoInkwell") : en.candidates[0];
+      if (!c || !applyCandidate(server, en.actorId, c).success) break;
+    }
+  }
+  const e = evaluate(server, me, opp, W);
+  return e.score - e.parts.exposed;
+}
+
 // Where every card ends a line: engine ids per zone (decks top last), and the state of the cards in
 // play and in the inkwell.
 function endOf(st: RawState) {
@@ -602,7 +637,8 @@ function endOf(st: RawState) {
   return { lore: PIDS.map((p) => st.G.lore[p] ?? 0), inkDrops: PIDS.map((p) => st.G.inkDrops?.[p] ?? 0), zones, meta };
 }
 
-type SearchOpts = { beam?: number; perNode?: number; depth?: number; timeMs?: number; lines?: number; weights?: Partial<Weights>; finish?: boolean };
+// nodes: a cap on candidates tried, for runs that must repeat exactly (tuning); the clock still applies.
+type SearchOpts = { beam?: number; perNode?: number; depth?: number; timeMs?: number; nodes?: number; lines?: number; weights?: Partial<Weights>; finish?: boolean };
 type Line = { state: unknown; acts: Act[]; score: number; parts: Record<string, number>; quiet: boolean };
 
 // The search itself, from the position `server` is on, for `me` (whose turn it is).
@@ -637,7 +673,7 @@ function search(server: Server, me: string, opp: string, opts: SearchOpts) {
       let inks = 0;
       const picks = en.candidates.filter((c) => c.family !== "putCardIntoInkwell" || ++inks <= 2).slice(0, perNode);
       for (const c of picks) {
-        if (now() - t0 > budget) {
+        if (now() - t0 > budget || nodes >= (opts.nodes ?? Infinity)) {
           outOfTime = true;
           break;
         }
@@ -697,12 +733,23 @@ function search(server: Server, me: string, opp: string, opts: SearchOpts) {
       .join("|");
   const plans = new Set<string>();
   const best: Line[] = [];
+  const lines = opts.lines ?? 3;
   for (const l of ends.sort((a, b) => b.score - a.score)) {
-    if (best.length >= (opts.lines ?? 3)) break;
+    if (best.length >= (W.reply ? 2 * lines : lines)) break;
     const p = plan(l);
     if (plans.has(p)) continue;
     plans.add(p);
     best.push(l);
+  }
+  // Their reply re-ranks the best few (and the start, which the app scores lines against).
+  if (W.reply) {
+    for (const l of new Set([root, ...best])) {
+      load(l.state);
+      const reply = W.reply * (replyScore(server, me, opp, W) - l.score);
+      l.score += reply;
+      l.parts = { ...l.parts, reply };
+    }
+    best.sort((a, b) => b.score - a.score).splice(lines);
   }
   return { root, best, nodes, positions: seen.size, outOfTime, ms: now() - t0 };
 }
