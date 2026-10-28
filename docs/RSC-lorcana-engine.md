@@ -423,6 +423,8 @@ Lethal and inkLate changed 3 and 1 games of 256: the cases are rare in these gam
 - In plain terms: look at what their board does next turn before choosing; count the race to 20 in turns, not just lore; and lore you deny is worth half as much again as lore you gain.
 - The gains shrank from screening to fresh games (the best of many tries is partly luck). Quote the pooled fresh numbers.
 
+**Re-tuning all the weights afterwards found nothing.** The coordinate search (64 games a try, 3 rounds, 104 min) moved every weight and reached 45 of 64 on its own games, up from 38. On 256 fresh games it lost: 176 v 181 wins for the adopted weights, z −1.29. It had fitted its 64 games. The adopted weights stay. Next time, tune on more games a try, or screen single changes with `--compare` as above.
+
 **In the app**
 - Over 26 demo boards with the app's settings (2.5 s budget), a search went from 0.60 to 0.78 s on average, and from 1.55 to 1.88 s at worst. The top line changed on 3.
 - On the demo's last board, line 1 is now "Play Elinor · Quest with Vixey · Ink The Queen" (+4.0).

@@ -106,7 +106,7 @@ node tools/engine-tune.mjs --compare '[{"exposed":0.5},{"hand":0.2}]' --holdout 
 - Every board of the Set 14 demo (76) round-trips identically. All proposed lines (206–208) map back to Dojo boards.
 - Card bridge: 3,451 of 3,452 cards from sets 1–14 reach the engine card of the same name (the last differs only in punctuation and is found by number).
 - Explorer against the engine's bot: 34% before bot finishing, about 52–59% after, 64% with the tuned weights. On 256 fresh games each, tuned v starting weights: 163 v 150 wins; games only one side won, 18 v 5; z = 2.71.
-- The scoring plan (2026-10-28, tuner at 60 nodes a search): reply, race and threat took it from 65% to 70% on 512 fresh games; games only one side won, 41 v 15; z = 3.47.
+- The scoring plan (2026-10-28, tuner at 60 nodes a search): reply, race and threat took it from 65% to 70% on 512 fresh games; games only one side won, 41 v 15; z = 3.47. A full re-tune afterwards fitted its 64 games and lost on 256 fresh ones (176 v 181), so the weights stayed.
 
 ## 7. Gotchas (each cost time)
 
