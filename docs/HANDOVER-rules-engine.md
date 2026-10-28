@@ -19,8 +19,8 @@ For the next agent picking up Feature 68. Read this first, then `AGENTS.md` and 
 | Engine build | `tools/build-engine.mjs` | Sparse-clones TheCardGoat/tcg-engines at the pinned commit `6de59de` (MIT) into `$DOJO_ENGINE_CACHE` (default `<tmp>/dojo-engine-build`), installs the runtime packages, and bundles with esbuild into `app/vendor/lorcana-engine/` (`engine.worker.js` 249 KB gzip, `cards.json` 517 KB gzip, `VERSION`, `LICENSE`). `--dev` builds unminified for profiling (don't commit that). Upstream edits are in its `PATCHES` list; the build fails if one no longer applies. |
 | Worker adapter | `tools/engine-adapter/worker.ts` | Bundled into the worker. Ops: `init`, `names`, `analyze`, `explore`, `selfPlay`, `botGame`, `roundTrip`, `searchCost`. Runs as a classic Web Worker, or in Node as a plain script that sets `globalThis.DojoEngine`. |
 | Bridge | `app/js/rules.js` (`DojoRules`) | `boardFromState` turns a Dojo state into the worker's board, keyed by card. `analyze` and `explore` map places back to instance ids. `stateForLine` turns a line's end into a Dojo state; it reuses the same card objects and throws rather than lose a card. `actText` and `whyText` give the copy. Also the worker client. |
-| App hooks | `app/index.html`, search "Feature 68" | `rulesOn`, `rulesView`, `rulesRefresh()` (runs from `render()`), `cardKey()`, `rulesPips()`, `suggestPlays()`, `renderPlays()`, `playLine()`, `saveLine()`, `closePlays()`. Card marks are in `createCardElement`, the *Rules* section in `showContextMenu`, the switch in Tweaks (`#tweak-rules`), the *Suggest* key (`#btn-suggest`), and the panel (`#rules-plays`). |
-| Styles | end of `app/css/field-unit.css` | Rules marks (ring and round pips in the key colours: Olive for quest and ink, Coral for challenge, Bone for the rest), the menu rows, and the *Proposed plays* panel (a bottom sheet on phones). |
+| App hooks | `app/index.html`, search "Feature 68" | `rulesOn`, `rulesView`, `rulesRefresh()` (runs from `render()`), `cardKey()`, `rulesPips()`, `suggestPlays()`, `morePlays()`, `openPlay()`, `renderPlays()`, `playsTip()`, `setProbTab()`, `playLine()`, `saveLine()`, `closePlays()`. Card marks are in `createCardElement`, the *Rules* section in `showContextMenu`, the switch in Tweaks (`#tweak-rules`), the *Suggest* key (`#btn-suggest`), the odds column's tabs (`#prob-tab-odds`, `#prob-tab-plays`) and Plays body (`#prob-plays`), the phone sheet (`#rules-plays`) and the hover help (`#rp-tip`). `DojoRules.groupActs`, `stepText` and `lineDiff` write the steps and the "Like line 1, but …" copy (checked in `app-checks`). |
+| Styles | end of `app/css/field-unit.css` | Rules marks (ring and round pips in the key colours: Olive for quest and ink, Coral for challenge, Bone for the rest), the menu rows, the odds column's tabs, the Plays tab (a bottom sheet on phones) and its hover help. |
 | Measuring | `tools/engine-spike.mjs`, `app/lab/engine.html` | Node report: card bridge check, bot games, demo round trips, search cost. The lab page is the browser half. |
 | Tuning | `tools/engine-tune.mjs` | Plays the explorer against the engine's bot. Coordinate search over the weights, or `--compare '<weights>'` for a game-by-game check (sign test) on the same deals. Uses every core. |
 
@@ -29,7 +29,13 @@ For the next agent picking up Feature 68. Read this first, then `AGENTS.md` and 
    - cards with a legal move get a ring and pips;
    - the card menu has a *Rules* section listing the legal moves (with target counts) or why a hand card can't be played ("Needs 4 ink, 1 ready").
 2. **Tier 3, Proposed plays:**
-   - the **Suggest** key beside Quest searches the rest of the turn and shows up to 3 lines: their steps, the lore gained, the score against ending the turn now, and the two score parts that moved most;
+   - the **Suggest** key beside Quest (or the odds column's **Plays** tab) searches the rest of the turn and shows 4 lines in that tab, an accordion:
+     - a red row when ending the turn now loses (their characters in play can reach 20);
+     - line 1 open: its steps (what an ability did hangs under its move), the lore gained and the lore pair after it, the score against ending the turn now, and the three reasons that moved most;
+     - the others closed, as how they differ from line 1 ("Like line 1, but not play Don Karnage");
+     - **Show more lines** runs a wider search on demand and merges its new lines in score order;
+     - hover a card for its face (the rail's preview follows), an ability for its text, a reason or the score for what it means;
+     - on phones the same content is a bottom sheet, without the hover help;
    - **Play it** puts the line's end on the board (one Undo step; the recap, played-this-turn and log are recorded);
    - **Save as branch** adds a Multiverse node.
 

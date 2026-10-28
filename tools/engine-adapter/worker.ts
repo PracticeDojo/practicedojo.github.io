@@ -755,6 +755,7 @@ function explore(args: SearchOpts & { board: Board }) {
     positions: r.positions,
     outOfTime: r.outOfTime,
     base: { score: r.root.score, parts: r.root.parts },
+    weights: { ...WEIGHTS, ...args.weights },
     ids: Object.fromEntries(pos),
     lines: r.best.map((l) => ({ score: l.score, parts: l.parts, acts: l.acts, end: endOf(l.state as RawState) })),
   };

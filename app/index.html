@@ -1130,6 +1130,11 @@
         <aside class="prob-pane" id="prob-pane">
             <div class="prob-head">
                 <h3>Draw Odds <span class="mono dim" id="prob-deck-count"></span></h3>
+                <!-- Feature 68 (experimental): with the rules engine on, the column has two tabs -->
+                <div class="seg prob-tabs" role="group" aria-label="Draw odds or proposed plays">
+                    <button type="button" id="prob-tab-odds" aria-pressed="true" onclick="App.setProbTab('odds')">Odds <span class="prob-tab-n" id="prob-tab-odds-n"></span></button>
+                    <button type="button" id="prob-tab-plays" aria-pressed="false" onclick="App.setProbTab('plays')">Plays</button>
+                </div>
                 <button type="button" class="help-q" data-help="draw-odds" aria-label="Help: draw odds">?</button>
                 <button class="prob-toggle" id="prob-toggle" onclick="App.toggleProbPane()"
                     title="Collapse / expand draw odds">
@@ -1147,17 +1152,19 @@
                     onchange="App.onProbWindowChange(2, this.value)" title="Draw window: chance within next N draws">
             </div>
             <div class="prob-list" id="prob-list"></div>
+            <div class="prob-plays" id="prob-plays"></div>
         </aside>
     </div>
 
     <!-- Context Menu -->
     <div id="context-menu"></div>
 
-    <!-- Feature 68 (experimental): proposed plays for the rest of the turn -->
+    <!-- Feature 68 (experimental): proposed plays for the rest of the turn. On desktop they're the
+         odds column's Plays tab; on phones, where that column is hidden, this sheet. -->
+    <div id="rp-tip" class="rp-tip" hidden></div>
     <section id="rules-plays" class="rules-plays" hidden aria-labelledby="rules-plays-title">
         <div class="rp-head">
             <span class="rp-title" id="rules-plays-title">Proposed plays</span>
-            <span class="rp-meta" id="rules-plays-meta"></span>
             <button class="icon-btn" onclick="App.closePlays()" title="Close" aria-label="Close proposed plays"><i
                     class="fa-solid fa-xmark"></i></button>
         </div>
@@ -6724,83 +6731,256 @@
             },
 
             // --- Feature 68 (experimental): proposed plays ---
-            // The rules engine searches the rest of this turn (DojoRules.explore) and the best few
-            // lines show in a panel. Play it puts a line on the board as one Undo step; Save as
-            // branch keeps it in the Multiverse and leaves the board alone.
-            _plays: null, // { sig, result, error } for the board the search started from
+            // The rules engine searches the rest of this turn (DojoRules.explore). The best lines show in
+            // the odds column's Plays tab (on phones, a sheet): line 1 open, the others as how they differ
+            // from it, more on demand. Play it puts a line on the board as one Undo step; Save as branch
+            // keeps it in the Multiverse and leaves the board alone.
+            _plays: null, // { sig, result, error, open, more, showAll, refs } for the board the search started from
+            probTab: 'odds',
+            PLAYS_LINES: 4,
+
+            setProbTab(tab) {
+                this.probTab = tab;
+                const pane = this.$('prob-pane');
+                pane.classList.toggle('is-plays', tab === 'plays');
+                this.$('prob-tab-odds').setAttribute('aria-pressed', String(tab === 'odds'));
+                this.$('prob-tab-plays').setAttribute('aria-pressed', String(tab === 'plays'));
+                this.playsTip(null);
+                if (tab !== 'plays') return;
+                if (pane.classList.contains('is-collapsed')) this.toggleProbPane();
+                if (this._plays) this.renderPlays();
+                else this.suggestPlays();
+            },
+
+            playsOpts(lines) {
+                return { timeMs: this.isPhoneUI() ? 1200 : 2500, lines };
+            },
 
             async suggestPlays() {
                 if (!this.rulesOn || !this.state || !this.state.players || this.state.mulliganPending) return;
                 const sig = this.boardSig(this.state);
-                this._plays = { sig, result: null, error: null };
-                this.$('rules-plays').hidden = false;
+                const p = this._plays = { sig, result: null, error: null, open: 0 };
+                if (this.isPhoneUI()) this.$('rules-plays').hidden = false;
+                else if (this.probTab !== 'plays') this.setProbTab('plays');
                 this.renderPlays();
                 try {
-                    const r = await DojoRules.explore(this.state, id => this.cardKey(id), { timeMs: this.isPhoneUI() ? 1200 : 2500 });
-                    if (this._plays && this._plays.sig === sig) this._plays.result = r;
+                    p.result = await DojoRules.explore(this.state, id => this.cardKey(id), this.playsOpts(this.PLAYS_LINES));
                 } catch (e) {
                     console.warn('Proposed plays:', e);
-                    if (this._plays && this._plays.sig === sig) this._plays.error = String(e && e.message || e);
+                    p.error = String(e && e.message || e);
                 }
-                if (this._plays && this._plays.sig === sig) this.renderPlays();
+                if (this._plays === p) this.renderPlays();
+            },
+
+            // More lines on demand: a wider search. Its new lines join the list, which stays in score
+            // order (a wider search can find better ones), and the open line stays open.
+            async morePlays() {
+                const p = this._plays;
+                if (!p || !p.result || p.more === 'loading') return;
+                if (p.more) {
+                    p.showAll = !p.showAll;
+                    return this.renderPlays();
+                }
+                if (this.boardSig(this.state) !== p.sig) return this.renderPlays();
+                p.more = 'loading';
+                this.renderPlays();
+                try {
+                    const r = await DojoRules.explore(this.state, id => this.cardKey(id), this.playsOpts(2 * this.PLAYS_LINES));
+                    // The same plan (inking aside, in any order) is one line.
+                    const plan = (l) => DojoRules.groupActs(l.acts).filter(g => g.act.family !== 'putCardIntoInkwell').map(DojoRules.stepText).sort().join('|');
+                    const seen = new Set(p.result.lines.map(plan));
+                    const open = p.result.lines[p.open];
+                    r.lines.forEach(l => {
+                        if (seen.has(plan(l))) return;
+                        seen.add(plan(l));
+                        p.result.lines.push(l);
+                    });
+                    p.result.lines.sort((a, b) => b.delta - a.delta);
+                    p.open = p.result.lines.indexOf(open);
+                } catch (e) {
+                    console.warn('Proposed plays:', e);
+                }
+                p.more = true;
+                p.showAll = true;
+                if (this._plays === p) this.renderPlays();
+            },
+
+            openPlay(i) {
+                if (!this._plays) return;
+                this._plays.open = this._plays.open === i ? -1 : i;
+                this.renderPlays();
             },
 
             closePlays() {
                 this._plays = null;
                 this.$('rules-plays').hidden = true;
+                this.renderPlays();
             },
 
             renderPlays() {
+                const host = this.isPhoneUI() ? this.$('rules-plays-body') : this.$('prob-plays');
+                this.playsTip(null);
+                if (!host || !this.state || !this.state.players) return;
+                this.bindPlaysTips(host);
                 const p = this._plays;
-                if (!p) return;
-                const meta = this.$('rules-plays-meta');
-                const body = this.$('rules-plays-body');
                 const esc = (t) => this._esc(String(t));
-                // rulesRefresh keeps _rulesSig on the board on screen.
-                if (this._rulesSig && this._rulesSig !== p.sig) {
-                    meta.textContent = '';
-                    body.innerHTML = `<p class="rp-note">The board has changed since.</p>
-                        <button class="btn" onclick="App.suggestPlays()">Suggest again</button>`;
-                    return;
-                }
-                if (p.error) {
-                    meta.textContent = '';
-                    body.innerHTML = `<p class="rp-note">The rules engine couldn't search this board.</p>`;
-                    return;
-                }
-                if (!p.result) {
-                    meta.textContent = '';
-                    body.innerHTML = '<p class="rp-note">Trying orders of play…</p>';
-                    return;
-                }
-                const r = p.result;
-                meta.textContent = `${r.positions} positions · ${(r.ms / 1000).toFixed(1)} s${r.outOfTime ? ' · out of time' : ''}`;
                 const me = this.state.activePlayer;
+                const again = (r) => `<button class="icon-btn rp-again" onclick="App.suggestPlays()" aria-label="Search again"
+                    title="Search again${r ? ` (${r.positions} positions in ${(r.ms / 1000).toFixed(1)} s${r.outOfTime ? ', out of time' : ''})` : ''}"><i class="fa-solid fa-rotate-right"></i></button>`;
+                const meta = (r) => `<div class="rp-meta"><span class="rp-lbl">Turn ${this.state.turn} · P${me + 1} to play</span>${again(r)}</div>`;
+                const note = (t, btn) => `${meta()}<p class="rp-note">${t}</p>${btn ? `<button class="btn rp-find" onclick="App.suggestPlays()">${btn}</button>` : ''}`;
+                // rulesRefresh keeps _rulesSig on the board on screen.
+                if (!p) return void (host.innerHTML = note('The rules engine tries orders of play for the rest of this turn and proposes the best lines.', 'Find plays'));
+                if (this._rulesSig && this._rulesSig !== p.sig) return void (host.innerHTML = note('The board has changed since these lines were found.', 'Search again'));
+                if (p.error) return void (host.innerHTML = note("The rules engine couldn't search this board.", 'Try again'));
+                if (!p.result) return void (host.innerHTML = note('Trying orders of play…'));
+
+                const r = p.result;
                 const loreNow = this.state.players[me].lore;
                 const sign = (n) => (n > 0 ? '+' : n < 0 ? '−' : '±') + Math.abs(n).toFixed(1);
+                // Their win is −1000 in the score after their turn: it shows as an outcome, never in a number.
+                const theyWin = (parts) => (parts.reply || 0) < -500;
+                const part = (parts, k) => (parts[k] || 0) + (k === 'reply' && theyWin(parts) ? 1000 : 0);
+                const delta = (l) => l.delta + (theyWin(l.parts) ? 1000 : 0) - (theyWin(r.base.parts) ? 1000 : 0);
+                const refs = p.refs = [];
+                const card = (c) => (c ? `<span class="rp-card" data-tip="card" data-ref="${refs.push(c) - 1}">${esc(c.name)}</span>` : 'a card');
+                const to = (cs) => (cs && cs.length ? ` → ${cs.map(card).join(', ')}` : '');
+                const sub = (s) => `<span class="rp-sub${s.by === 'opp' ? ' is-opp' : ''}">${s.by === 'opp' ? '<span class="rp-them">Them</span>' : ''}${s.skipped ? 'Skip ' : ''}${s.ability
+                    ? `<span class="rp-ab" data-tip="ability" data-ref="${refs.push(s.card) - 1}" data-name="${esc(s.ability)}">${esc(s.ability)}</span>`
+                    : s.card ? card(s.card) : 'An effect'}${to(s.targets)}</span>`;
+                const step = ({ act: a, subs }) => {
+                    const with_ = (w) => ` <span class="rp-with">${w}</span> `;
+                    let verb, key = (DojoRules.VERBS[a.family] || { key: 'bone' }).key, what;
+                    if (a.by !== 'me') [verb, key, what] = ['Them', 'bone', sub(a)];
+                    else if (a.family === 'challenge') [verb, what] = ['Challenge', card(a.target) + with_('with') + card(a.card)];
+                    else if (a.family === 'playCard') {
+                        verb = a.via === 'shift' ? 'Shift' : a.via === 'sing' || a.via === 'singTogether' ? 'Sing' : 'Play';
+                        what = card(a.card) + (a.via === 'shift' ? with_('onto') + card(a.with[0]) : a.with && a.with.length ? with_('with') + a.with.map(card).join(', ') : '') + to(a.targets);
+                    } else if (a.family === 'moveCharacterToLocation') [verb, what] = ['Move', card(a.card) + to([a.target])];
+                    else if (a.family === 'activateAbility') [verb, what] = ['Use', card(a.card) + to(a.targets)];
+                    else [verb, what] = [(DojoRules.VERBS[a.family] || { label: 'Effect' }).label, card(a.card)];
+                    return `<li class="rp-step"><span class="rp-verb key-${key}">${verb}</span><span>${what}</span>${subs.map(sub).join('')}</li>`;
+                };
+                // The three reasons that moved most against ending the turn now; hover one for what it means.
                 const PARTS = { lore: 'lore', potential: 'lore on board', body: 'board', exposed: 'exposed', hand: 'hand', ink: 'ink', race: 'race to 20', reply: 'their turn' };
-                body.innerHTML = r.lines.map((l, i) => {
-                    const lore = l.state.players[me].lore - loreNow;
-                    const wins = l.parts.win > 0;
-                    // The two parts that moved most against doing nothing more: why this line scores.
-                    const why = Object.keys(PARTS)
-                        .map(k => [k, l.parts[k] - r.base.parts[k]])
-                        .filter(([, d]) => Math.abs(d) >= 0.05)
-                        .sort((a, b) => Math.abs(b[1]) - Math.abs(a[1])).slice(0, 2)
-                        .map(([k, d]) => `${PARTS[k]} ${sign(d)}`).join(' · ');
-                    const steps = l.acts.length
-                        ? l.acts.map(a => `<li class="${a.by === 'opp' ? 'is-opp' : ''}">${esc(DojoRules.actText(a))}</li>`).join('')
-                        : '<li class="is-opp">Nothing more: end the turn</li>';
-                    return `<div class="rp-line">
-                        <div class="rp-line-head"><span class="rp-n">Line ${i + 1}</span>
-                            <span class="rp-gain">${wins ? 'Wins' : `${lore >= 0 ? '+' : '−'}${Math.abs(lore)} lore`}</span>
-                            <span class="rp-score" title="Score against doing nothing more">${sign(l.delta)}</span></div>
-                        <ol class="rp-steps">${steps}</ol>
-                        ${why ? `<div class="rp-why">${esc(why)}</div>` : ''}
-                        <div class="rp-acts"><button class="btn" onclick="App.playLine(${i})">Play it</button>
-                            <button class="btn" onclick="App.saveLine(${i})">Save as branch</button></div>
+                const why = (l) => Object.keys(PARTS)
+                    .map(k => [k, part(l.parts, k) - part(r.base.parts, k)])
+                    .filter(([, d]) => Math.abs(d) >= 0.05)
+                    .sort((a, b) => Math.abs(b[1]) - Math.abs(a[1])).slice(0, 3)
+                    .map(([k, d]) => `<span class="rp-chip${d < 0 ? ' is-neg' : ''}" data-tip="why" data-k="${k}" data-d="${d}">${PARTS[k]} <b>${sign(d)}</b></span>`).join('');
+                const summary = (l, i) => {
+                    const diff = i ? DojoRules.lineDiff(l.acts, r.lines[0].acts) : null;
+                    return diff ? diff.map(([t, c]) => (c ? `<em>${esc(t)}</em>` : esc(t))).join('')
+                        : esc(DojoRules.groupActs(l.acts).map(DojoRules.stepText).join(' · ') || 'Nothing more: end the turn');
+                };
+                const shown = p.showAll ? r.lines : r.lines.slice(0, this.PLAYS_LINES);
+                const lines = shown.map((l, i) => {
+                    const open = i === p.open;
+                    const end = l.state.players;
+                    const gain = end[me].lore - loreNow;
+                    const steps = DojoRules.groupActs(l.acts).map(step).join('')
+                        || '<li class="rp-step"><span class="rp-verb key-bone">End</span><span>Nothing more: end the turn</span></li>';
+                    const reasons = why(l);
+                    return `<div class="rp-line${open ? ' is-open' : ''}">
+                        <button type="button" class="rp-lhead" onclick="App.openPlay(${i})" aria-expanded="${open}">
+                            <span class="rp-rank">${i + 1}</span>
+                            <span class="rp-gain">${l.parts.win > 0 ? 'Wins' : `${gain >= 0 ? '+' : '−'}${Math.abs(gain)} lore`}</span>
+                            ${theyWin(l.parts) ? '<span class="rp-flag">They win next</span>' : `<span class="rp-pair" title="Lore after this line: yours–theirs">${end[me].lore}–${end[1 - me].lore}</span>`}
+                            <span class="rp-score" data-tip="score">${sign(delta(l))}</span>
+                            <i class="fa-solid fa-chevron-${open ? 'down' : 'right'} rp-chev" aria-hidden="true"></i>
+                        </button>
+                        ${open ? `<div class="rp-lbody"><ol class="rp-steps">${steps}</ol>
+                            ${reasons ? `<div class="rp-why"><span class="rp-lbl">Why</span><span class="rp-chips">${reasons}</span></div>` : ''}
+                            <div class="rp-acts"><button class="btn" onclick="App.playLine(${i})">Play it</button>
+                                <button class="btn" onclick="App.saveLine(${i})">Save as branch</button></div></div>`
+                            : `<div class="rp-sum"><span>${summary(l, i)}</span></div>`}
                     </div>`;
-                }).join('') || '<p class="rp-note">Nothing to propose on this board.</p>';
+                }).join('');
+                const stops = shown.filter(l => !theyWin(l.parts)).length;
+                const warn = theyWin(r.base.parts) ? `<div class="rp-warn"><span><b>Ending the turn now loses:</b> their characters in play can reach 20 next turn.
+                    ${stops === shown.length ? 'Every line here stops that.' : stops ? `${stops} of these lines stop${stops === 1 ? 's' : ''} that.` : 'None of these lines stops that.'}</span></div>` : '';
+                const extra = r.lines.length - this.PLAYS_LINES;
+                const more = p.more === 'loading' ? '<button class="rp-more" disabled>Looking for more lines…</button>'
+                    : !p.more ? (r.lines.length >= this.PLAYS_LINES ? '<button class="rp-more" onclick="App.morePlays()">Show more lines</button>' : '')
+                        : extra <= 0 ? '<button class="rp-more" disabled>No other lines found</button>'
+                            : `<button class="rp-more" onclick="App.morePlays()">${p.showAll ? 'Show fewer' : `Show ${extra} more`}</button>`;
+                host.innerHTML = meta(r) + warn + (lines || '<p class="rp-note">Nothing to propose on this board.</p>') + more;
+            },
+
+            // The Dojo card behind a card in a line: by its instance (as before the line), else by name.
+            playsCardDb(c) {
+                if (!c) return null;
+                const f = c.iid && this.findCard(c.iid);
+                return (f && this.cardDB[f.card.cardId]) || this.cardDB[(c.version ? `${c.name} - ${c.version}` : c.name).toLowerCase()] || null;
+            },
+
+            bindPlaysTips(host) {
+                if (host.dataset.tips) return;
+                host.dataset.tips = '1';
+                host.addEventListener('mouseover', e => {
+                    const t = e.target.closest('[data-tip]');
+                    if (t && t !== this._tipEl) this.playsTip(t);
+                });
+                host.addEventListener('mouseout', e => {
+                    const t = e.target.closest('[data-tip]');
+                    if (t && !t.contains(e.relatedTarget)) this.playsTip(null);
+                });
+                host.addEventListener('scroll', () => this.playsTip(null));
+            },
+
+            // Hover help in the Plays tab, beside the column: a card's face, an ability's text, what a
+            // reason or the score means. Desktop only (phones have no hover).
+            playsTip(el) {
+                const tip = this.$('rp-tip');
+                this._tipEl = el;
+                if (!tip) return;
+                if (!el || !this._plays || !this._plays.result || this.isPhoneUI()) return void (tip.hidden = true);
+                const p = this._plays;
+                const W = p.result.weights || {};
+                const esc = (t) => this._esc(String(t));
+                const sign = (n) => (n > 0 ? '+' : n < 0 ? '−' : '±') + Math.abs(n).toFixed(1);
+                const head = (k, v) => `<div class="rp-tip-k">${esc(k)}<b>${esc(v)}</b></div>`;
+                tip.className = 'rp-tip';
+                tip.innerHTML = '';
+                const kind = el.dataset.tip;
+                if (kind === 'card') {
+                    const db = this.playsCardDb(p.refs[+el.dataset.ref]);
+                    if (!db) return void (tip.hidden = true);
+                    tip.classList.add('is-card');
+                    tip.appendChild(this.isTextCardMode() ? this.buildCardTextView(db) : this.makeCardImg(db, { lazy: false }));
+                    tip.insertAdjacentHTML('beforeend', head(db.fullName || db.name, db.cost != null ? db.cost : ''));
+                    this.showPreview(db); // the rail's preview follows, as for draw-odds rows
+                } else if (kind === 'ability') {
+                    const c = p.refs[+el.dataset.ref];
+                    const db = this.playsCardDb(c);
+                    const name = el.dataset.name;
+                    const ab = db && (db.abilities || []).find(a => a.name && a.name.toLowerCase() === name.toLowerCase());
+                    tip.innerHTML = head(c ? c.name : '', 'Ability') + `<span class="rp-tip-ab">${esc(ab ? ab.name : name)}</span>`;
+                    if (ab) this.appendSymbolized(tip.appendChild(document.createElement('span')), ab.effect || ab.fullText || '');
+                } else if (kind === 'why') {
+                    const k = el.dataset.k, d = +el.dataset.d;
+                    const turns = W.race ? Math.round(Math.abs(d) / W.race) : 0;
+                    const EXPLAIN = {
+                        lore: 'Lore gained this turn.',
+                        potential: `Lore your characters in play can quest for next turn, against what theirs can. Theirs counts ${W.potential ? +(W.threat / W.potential).toFixed(1) : 1}× yours: lore you deny is worth more than lore you gain.`,
+                        body: 'Strength and willpower left of the characters in play, yours against theirs.',
+                        exposed: 'Your exerted characters that one of theirs could banish in a challenge next turn.',
+                        hand: 'Cards kept in your hand.',
+                        ink: 'Cards in your inkwell.',
+                        race: `Turns each side needs to reach 20 at the lore now in play. This line moves the race ${turns} turn${turns === 1 ? '' : 's'} ${d > 0 ? 'your way' : 'their way'}.`,
+                        reply: `Their next turn, played by the engine with the cards they have in play: their quests and challenges. Their hand is left out, since you can't see it. This line holds up ${d > 0 ? 'better' : 'worse'} against it than ending the turn now.`,
+                    };
+                    tip.innerHTML = head(el.firstChild.textContent.trim(), sign(d)) + esc(EXPLAIN[k] || '') + '<div class="rp-tip-n">Against ending the turn now.</div>';
+                } else {
+                    tip.innerHTML = head('Score', el.textContent) + 'How much better this line leaves the game than ending the turn now. Hover a reason under the line to see where it comes from.';
+                }
+                tip.hidden = false;
+                const b = el.getBoundingClientRect(), col = el.closest('.prob-pane, .rules-plays').getBoundingClientRect();
+                const t = tip.getBoundingClientRect();
+                const top = Math.max(8, Math.min(innerHeight - t.height - 8, b.top + b.height / 2 - t.height / 2));
+                tip.style.left = `${Math.max(8, col.left - t.width - 10)}px`;
+                tip.style.top = `${top}px`;
+                tip.style.setProperty('--nub', `${b.top + b.height / 2 - top}px`);
             },
 
             // Put a line on the board as one Undo step, and record it the way the sandbox's own
@@ -13052,6 +13232,7 @@
                 const p = this.state.players[this.state.activePlayer];
                 const N = p.deck.length;
                 document.getElementById('prob-deck-count').innerText = N ? `· ${N}` : '';
+                document.getElementById('prob-tab-odds-n').innerText = N || '';
                 list.innerHTML = '';
                 if (!N) {
                     const empty = document.createElement('div');
@@ -13468,6 +13649,7 @@
                 this.rulesOn = t.rules === 'assist';
                 document.body.classList.toggle('rules-on', this.rulesOn);
                 if (!this.rulesOn && this._plays) this.closePlays();
+                if (!this.rulesOn && this.probTab === 'plays') this.setProbTab('odds');
                 const ru = this.$('tweak-rules');
                 if (ru) ru.querySelectorAll('button').forEach(b => b.classList.toggle('is-active', b.dataset.val === (this.rulesOn ? 'assist' : 'off')));
 

@@ -116,6 +116,15 @@ export default async (page) => {
         // Sessions (Feature 67): either deck's inks pass the filter.
         const S2 = [{ name: 'A vs B', inkSets: [['amber', 'steel'], ['ruby', 'emerald']], cards: [] }, { name: 'C', inkSets: [], cards: [] }];
         check('session search: either deck passes', DeckSearch.query(S2, '', ['emerald', 'ruby']).map(r => r.entry.name).join(), 'A vs B');
+        // Proposed plays (Feature 68): what an ability did folds under its move; a line reads as how
+        // it differs from line 1.
+        const pc = (name) => ({ name });
+        const L1 = [{ by: 'me', family: 'playCard', card: pc('Milo Thatch') }, { by: 'me', family: 'resolveBag', card: pc('Milo Thatch'), ability: "Scholar's gambit" },
+            { by: 'me', family: 'resolveBag', card: pc('Milo Thatch'), targets: [pc('Vixey')] }, { by: 'me', family: 'quest', card: pc('Max Goof') }];
+        const diff = (acts) => (DojoRules.lineDiff(acts, L1) || []).map(([t]) => t).join('');
+        check('plays: effects fold under their move', DojoRules.groupActs(L1).map(DojoRules.stepText).join(' | '), 'Play Milo Thatch → Vixey | Quest with Max Goof');
+        check('plays: a line as how it differs from line 1', `${diff(L1.slice(0, 3))} / ${diff([L1[0], L1[1], { ...L1[2], targets: [pc('Tod')] }, L1[3]])}`,
+            'Like line 1, but not quest with Max Goof / Like line 1, but Play Milo Thatch → Tod instead of Vixey');
 
         // Device library.
         const L = DojoLibrary, data = App.buildSessionData(), id = L.newId();

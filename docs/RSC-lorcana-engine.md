@@ -384,6 +384,17 @@ Tiers 2 and 3 only need the read side of tier 1 (hydrate and project) plus the e
 
 Measured results, newest first. The work itself lives on `feat/68-rules-engine` (AGENTS.md, *Long-lived branch*).
 
+### 2026-10-28 · Proposed plays move into the odds column
+
+The owner asked for the plays as a tab of the right-hand column, laid out for quick reading, with hover help. Prototyped first as mock-ups drawn into the live app (accordion v compare-and-detail); the owner picked the accordion, 4 lines with more on demand, and no "their reply" row (it needs the bot's reply moves back from the worker; later, if ever).
+
+- **Where:** the draw-odds column gets two tabs, *Odds* and *Plays*, while the rules engine is on. *Suggest* opens the Plays tab (a bottom sheet on phones, where the column is hidden).
+- **Reading a line:** line 1 open, the others closed to how they differ from it, at most three steps ("Like line 1, but Quest with Max Goof → Don Karnage instead of To Wither a Flower"). The engine's steps are grouped: an unnamed effect from the card whose ability just fired is that ability's target, so "Play Milo Thatch ↳ SCHOLAR'S GAMBIT → Malicious, Mean, and Scary, Vixey" replaces three rows.
+- **Their win is an outcome, not a number:** with the reply in the score, ending the turn on a board where they can reach 20 scores −1000, so every line that stops it read +1014. A red row now says "Ending the turn now loses", lines that don't stop it say "They win next", and the numbers leave the ±1000 out.
+- **Why:** the three reasons that moved most, each explained on hover. The race and threat copy reads the weights the worker now returns, so it stays true after a re-tune.
+- **More lines:** 4 by default (the worker re-ranks 8 with the reply). *Show more lines* searches for 8 and merges the new ones; a wider search can find better lines, so the list re-sorts and the open line stays open.
+- Checked: `app-checks` 32/32 (two new: the grouping and the diff copy). Screenshots of desktop day and night, the hover states, more lines, and phones.
+
 ### 2026-10-28 · Scoring plan: their reply, the race, their threat
 
 The plan is §8.1. Six new terms, each a weight whose "off" value scored exactly as before, A/B'd against the 2026-10-27 weights.

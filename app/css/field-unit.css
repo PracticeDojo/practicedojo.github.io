@@ -10198,41 +10198,50 @@ body:not(.ink-drops-on) .ink-drops {
     background: var(--text-dim);
 }
 
-/* Proposed plays (Feature 68): a paper module beside the board, so the board stays in view.
-   Suggest only shows while the rules engine is on. Lines are plain paper: no signal, no fill. */
-body:not(.rules-on) #btn-suggest {
+/* Proposed plays (Feature 68): the odds column's Plays tab, beside the board so it stays in view
+   (on phones, where that column is hidden, a bottom sheet). Suggest and the tabs only show while
+   the rules engine is on. Lines are plain paper: no signal, no fill. */
+body:not(.rules-on) #btn-suggest,
+body:not(.rules-on) .prob-tabs,
+body.rules-on .prob-head h3,
+.prob-pane.is-collapsed .prob-tabs,
+.prob-plays,
+body.rules-on .prob-pane.is-plays .prob-cols,
+body.rules-on .prob-pane.is-plays .prob-list {
     display: none;
 }
 
-.rules-plays {
-    position: fixed;
-    top: 72px;
-    right: 16px;
-    z-index: 60;
-    width: min(360px, calc(100vw - 32px));
-    max-height: calc(100vh - 96px);
+body.rules-on .prob-pane.is-plays:not(.is-collapsed) .prob-plays {
+    display: block;
+    flex: 1;
+    min-height: 0;
     overflow-y: auto;
-    padding: 12px;
-    background: var(--surface);
-    color: var(--text);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    box-shadow: var(--shadow-3);
 }
 
-.rules-plays[hidden] {
-    display: none;
+.prob-tabs {
+    margin-right: auto;
 }
 
-.rp-head {
+.prob-tabs button {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.prob-tab-n {
+    letter-spacing: 0.04em;
+    opacity: 0.7;
+}
+
+.rp-meta {
     display: flex;
     align-items: center;
-    gap: 8px;
-    margin-bottom: 8px;
+    gap: 6px;
+    padding: 8px 12px 6px;
 }
 
 .rp-title,
-.rp-n {
+.rp-lbl {
     font-family: var(--font-mono);
     font-size: 10px;
     font-weight: 500;
@@ -10241,74 +10250,428 @@ body:not(.rules-on) #btn-suggest {
     color: var(--text-dim);
 }
 
-.rp-meta {
-    flex: 1;
-    font-family: var(--font-mono);
-    font-size: 10px;
-    color: var(--text-dim);
-    text-align: right;
+.rp-again {
+    margin-left: auto;
 }
 
 .rp-note {
-    margin: 4px 0 8px;
+    margin: 2px 12px 10px;
     font-size: 12px;
+    line-height: 1.4;
     color: var(--text-dim);
+}
+
+.rp-find {
+    margin: 0 12px 12px;
+}
+
+/* Ending the turn now loses: a warning, not a number. */
+.rp-warn {
+    display: flex;
+    gap: 8px;
+    margin: 0 12px 8px;
+    padding: 7px 9px;
+    border-radius: 8px;
+    background: var(--danger-soft);
+    font-size: 11.5px;
+    line-height: 1.4;
+    color: var(--text);
+}
+
+.rp-warn::before {
+    content: '';
+    flex: none;
+    width: 3px;
+    border-radius: 2px;
+    background: var(--danger);
 }
 
 .rp-line {
-    padding: 10px 0;
     border-top: 1px solid var(--fu-row-rule);
 }
 
-.rp-line-head {
+.rp-lhead {
     display: flex;
     align-items: baseline;
     gap: 8px;
+    width: 100%;
+    padding: 9px 12px 2px;
+    border: 0;
+    background: none;
+    color: inherit;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
 }
 
-.rp-gain {
-    flex: 1;
-    font-size: 13px;
-    font-weight: 600;
-}
-
-.rp-score {
-    font-family: var(--font-mono);
-    font-size: 11px;
-    color: var(--text-dim);
-}
-
-.rp-steps {
-    margin: 6px 0 4px;
-    padding-left: 18px;
-    font-size: 12px;
-    line-height: 1.5;
-}
-
-.rp-steps .is-opp {
-    color: var(--text-dim);
-}
-
-.rp-why {
+.rp-rank {
+    flex: none;
+    width: 12px;
     font-family: var(--font-mono);
     font-size: 10px;
     color: var(--text-dim);
+}
+
+.rp-gain {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+}
+
+.rp-pair {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    font-variant-numeric: tabular-nums;
+    color: var(--text-dim);
+}
+
+.rp-flag {
+    font-family: var(--font-mono);
+    font-size: 9.5px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--danger);
+}
+
+.rp-score {
+    margin-left: auto;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-variant-numeric: tabular-nums;
+    color: var(--text-2);
+}
+
+.rp-chev {
+    width: 10px;
+    font-size: 9px;
+    color: var(--text-dim);
+}
+
+/* A closed line: how it differs from line 1, in two lines at most. */
+.rp-sum {
+    padding: 2px 12px 9px 32px;
+    font-size: 11.5px;
+    line-height: 1.4;
+    color: var(--text-2);
+}
+
+.rp-sum>span {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.rp-sum em {
+    font-style: normal;
+    color: var(--text-dim);
+}
+
+.rp-lbody {
+    padding: 2px 12px 12px 32px;
+}
+
+/* Steps: the verb (with its function-key dot, as on the board's rule marks), then the cards. What a
+   move set off hangs under it. */
+.rp-steps {
+    margin: 4px 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.rp-step,
+.rp-why {
+    display: grid;
+    grid-template-columns: 66px 1fr;
+    column-gap: 6px;
+    align-items: baseline;
+}
+
+.rp-step {
+    padding: 2px 0;
+    font-size: 12px;
+    line-height: 1.4;
+    color: var(--text);
+}
+
+.rp-verb,
+.rp-them {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+}
+
+.rp-verb {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    white-space: nowrap;
+}
+
+.rp-verb::before {
+    content: '';
+    flex: none;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--text-dim);
+}
+
+.rp-verb.key-olive::before {
+    background: var(--key-olive);
+}
+
+.rp-verb.key-coral::before {
+    background: var(--key-coral);
+}
+
+.rp-with {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--text-dim);
+}
+
+.rp-sub {
+    grid-column: 2;
+    position: relative;
+    padding: 1px 0 1px 12px;
+    font-size: 11.5px;
+    line-height: 1.4;
+    color: var(--text-2);
+}
+
+.rp-sub::before {
+    content: '↳';
+    position: absolute;
+    top: 1px;
+    left: 0;
+    font-size: 10px;
+    color: var(--text-dim);
+}
+
+.rp-sub.is-opp {
+    color: var(--text-dim);
+}
+
+.rp-them {
+    margin-right: 4px;
+}
+
+/* Hoverable: a card's face, an ability's text, what a reason or the score means. */
+.rp-card,
+.rp-ab,
+.rp-score {
+    border-bottom: 1px dotted var(--border-strong);
+}
+
+.rp-ab,
+.rp-score,
+.rp-chip {
+    cursor: help;
+}
+
+.rp-card:hover,
+.rp-ab:hover,
+.rp-score:hover {
+    border-bottom: 1px solid var(--text);
+}
+
+.rp-ab {
+    font-size: 10.5px;
+    font-weight: 650;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+}
+
+.rp-why {
+    margin-top: 9px;
+}
+
+.rp-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+.rp-chip {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 5px;
+    height: 20px;
+    padding: 0 7px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: var(--surface);
+    font-family: var(--font-mono);
+    font-size: 10px;
+    line-height: 18px;
+    color: var(--text-2);
+    white-space: nowrap;
+}
+
+.rp-chip b {
+    font-weight: 500;
+    color: var(--text);
+}
+
+.rp-chip.is-neg b {
+    color: var(--danger);
+}
+
+.rp-chip:hover {
+    border-color: var(--text);
 }
 
 .rp-acts {
     display: flex;
     gap: 6px;
-    margin-top: 8px;
+    margin-top: 11px;
+}
+
+.rp-more {
+    display: block;
+    width: calc(100% - 24px);
+    height: 28px;
+    margin: 4px 12px 12px;
+    border: 1px dashed var(--border-strong);
+    border-radius: 8px;
+    background: none;
+    color: var(--text-2);
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.rp-more:hover:not(:disabled) {
+    border-style: solid;
+    color: var(--text);
+}
+
+.rp-more:disabled {
+    color: var(--text-dim);
+    cursor: default;
+}
+
+/* Hover help sits on the board beside the column: raised glass, a nub pointing at what's hovered. */
+.rp-tip {
+    position: fixed;
+    z-index: 70;
+    width: 236px;
+    padding: 9px 11px 10px;
+    background: var(--fu-glass-raised);
+    color: var(--fu-light);
+    border: 1px solid var(--fu-edge);
+    border-radius: 8px;
+    box-shadow: var(--shadow-3);
+    font-size: 12px;
+    line-height: 1.42;
+    pointer-events: none;
+}
+
+.rp-tip[hidden] {
+    display: none;
+}
+
+.rp-tip::after {
+    content: '';
+    position: absolute;
+    top: var(--nub, 50%);
+    right: -6px;
+    width: 10px;
+    height: 10px;
+    margin-top: -5px;
+    background: var(--fu-glass-raised);
+    border: solid var(--fu-edge);
+    border-width: 1px 1px 0 0;
+    transform: rotate(45deg);
+}
+
+.rp-tip-k {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 5px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: var(--label-track);
+    text-transform: uppercase;
+    color: var(--fu-glass-mute);
+}
+
+.rp-tip-k b {
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    color: var(--fu-light);
+}
+
+.rp-tip-n {
+    margin-top: 7px;
+    padding-top: 6px;
+    border-top: 1px solid var(--fu-glass-rule);
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    color: var(--fu-glass-2);
+}
+
+.rp-tip-ab {
+    margin-right: 4px;
+    font-size: 11px;
+    font-weight: 650;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+}
+
+.rp-tip.is-card {
+    width: auto;
+    max-width: 240px;
+    padding: 6px;
+}
+
+.rp-tip.is-card .card-img {
+    position: static;
+    display: block;
+    width: 168px;
+    height: auto;
+    aspect-ratio: 5 / 7;
+    border-radius: 7px;
+}
+
+.rp-tip.is-card .rp-tip-k {
+    margin: 5px 2px 0;
+}
+
+/* Phones: the same content in a bottom sheet. */
+.rules-plays {
+    display: none;
 }
 
 @media (max-width: 760px) {
-    .rules-plays {
-        top: auto;
+    .rules-plays:not([hidden]) {
+        display: block;
+        position: fixed;
         right: 0;
         bottom: 0;
         left: 0;
-        width: auto;
+        z-index: 60;
         max-height: 70vh;
+        overflow-y: auto;
+        padding-bottom: env(safe-area-inset-bottom);
+        background: var(--surface);
+        color: var(--text);
+        border: 1px solid var(--border);
         border-radius: 12px 12px 0 0;
+        box-shadow: var(--shadow-3);
+    }
+
+    .rp-head {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 12px 0;
+    }
+
+    .rp-head .rp-title {
+        flex: 1;
     }
 }

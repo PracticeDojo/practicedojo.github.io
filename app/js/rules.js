@@ -8,10 +8,13 @@
 //                                   keyOf(cardId) names a card for the engine, "<setCode>-<number>|<full name>",
 //                                   or null (App.cardKey).
 //   explore(state, keyOf, opts)    → Promise of proposed plays for the rest of the turn:
-//                                   { lines: [{ score, delta, parts, acts, state }], ms, nodes, outOfTime }
+//                                   { lines: [{ score, delta, parts, acts, state }], base, weights, ms, nodes, outOfTime }
 //                                   Each line's `state` is the Dojo state it ends on. opts go to the
 //                                   worker's search (beam, perNode, depth, timeMs, lines).
 //   actText(act)                  one step of a line as a sentence.
+//   groupActs(acts)               a line's steps for display: [{ act, subs }], each move with what it set off.
+//   stepText(group)               a grouped step in a few words, for comparing lines.
+//   lineDiff(acts, firstActs)     how a line differs from line 1, as [text, isConnector] pieces, or null.
 //   VERBS[move]                   { label, key } for a move id (key: the function-key colour it wears).
 //   whyText(reason)               the engine's reason a card can't be played, as a sentence.
 //   boardFromState(state, keyOf)   a Dojo state (full or compressed) → the worker's board shape.
@@ -117,6 +120,60 @@ window.DojoRules = (function () {
                     : `${a.ability ? a.ability.charAt(0) + a.ability.slice(1).toLowerCase() : n(a.card) + "'s effect"}${on}`;
         }
         return a.by === 'opp' ? `Opponent: ${s}` : s;
+    }
+
+    // A line's steps for display: each of my moves with the abilities and effects it set off (and
+    // the opponent's choices in between). An unnamed effect from the same card as the ability before it
+    // (or as the move) only adds that ability's targets. The acts are copied, never changed.
+    const MOVES = new Set(['playCard', 'quest', 'challenge', 'putCardIntoInkwell', 'moveCharacterToLocation', 'activateAbility']);
+    function groupActs(acts) {
+        const out = [];
+        const addTargets = (x, more) => {
+            const all = x.targets.concat(more);
+            x.targets = all.filter((c, i) => all.findIndex(d => d.name === c.name) === i);
+        };
+        for (const a0 of acts) {
+            const a = Object.assign({}, a0, { targets: (a0.targets || []).slice() });
+            if ((a.by === 'me' && MOVES.has(a.family)) || !out.length) { out.push({ act: a, subs: [] }); continue; }
+            const g = out[out.length - 1];
+            const prev = g.subs[g.subs.length - 1];
+            const from = prev || g.act;
+            if (!a.ability && !a.skipped && a.by === from.by && a.card && from.card && a.card.name === from.card.name) addTargets(from, a.targets);
+            else g.subs.push(a);
+        }
+        return out;
+    }
+
+    // "Quest with Max Goof → Strike a Good Match, To Wither a Flower"
+    function stepText(g) {
+        const names = g.subs.concat(g.act).flatMap(x => (x.targets || []).map(c => c.name));
+        return actText(Object.assign({}, g.act, { targets: [] })) + (names.length ? ' → ' + [...new Set(names)].join(', ') : '');
+    }
+
+    // How a line differs from line 1, in at most three steps: "Like line 1, but" … "instead of" … .
+    // Pieces are [text, isConnector]; null when they differ more (show the line's own steps then).
+    function lineDiff(acts, firstActs) {
+        const a = groupActs(acts).map(stepText), b = groupActs(firstActs).map(stepText);
+        if (!a.length) return null;
+        const extra = a.filter(k => !b.includes(k)), missing = b.filter(k => !a.includes(k));
+        if (!extra.length && !missing.length) return [['Line 1 in another order', true]];
+        const head = (k) => k.split(' → ')[0];
+        const targets = (k) => (k.split(' → ')[1] || '').split(', ').filter(Boolean);
+        const lower = (t) => t.charAt(0).toLowerCase() + t.slice(1);
+        const bits = [];
+        for (const k of extra) {
+            const m = missing.find(x => head(x) === head(k));
+            if (!m) { bits.push([[k, false]]); continue; }
+            // The same step with other targets: only the targets that changed.
+            missing.splice(missing.indexOf(m), 1);
+            const add = targets(k).filter(t => !targets(m).includes(t)), drop = targets(m).filter(t => !targets(k).includes(t));
+            bits.push(add.length ? [[`${head(k)} → ${add.join(', ')}`, false], ...(drop.length ? [[' instead of ', true], [drop.join(', '), false]] : [])]
+                : [[head(k), false], [' without ', true], [drop.join(', '), false]]);
+        }
+        if (bits.length === 1 && bits[0].length === 1 && missing.length === 1) return [['Like line 1, but ', true], bits[0][0], [' instead of ', true], [lower(missing[0]), false]];
+        missing.forEach(k => bits.push([['not ', true], [lower(k), false]]));
+        if (bits.length > 3) return null;
+        return [['Like line 1, but ', true]].concat(...bits.map((x, i) => (i ? [[' · ', true]].concat(x) : x)));
     }
 
     // Where a line ends, as a Dojo state: the same card objects (modifiers and all), moved and set
@@ -240,9 +297,10 @@ window.DojoRules = (function () {
             positions: r.positions,
             outOfTime: r.outOfTime,
             base: r.base,
+            weights: r.weights,
             lines: r.lines.map(l => ({ score: l.score, delta: l.score - r.base.score, parts: l.parts, acts: l.acts, state: stateForLine(state, r.ids, l.end) }))
         };
     }
 
-    return { UNKNOWN, VERBS, whyText, actText, boardFromState, analyze, explore, stateForLine, start, call };
+    return { UNKNOWN, VERBS, whyText, actText, groupActs, stepText, lineDiff, boardFromState, analyze, explore, stateForLine, start, call };
 })();
