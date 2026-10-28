@@ -45,7 +45,7 @@ if (!isMainThread) {
     const SEARCH = { nodes: 60, timeMs: 10000, beam: 4, perNode: 6, ...JSON.parse(arg('--search', '{}')) };
     // The adapter's WEIGHTS, as last tuned (2026-10-27), and the scoring plan's terms (study §8.1).
     const START = { lore: 1, potential: 0.6, body: 0.08, exposed: 0.4, hand: 0.11, ink: 0.525, win: 1000,
-        threat: 0.6, cost: 0, race: 0, reply: 0 };
+        threat: 0.6, race: 0, reply: 0 };
     const TUNED = ['potential', 'body', 'exposed', 'hand', 'ink'];
 
     const manifest = JSON.parse(readFileSync(join(ROOT, 'app/defaults/decks/manifest.json'), 'utf8'));
@@ -83,11 +83,13 @@ if (!isMainThread) {
         const ok = rs.filter(r => !r.error);
         const wins = ok.filter(r => r.explorerWon).length;
         const margin = ok.reduce((n, r) => n + Math.max(-20, Math.min(20, r.lore[0] - r.lore[1])), 0) / Math.max(1, ok.length);
-        const concedes = ok.filter(r => /conceded/.test(r.reason || '')).length;
-        return { wins, n: ok.length, rate: wins / Math.max(1, ok.length), margin, concedes, errors: rs.length - ok.length, fitness: wins / Math.max(1, ok.length) + 0.005 * margin, won: rs.map(r => !r.error && r.explorerWon) };
+        const conceded = rs.map(r => /conceded/.test(r.reason || ''));
+        const concedes = conceded.filter(Boolean).length;
+        const concedeWins = rs.filter((r, i) => conceded[i] && r.explorerWon).length;
+        return { wins, n: ok.length, rate: wins / Math.max(1, ok.length), margin, concedes, concedeWins, errors: rs.length - ok.length, fitness: wins / Math.max(1, ok.length) + 0.005 * margin, won: rs.map(r => !r.error && r.explorerWon), conceded };
     }
     const show = (w) => Object.keys(w).filter(k => k !== 'lore' && k !== 'win').map(k => `${k} ${+w[k].toFixed(3)}`).join(' · ');
-    const res = (e) => `${e.wins}/${e.n} wins (${(100 * e.rate).toFixed(0)}%), margin ${e.margin >= 0 ? '+' : ''}${e.margin.toFixed(1)} lore${e.concedes ? `, ${e.concedes} concedes` : ''}${e.errors ? `, ${e.errors} errors` : ''}`;
+    const res = (e) => `${e.wins}/${e.n} wins (${(100 * e.rate).toFixed(0)}%), margin ${e.margin >= 0 ? '+' : ''}${e.margin.toFixed(1)} lore${e.concedes ? `, ${e.concedes} concedes (${e.concedeWins} of them wins)` : ''}${e.errors ? `, ${e.errors} errors` : ''}`;
     const log = [];
     const say = (s) => { log.push(s); console.log(s); };
 
@@ -97,12 +99,17 @@ if (!isMainThread) {
     say('');
     // Game by game on the same deals: of the games one set wins and the other loses, how lopsided
     // is the split? (Sign test on the discordant games.)
+    // The same, leaving out games either side lost to a forced concede (upstream bot gaps, handover §7).
     const paired = (a, b) => {
-        let onlyA = 0, onlyB = 0;
-        a.won.forEach((w, i) => { if (w && !b.won[i]) onlyA++; if (!w && b.won[i]) onlyB++; });
-        const n = onlyA + onlyB;
-        const z = n ? (onlyB - onlyA) / Math.sqrt(n) : 0;
-        return `Games only the start won: ${onlyA}; only the new weights won: ${onlyB}. z = ${z.toFixed(2)} (${Math.abs(z) >= 1.96 ? 'real, 95%' : 'within noise'}).`;
+        const split = (skip) => {
+            let onlyA = 0, onlyB = 0;
+            a.won.forEach((w, i) => { if (skip(i)) return; if (w && !b.won[i]) onlyA++; if (!w && b.won[i]) onlyB++; });
+            const n = onlyA + onlyB;
+            return [onlyA, onlyB, n ? (onlyB - onlyA) / Math.sqrt(n) : 0];
+        };
+        const [onlyA, onlyB, z] = split(() => false);
+        const [cA, cB, cz] = split(i => a.conceded[i] || b.conceded[i]);
+        return `Games only the start won: ${onlyA}; only the new weights won: ${onlyB}. z = ${z.toFixed(2)} (${Math.abs(z) >= 1.96 ? 'real, 95%' : 'within noise'}). Without concedes: ${cA} v ${cB}, z = ${cz.toFixed(2)}.`;
     };
     const compareArg = arg('--compare', null);
     if (compareArg) {
