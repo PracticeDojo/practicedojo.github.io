@@ -395,7 +395,8 @@ Measured results, newest first. The work itself lives on `feat/68-rules-engine` 
 **Fix**
 - The search ends at a node budget (`nodes: 300`), with the clock as a 10 s safety net; the panel says "stopped early" if it trips. With no clock at all, every demo board's search finishes on its own within 206 nodes (median 60): 1.0 s median, 2.2 s at p90, 3.1 s at worst on desktop, with the reply. Phones run the same search, several times slower, and get the same lines.
 - Their reply always re-ranks the best 12 distinct plans (`replyLines`); `lines` only cuts the list. The app asks for 12 once, shows 4, and *Show more* reveals the rest with no second search (it would return the same lines).
-- Checked: four runs of the app's search on that board give identical lines.
+- Checked: four runs of the app's search on that board give identical lines, and so do the app on desktop and phone widths, day and night (the same 12 lines, 146 nodes, about 1.8 s each in headless Chromium).
+- Re-ranking 12 plans instead of the tuner's old 6 costs nothing measurable: on 256 fresh games, 170 v 171 wins, one game differs.
 
 ### 2026-10-28 · Proposed plays move into the odds column
 
