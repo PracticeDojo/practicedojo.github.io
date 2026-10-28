@@ -294,6 +294,8 @@ The bot doesn't search, so this tier is **ours**. It's built on two things the e
 
 ### 8.1 Scoring plan (2026-10-27)
 
+**Result (2026-10-28, §12):** *reply*, *race* and *threat* kept; *lethal*, *inkLate* and *cost* dropped.
+
 Where the score goes next. It takes the principles of *Mastering Competitive Lorcana* (DarkWings | Chupa, Metafy), a guide the owner shared, and asks of each: does the score already see it, and if not, what term would? The guide's ideas are paraphrased here; the guide isn't copied into the repo. Results are in §12.
 
 **The terms we have, checked against the guide**
@@ -381,6 +383,54 @@ Tiers 2 and 3 only need the read side of tier 1 (hydrate and project) plus the e
 ## 12. Spike log
 
 Measured results, newest first. The work itself lives on `feat/68-rules-engine` (AGENTS.md, *Long-lived branch*).
+
+### 2026-10-28 · Scoring plan: their reply, the race, their threat
+
+The plan is §8.1. Six new terms, each a weight whose "off" value scored exactly as before, A/B'd against the 2026-10-27 weights.
+
+**First, sharper measuring** (`tools/engine-tune.mjs`):
+- A tuning search now ends at 60 nodes instead of 600 ms. The same weights replay the same games: 32 of 32 identical (before, 1 game in 16 differed).
+- `--compare` takes a list and plays the start once. It reports how many concedes were wins, and gives the sign test again without games either side conceded.
+- About 1 game in 6 ends in a forced concede, and most of them (84–91% in two runs) are the bot conceding to the explorer. They are free wins for any weights, so they dilute every comparison.
+
+**Screening:** each change alone against today's weights, on the same 256 fresh games (today's: 160 wins, 63%).
+
+| Change | Only it won · only today's won | z | Then |
+|---|---|---|---|
+| reply 1 | 14 · 5 | 2.06 | confirm |
+| race 0.5 | 15 · 4 | 2.52 | confirm |
+| threat 0.9 | 12 · 7 | 1.15 | play again |
+| cost 0.1 | 10 · 5 | 1.29 | play again |
+| threat 0.4 | 1 · 2 | −0.58 | dropped |
+| lethal 5 | 1 · 2 | −0.58 | dropped |
+| inkLate 0.5 | 1 · 0 | 1.00 | dropped |
+
+Lethal and inkLate changed 3 and 1 games of 256: the cases are rare in these games, and *reply* sees a coming lethal anyway.
+
+**Confirming**, on three more sets of 256 fresh games, pooled per change:
+
+| Change | Games | Only it won · only today's won | z |
+|---|---|---|---|
+| reply 1 + race 0.5 + threat 0.9 | 512 | 41 · 15 | 3.47 (3.66 without concedes) |
+| reply 1 + race 0.5 | 512 | 38 · 9 | 4.23 |
+| reply 1 | 512 | 30 · 9 | 3.36 |
+| race 0.5 | 512 | 35 · 12 | 3.36 |
+| threat 0.9 | 512 | 26 · 9 | 2.87 |
+| cost 0.1 | 512 | 18 · 15 | 0.52, dropped |
+| race 1 (alone; with reply and threat) | 256 each | 16 · 3; 18 · 13 | no better than 0.5 |
+
+- **Adopted: reply 1, race 0.5, threat 0.9.** On the 512 fresh games where all three ran: 357 v 331 wins (70% v 65%), margin +4.4 v +3.1 lore.
+- In plain terms: look at what their board does next turn before choosing; count the race to 20 in turns, not just lore; and lore you deny is worth half as much again as lore you gain.
+- The gains shrank from screening to fresh games (the best of many tries is partly luck). Quote the pooled fresh numbers.
+
+**In the app**
+- Over 26 demo boards with the app's settings (2.5 s budget), a search went from 0.60 to 0.78 s on average, and from 1.55 to 1.88 s at worst. The top line changed on 3.
+- On the demo's last board, line 1 is now "Play Elinor · Quest with Vixey · Ink The Queen" (+4.0).
+- A line's "why" can now name *race to 20* and *their turn*.
+
+**Caveats**
+- *Reply* models the opponent with the same bot it's tuned against, which is part of why it helps. Against people the gain may be smaller.
+- *Reply* ignores their hand on purpose (the player can't see it), so removal from hand still goes unseen (§8.1, *Later*).
 
 ### 2026-10-27 · Proposed plays: modifiers, keywords, the bot finishes lines, tuned weights
 

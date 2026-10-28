@@ -6778,7 +6778,7 @@
                 const me = this.state.activePlayer;
                 const loreNow = this.state.players[me].lore;
                 const sign = (n) => (n > 0 ? '+' : n < 0 ? '−' : '±') + Math.abs(n).toFixed(1);
-                const PARTS = { lore: 'lore', potential: 'lore on board', body: 'board', exposed: 'exposed', hand: 'hand', ink: 'ink' };
+                const PARTS = { lore: 'lore', potential: 'lore on board', body: 'board', exposed: 'exposed', hand: 'hand', ink: 'ink', race: 'race to 20', reply: 'their turn' };
                 body.innerHTML = r.lines.map((l, i) => {
                     const lore = l.state.players[me].lore - loreNow;
                     const wins = l.parts.win > 0;

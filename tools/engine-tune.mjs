@@ -43,10 +43,11 @@ if (!isMainThread) {
     // Search settings while tuning: cheaper than the app's, so a game takes seconds. A node cap, not the
     // clock, ends a search (about what 600 ms covers), so the same weights replay the same game.
     const SEARCH = { nodes: 60, timeMs: 10000, beam: 4, perNode: 6, ...JSON.parse(arg('--search', '{}')) };
-    // The adapter's WEIGHTS, as last tuned (2026-10-27), and the scoring plan's terms (study §8.1).
+    // The adapter's WEIGHTS: tuned 2026-10-27, the scoring plan's terms added 2026-10-28 (study §8.1).
+    // reply is a switch (0 or 1), so it isn't tuned.
     const START = { lore: 1, potential: 0.6, body: 0.08, exposed: 0.4, hand: 0.11, ink: 0.525, win: 1000,
-        threat: 0.6, race: 0, reply: 0 };
-    const TUNED = ['potential', 'body', 'exposed', 'hand', 'ink'];
+        threat: 0.9, race: 0.5, reply: 1 };
+    const TUNED = ['potential', 'threat', 'body', 'exposed', 'hand', 'ink', 'race'];
 
     const manifest = JSON.parse(readFileSync(join(ROOT, 'app/defaults/decks/manifest.json'), 'utf8'));
     const decks = manifest.groups.find(g => g.title === 'Set 14').decks

@@ -437,18 +437,19 @@ type Act = { by: "me" | "opp"; family: string; card?: ActCard; target?: ActCard;
 // (spike log, §12); `lore` sets the scale and `win` just has to dwarf the rest.
 // 2026-10-27: exposed 0.6 → 0.4, hand 0.25 → 0.11, ink 0.35 → 0.525. On 256 fresh games against the
 // bot, the tuned weights won 18 games the old ones lost, and lost 5 they won (z 2.7).
+// 2026-10-28, the scoring plan (study §8.1): threat 0.9, race 0.5, reply 1. On 512 fresh games, 41
+// games won that the old score lost, 15 lost that it won (z 3.5).
 const WEIGHTS: Weights = {
   lore: 1, // lore difference now
-  potential: 0.6, // lore the characters (and locations) in play can bring next turn, mine minus theirs
+  potential: 0.6, // lore my characters (and locations) in play can bring next turn
   body: 0.08, // strength + willpower left (+ Resist), mine minus theirs
   exposed: 0.4, // worth of my exerted characters an opposing character could banish next turn
   hand: 0.11, // cards in my hand
   ink: 0.525, // cards in my inkwell
   win: 1000, // reaching the lore to win (theirs: minus)
-  // Scoring plan (study §8.1). Each is off at these values, so tools/engine-tune.mjs --compare can A/B it.
-  threat: 0.6, // their lore on board (potential is mine)
-  race: 0, // turns each side needs to the lore to win at the rate in play, theirs minus mine
-  reply: 0, // 0..1: rank the top lines by the score after their next turn (board only)
+  threat: 0.9, // the same for theirs: lore denied counts more than lore gained
+  race: 0.5, // turns each side needs to the lore to win at the rate in play, theirs minus mine
+  reply: 1, // 0..1: rank the top lines by the score after their next turn (board only); 0 is off
 };
 type Weights = Record<"lore" | "potential" | "body" | "exposed" | "hand" | "ink" | "win" | "threat" | "race" | "reply", number>;
 
