@@ -10,7 +10,7 @@
 //   explore(state, keyOf, opts)    → Promise of proposed plays for the rest of the turn:
 //                                   { lines: [{ score, delta, parts, acts, state }], base, weights, ms, nodes, outOfTime }
 //                                   Each line's `state` is the Dojo state it ends on. opts go to the
-//                                   worker's search (beam, perNode, depth, timeMs, lines).
+//                                   worker's search (beam, perNode, depth, nodes, timeMs, lines, replyLines).
 //   actText(act)                  one step of a line as a sentence.
 //   groupActs(acts)               a line's steps for display: [{ act, subs }], each move with what it set off.
 //   stepText(group)               a grouped step in a few words, for comparing lines.

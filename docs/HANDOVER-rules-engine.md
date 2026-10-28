@@ -33,7 +33,7 @@ For the next agent picking up Feature 68. Read this first, then `AGENTS.md` and 
      - a red row when ending the turn now loses (their characters in play can reach 20);
      - line 1 open: its steps (what an ability did hangs under its move), the lore gained and the lore pair after it, the score against ending the turn now, and the three reasons that moved most;
      - the others closed, as how they differ from line 1 ("Like line 1, but not play Don Karnage");
-     - **Show more lines** runs a wider search on demand and merges its new lines in score order;
+     - **Show N more lines** reveals the rest (the search returns up to 12);
      - hover a card for its face (the rail's preview follows), an ability for its text, a reason or the score for what it means;
      - on phones the same content is a bottom sheet, without the hover help;
    - **Play it** puts the line's end on the board (one Undo step; the recap, played-this-turn and log are recorded);
@@ -56,8 +56,8 @@ Tier 2 (the bot opponent) and Phase 1b (playing moves through the engine) are **
   - the opponent's forced choices during your turn are made by the bot (`settle`);
   - a line can only end where nothing is left to resolve.
   - Afterwards the bot finishes the best 4 lines, and plays the whole turn from the start; the score picks among short and finished lines. This took the explorer from 34% to 52% against the bot.
-  - Then **their reply**: on the best 6 distinct lines (and ending now), the bot plays the opponent's next turn with their cards in play only (not their hand), and the lines are ranked by the score after it (`replyScore`).
-  - The time budget is 2.5 s on desktop and 1.2 s on phones. Finishing and the reply run after it, so a search takes up to about 1.9 s (0.8 s on average over the demo's boards).
+  - Then **their reply**: on the best 12 distinct plans (and ending now; `replyLines`), the bot plays the opponent's next turn with their cards in play only (not their hand), and the lines are ranked by the score after it (`replyScore`). `lines` only cuts that list, so asking for more lines never reorders the first ones.
+  - **A node budget ends the search, not the clock** (`App.PLAYS_SEARCH`: 300 nodes, 10 s safety net). The same board gives the same lines every time, on any device. Every demo board finishes under it (206 nodes at most); a desktop search takes 1.0 s median and 3.1 s at worst, a phone several times that. If the safety net trips, the panel says "stopped early".
 - **Score** (`evaluate` plus `unitOf`, from the side of the player to move, on the board where the line ends):
   - the parts are lore, lore on board, board, exposed, hand, ink, race, win, and their reply;
   - the weights are in `WEIGHTS`: lore 1, lore on board 0.6 (theirs 0.9), board 0.08, exposed 0.4, hand 0.11, ink 0.525, race 0.5, win 1000, reply 1;

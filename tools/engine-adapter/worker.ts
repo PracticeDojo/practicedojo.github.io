@@ -628,8 +628,11 @@ function endOf(st: RawState) {
   return { lore: PIDS.map((p) => st.G.lore[p] ?? 0), inkDrops: PIDS.map((p) => st.G.inkDrops?.[p] ?? 0), zones, meta };
 }
 
-// nodes: a cap on candidates tried, for runs that must repeat exactly (tuning); the clock still applies.
-type SearchOpts = { beam?: number; perNode?: number; depth?: number; timeMs?: number; nodes?: number; lines?: number; weights?: Partial<Weights>; finish?: boolean };
+// nodes: a cap on candidates tried. Ending a search there, not on the clock, makes the same board give
+// the same lines on any machine; the clock (timeMs) is then a safety net, and outOfTime says it tripped.
+// replyLines: how many distinct plans their reply re-ranks. `lines` only cuts the list, so asking for
+// more lines never reorders the first ones.
+type SearchOpts = { beam?: number; perNode?: number; depth?: number; timeMs?: number; nodes?: number; lines?: number; replyLines?: number; weights?: Partial<Weights>; finish?: boolean };
 type Line = { state: unknown; acts: Act[]; score: number; parts: Record<string, number>; quiet: boolean };
 
 // The search itself, from the position `server` is on, for `me` (whose turn it is).
@@ -726,13 +729,13 @@ function search(server: Server, me: string, opp: string, opts: SearchOpts) {
   const best: Line[] = [];
   const lines = opts.lines ?? 3;
   for (const l of ends.sort((a, b) => b.score - a.score)) {
-    if (best.length >= (W.reply ? 2 * lines : lines)) break;
+    if (best.length >= (W.reply ? Math.max(lines, opts.replyLines ?? 12) : lines)) break;
     const p = plan(l);
     if (plans.has(p)) continue;
     plans.add(p);
     best.push(l);
   }
-  // Their reply re-ranks the best few (and the start, which the app scores lines against).
+  // Their reply re-ranks the best plans (and the start, which the app scores lines against).
   if (W.reply) {
     for (const l of new Set([root, ...best])) {
       load(l.state);

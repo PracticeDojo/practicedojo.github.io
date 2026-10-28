@@ -79,8 +79,8 @@ if (!isMainThread) {
     const play = (job) => new Promise(done => { queue.push({ job, resolve: done }); pump(); });
 
     const t0 = Date.now();
-    async function evaluate(weights, list) {
-        const rs = await Promise.all(list.map(g => play({ ...g, ...SEARCH, weights })));
+    async function evaluate(weights, list, search = {}) {
+        const rs = await Promise.all(list.map(g => play({ ...g, ...SEARCH, ...search, weights })));
         const ok = rs.filter(r => !r.error);
         const wins = ok.filter(r => r.explorerWon).length;
         const margin = ok.reduce((n, r) => n + Math.max(-20, Math.min(20, r.lore[0] - r.lore[1])), 0) / Math.max(1, ok.length);
@@ -119,9 +119,10 @@ if (!isMainThread) {
         const a = await evaluate(START, fresh);
         say(`### Against ${show(START)}, ${HOLDOUT} fresh games each`);
         say(`- Start: ${res(a)}`);
-        for (const change of [JSON.parse(compareArg)].flat()) {
-            const b = await evaluate({ ...START, ...change }, fresh);
-            say(`- ${JSON.stringify(change)}: ${res(b)}. ${paired(a, b)}`);
+        // A change's "search" key changes the search instead of the weights ({"search":{"replyLines":6}}).
+        for (const { search, ...change } of [JSON.parse(compareArg)].flat()) {
+            const b = await evaluate({ ...START, ...change }, fresh, search);
+            say(`- ${JSON.stringify(search ? { ...change, search } : change)}: ${res(b)}. ${paired(a, b)}`);
         }
         say(`- ${((Date.now() - t0) / 60000).toFixed(1)} min in all.`);
         await Promise.all(pool.map(w => w.terminate()));

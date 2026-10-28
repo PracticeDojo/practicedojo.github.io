@@ -384,6 +384,19 @@ Tiers 2 and 3 only need the read side of tier 1 (hydrate and project) plus the e
 
 Measured results, newest first. The work itself lives on `feat/68-rules-engine` (AGENTS.md, *Long-lived branch*).
 
+### 2026-10-28 · Fix: the same board gave different lines
+
+**Reported:** the day and night screenshots of the same board showed a different line 2.
+
+**Causes**
+- **The app's search stopped on the clock** (2.5 s desktop, 1.2 s phone), so how far it got depended on the machine and its load. On the demo's turn 9 at the phone budget, four runs stopped at 107, 139, 140 and 139 nodes and gave three different line 2s. The first search after loading is slower still (cold code). The tuner had moved to a node budget during the scoring plan; the app hadn't.
+- **Their reply re-ranked the top `2 × lines` plans**, so the number of lines asked for changed the ranking. A deeper search could push a line out of that set: 146 nodes gave a worse line 2 than 139. *Show more* (16 re-ranked instead of 8) could reorder the list, which is why it had to re-sort.
+
+**Fix**
+- The search ends at a node budget (`nodes: 300`), with the clock as a 10 s safety net; the panel says "stopped early" if it trips. With no clock at all, every demo board's search finishes on its own within 206 nodes (median 60): 1.0 s median, 2.2 s at p90, 3.1 s at worst on desktop, with the reply. Phones run the same search, several times slower, and get the same lines.
+- Their reply always re-ranks the best 12 distinct plans (`replyLines`); `lines` only cuts the list. The app asks for 12 once, shows 4, and *Show more* reveals the rest with no second search (it would return the same lines).
+- Checked: four runs of the app's search on that board give identical lines.
+
 ### 2026-10-28 · Proposed plays move into the odds column
 
 The owner asked for the plays as a tab of the right-hand column, laid out for quick reading, with hover help. Prototyped first as mock-ups drawn into the live app (accordion v compare-and-detail); the owner picked the accordion, 4 lines with more on demand, and no "their reply" row (it needs the bot's reply moves back from the worker; later, if ever).

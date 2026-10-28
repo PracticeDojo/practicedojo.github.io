@@ -6733,11 +6733,14 @@
             // --- Feature 68 (experimental): proposed plays ---
             // The rules engine searches the rest of this turn (DojoRules.explore). The best lines show in
             // the odds column's Plays tab (on phones, a sheet): line 1 open, the others as how they differ
-            // from it, more on demand. Play it puts a line on the board as one Undo step; Save as branch
-            // keeps it in the Multiverse and leaves the board alone.
-            _plays: null, // { sig, result, error, open, more, showAll, refs } for the board the search started from
+            // from it, the rest behind Show more. Play it puts a line on the board as one Undo step; Save as
+            // branch keeps it in the Multiverse and leaves the board alone.
+            _plays: null, // { sig, result, error, open, showAll, refs } for the board the search started from
             probTab: 'odds',
-            PLAYS_LINES: 4,
+            PLAYS_LINES: 4, // shown at first; the search returns up to 12
+            // A node budget, not the clock, ends the search, so a board gets the same lines every time and
+            // on every device (every demo board finishes under it). The clock is a safety net.
+            PLAYS_SEARCH: { nodes: 300, timeMs: 10000, lines: 12 },
 
             setProbTab(tab) {
                 this.probTab = tab;
@@ -6752,10 +6755,6 @@
                 else this.suggestPlays();
             },
 
-            playsOpts(lines) {
-                return { timeMs: this.isPhoneUI() ? 1200 : 2500, lines };
-            },
-
             async suggestPlays() {
                 if (!this.rulesOn || !this.state || !this.state.players || this.state.mulliganPending) return;
                 const sig = this.boardSig(this.state);
@@ -6764,7 +6763,7 @@
                 else if (this.probTab !== 'plays') this.setProbTab('plays');
                 this.renderPlays();
                 try {
-                    p.result = await DojoRules.explore(this.state, id => this.cardKey(id), this.playsOpts(this.PLAYS_LINES));
+                    p.result = await DojoRules.explore(this.state, id => this.cardKey(id), this.PLAYS_SEARCH);
                 } catch (e) {
                     console.warn('Proposed plays:', e);
                     p.error = String(e && e.message || e);
@@ -6772,37 +6771,11 @@
                 if (this._plays === p) this.renderPlays();
             },
 
-            // More lines on demand: a wider search. Its new lines join the list, which stays in score
-            // order (a wider search can find better ones), and the open line stays open.
-            async morePlays() {
-                const p = this._plays;
-                if (!p || !p.result || p.more === 'loading') return;
-                if (p.more) {
-                    p.showAll = !p.showAll;
-                    return this.renderPlays();
-                }
-                if (this.boardSig(this.state) !== p.sig) return this.renderPlays();
-                p.more = 'loading';
+            // The rest of the lines: the same search returned them.
+            morePlays() {
+                if (!this._plays) return;
+                this._plays.showAll = !this._plays.showAll;
                 this.renderPlays();
-                try {
-                    const r = await DojoRules.explore(this.state, id => this.cardKey(id), this.playsOpts(2 * this.PLAYS_LINES));
-                    // The same plan (inking aside, in any order) is one line.
-                    const plan = (l) => DojoRules.groupActs(l.acts).filter(g => g.act.family !== 'putCardIntoInkwell').map(DojoRules.stepText).sort().join('|');
-                    const seen = new Set(p.result.lines.map(plan));
-                    const open = p.result.lines[p.open];
-                    r.lines.forEach(l => {
-                        if (seen.has(plan(l))) return;
-                        seen.add(plan(l));
-                        p.result.lines.push(l);
-                    });
-                    p.result.lines.sort((a, b) => b.delta - a.delta);
-                    p.open = p.result.lines.indexOf(open);
-                } catch (e) {
-                    console.warn('Proposed plays:', e);
-                }
-                p.more = true;
-                p.showAll = true;
-                if (this._plays === p) this.renderPlays();
             },
 
             openPlay(i) {
@@ -6827,7 +6800,8 @@
                 const me = this.state.activePlayer;
                 const again = (r) => `<button class="icon-btn rp-again" onclick="App.suggestPlays()" aria-label="Search again"
                     title="Search again${r ? ` (${r.positions} positions in ${(r.ms / 1000).toFixed(1)} s${r.outOfTime ? ', out of time' : ''})` : ''}"><i class="fa-solid fa-rotate-right"></i></button>`;
-                const meta = (r) => `<div class="rp-meta"><span class="rp-lbl">Turn ${this.state.turn} · P${me + 1} to play</span>${again(r)}</div>`;
+                const meta = (r) => `<div class="rp-meta"><span class="rp-lbl">Turn ${this.state.turn} · P${me + 1} to play</span>${r && r.outOfTime
+                    ? '<span class="rp-lbl rp-early" title="The search ran out of time before it finished, so searching again may give other lines.">· stopped early</span>' : ''}${again(r)}</div>`;
                 const note = (t, btn) => `${meta()}<p class="rp-note">${t}</p>${btn ? `<button class="btn rp-find" onclick="App.suggestPlays()">${btn}</button>` : ''}`;
                 // rulesRefresh keeps _rulesSig on the board on screen.
                 if (!p) return void (host.innerHTML = note('The rules engine tries orders of play for the rest of this turn and proposes the best lines.', 'Find plays'));
@@ -6900,10 +6874,7 @@
                 const warn = theyWin(r.base.parts) ? `<div class="rp-warn"><span><b>Ending the turn now loses:</b> their characters in play can reach 20 next turn.
                     ${stops === shown.length ? 'Every line here stops that.' : stops ? `${stops} of these lines stop${stops === 1 ? 's' : ''} that.` : 'None of these lines stops that.'}</span></div>` : '';
                 const extra = r.lines.length - this.PLAYS_LINES;
-                const more = p.more === 'loading' ? '<button class="rp-more" disabled>Looking for more lines…</button>'
-                    : !p.more ? (r.lines.length >= this.PLAYS_LINES ? '<button class="rp-more" onclick="App.morePlays()">Show more lines</button>' : '')
-                        : extra <= 0 ? '<button class="rp-more" disabled>No other lines found</button>'
-                            : `<button class="rp-more" onclick="App.morePlays()">${p.showAll ? 'Show fewer' : `Show ${extra} more`}</button>`;
+                const more = extra > 0 ? `<button class="rp-more" onclick="App.morePlays()">${p.showAll ? 'Show fewer' : `Show ${extra} more line${extra === 1 ? '' : 's'}`}</button>` : '';
                 host.innerHTML = meta(r) + warn + (lines || '<p class="rp-note">Nothing to propose on this board.</p>') + more;
             },
 
