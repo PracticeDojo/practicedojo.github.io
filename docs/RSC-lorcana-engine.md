@@ -384,6 +384,19 @@ Tiers 2 and 3 only need the read side of tier 1 (hydrate and project) plus the e
 
 Measured results, newest first. The work itself lives on `feat/68-rules-engine` (AGENTS.md, *Long-lived branch*).
 
+### 2026-10-29 · Spike: can the bot play against you, one action at a time?
+
+The owner asked for a bot opponent (Tier 2, §7) that plays its actions one by one so you can watch, and that you can take over from and hand back to at any moment. Checked before any code, with a temporary worker op (not kept) on the 71 boards of the Set 14 demo, the bot playing the side whose turn it is.
+
+- **One action at a time:** yes. The bot's next move is the first of `enumerateAutomatedActionsForCurrentActor()`'s candidates, and each can be described ("Play Max Goof", "Sweet remix", "Quest with Angel").
+- **Back onto the Dojo board:** at every point where nothing is resolving, all 247 such steps map back with no card lost. The other 49 steps are mid-resolution (an ability on the stack) and belong to the move that set them off: show them under it, as the Plays tab does.
+- **The engine has to stay alive for the bot's whole turn.** Re-reading the Dojo board before each action changed the bot's play on 21 of 71 boards: the Dojo board doesn't carry effects that last the turn (26 steps had some), what was played this turn, or abilities still resolving. So during the bot's turn the worker keeps one engine and the Dojo shows it; it is re-read from the Dojo only when you change the board.
+- **The engine has to run the turn change.** 6 of the 8 default decks have start- or end-of-turn cards (Mickey Mouse - Best in Town, Elinor - Renowned Diplomat, Milo Thatch - Getting His Hands Dirty, Nick Wilde, Minnie Mouse, Cinderella, Aurora, Rourke). With the engine passing the turn, on all 57 boards where the game went on it was your turn, you had drawn and your cards were ready, and Elinor's end-of-turn damage fired. The other 14 boards ended with the bot questing to 20. So the Dojo's End turn has to take the engine's result instead of doing its own ready and draw.
+- **Your choices during its turn:** they come up (twice during turns, and Elinor's targets at the turn change are the bot's). The candidates for you can be listed and described, so the app can ask you.
+- **Hidden information:** the server's planning board is the player's own view (`getAutomatedPlanningBoardForPlayer`, `role: "player"`), so the bot doesn't see your hand or your deck order.
+- **Your side at the bottom:** the Dojo flips the board to the player whose turn it is. `render()` and two drop handlers (`position === 'bottom' ? activePlayer : …`) are all that tie the bottom to the active player, so a seat lock is small.
+- **Known limits:** effects that last into your turn aren't kept by the Dojo while you play (you're the referee, as everywhere in the sandbox); the bot can get stuck on a few prompts the upstream bot can't answer (§12, tuning), and must then stop and hand you the turn, never concede; its mulligan wasn't checked.
+
 ### 2026-10-28 · Fix: the same board gave different lines
 
 **Reported:** the day and night screenshots of the same board showed a different line 2.
