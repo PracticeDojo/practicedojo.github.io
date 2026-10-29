@@ -10587,6 +10587,12 @@ body.rules-on .prob-pane.is-plays:not(.is-collapsed) .prob-plays {
     transform: rotate(45deg);
 }
 
+.rp-tip.is-right::after {
+    right: auto;
+    left: -6px;
+    border-width: 0 0 1px 1px;
+}
+
 .rp-tip-k {
     display: flex;
     justify-content: space-between;
@@ -10639,6 +10645,241 @@ body.rules-on .prob-pane.is-plays:not(.is-collapsed) .prob-plays {
 
 .rp-tip.is-card .rp-tip-k {
     margin: 5px 2px 0;
+}
+
+/* The score lab (Feature 68, Tweaks → Rules engine → Lab): the Score tab, each card's share of the
+   score, and Plays against Default. Figures are mono; the lab adds no colour of its own. */
+body:not(.lab-on) #prob-tab-score,
+.prob-lab,
+body.lab-on .prob-pane.is-score .prob-cols,
+body.lab-on .prob-pane.is-score .prob-list {
+    display: none;
+}
+
+body.lab-on .prob-pane.is-score:not(.is-collapsed) .prob-lab {
+    display: block;
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+}
+
+/* A card's share, on its top-right corner: raised glass, like the hover help. */
+.lab-chip {
+    position: absolute;
+    top: -7px;
+    right: -7px;
+    z-index: 22;
+    min-width: 30px;
+    height: 18px;
+    padding: 0 5px;
+    border-radius: 999px;
+    background: var(--fu-glass-raised);
+    box-shadow: 0 0 0 1px var(--fu-edge);
+    color: var(--fu-light);
+    font-family: var(--font-mono);
+    font-size: 10px;
+    line-height: 18px;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+    cursor: help;
+}
+
+.lab-chip.is-neg {
+    color: oklch(0.78 0.13 28);
+}
+
+.lab-head,
+.lab-tools {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 12px 6px;
+}
+
+.lab-head .select {
+    flex: 1;
+    min-width: 0;
+    height: 28px;
+    padding: 0 6px;
+}
+
+.lab-head .btn,
+.lab-tools .btn {
+    height: 28px;
+    padding: 0 9px;
+    font-size: 12px;
+}
+
+.lab-tools {
+    flex-wrap: wrap;
+    padding-top: 0;
+}
+
+.lab-now {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    margin: 2px 12px 8px;
+    padding: 8px 10px;
+    border-radius: 8px;
+    background: var(--fu-glass);
+    color: var(--fu-light);
+}
+
+.lab-now .rp-lbl {
+    flex: 1;
+    color: var(--fu-glass-mute);
+}
+
+.lab-now b {
+    font-family: var(--font-display);
+    font-size: 22px;
+    font-weight: 520;
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+}
+
+.lab-sec {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 12px 4px;
+    border-top: 1px solid var(--fu-row-rule);
+}
+
+.lab-term {
+    display: grid;
+    grid-template-columns: 16px 1fr 52px 40px;
+    align-items: center;
+    column-gap: 6px;
+    padding: 4px 12px;
+    font-size: 12px;
+    color: var(--text);
+}
+
+.lab-term.is-off {
+    color: var(--text-dim);
+}
+
+.lab-term.is-sel {
+    background: var(--surface-2);
+}
+
+.lab-term input[type="checkbox"] {
+    margin: 0;
+    accent-color: var(--text);
+}
+
+.lab-n {
+    justify-self: start;
+    padding: 0;
+    border: 0;
+    border-bottom: 1px dotted var(--border-strong);
+    background: none;
+    color: inherit;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+.lab-n em {
+    font-style: normal;
+    color: var(--text-dim);
+}
+
+.lab-w {
+    width: 52px;
+    height: 24px;
+    padding: 0 4px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    text-align: right;
+}
+
+.lab-v {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+    color: var(--text-2);
+}
+
+.lab-v.is-neg {
+    color: var(--danger);
+}
+
+.lab-slide {
+    grid-column: 2 / 5;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 0 2px;
+}
+
+.lab-slide input {
+    flex: 1;
+}
+
+.lab-slide span {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--text-dim);
+}
+
+.lab-foot {
+    margin-top: 10px;
+}
+
+/* Plays in the lab: where a line stood with Default, and every term for the open line. */
+.rp-move {
+    font-family: var(--font-mono);
+    font-size: 9.5px;
+    margin-left: -4px;
+}
+
+.rp-move.is-up {
+    color: var(--key-olive);
+}
+
+.rp-move.is-down {
+    color: var(--danger);
+}
+
+.rp-move.is-new {
+    color: var(--text-dim);
+}
+
+.rp-all {
+    display: grid;
+    grid-template-columns: 1fr auto 46px;
+    column-gap: 8px;
+    row-gap: 2px;
+    margin-top: 9px;
+    font-size: 11px;
+    color: var(--text-2);
+}
+
+.rp-all span:nth-child(3n+2),
+.rp-all span:nth-child(3n) {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+}
+
+.rp-tip-row {
+    display: grid;
+    grid-template-columns: 1fr auto 44px;
+    column-gap: 8px;
+}
+
+.rp-tip-row span:nth-child(2) {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    color: var(--fu-glass-mute);
+}
+
+.rp-tip-row span:nth-child(3) {
+    font-family: var(--font-mono);
+    text-align: right;
 }
 
 /* Phones: the same content in a bottom sheet. */

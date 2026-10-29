@@ -477,6 +477,7 @@ function unitOf(server: Server, id: string) {
   const value = (k: string) => Number(c.keywordValues?.[k] ?? 0) || 0;
   const resist = value("resist");
   return {
+    id,
     char: c.cardType === "character",
     location: c.cardType === "location",
     str: c.strength ?? 0,
@@ -494,14 +495,35 @@ function unitOf(server: Server, id: string) {
   };
 }
 
-function evaluate(server: Server, me: string, opp: string, W: Weights = WEIGHTS) {
+// A card in play's share of the score: which part, how much, and the measure the weight multiplied.
+type Share = { k: "potential" | "threat" | "body" | "exposed"; v: number; x: number };
+
+// `cards`, if given, gets each card in play's shares (the lab's card numbers), from the same sums.
+function evaluate(server: Server, me: string, opp: string, W: Weights = WEIGHTS, cards?: Record<string, Share[]>) {
   const st = server.getState() as unknown as RawState;
   const { zoneCards } = st.ctx.zones.private;
   const mine = (zoneCards[`play:${me}`] ?? []).map((id) => unitOf(server, id));
   const theirs = (zoneCards[`play:${opp}`] ?? []).map((id) => unitOf(server, id));
   type Unit = (typeof mine)[number];
-  const potential = (us: Unit[]) => us.filter((u) => (u.char && u.quests) || u.location).reduce((n, u) => n + u.lore, 0);
-  const body = (us: Unit[]) => us.filter((u) => u.char).reduce((n, u) => n + u.str + u.left + u.resist, 0);
+  const share = (u: Unit, k: Share["k"], v: number, x: number) => {
+    if (cards && v) (cards[u.id] ??= []).push({ k, v, x });
+  };
+  // Lore on board (characters that can quest next turn, and locations) and body, for each side.
+  const rate = [0, 0];
+  const body = [0, 0];
+  [mine, theirs].forEach((us, side) =>
+    us.forEach((u) => {
+      if ((u.char && u.quests) || u.location) {
+        rate[side] += u.lore;
+        share(u, side ? "threat" : "potential", side ? -W.threat * u.lore : W.potential * u.lore, u.lore);
+      }
+      if (u.char) {
+        const b = u.str + u.left + u.resist;
+        body[side] += b;
+        share(u, "body", (side ? -1 : 1) * W.body * b, b);
+      }
+    }),
+  );
   // Next turn their characters may challenge my exerted ones: Evasive ones only by Evasive or Alert
   // attackers, Resist takes off damage, Challenger adds to it. An exerted Bodyguard of mine draws
   // challenges, so the rest count half.
@@ -512,24 +534,31 @@ function evaluate(server: Server, me: string, opp: string, W: Weights = WEIGHTS)
   for (const d of mine) {
     if (!d.char || !d.exerted) continue;
     const banished = attackers.some((a) => (!d.evasive || a.evasive || a.alert) && a.str + a.challenger - d.resist >= d.left);
-    if (banished) exposed += worth(d) * (guarded && !d.bodyguard ? 0.5 : 1);
+    if (!banished) continue;
+    const x = worth(d) * (guarded && !d.bodyguard ? 0.5 : 1);
+    exposed += x;
+    share(d, "exposed", -W.exposed * x, x);
   }
   const lore = st.G.lore;
   const need = (p: string) => (st.G.loreToWin?.[p] ?? 20) - (lore[p] ?? 0);
-  const rate = [potential(mine), potential(theirs)];
   // Turns to the lore to win if only the cards in play quest; 9 stands for "not in sight".
   const turns = (p: string, r: number) => (need(p) <= 0 ? 0 : r > 0 ? Math.min(9, Math.ceil(need(p) / r)) : 9);
+  const hand = zoneCards[`hand:${me}`]?.length ?? 0;
+  const ink = zoneCards[`inkwell:${me}`]?.length ?? 0;
+  const race = [turns(me, rate[0]), turns(opp, rate[1])];
   const parts = {
     lore: W.lore * ((lore[me] ?? 0) - (lore[opp] ?? 0)),
     potential: W.potential * rate[0] - W.threat * rate[1],
-    body: W.body * (body(mine) - body(theirs)),
+    body: W.body * (body[0] - body[1]),
     exposed: -W.exposed * exposed,
-    hand: W.hand * (zoneCards[`hand:${me}`]?.length ?? 0),
-    ink: W.ink * (zoneCards[`inkwell:${me}`]?.length ?? 0),
-    race: W.race * (turns(opp, rate[1]) - turns(me, rate[0])),
+    hand: W.hand * hand,
+    ink: W.ink * ink,
+    race: W.race * (race[1] - race[0]),
     win: need(me) <= 0 ? W.win : need(opp) <= 0 ? -W.win : 0,
   };
-  return { score: Object.values(parts).reduce((a, b) => a + b, 0), parts };
+  // The measures before weighting, [mine, theirs] where a part compares the two.
+  const raw = { lore: [lore[me] ?? 0, lore[opp] ?? 0], potential: rate, body, exposed, hand, ink, race };
+  return { score: Object.values(parts).reduce((a, b) => a + b, 0), parts, raw };
 }
 
 // The same board reached by two orders of play is one position (decks aside: only their sizes).
@@ -764,6 +793,16 @@ function explore(args: SearchOpts & { board: Board }) {
   };
 }
 
+// The board as it stands, from the side of the player whose turn it is: its score, the measures behind
+// it, and each card in play's share (the lab's card numbers), keyed by Dojo place.
+function score(args: { board: Board; weights?: Partial<Weights> }) {
+  const { match, pos } = hydrate(args.board);
+  const W = { ...WEIGHTS, ...args.weights };
+  const cards: Record<string, Share[]> = {};
+  const e = evaluate(bareServer(match), PIDS[args.board.active], PIDS[1 - args.board.active], W, cards);
+  return { score: e.score, parts: e.parts, raw: e.raw, weights: W, defaults: WEIGHTS, cards: Object.fromEntries(Object.entries(cards).map(([id, s]) => [pos.get(id) ?? id, s])) };
+}
+
 // One game for tools/engine-tune.mjs: on its own turns, player `explorer` plays the best line the
 // search finds with `weights`; every other choice (both mulligans, the other player's whole game,
 // answers to prompts) is the engine's default bot.
@@ -888,7 +927,7 @@ function searchCost(args: { deck1: string; deck2: string; seed?: string; turn?: 
   };
 }
 
-const ops: Record<string, (args: never) => unknown> = { init, names, analyze, explore, selfPlay, botGame, roundTrip, searchCost };
+const ops: Record<string, (args: never) => unknown> = { init, names, analyze, explore, score, selfPlay, botGame, roundTrip, searchCost };
 (globalThis as Record<string, unknown>).DojoEngine = ops;
 
 const scope = globalThis as unknown as { WorkerGlobalScope?: unknown; onmessage: unknown; postMessage(m: unknown): void };

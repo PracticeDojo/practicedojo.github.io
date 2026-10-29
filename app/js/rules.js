@@ -11,6 +11,10 @@
 //                                   { lines: [{ score, delta, parts, acts, state }], base, weights, ms, nodes, outOfTime }
 //                                   Each line's `state` is the Dojo state it ends on. opts go to the
 //                                   worker's search (beam, perNode, depth, nodes, timeMs, lines, replyLines).
+//   score(state, keyOf, weights)  → Promise of the board as it stands, from the side of the player whose turn it is:
+//                                   { score, parts, raw, weights, defaults, cards: { [instanceId]: [{ k, v, x }] } }
+//                                   defaults: the engine's own weights.
+//                                   cards: each card in play's share (part k, value v, the measure x weighted).
 //   actText(act)                  one step of a line as a sentence.
 //   groupActs(acts)               a line's steps for display: [{ act, subs }], each move with what it set off.
 //   stepText(group)               a grouped step in a few words, for comparing lines.
@@ -96,6 +100,15 @@ window.DojoRules = (function () {
             (c.stackedCards || []).forEach((u, j) => { ids[`${pi}:${z}:${i}:under:${j}`] = u.instanceId; });
         })));
         return ids;
+    }
+
+    async function score(state, keyOf, weights) {
+        await engine();
+        const r = await call('score', { board: boardFromState(state, keyOf), weights });
+        const place = placesOf(state);
+        const cards = {};
+        for (const [p, shares] of Object.entries(r.cards)) if (place[p]) cards[place[p]] = shares;
+        return { score: r.score, parts: r.parts, raw: r.raw, weights: r.weights, defaults: r.defaults, cards };
     }
 
     // One step of a proposed line. `by: 'opp'` steps are the bot answering for the opponent.
@@ -302,5 +315,5 @@ window.DojoRules = (function () {
         };
     }
 
-    return { UNKNOWN, VERBS, whyText, actText, groupActs, stepText, lineDiff, boardFromState, analyze, explore, stateForLine, start, call };
+    return { UNKNOWN, VERBS, whyText, actText, groupActs, stepText, lineDiff, boardFromState, analyze, explore, score, stateForLine, start, call };
 })();

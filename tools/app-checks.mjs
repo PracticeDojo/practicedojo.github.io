@@ -125,6 +125,16 @@ export default async (page) => {
         check('plays: effects fold under their move', DojoRules.groupActs(L1).map(DojoRules.stepText).join(' | '), 'Play Milo Thatch → Vixey | Quest with Max Goof');
         check('plays: a line as how it differs from line 1', `${diff(L1.slice(0, 3))} / ${diff([L1[0], L1[1], { ...L1[2], targets: [pc('Tod')] }, L1[3]])}`,
             'Like line 1, but not quest with Max Goof / Like line 1, but Play Milo Thatch → Tod instead of Vixey');
+        // Score lab (Feature 68): an imported profiles file keeps known terms and weights in range, and
+        // each card in play's share adds up to the score's in-play parts.
+        const labFile = JSON.stringify({ dojoLab: 1, profiles: { Default: { weights: { lore: 2 } }, ' Control ': { weights: { lore: 0.7, evil: 9, body: 1e9, hand: 'x' }, off: ['hand', 'nope'] } } });
+        const labGot = DojoLab.parse(labFile);
+        const labRefused = ['nope', '{}', JSON.stringify({ dojoLab: 1, profiles: {} })].map(t => { try { DojoLab.parse(t); return 'took'; } catch (e) { return 'refused'; } }).join();
+        check('lab: an imported file keeps known terms only', `${JSON.stringify(labGot)} ${JSON.stringify(DojoLab.weightsFor(labGot.Control))} ${labRefused}`,
+            '{"Control":{"weights":{"lore":0.7,"body":100},"off":["hand"]}} {"lore":0.7,"body":100,"hand":0} refused,refused,refused');
+        const sc = await DojoRules.score(App.state, id => App.cardKey(id));
+        const shares = Object.values(sc.cards).flat().reduce((n, x) => n + x.v, 0);
+        check('lab: card shares add up to the in-play parts', `${Object.keys(sc.cards).length > 0} ${Math.abs(shares - (sc.parts.potential + sc.parts.body + sc.parts.exposed)) < 1e-9}`, 'true true');
 
         // Device library.
         const L = DojoLibrary, data = App.buildSessionData(), id = L.newId();

@@ -384,6 +384,17 @@ Tiers 2 and 3 only need the read side of tier 1 (hydrate and project) plus the e
 
 Measured results, newest first. The work itself lives on `feat/68-rules-engine` (AGENTS.md, *Long-lived branch*).
 
+### 2026-10-29 · The score lab, first part
+
+The owner wanted the building blocks of the score in reach: to change them, see how each card contributes, and later make new ones. Worked through as options (weights, an inspector, your own terms, testing against the bot, move preferences), then mocked up in the live app. Built on `claude/feat-68-score-lab`, to merge into `feat/68-rules-engine` once it holds up.
+
+- **Lab** is a third setting of the rules switch (Off · Assist · Lab); Off and Assist are unchanged, and Assist always scores with the engine's own weights.
+- **The engine:** `evaluate` now records each card in play's share as it sums lore on board, board and exposed, so the card numbers can't drift from the score; it also returns the measures behind each part. Proposed lines score exactly as before (checked on the demo's turn 9: 1014.03, 1013.22, …). A new `score` op reads the board as it stands: 88 ms on that board.
+- **What the lab shows:** the Score tab (score now, every term with its weight and worth, profiles), a number on each card in play with its sum on hover, and Plays ranked with the profile in use, with ↑↓ against Default and every term for the open line. With a "Control" profile (lore 0.7, board 0.25, their lore on board 1.4, exposed 0.8, race 0.3), lines 2 and 3 move up 4 places against Default on that board.
+- **Hot swap:** turning Prince Phillip into Tadashi Hamada on that board moves the score from −6.2 to −7.5 under Control, and the cards' numbers with it.
+- **Profiles** live on the device (`app/js/lab.js`). An imported file is checked: known terms only, finite weights within ±100, a name that isn't Default, at most 50 profiles.
+- Checked: `app-checks` 34/34 (two new: an imported file keeps known terms only; the card shares add up to the score's in-play parts). Screenshots by day and night, on phones (card numbers only), hover states, editing and saving a profile, Plays against Default, the hot swap.
+
 ### 2026-10-28 · Fix: the same board gave different lines
 
 **Reported:** the day and night screenshots of the same board showed a different line 2.
