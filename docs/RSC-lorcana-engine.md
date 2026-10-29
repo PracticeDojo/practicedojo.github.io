@@ -384,6 +384,17 @@ Tiers 2 and 3 only need the read side of tier 1 (hydrate and project) plus the e
 
 Measured results, newest first. The work itself lives on `feat/68-rules-engine` (AGENTS.md, *Long-lived branch*).
 
+### 2026-10-29 · The score lab: your own terms
+
+The owner's next ask: build new building blocks, not just weigh the old ones.
+
+- **A term is data, never code:** whose cards, where (in play, hand, inkwell, discard), filters, a measure, a weight, and always / ahead / behind in the race. `DojoLab.termOf` keeps known values only (the trust boundary: storage and imported files); in the worker an unknown value matches nothing, so a bad term can't break a search.
+- **The engine reads the rules for it:** filters use the engine's projected cards (keywords and stats with modifiers, classifications, exerted, damage, quest and challenge restrictions). "What its abilities do" walks the card's definition for effect types: draw (`draw`), removal (`banish`, `deal-damage`, `put-damage`, `return-to-hand`, `put-on-bottom`, `shuffle-into-deck`), ramp (`put-into-inkwell`, `additional-inkwell`, `cost-reduction`), lore (`gain-lore`). An approximation: who an effect hits isn't checked, so Elinor - Renowned Diplomat (deals 1 damage) counts as removal.
+- **Everywhere the score is:** each term is a part of its own (`t0`, `t1`, …) in `evaluate`, so it counts in the score, in the card numbers (terms over cards in play), in proposed lines and in their reply's re-score. With no terms, lines score exactly as before (1014.03, 1013.22, … on the demo's turn 9).
+- **The form** (Score tab → + New term) previews the term on the board as you build it and rings the cards it counts. On that board, "my ready Evasive characters in play: lore × 0.3" counts Prince Phillip (+0.9); "their cards in hand that banish, damage or bounce: how many × −0.3" counts Elinor, Elinor and Strength of a Raging Fire (−0.9).
+- **Peeks:** their hand and inkwell are hidden, so how many cards is public but anything about which cards isn't. A term that looks at that is tagged *peeks*, with a warning in the form.
+- Checked: `app-checks` 36/36 (two new: a term keeps known values only and reads as a sentence; the engine's count of my cards in hand is my hand). Screenshots of building both terms through the form, the Score tab, a card's sum with a term in it, and Plays with terms.
+
 ### 2026-10-29 · The score lab, first part
 
 The owner wanted the building blocks of the score in reach: to change them, see how each card contributes, and later make new ones. Worked through as options (weights, an inspector, your own terms, testing against the bot, move preferences), then mocked up in the live app. Built on `claude/feat-68-score-lab`, to merge into `feat/68-rules-engine` once it holds up.

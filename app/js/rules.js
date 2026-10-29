@@ -11,9 +11,9 @@
 //                                   { lines: [{ score, delta, parts, acts, state }], base, weights, ms, nodes, outOfTime }
 //                                   Each line's `state` is the Dojo state it ends on. opts go to the
 //                                   worker's search (beam, perNode, depth, nodes, timeMs, lines, replyLines).
-//   score(state, keyOf, weights)  → Promise of the board as it stands, from the side of the player whose turn it is:
-//                                   { score, parts, raw, weights, defaults, cards: { [instanceId]: [{ k, v, x }] } }
-//                                   defaults: the engine's own weights.
+//   score(state, keyOf, weights, terms) → Promise of the board as it stands, from the side of the player whose turn it is:
+//                                   { score, parts, raw, weights, defaults, cards: { [instanceId]: [{ k, v, x }] }, terms }
+//                                   defaults: the engine's own weights. terms: your own (DojoLab), each { value, hits: [instanceId] }.
 //                                   cards: each card in play's share (part k, value v, the measure x weighted).
 //   actText(act)                  one step of a line as a sentence.
 //   groupActs(acts)               a line's steps for display: [{ act, subs }], each move with what it set off.
@@ -102,13 +102,14 @@ window.DojoRules = (function () {
         return ids;
     }
 
-    async function score(state, keyOf, weights) {
+    async function score(state, keyOf, weights, terms) {
         await engine();
-        const r = await call('score', { board: boardFromState(state, keyOf), weights });
+        const r = await call('score', { board: boardFromState(state, keyOf), weights, terms });
         const place = placesOf(state);
         const cards = {};
         for (const [p, shares] of Object.entries(r.cards)) if (place[p]) cards[place[p]] = shares;
-        return { score: r.score, parts: r.parts, raw: r.raw, weights: r.weights, defaults: r.defaults, cards };
+        const found = r.terms.map(t => ({ value: t.value, hits: t.hits.map(p => place[p]).filter(Boolean) }));
+        return { score: r.score, parts: r.parts, raw: r.raw, weights: r.weights, defaults: r.defaults, cards, terms: found };
     }
 
     // One step of a proposed line. `by: 'opp'` steps are the bot answering for the opponent.

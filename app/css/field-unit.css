@@ -10829,6 +10829,82 @@ body.lab-on .prob-pane.is-score:not(.is-collapsed) .prob-lab {
     margin-top: 10px;
 }
 
+/* Your own terms: the builder (label · control rows), its preview, and the cards it counts, ringed. */
+.lab-form {
+    display: grid;
+    grid-template-columns: 62px 1fr;
+    gap: 7px 8px;
+    align-items: center;
+    padding: 2px 12px 12px;
+}
+
+.lab-form .input,
+.lab-form .select {
+    width: 100%;
+    min-width: 0;
+    height: 28px;
+    padding: 0 6px;
+}
+
+.lab-pair {
+    display: flex;
+    gap: 6px;
+    min-width: 0;
+}
+
+.lab-pair>* {
+    flex: 1;
+    min-width: 0;
+}
+
+.lab-form .seg {
+    justify-self: start;
+}
+
+.lab-preview {
+    grid-column: 1 / -1;
+    padding: 8px 10px;
+    border-radius: 8px;
+    background: var(--surface-2);
+    font-size: 11.5px;
+    line-height: 1.45;
+    color: var(--text-2);
+}
+
+.lab-preview b {
+    font-family: var(--font-mono);
+    font-weight: 500;
+    color: var(--text);
+}
+
+.lab-warn,
+.lab-peek {
+    color: oklch(0.55 0.13 70);
+}
+
+.lab-warn {
+    display: block;
+    margin-top: 4px;
+}
+
+.lab-peek {
+    margin-left: 5px;
+    font-family: var(--font-mono);
+    font-size: 9px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.lab-btns {
+    grid-column: 1 / -1;
+    display: flex;
+    gap: 6px;
+}
+
+.card-wrap.lab-hit .card {
+    box-shadow: 0 0 0 2px var(--fu-light);
+}
+
 /* Plays in the lab: where a line stood with Default, and every term for the open line. */
 .rp-move {
     font-family: var(--font-mono);

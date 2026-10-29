@@ -466,7 +466,69 @@ type Projected = {
   hasReckless?: boolean;
   hasQuestRestriction?: boolean;
   hasChallengeRestriction?: boolean;
+  classifications?: string[];
+  fullName?: string;
+  playCost?: number;
 };
+
+// Your own terms (the score lab, Feature 68): data, never code. Count the cards of one side in one zone
+// that pass the filters, measure them, weigh the sum. An unknown value matches nothing.
+type TermWhere = { type?: string; keyword?: string; classification?: string; state?: string; costMin?: number; costMax?: number; can?: string; effect?: string; name?: string };
+type Term = { side?: string; zone?: string; where?: TermWhere; measure?: string; weight?: number; when?: string };
+
+// What a card's abilities do, from the effect types in its definition. An approximation: who an
+// effect hits isn't checked (a banish is removal whoever it banishes).
+const EFFECTS: Record<string, string[]> = {
+  draw: ["draw", "draw-until-hand-size"],
+  removal: ["banish", "deal-damage", "put-damage", "return-to-hand", "put-on-bottom", "shuffle-into-deck"],
+  ramp: ["put-into-inkwell", "additional-inkwell", "cost-reduction"],
+  lore: ["gain-lore"],
+};
+const effectsOfDef = new Map<string, Set<string>>();
+function effectsOf(def: Def | undefined) {
+  if (!def) return new Set<string>();
+  let got = effectsOfDef.get(def.id);
+  if (got) return got;
+  const types = new Set<string>();
+  (function walk(o: unknown): void {
+    if (Array.isArray(o)) return o.forEach(walk);
+    if (o && typeof o === "object") {
+      const t = (o as { type?: unknown }).type;
+      if (typeof t === "string") types.add(t);
+      Object.values(o).forEach(walk);
+    }
+  })(def.abilities);
+  got = new Set(Object.keys(EFFECTS).filter((k) => EFFECTS[k].some((t) => types.has(t))));
+  effectsOfDef.set(def.id, got);
+  return got;
+}
+
+// The cards a term counts, each with its measure.
+function termCards(server: Server, t: Term, me: string, opp: string) {
+  const zone = ["play", "hand", "inkwell", "discard"].includes(t.zone ?? "") ? t.zone : "play";
+  const ids = ((server.getState() as unknown as RawState).ctx.zones.private.zoneCards[`${zone}:${t.side === "theirs" ? opp : me}`] ?? []) as string[];
+  const w = t.where ?? {};
+  const out: { id: string; x: number }[] = [];
+  for (const id of ids) {
+    const c = server.getCardByInstance(id) as unknown as Projected;
+    const def = server.getCardDefinitionByInstanceId(id as never) as Def | undefined;
+    const cost = c.playCost ?? (def?.cost as number | undefined) ?? 0;
+    const left = Math.max(0, (c.willpower ?? 0) - (c.damage ?? 0));
+    const kw = w.keyword;
+    if (w.type && c.cardType !== w.type) continue;
+    if (kw && !(c.keywords ?? []).includes(kw) && !(Number(c.keywordValues?.[kw.toLowerCase()]) > 0)) continue;
+    if (w.classification && !(c.classifications ?? []).some((x) => x.toLowerCase() === String(w.classification).toLowerCase())) continue;
+    if (w.state === "ready" ? c.exerted : w.state === "exerted" ? !c.exerted : w.state === "damaged" ? !(c.damage ?? 0) : !!w.state) continue;
+    if ((w.costMin != null && cost < w.costMin) || (w.costMax != null && cost > w.costMax)) continue;
+    if (w.can === "quest" ? c.cardType !== "character" || c.hasReckless || c.hasQuestRestriction : w.can === "challenge" ? c.cardType !== "character" || c.hasChallengeRestriction : !!w.can) continue;
+    if (w.effect && !effectsOf(def).has(w.effect)) continue;
+    if (w.name && !String(c.fullName ?? def?.name ?? "").toLowerCase().includes(String(w.name).toLowerCase())) continue;
+    const m = t.measure;
+    const x = m === "lore" ? c.lore ?? 0 : m === "strength" ? c.strength ?? 0 : m === "willpower" ? left : m === "cost" ? cost : m === "count" || m == null ? 1 : 0;
+    out.push({ id, x });
+  }
+  return out;
+}
 
 // What the score needs from a card in play, with modifiers and granted keywords (the engine's
 // projection already counts both).
@@ -495,17 +557,19 @@ function unitOf(server: Server, id: string) {
   };
 }
 
-// A card in play's share of the score: which part, how much, and the measure the weight multiplied.
-type Share = { k: "potential" | "threat" | "body" | "exposed"; v: number; x: number };
+// A card in play's share of the score: which part (one of your terms is "t<index>"), how much, and the
+// measure the weight multiplied.
+type Share = { k: string; v: number; x: number };
 
 // `cards`, if given, gets each card in play's shares (the lab's card numbers), from the same sums.
-function evaluate(server: Server, me: string, opp: string, W: Weights = WEIGHTS, cards?: Record<string, Share[]>) {
+// `terms`: your own terms, each a part of the score of its own ("t0", "t1", …).
+function evaluate(server: Server, me: string, opp: string, W: Weights = WEIGHTS, cards?: Record<string, Share[]>, terms: Term[] = []) {
   const st = server.getState() as unknown as RawState;
   const { zoneCards } = st.ctx.zones.private;
   const mine = (zoneCards[`play:${me}`] ?? []).map((id) => unitOf(server, id));
   const theirs = (zoneCards[`play:${opp}`] ?? []).map((id) => unitOf(server, id));
   type Unit = (typeof mine)[number];
-  const share = (u: Unit, k: Share["k"], v: number, x: number) => {
+  const share = (u: { id: string }, k: string, v: number, x: number) => {
     if (cards && v) (cards[u.id] ??= []).push({ k, v, x });
   };
   // Lore on board (characters that can quest next turn, and locations) and body, for each side.
@@ -546,6 +610,19 @@ function evaluate(server: Server, me: string, opp: string, W: Weights = WEIGHTS,
   const hand = zoneCards[`hand:${me}`]?.length ?? 0;
   const ink = zoneCards[`inkwell:${me}`]?.length ?? 0;
   const race = [turns(me, rate[0]), turns(opp, rate[1])];
+  // Your own terms. "Ahead" means you reach 20 first at the rate in play (they quest first, so a tie is theirs).
+  const custom: Record<string, number> = {};
+  terms.forEach((t, i) => {
+    const w = Number(t.weight) || 0;
+    const on = t.when === "ahead" ? race[0] < race[1] : t.when === "behind" ? race[0] >= race[1] : true;
+    let sum = 0;
+    if (w && on)
+      for (const c of termCards(server, t, me, opp)) {
+        sum += c.x;
+        if ((t.zone ?? "play") === "play") share(c, `t${i}`, w * c.x, c.x);
+      }
+    custom[`t${i}`] = w * sum;
+  });
   const parts = {
     lore: W.lore * ((lore[me] ?? 0) - (lore[opp] ?? 0)),
     potential: W.potential * rate[0] - W.threat * rate[1],
@@ -555,6 +632,7 @@ function evaluate(server: Server, me: string, opp: string, W: Weights = WEIGHTS,
     ink: W.ink * ink,
     race: W.race * (race[1] - race[0]),
     win: need(me) <= 0 ? W.win : need(opp) <= 0 ? -W.win : 0,
+    ...custom,
   };
   // The measures before weighting, [mine, theirs] where a part compares the two.
   const raw = { lore: [lore[me] ?? 0, lore[opp] ?? 0], potential: rate, body, exposed, hand, ink, race };
@@ -631,7 +709,7 @@ function settle(server: Server, me: string): Act[] | null {
 // Their next turn on a line's end, as their bot would play it with the cards they have in play
 // (quests, challenges, abilities, moves), not their hand, which the player can't see. The score from
 // my side after it, without `exposed`: their challenges have happened.
-function replyScore(server: Server, me: string, opp: string, W: Weights) {
+function replyScore(server: Server, me: string, opp: string, W: Weights, terms?: Term[]) {
   if (!server.isGameOver() && server.passTurn(me).success) {
     for (let i = 0; i < 30 && !server.isGameOver(); i++) {
       if ((server.getState() as unknown as RawState).ctx.status.turnOwnerId !== opp) break;
@@ -640,7 +718,7 @@ function replyScore(server: Server, me: string, opp: string, W: Weights) {
       if (!c || !applyCandidate(server, en.actorId, c).success) break;
     }
   }
-  const e = evaluate(server, me, opp, W);
+  const e = evaluate(server, me, opp, W, undefined, terms);
   return e.score - e.parts.exposed;
 }
 
@@ -661,7 +739,7 @@ function endOf(st: RawState) {
 // the same lines on any machine; the clock (timeMs) is then a safety net, and outOfTime says it tripped.
 // replyLines: how many distinct plans their reply re-ranks. `lines` only cuts the list, so asking for
 // more lines never reorders the first ones.
-type SearchOpts = { beam?: number; perNode?: number; depth?: number; timeMs?: number; nodes?: number; lines?: number; replyLines?: number; weights?: Partial<Weights>; finish?: boolean };
+type SearchOpts = { beam?: number; perNode?: number; depth?: number; timeMs?: number; nodes?: number; lines?: number; replyLines?: number; weights?: Partial<Weights>; terms?: Term[]; finish?: boolean };
 type Line = { state: unknown; acts: Act[]; score: number; parts: Record<string, number>; quiet: boolean };
 
 // The search itself, from the position `server` is on, for `me` (whose turn it is).
@@ -675,7 +753,7 @@ function search(server: Server, me: string, opp: string, opts: SearchOpts) {
   const owner = () => (server.getState() as unknown as RawState).ctx.status.turnOwnerId;
   // A turn can only end with nothing left to resolve.
   const line = (acts: Act[]): Line => {
-    const e = evaluate(server, me, opp, W);
+    const e = evaluate(server, me, opp, W, undefined, opts.terms);
     return { state: structuredClone(server.getState()), acts, score: e.score, parts: e.parts, quiet: !server.getBagCount() && !server.getPendingEffects().length };
   };
 
@@ -768,7 +846,7 @@ function search(server: Server, me: string, opp: string, opts: SearchOpts) {
   if (W.reply) {
     for (const l of new Set([root, ...best])) {
       load(l.state);
-      const reply = W.reply * (replyScore(server, me, opp, W) - l.score);
+      const reply = W.reply * (replyScore(server, me, opp, W, opts.terms) - l.score);
       l.score += reply;
       l.parts = { ...l.parts, reply };
     }
@@ -795,12 +873,25 @@ function explore(args: SearchOpts & { board: Board }) {
 
 // The board as it stands, from the side of the player whose turn it is: its score, the measures behind
 // it, and each card in play's share (the lab's card numbers), keyed by Dojo place.
-function score(args: { board: Board; weights?: Partial<Weights> }) {
+// terms: each of your terms' value and the cards it counts (any zone), by Dojo place.
+function score(args: { board: Board; weights?: Partial<Weights>; terms?: Term[] }) {
   const { match, pos } = hydrate(args.board);
   const W = { ...WEIGHTS, ...args.weights };
+  const server = bareServer(match);
+  const me = PIDS[args.board.active], opp = PIDS[1 - args.board.active];
   const cards: Record<string, Share[]> = {};
-  const e = evaluate(bareServer(match), PIDS[args.board.active], PIDS[1 - args.board.active], W, cards);
-  return { score: e.score, parts: e.parts, raw: e.raw, weights: W, defaults: WEIGHTS, cards: Object.fromEntries(Object.entries(cards).map(([id, s]) => [pos.get(id) ?? id, s])) };
+  const terms = args.terms ?? [];
+  const e = evaluate(server, me, opp, W, cards, terms);
+  const at = (id: string) => pos.get(id) ?? id;
+  return {
+    score: e.score,
+    parts: e.parts,
+    raw: e.raw,
+    weights: W,
+    defaults: WEIGHTS,
+    cards: Object.fromEntries(Object.entries(cards).map(([id, s]) => [at(id), s])),
+    terms: terms.map((t, i) => ({ value: (e.parts as Record<string, number>)[`t${i}`] ?? 0, hits: termCards(server, t, me, opp).map((c) => at(c.id)) })),
+  };
 }
 
 // One game for tools/engine-tune.mjs: on its own turns, player `explorer` plays the best line the
