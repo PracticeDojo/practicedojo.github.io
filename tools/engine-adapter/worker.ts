@@ -206,7 +206,7 @@ function botGame(args: { deck1: string; deck2: string; seed?: string; strategy?:
 // (deck, hand, play + each card's cardsUnder, inkwell, discard; player one then two), so they
 // can be computed up front: that's how locations are pointed at, and how `pos` maps each engine
 // card back to its Dojo place ("<player>:<zone>:<index>"). Cards the engine doesn't know become
-// cost-0 placeholders; their ids are in `unknownIds`.
+// placeholders that can be neither played nor inked; their ids are in `unknownIds`.
 function hydrate(board: Board, seed = "dojo-hydrate") {
   const t0 = now();
   const unknown: string[] = [];
@@ -223,7 +223,7 @@ function hydrate(board: Board, seed = "dojo-hydrate") {
       unknown.push(sn);
       unknownIds.add(id);
     }
-    return { id, def: d ?? { id: `unknown:${sn}`, name: `Unknown ${sn}`, cardType: "item", cost: 0, inkable: true } };
+    return { id, def: d ?? { id: `unknown:${sn}`, name: `Unknown ${sn}`, cardType: "item", cost: 99, inkable: false } };
   };
   const inkIds: string[][] = [];
   const modded: [string, Mod[]][] = [];
@@ -1110,8 +1110,8 @@ function searchCost(args: { deck1: string; deck2: string; seed?: string; turn?: 
 
 
 // --- SPIKE (What-if, not for commit): play a game out from a turn's board. ---
-type RealMove = { family: string; card: string; target?: string; with?: string[] };
-type Choice = { name: string; owner?: number; by?: number };
+type RealMove = { family: string; card: string; target?: string; with?: string[]; exerted?: boolean };
+type Choice = { name?: string; option?: string; owner?: number; by?: number };
 type RealTurn = { moves: RealMove[]; choices: Choice[] };
 type Prefer = { choices: Choice[] };
 const ownerOf = (server: Server, id: string) => {
@@ -1121,13 +1121,25 @@ const ownerOf = (server: Server, id: string) => {
 const fullName = (a?: ActCard) => (a ? (a.version ? `${a.name} - ${a.version}` : a.name) : "");
 const sameCard = (a: ActCard | undefined, name?: string) => !!a && !!name && (fullName(a) === name || a.name === name);
 // The candidate whose targets are the next real choice the actor made, if any (and that choice is used up).
+// Options: yes / no for a "may" ability, or a named option found in the candidate.
 function pickChoice(server: Server, actor: string, candidates: unknown[], prefer: Prefer) {
-  const i = prefer.choices.findIndex((c) => c.by == null || PIDS[c.by] === actor);
-  if (i < 0) return undefined;
-  const want = prefer.choices[i];
-  const hit = candidates.find((x) => describe(server, x as never, "me").targets?.some((t) => sameCard(t, want.name) && (want.owner == null || ownerOf(server, t.id) === want.owner)));
-  if (hit) prefer.choices.splice(i, 1);
-  return hit;
+  const fits = (want: Choice) => (x: unknown) => {
+    const c = x as { resolveOptional?: boolean };
+    if (want.option === "yes") return c.resolveOptional === true;
+    if (want.option === "no") return c.resolveOptional === false;
+    if (want.option) return JSON.stringify(x).toLowerCase().includes(want.option.toLowerCase());
+    return !!describe(server, x as never, "me").targets?.some((t) => sameCard(t, want.name) && (want.owner == null || ownerOf(server, t.id) === want.owner));
+  };
+  // The actor's next real choice, or one of the two after it when that one is for a later prompt.
+  const mine = prefer.choices.map((c, i) => [c, i] as const).filter(([c]) => c.by == null || PIDS[c.by] === actor).slice(0, 3);
+  for (const [want, i] of mine) {
+    const hit = candidates.find(fits(want));
+    if (hit) {
+      prefer.choices.splice(i, 1);
+      return hit;
+    }
+  }
+  return undefined;
 }
 function drain(server: Server, prefer?: Prefer) {
   for (let i = 0; i < 60 && !server.isGameOver(); i++) {
@@ -1135,6 +1147,7 @@ function drain(server: Server, prefer?: Prefer) {
     const en = server.enumerateAutomatedActionsForCurrentActor();
     if (!en.actorId || !en.candidates.length) return false;
     let c = en.candidates[0];
+    if (prefer && (prefer as { log?: string[] }).log && en.candidates.length > 1) (prefer as { log?: string[] }).log!.push(JSON.stringify(en.candidates).slice(0, 700));
     const hit = prefer && pickChoice(server, en.actorId, en.candidates, prefer);
     if (hit) c = hit;
     if (!applyCandidate(server, en.actorId, c).success) return false;
@@ -1157,7 +1170,24 @@ function ghostTurn(server: Server, who: string, real: RealTurn | undefined, pref
       return true;
     });
     // A card played or used with a target picks it now: the one the real game chose.
-    const c = (fits.length > 1 && pickChoice(server, who, fits, prefer)) || fits[0];
+    // Bodyguard and the like: entered exerted or ready, as the real game chose (the engine's "may" for it).
+    const way = m.exerted == null ? fits : fits.filter((x) => ((x as { resolveOptional?: boolean }).resolveOptional === true) === m.exerted);
+    const ways = way.length ? way : fits;
+    if (m.exerted != null && (prefer as { log?: string[] }).log) (prefer as { log?: string[] }).log!.push(`${m.card} exerted=${m.exerted}: ${JSON.stringify(fits)}`);
+    const one = (ways.length > 1 && pickChoice(server, who, ways, prefer)) || ways[0];
+    // The bot doesn't offer the exerted way: ask for it.
+    const c = one && m.exerted && !way.length ? { ...(one as object), resolveOptional: true, enterPlayExerted: true } : one;
+    // Not among the bot's candidates (a character played from the discard, say): build the move by hand.
+    const byHand = () => {
+      if (m.family !== "playCard" || m.with) return false;
+      const st = server.getState() as unknown as RawState;
+      const id = ["hand", "discard"].flatMap((z) => st.ctx.zones.private.zoneCards[`${z}:${who}`] ?? []).find((x) => sameCard(describe(server, { family: "quest", cardId: x }, "me").card, m.card));
+      return !!id && applyCandidate(server, who, { family: "playCard", cardId: id, cost: "standard", ...(m.exerted ? { resolveOptional: true } : {}) }).success;
+    };
+    if (!c && byHand()) {
+      matched++;
+      continue;
+    }
     if (!c || !applyCandidate(server, who, c).success) {
       missed++;
       // What the engine offered for that card instead, and the card's state.
@@ -1190,7 +1220,17 @@ function lineScore(server: Server, who: string, other: string, W: Weights) {
   freshLoad(server, st);
   return score;
 }
-function whatIf(args: SearchOpts & { board: Board; me: 0 | 1; first: number | "real"; real: Record<string, RealTurn>; oppMode: string; meLater: string; margin?: number; horizon: number; laterNodes?: number }) {
+const PLAN = new Set(["playCard", "quest", "challenge", "moveCharacterToLocation", "activateAbility"]);
+const planOf = (acts: Act[]) => acts.filter((a) => a.by === "me" && PLAN.has(a.family)).map((a) => `${a.family}:${fullName(a.card)}>${fullName(a.target)}`).sort().join("|");
+const realPlan = (real?: RealTurn) => (real?.moves ?? []).filter((m) => PLAN.has(m.family)).map((m) => `${m.family}:${m.card}>${m.target ?? ""}`).sort().join("|");
+// Every zone by card name, both players (the deck as a count).
+function zonesOf(server: Server) {
+  const st = server.getState() as unknown as RawState;
+  const { zoneCards } = st.ctx.zones.private;
+  const nm = (id: string) => fullName(describe(server, { family: "quest", cardId: id }, "me").card);
+  return PIDS.map((p) => ({ deck: (zoneCards[`deck:${p}`] ?? []).length, ...Object.fromEntries(["hand", "play", "inkwell", "discard"].map((z) => [z, (zoneCards[`${z}:${p}`] ?? []).map(nm).sort()])) }));
+}
+function whatIf(args: SearchOpts & { board: Board; me: 0 | 1; first: number | "real"; real: Record<string, RealTurn>; dump?: boolean; oppMode: string; meLater: string; margin?: number; horizon: number; laterNodes?: number }) {
   const t0 = now();
   const { match, unknown } = hydrate(args.board);
   const server = bareServer(match);
@@ -1206,14 +1246,19 @@ function whatIf(args: SearchOpts & { board: Board; me: 0 | 1; first: number | "r
     const mode = who === me ? (turn === args.board.turn ? (args.first === "real" ? "real" : "line") : args.meLater) : args.oppMode;
     const row: Record<string, unknown> = { turn, who: who === me ? "me" : "opp", mode };
     const ts = now();
+    if (args.dump) row.zones = zonesOf(server);
     const prefer: Prefer = { choices: [...(real?.choices ?? [])] };
+    if (args.dump) (prefer as { log?: string[] }).log = row.choiceLog = [];
     const ghosting = mode === "real" || mode === "ghost" || mode === "ghost+";
     drain(server, ghosting ? prefer : undefined);
     if (mode === "line" || mode === "search") {
       const idx = mode === "line" ? (args.first as number) : 0;
-      const r = search(server, who, other, { ...args, lines: idx + 1, nodes: mode === "line" ? args.nodes : args.laterNodes ?? args.nodes });
-      const pick = r.best[idx] ?? null;
-      row.lines = r.best.length;
+      const r = search(server, who, other, { ...args, lines: idx + 6, nodes: mode === "line" ? args.nodes : args.laterNodes ?? args.nodes });
+      // On the turn tried, the lines other than the move really made.
+      const others = mode === "line" ? r.best.filter((l) => planOf(l.acts) !== realPlan(real)) : r.best;
+      const pick = others[idx] ?? null;
+      row.lines = others.length;
+      if (mode === "line") row.realAmong = r.best.length - others.length;
       if (pick) {
         freshLoad(server, pick.state);
         if (mode === "line") firstPlan = pick.acts.filter((a) => a.by === "me").map((a) => `${a.family}:${fullName(a.card)}${a.target ? ">" + fullName(a.target) : ""}`);
@@ -1232,6 +1277,10 @@ function whatIf(args: SearchOpts & { board: Board; me: 0 | 1; first: number | "r
       Object.assign(row, g, { ghostScore: +gScore.toFixed(2), bestScore: best ? +best.score.toFixed(2) : null, used: useBest ? "search" : "ghost" });
       freshLoad(server, useBest ? best.state : gState);
     } else botTurn(server, who);
+    if (args.dump) {
+      const st = server.getState() as unknown as RawState;
+      row.exertedAtEnd = (st.ctx.zones.private.zoneCards[`play:${who}`] ?? []).filter((id) => st.ctx.zones.private.cardMeta[id]?.state === "exerted").map((id) => fullName(describe(server, { family: "quest", cardId: id }, "me").card));
+    }
     row.ms = Math.round(now() - ts);
     row.lore = [server.getLore(PIDS[0]), server.getLore(PIDS[1])];
     trace.push(row);
