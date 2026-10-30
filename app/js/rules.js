@@ -22,6 +22,9 @@
 //                                   { score, parts, raw, weights, defaults, cards: { [instanceId]: [{ k, v, x }] }, terms }
 //                                   defaults: the engine's own weights. terms: your own (DojoLab), each { value, hits: [instanceId] }.
 //                                   cards: each card in play's share (part k, value v, the measure x weighted).
+//   whatIf(state, keyOf, opts)    → Promise of the game played out from this board (What-if, DojoWhatIf):
+//                                   { winner, lore, lines, turns: [{ turn, who, how, acts, matched, missed, state }] }.
+//                                   Each turn's `state` is the Dojo board the next turn starts on (or the end).
 //   actText(act)                  one step of a line as a sentence.
 //   groupActs(acts)               a line's steps for display: [{ act, subs }], each move with what it set off.
 //   stepText(group)               a grouped step in a few words, for comparing lines.
@@ -147,6 +150,21 @@ window.DojoRules = (function () {
         for (const [p, shares] of Object.entries(r.cards)) if (place[p]) cards[place[p]] = shares;
         const found = r.terms.map(t => ({ value: t.value, hits: t.hits.map(p => place[p]).filter(Boolean) }));
         return { score: r.score, parts: r.parts, raw: r.raw, weights: r.weights, defaults: r.defaults, cards, terms: found };
+    }
+
+    async function whatIf(state, keyOf, opts) {
+        await engine();
+        const r = await call('whatIf', { board: boardFromState(state, keyOf), ...opts });
+        if (r.error) return r;
+        const place = placesOf(state);
+        const iid = (c) => (c ? Object.assign(c, { iid: place[r.ids[c.id]] || null }) : c);
+        r.turns.forEach(t => {
+            (t.acts || []).forEach(a => [a.card, a.target, ...(a.with || []), ...(a.targets || [])].forEach(iid));
+            t.state = stateForLine(state, r.ids, t.end);
+            delete t.end;
+        });
+        delete r.ids;
+        return r;
     }
 
     // One step of a proposed line. `by: 'opp'` steps are the bot answering for the opponent.
@@ -353,5 +371,5 @@ window.DojoRules = (function () {
         };
     }
 
-    return { UNKNOWN, VERBS, whyText, actText, groupActs, stepText, lineDiff, boardFromState, analyze, explore, botStart, botStep, botChoose, botPass, botRebase, score, stateForLine, start, call };
+    return { UNKNOWN, VERBS, whyText, actText, groupActs, stepText, lineDiff, boardFromState, analyze, explore, botStart, botStep, botChoose, botPass, botRebase, score, whatIf, stateForLine, start, call };
 })();

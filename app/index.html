@@ -59,6 +59,7 @@
     <!-- Rules engine (Feature 68, experimental): what the rules allow, from the Lorcana engine in a worker -->
     <script src="js/rules.js"></script>
     <script src="js/lab.js"></script>
+    <script src="js/whatif.js"></script>
 
     <!-- Help (Features 57-58): manual search, the manual, "Show me", guided tours. app/help/ holds the content -->
     <script src="js/help-search.js"></script>
@@ -596,6 +597,17 @@
         </div>
     </div>
 
+    <!-- Feature 68 (experimental): What-if, a lost game played out again from your turns before the loss -->
+    <div id="whatif-modal" class="modal-backdrop whatif-modal" role="dialog" aria-modal="true" aria-labelledby="whatif-title" hidden>
+        <div class="modal-card whatif-card">
+            <div class="modal-head">
+                <h2 id="whatif-title"><i class="fa-solid fa-route"></i> What-if</h2>
+                <button class="close" onclick="App.closeWhatIf()" aria-label="Close">&times;</button>
+            </div>
+            <div class="modal-body" id="whatif-body"></div>
+        </div>
+    </div>
+
     <!-- Import Duels.ink Log Modal -->
     <div id="import-log-modal" role="dialog" aria-modal="true" aria-labelledby="import-log-title"
         class="modal-backdrop fixed inset-0 flex items-center justify-center hidden p-6" style="z-index:90">
@@ -682,6 +694,10 @@
                     title="Import a Duels.ink log or replay"><i
                         class="fa-solid fa-file-lines"></i><span>Log</span></button>
                 <div class="divider-v tree-head-rule"></div>
+                <!-- Feature 68 (experimental): What-if, while the rules engine is on -->
+                <button class="tree-tool whatif-key" id="tree-whatif" onclick="App.openWhatIf()"
+                    title="What-if: look for a line that would have won this game"><i
+                        class="fa-solid fa-route"></i><span>What-if</span></button>
                 <button class="tree-tool" id="tree-view-toggle" onclick="App.toggleTreeView()" aria-pressed="false"
                     title="Show the tree as a plot: every saved turn a dot"><i
                         class="fa-solid fa-braille"></i><span>Plot</span></button>
@@ -791,6 +807,8 @@
                 <div class="section-head">
                     <h3>Multiverse</h3>
                     <span class="mmv-read" id="mmv-read" aria-live="polite"></span>
+                    <button class="icon-btn whatif-key" onclick="App.openWhatIf()" title="What-if: look for a line that would have won this game"
+                        aria-label="What-if"><i class="fa-solid fa-route"></i></button>
                     <button class="icon-btn mmv-open" onclick="App.openTreeModal()" title="Open the Multiverse (M)"
                         aria-label="Open the Multiverse"><i
                             class="fa-solid fa-up-right-and-down-left-from-center"></i></button>
@@ -5945,6 +5963,7 @@
             // Returns a session object compatible with the loader (same shape as buildSessionFromLog).
             buildSessionFromReplay(replay) {
                 const persp = replay.perspective || 1;   // duels player number of the log owner (1 or 2)
+                const realMoves = window.DojoWhatIf ? DojoWhatIf.movesFromReplay(replay) : {}; // by turn, for What-if (Feature 68)
                 const myIdx = persp - 1;                  // dojo index of the perspective player
                 const oppIdx = 1 - myIdx;                 // dojo index of the opponent
                 const oppDuels = oppIdx + 1;              // duels player number of the opponent
@@ -6182,6 +6201,7 @@
                         timestamp: Date.now(),
                         isDeckEdit: false,
                         turnStart: true, turnPlayed: true, // a turn's start board and what was played from it
+                        real: realMoves[segTurn] || { moves: [], choices: [] }, // Feature 68: both players' real moves, for What-if
                         cardsPlayedData: segPlayed.slice(),
                         // drawn/discarded: a replay has no semantic frame for either (draws
                         // ride inside the END_TURN patch, and the opponent's are hidden).
@@ -7040,6 +7060,151 @@
                     + seg('Pace', [['auto', 'Auto'], ['step', 'Step']], b.pace, 'setBotPace')
                     + seg('Speed', [[2000, 'Slow'], [1000, 'Normal'], [400, 'Fast']], b.speed, 'setBotSpeed')
                     + '<p class="bm-hint">The rules engine plays that seat, one move at a time. P switches Auto and Step; N plays its next move. Switch it off to take over.</p>';
+            },
+
+            // --- Feature 68 (experimental): What-if (Multiverse → What-if) ---
+            // A game imported from a Duels.ink replay, played out again from your turns before the loss, looking
+            // for a line that would have won (DojoWhatIf, app/js/whatif.js). The results stay while the page is
+            // open; each winning line is saved as a Multiverse branch, one node per turn.
+            _whatIf: null, // { key, game, levels, running, stopping, progress, next, done, why }
+
+            openWhatIf() {
+                if (!this.rulesOn) return this.showToast('What-if needs the rules engine: Tweaks → Rules engine → Assist.');
+                const turns = DojoWhatIf.turnsOf(this.bookmarks, s => this.decompressState(s));
+                const key = turns.map(t => t.id).join();
+                if (!this._whatIf || this._whatIf.key !== key) {
+                    const last = turns[turns.length - 1];
+                    const game = turns.length > 1 ? { turns, keyOf: id => this.cardKey(id), known: id => !!this.cardDB[id], me: 1 - last.active } : null;
+                    this._whatIf = { key, game, levels: [], running: false, progress: '', next: 1, done: false, why: '' };
+                }
+                this.$('whatif-modal').hidden = false;
+                this.renderWhatIf();
+            },
+
+            closeWhatIf() {
+                this.$('whatif-modal').hidden = true;
+            },
+
+            async runWhatIf() {
+                const w = this._whatIf;
+                if (!w || !w.game || w.running) return;
+                Object.assign(w, { running: true, stopping: false, progress: 'Starting the rules engine', why: '' });
+                this.renderWhatIf();
+                let r;
+                try {
+                    r = await DojoWhatIf.run(w.game, w.next, {
+                        progress: (text) => { w.progress = text; this.renderWhatIf(); },
+                        level: (l) => { w.levels.push(l); if (l.won) l.lines.filter(x => x.winner === w.game.me).forEach(x => this.whatIfBranch(l, x)); this.renderWhatIf(); }
+                    }, () => w.stopping);
+                } catch (e) {
+                    console.warn('What-if:', e);
+                    r = { done: true, why: 'error' };
+                }
+                const lastBack = w.levels.length ? w.levels[w.levels.length - 1].back : 0;
+                Object.assign(w, { running: false, progress: '', done: r.done, why: r.why || (r.done ? '' : 'stopped'), next: lastBack + 1 });
+                this.renderWhatIf();
+                if (w.levels.some(l => l.won)) this.showToast('What-if found a winning line: saved in the Multiverse.');
+            },
+
+            stopWhatIf() {
+                if (this._whatIf) this._whatIf.stopping = true;
+            },
+
+            // A line played out, as a Multiverse branch from that turn's node: a node for each turn it reached.
+            whatIfBranch(level, line) {
+                if (line.branch) return line.branch;
+                let parentId = level.nodeId, prev = level.start;
+                line.turns.forEach((t, k) => {
+                    const over = k === line.turns.length - 1 && line.winner !== null;
+                    const turn = over ? t.turn : t.turn + 1;
+                    const active = over ? t.who : 1 - t.who;
+                    const st = JSON.parse(JSON.stringify(level.start));
+                    Object.assign(st, { players: JSON.parse(JSON.stringify(t.state.players)), turn, activePlayer: active, inactivePlayer: 1 - active,
+                        log: [], cardsPlayedThisTurn: [], mulliganPending: false, opponentHandRevealed: false });
+                    // Ink inked in the turn just played shows face up; the rest face down.
+                    st.players.forEach((p, pi) => {
+                        const had = new Set(prev.players[pi].inkwell.map(c => c.instanceId));
+                        p.inkwell.forEach(c => { c.faceUp = pi === t.who && !had.has(c.instanceId); });
+                    });
+                    const id = this.uuid();
+                    st.activeBookmarkId = id;
+                    const who = st.players[t.who].name || `P${t.who + 1}`;
+                    const moves = (t.acts || []).filter(a => a.by === 'me').map(a => `- ${who}: ${DojoRules.actText(a)}`);
+                    if (t.how === 'better') moves.unshift(`- ${who}'s real turn scored lower than the search's line, so this is the search's.`);
+                    this.bookmarks.push({
+                        id, parentId,
+                        name: `Turn ${turn} – P${active + 1} ${over ? (line.winner === this._whatIf.game.me ? 'wins' : 'loses') : 'Active'} (What-if from turn ${level.turn}, line ${line.index + 1})`,
+                        stats: `Turn ${turn} | P1: ${st.players[0].lore} - P2: ${st.players[1].lore}`,
+                        comment: moves.join('\n'),
+                        color: this.playerBookmarkColor(active), gradient: null,
+                        state: JSON.stringify(this.compressState(st, true)),
+                        timestamp: Date.now(), isDeckEdit: false, turnStart: true, cardsPlayedData: []
+                    });
+                    if (!line.branch) line.branch = id;
+                    parentId = id;
+                    prev = st;
+                });
+                this.renderTree();
+                this.saveToDevice();
+                return line.branch;
+            },
+
+            whatIfOpen(li, ii) {
+                const w = this._whatIf, level = w && w.levels[li], line = level && level.lines[ii];
+                if (!line) return;
+                const id = this.whatIfBranch(level, line);
+                this.closeWhatIf();
+                this.restoreTimeline(id);
+            },
+
+            renderWhatIf() {
+                const body = this.$('whatif-body'), w = this._whatIf;
+                if (!body || !w || this.$('whatif-modal').hidden) return;
+                const esc = (t) => this._esc(String(t));
+                if (!w.game) {
+                    body.innerHTML = `<p class="wi-intro">What-if needs a game imported from a <b>Duels.ink replay</b> (.replay.gz or .json), which records both players' moves: Multiverse → Log, or Import.</p>`;
+                    return;
+                }
+                const g = w.game, last = g.turns[g.turns.length - 1], me = g.me;
+                const name = (i) => esc(last.state.players[i].name || `P${i + 1}`);
+                const result = (x) => {
+                    const end = x.turns.length ? x.turns[x.turns.length - 1].turn : 0;
+                    const score = `${x.lore[me]}–${x.lore[1 - me]}`;
+                    return x.winner === me ? `Wins ${score} on turn ${end}` : x.winner !== null ? `Loses ${score} on turn ${end}` : `No winner by turn ${end} (${score})`;
+                };
+                const moves = (x) => esc(((x.turns[0] || {}).acts || []).filter(a => a.by === 'me' && !/^resolve/.test(a.family)).map(a => DojoRules.actText(a)).join(' · ') || 'End the turn');
+                const levels = w.levels.map((l, li) => {
+                    const back = `${l.back} turn${l.back > 1 ? 's' : ''} back · turn ${l.turn}`;
+                    // A level without a win stays folded unless opened; a win shows open.
+                    const open = (l.open != null ? l.open : l.won) ? ' open' : '';
+                    const head = (verdict) => `<summary class="wi-head"><span class="rp-lbl">${back}</span><span class="wi-verdict">${verdict}</span></summary>`;
+                    if (!l.reproduced) return `<details class="wi-level"${open} ontoggle="App._whatIf.levels[${li}].open = this.open">${head('Can’t follow the game')}
+                        <p class="wi-checks">Replayed from here with both players' real moves, the game doesn't end as it really did, so lines from here can't be trusted.</p></details>`;
+                    const ctlWins = l.control && l.control.winner === me;
+                    const verdict = l.won ? 'Win found' : ctlWins ? 'Win comes later' : 'No win';
+                    const lines = l.lines.map((x, ii) => `<li class="wi-line${x.winner === me ? ' is-won' : ''}">
+                        <div class="wi-line-head"><span class="wi-res">Line ${x.index + 1}: ${result(x)}</span>
+                        <button class="btn" onclick="App.whatIfOpen(${li}, ${ii})" title="${x.branch ? 'Load this line in the Multiverse' : 'Save this line as a Multiverse branch and load it'}">Open</button></div>
+                        <div class="wi-moves">${moves(x)}</div></li>`).join('');
+                    return `<details class="wi-level${l.won ? ' is-won' : ''}"${open} ontoggle="App._whatIf.levels[${li}].open = this.open">${head(verdict)}
+                        <p class="wi-checks">The real game replayed from here ends as it did. Your real move, then the search's turns: ${l.control ? result(l.control).toLowerCase() : '…'}${ctlWins ? ', so the win is in a later turn' : ''}.</p>
+                        <ol class="wi-lines">${lines || '<li class="wi-line"><div class="wi-moves">No other line this turn.</div></li>'}</ol></details>`;
+                }).join('');
+                const more = w.levels.length && w.next <= DojoWhatIf.BACK;
+                let foot;
+                if (w.running) foot = `<span class="wi-progress">${esc(w.progress)}…</span><button class="btn" onclick="App.stopWhatIf()">Stop</button>`;
+                else if (!w.levels.length && !w.why) foot = `<span class="wi-progress">About half a minute for each turn back.</span><button class="btn btn-primary" onclick="App.runWhatIf()">Look for a win</button>`;
+                else {
+                    const last = w.levels[w.levels.length - 1];
+                    const note = w.why === 'error' ? 'The rules engine stopped with an error.'
+                        : w.why === 'won' ? 'Stopped at the first turn back with a win.'
+                        : w.why === 'stopped' ? 'Stopped.'
+                        : w.why === 'drift' ? (last && last.back === 1 ? 'The replay from your last turn doesn’t end as the game did, so What-if can’t follow this game.' : 'The replay stops following the real game here, so What-if stops too.')
+                        : `No winning line in ${w.levels.length} turn${w.levels.length > 1 ? 's' : ''} back.`;
+                    foot = `<span class="wi-progress">${note}</span>${more && (w.why === 'won' || w.why === 'stopped') ? `<button class="btn btn-primary" onclick="App.runWhatIf()">${w.why === 'won' ? 'Keep going' : 'Carry on'}</button>` : ''}`;
+                }
+                body.innerHTML = `<p class="wi-intro"><b>${name(last.active)}</b> won on turn ${last.turn}. What-if plays the game out again from your turns before that, up to ${DojoWhatIf.BACK} back, looking for a line that wins for <b>${name(me)}</b>. Their turns are what they really did, unless the search finds clearly better; your later turns are the search's.</p>
+                    ${levels}<div class="wi-foot">${foot}</div>`;
             },
 
             // --- Feature 68 (experimental): the score lab (Tweaks → Rules engine → Lab) ---
@@ -14759,6 +14924,7 @@
                     return;
                 }
                 if (document.body.classList.contains('hand-open')) { App.setHandFan(false); return; }
+                if (!document.getElementById('whatif-modal').hidden) { App.closeWhatIf(); return; }
                 if (!document.getElementById('tree-modal').classList.contains('hidden')) {
                     App.closeTreeModal();
                     return;

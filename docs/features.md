@@ -722,6 +722,7 @@ Duels.ink exports a deck with the printing at the end of each line, `4 Ursula - 
 - As a player, I want an optional rules mode where the Dojo knows what actions require (targets, lore, draws, triggered abilities) and does that bookkeeping for me, and I can switch it off to get today's sandbox back.
 - As a player, I want to play against a bot, fully or one action at a time.
 - As a player, I want the Dojo to explore different orders of play for a turn, score them, and show me the best lines in the Multiverse.
+- As a player who just lost, I want to load the game and have the Dojo look for a line that would have won: going back one of my turns at a time, playing my turn differently, and seeing whether the opponent's real moves still beat me.
 
 ### Details
 - Uses the MIT-licensed Lorcana engine from `TheCardGoat/tcg-engines`, built from a pinned commit into a vendored bundle that runs in a Web Worker. Nothing runs on Cloudflare (free plan: 10 ms CPU per request).
@@ -731,6 +732,7 @@ Duels.ink exports a deck with the printing at the end of each line, `4 Ursula - 
 - **Phase 1a, first cut:** Tweaks → *Rules engine: Assist* marks the cards with legal moves (pips in their function-key colours). Each card's menu says what the rules allow, or why a card in hand can't be played. It never blocks a move. Desktop menu only, so far.
 - **Proposed plays (tier 3, first cut):** with Assist on, **Suggest** searches the rest of the turn and shows up to three lines with their steps, the lore they gain and why they score. **Play it** puts a line on the board (one Undo step); **Save as branch** keeps it in the Multiverse.
 - **Proposed plays count modifiers and keywords** (Feature 61 modifiers reach the engine; Evasive, Alert, Bodyguard, Resist, Challenger and Reckless change who is exposed and who brings lore), **the bot finishes each line**, and the score's weights were **tuned by play** against the engine's bot (59% → 64% wins on 256 fresh games). Cards go to the engine by name, so a promo printing that shares a number can't stand in for another card.
+- **What-if (first cut, branch `claude/feat-68-what-if`):** with Assist on, **Multiverse → What-if** takes a game imported from a Duels.ink replay and plays it out again from your turns before the loss, up to five back. At each it checks that the real game, replayed, still ends as it did; tries the search's four best lines other than your real move; and stops at the first turn back with a winning line (**Keep going** looks further). Their turns are what they really did unless the search finds clearly better. Each winning line is saved as a Multiverse branch, one node per turn. On the owner's lost game it found a win three turns back in about 85 s.
 
 ## Feature 67: Find a session or a deck in the Library and in Pick up again (v3.21.0)
 

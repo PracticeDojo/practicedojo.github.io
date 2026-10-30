@@ -384,6 +384,21 @@ Tiers 2 and 3 only need the read side of tier 1 (hydrate and project) plus the e
 
 Measured results, newest first. The work itself lives on `feat/68-rules-engine` (AGENTS.md, *Long-lived branch*).
 
+### 2026-10-31 · What-if, first cut; "during your turn" triggers after the engine's turn change
+
+**The trigger fix** (also on `feat/68-rules-engine`, `2c429fb`). The owner asked for Merlin's Shop and Smithy to work ("once during your turn, whenever a character moves here, draw a card and gain 1 lore"). It worked on a freshly loaded board and failed after the engine changed the turn. Cause: our loader told the engine whose turn it was, but left each player's completed-turn count at 0. Trigger restrictions ("during your turn") don't read the turn owner; they work it out from who went first plus those counts. So from a board on player two's turn, after one turn change the engine thought player two was still active, and every "during your turn" trigger of player one stopped firing. That hit the bot opponent's turn changes and proposed plays' replies as well as What-if. The loader now sets counts that agree with the active player (and it isn't anyone's first turn).
+- Checked: after a turn change, moving to the shop gives +1 lore and a card. The search uses it: on a test board its best lines move characters there. Game B now replays exactly from 1, 2 and 3 turns back (21–14 on turn 28) and reproduces the loss from 4 and 5. `app-checks` 40/40, and 6 more runs clean.
+- The replay also sends a second move to the other copy of a location (the real game moved Dumbo to one shop, then the other).
+
+**What-if, built** (branch `claude/feat-68-what-if`):
+- **Where:** Multiverse → **What-if** (and a key in the mini Multiverse's header), while the rules engine is on.
+- **What it needs:** a game imported from a Duels.ink replay. The import now keeps each turn's real moves and choices on its node (`real`), read from the replay's log (`DojoWhatIf.movesFromReplay`). The run checks them as data: known kinds of move, plain names.
+- **The run** (`app/js/whatif.js`, `DojoWhatIf.run`): up to 5 of your turns back. At each: the real game replayed (if it doesn't end as it did, the run stops there); the control; then the search's 4 best lines other than your real move. It stops at the first turn back with a winning line and a losing control; **Keep going** looks further; **Stop** waits for the current playout.
+- **The worker op** `whatIf` replaces the spike's: each turn returns its moves and the board the next turn starts on, and `DojoRules.whatIf` turns those into Dojo states.
+- **Results:** each winning line becomes a Multiverse branch from that turn's node, one node per turn ("Turn 21 – P1 wins (What-if from turn 19, line 2)"), with that turn's moves in the comment and the ink of the turn just played face up. **Open** loads a line, saving it first if it isn't saved. In the dialog, a turn back without a win folds to one line.
+- **Checked:** game A in the browser found the win 3 turns back in 85 s, with 3 winning lines saved and opened on the board. `app-checks` +2 on the repo's sample replay (which is game A): the import keeps each turn's moves; the real game replays from turn 23 (19–20), and line 2 from turn 19 wins 21–8 on turn 21. Screenshots on desktop and phone, by day and night.
+- **Not yet:** games from text logs or played in the Dojo (no real moves recorded); unfinished games (the owner's call: the best lore race 2 turns past the end); a manual article.
+
 ### 2026-10-30 · What-if, second pass: game A replays exactly 5 turns back, and a win turns up
 
 The four fixes the first pass asked for, then the same experiment again on the same two games.

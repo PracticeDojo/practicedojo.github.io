@@ -215,6 +215,18 @@ export default async (page) => {
         App.setBot(1);
         App.startGame({ asked: true });
         check('bot: a loaded or new game starts with it off', `${offAfterLoad} ${App.bot.seat} ${document.body.classList.contains('bot-on')}`, 'null null false');
+        // What-if (Feature 68): a replay's import keeps both players' real moves on each turn's node, and the
+        // engine replays them. The sample is a lost game: from turn 23 the real game ends as it did (19-20 on
+        // turn 24), and line 2 from turn 19 (quest with Vixey instead of challenging) wins 21-8 on turn 21.
+        const wiReplay = JSON.parse(await App.decodeMaybeGzip(await (await fetch('/docs/samples/01a15b0a-313b-73d3-846f-37752210870b_p1.replay.gz')).arrayBuffer()));
+        const wiTurns = DojoWhatIf.turnsOf(App.buildSessionFromReplay(wiReplay).bookmarks, s => App.decompressState(s));
+        check('what-if: the import keeps each turn\'s real moves', wiTurns.map(t => t.real.moves.length).join(' '), '2 2 3 2 3 3 4 4 4 2 2 4 4 4 3 2 4 3 4 3 4 5 4 8');
+        const wiReal = Object.fromEntries(wiTurns.map(t => [t.turn, t.real]));
+        const wiAt = (turn) => DojoWhatIf.filled(wiTurns, wiTurns.findIndex(t => t.turn === turn), id => !!App.cardDB[id]);
+        const wiOpts = { me: 0, real: wiReal, nodes: 300, laterNodes: 120, margin: 1 };
+        const wiExact = await DojoRules.whatIf(wiAt(23), id => App.cardKey(id), { ...wiOpts, first: 'real', exact: true, horizon: 24 });
+        const wiLine = await DojoRules.whatIf(wiAt(19), id => App.cardKey(id), { ...wiOpts, first: 1, horizon: 28 });
+        check('what-if: the real game replays, and a line from turn 19 wins', `${wiExact.winner} ${wiExact.lore.join('-')} | ${wiLine.winner} ${wiLine.lore.join('-')} t${wiLine.turns[wiLine.turns.length - 1].turn}`, '1 19-20 | 0 21-8 t21');
         // Its ink turns face down when its turn begins, and stays so through its moves: on your turn 4, only
         // what it inked on its turn 3 is face up, none of the ink it had before.
         settle();

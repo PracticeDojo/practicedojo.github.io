@@ -11123,3 +11123,151 @@ body.bot-on #btn-bot {
         max-width: calc(100vw - 16px);
     }
 }
+
+/* ----- Feature 68 (experimental): What-if (Multiverse → What-if) ----- */
+body:not(.rules-on) .whatif-key {
+    display: none;
+}
+
+.whatif-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 95;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+}
+
+.whatif-modal[hidden] {
+    display: none;
+}
+
+.whatif-card {
+    width: min(640px, 100%);
+}
+
+.wi-intro,
+.wi-checks {
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.45;
+    color: var(--text-2);
+}
+
+.wi-checks {
+    margin: 4px 0 8px;
+    font-size: 12px;
+    color: var(--text-dim);
+}
+
+.wi-level {
+    margin-top: 14px;
+    padding-top: 12px;
+    border-top: 1px solid var(--fu-row-rule);
+}
+
+.wi-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.wi-verdict {
+    font-size: 12.5px;
+    font-weight: 560;
+    color: var(--text-2);
+}
+
+.wi-level.is-won .wi-verdict {
+    color: var(--text);
+}
+
+.wi-lines {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.wi-line {
+    padding: 8px 10px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+}
+
+.wi-line.is-won {
+    border-color: var(--key-olive);
+    box-shadow: inset 3px 0 0 var(--key-olive);
+}
+
+.wi-line-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.wi-res {
+    font-size: 13px;
+    font-weight: 560;
+}
+
+.wi-line-head .btn {
+    min-height: 28px;
+    padding: 0 10px;
+}
+
+.wi-moves {
+    margin-top: 3px;
+    font-size: 12px;
+    line-height: 1.4;
+    color: var(--text-2);
+}
+
+.wi-foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 16px;
+}
+
+.wi-progress {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.02em;
+    color: var(--text-dim);
+}
+
+.wi-level > summary {
+    cursor: pointer;
+    list-style: none;
+}
+
+.wi-level > summary::-webkit-details-marker {
+    display: none;
+}
+
+.wi-level > summary::before {
+    content: "\25B8";
+    margin-right: 6px;
+    font-size: 10px;
+    color: var(--text-dim);
+}
+
+.wi-level[open] > summary::before {
+    content: "\25BE";
+}
+
+.wi-level > summary .rp-lbl {
+    margin-right: auto;
+}
+
+.wi-level[open] > summary {
+    margin-bottom: 4px;
+}
