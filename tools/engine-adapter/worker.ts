@@ -1108,7 +1108,117 @@ function searchCost(args: { deck1: string; deck2: string; seed?: string; turn?: 
   };
 }
 
-const ops: Record<string, (args: never) => unknown> = { init, names, analyze, explore, botStart, botStep, botChoose, botPass, score, selfPlay, botGame, roundTrip, searchCost };
+
+// --- SPIKE (What-if, not for commit): play a game out from a turn's board. ---
+type RealMove = { family: string; card: string; target?: string };
+type RealTurn = { moves: RealMove[]; choices: string[] };
+const fullName = (a?: ActCard) => (a ? (a.version ? `${a.name} - ${a.version}` : a.name) : "");
+const sameCard = (a: ActCard | undefined, name?: string) => !!a && !!name && (fullName(a) === name || a.name === name);
+function drain(server: Server, prefer?: { who: string; choices: string[] }) {
+  for (let i = 0; i < 60 && !server.isGameOver(); i++) {
+    if (!server.getBagCount() && !server.getPendingEffects().length) return true;
+    const en = server.enumerateAutomatedActionsForCurrentActor();
+    if (!en.actorId || !en.candidates.length) return false;
+    let c = en.candidates[0];
+    if (prefer && en.actorId === prefer.who && prefer.choices.length) {
+      const want = prefer.choices[0];
+      const hit = en.candidates.find((x) => describe(server, x as never, "me").targets?.some((t) => sameCard(t, want)));
+      if (hit) { c = hit; prefer.choices.shift(); }
+    }
+    if (!applyCandidate(server, en.actorId, c).success) return false;
+  }
+  return !server.getBagCount() && !server.getPendingEffects().length;
+}
+function ghostTurn(server: Server, who: string, real: RealTurn | undefined) {
+  let matched = 0, missed = 0;
+  const prefer = { who, choices: [...(real?.choices ?? [])] };
+  const missedMoves: string[] = [];
+  for (const m of real?.moves ?? []) {
+    if (!drain(server, prefer) || server.isGameOver()) break;
+    if ((server.getState() as unknown as RawState).ctx.status.turnOwnerId !== who) break;
+    const en = server.enumerateAutomatedActionsForCurrentActor();
+    if (en.actorId !== who) break;
+    const c = en.candidates.find((x) => {
+      const a = describe(server, x as never, "me");
+      return a.family === m.family && sameCard(a.card, m.card) && (!m.target || sameCard(a.target, m.target));
+    });
+    if (!c || !applyCandidate(server, who, c).success) { missed++; missedMoves.push(`${m.family}:${m.card}${m.target ? ">" + m.target : ""}`); continue; }
+    matched++;
+  }
+  drain(server, prefer);
+  return { matched, missed, missedMoves };
+}
+function botTurn(server: Server, who: string) {
+  for (let i = 0; i < 40 && !server.isGameOver(); i++) {
+    if (!drain(server)) break;
+    if ((server.getState() as unknown as RawState).ctx.status.turnOwnerId !== who) break;
+    const en = server.enumerateAutomatedActionsForCurrentActor();
+    const c = en.actorId === who ? en.candidates[0] : undefined;
+    if (!c || !applyCandidate(server, who, c).success) break;
+  }
+  drain(server);
+}
+function lineScore(server: Server, who: string, other: string, W: Weights) {
+  const st = structuredClone(server.getState());
+  const e = evaluate(server, who, other, W);
+  let score = e.score;
+  if (W.reply) score += W.reply * (replyScore(server, who, other, W) - e.score);
+  freshLoad(server, st);
+  return score;
+}
+function whatIf(args: SearchOpts & { board: Board; me: 0 | 1; first: number | "real"; real: Record<string, RealTurn>; oppMode: string; meLater: string; margin?: number; horizon: number; laterNodes?: number }) {
+  const t0 = now();
+  const { match, unknown } = hydrate(args.board);
+  const server = bareServer(match);
+  const W = { ...WEIGHTS, ...args.weights };
+  const me = PIDS[args.me], opp = PIDS[1 - args.me];
+  let turn = args.board.turn;
+  const trace: Record<string, unknown>[] = [];
+  let firstPlan: string[] | null = null;
+  while (!server.isGameOver() && turn <= args.horizon) {
+    const who = (server.getState() as unknown as RawState).ctx.status.turnOwnerId as string;
+    const other = who === me ? opp : me;
+    const real = args.real[String(turn)];
+    const mode = who === me ? (turn === args.board.turn ? (args.first === "real" ? "real" : "line") : args.meLater) : args.oppMode;
+    const row: Record<string, unknown> = { turn, who: who === me ? "me" : "opp", mode };
+    const ts = now();
+    drain(server);
+    if (mode === "line" || mode === "search") {
+      const idx = mode === "line" ? (args.first as number) : 0;
+      const r = search(server, who, other, { ...args, lines: idx + 1, nodes: mode === "line" ? args.nodes : args.laterNodes ?? args.nodes });
+      const pick = r.best[idx] ?? null;
+      row.lines = r.best.length;
+      if (pick) {
+        freshLoad(server, pick.state);
+        if (mode === "line") firstPlan = pick.acts.filter((a) => a.by === "me").map((a) => `${a.family}:${fullName(a.card)}${a.target ? ">" + fullName(a.target) : ""}`);
+      } else row.noLine = true;
+    } else if (mode === "real" || mode === "ghost") {
+      Object.assign(row, ghostTurn(server, who, real));
+    } else if (mode === "ghost+") {
+      const s0 = structuredClone(server.getState());
+      const g = ghostTurn(server, who, real);
+      const gState = structuredClone(server.getState());
+      const gScore = lineScore(server, who, other, W);
+      freshLoad(server, s0);
+      const r = search(server, who, other, { ...args, lines: 1, nodes: args.laterNodes ?? args.nodes });
+      const best = r.best[0];
+      const useBest = !!best && best.score > gScore + (args.margin ?? 1);
+      Object.assign(row, g, { ghostScore: +gScore.toFixed(2), bestScore: best ? +best.score.toFixed(2) : null, used: useBest ? "search" : "ghost" });
+      freshLoad(server, useBest ? best.state : gState);
+    } else botTurn(server, who);
+    row.ms = Math.round(now() - ts);
+    row.lore = [server.getLore(PIDS[0]), server.getLore(PIDS[1])];
+    trace.push(row);
+    if (server.isGameOver()) break;
+    if (!server.passTurn(who).success) { row.passFailed = true; break; }
+    drain(server);
+    turn++;
+  }
+  const winner = server.getWinner();
+  return { winner: winner ? PIDS.indexOf(winner as (typeof PIDS)[number]) : null, lore: [server.getLore(PIDS[0]), server.getLore(PIDS[1])], turn, unknown: unknown.length, firstPlan, trace, ms: Math.round(now() - t0) };
+}
+
+const ops: Record<string, (args: never) => unknown> = { init, names, analyze, explore, botStart, botStep, botChoose, botPass, score, whatIf, selfPlay, botGame, roundTrip, searchCost };
 (globalThis as Record<string, unknown>).DojoEngine = ops;
 
 const scope = globalThis as unknown as { WorkerGlobalScope?: unknown; onmessage: unknown; postMessage(m: unknown): void };
