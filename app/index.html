@@ -1728,6 +1728,7 @@
                 this.flushDeviceSave();
                 this.session = null;
                 this.endSharedView();
+                this.setBot(null, { quiet: true }); // Feature 68: a loaded game starts with the bot off
                 this.state = nextState;
                 this.bookmarks = clean.bookmarks;
                 this.autoSaves = clean.autoSaves;
@@ -4941,6 +4942,7 @@
                 this.flushDeviceSave();
                 this.session = null;
                 this.endSharedView();
+                this.setBot(null, { quiet: true }); // Feature 68: a new game starts with the bot off
 
                 // Seat the same saved decks next time (pasted lists aren't kept).
                 DojoLibrary.setPref('lastDecks', {
@@ -6771,10 +6773,12 @@
                 return this.bot.seat != null ? 1 - this.bot.seat : this.state.activePlayer;
             },
 
-            setBot(seat) {
+            // quiet: no log line or render (a new game or a loaded one switches the bot off this way).
+            setBot(seat, opts = {}) {
                 clearTimeout(this._botT);
                 this.botDrop();
                 Object.assign(this.bot, { seat, paused: false, ask: null, note: '', last: '', over: false });
+                if (opts.quiet) return void (this.renderBotMenu(), this.renderBot());
                 if (this.state && this.state.players) this.logAction(seat != null ? `Bot plays P${seat + 1}.` : 'Bot off: you play both seats.', true);
                 this.renderBotMenu();
                 if (this.state && this.state.players) this.render();

@@ -209,7 +209,12 @@ export default async (page) => {
         App.endTurn();
         await botBack(6);
         check('bot: after Undo, ending your turn lets it play', `${pausedAfterUndo} ${App.state.turn} ${App.state.activePlayer} ${App.bot.paused} ${App.bot.note || 'ok'}`, 'true 6 0 false ok');
-        App.setBot(null);
+        // A loaded game (library, file, demo, Duels.ink import) and a new game start with the bot off.
+        App._applySessionData(botDemo.data);
+        const offAfterLoad = App.bot.seat;
+        App.setBot(1);
+        App.startGame({ asked: true });
+        check('bot: a loaded or new game starts with it off', `${offAfterLoad} ${App.bot.seat} ${document.body.classList.contains('bot-on')}`, 'null null false');
         return out;
     }, IMPORTS);
     writeFileSync(process.env.APP_CHECKS_OUT, JSON.stringify(results));
