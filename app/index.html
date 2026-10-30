@@ -5068,7 +5068,11 @@
                         c.faceUp = false;
                     });
                     p.inkReady = p.inkTotal;
-                } else this.logAction('Ready and draw steps (rules engine)', true);
+                } else {
+                    // The engine readied the board; ink inked last turn still turns face down.
+                    p.inkwell.forEach(c => { c.faceUp = false; });
+                    this.logAction('Ready and draw steps (rules engine)', true);
+                }
 
                 // The new turn's buffers. Cleared whether or not auto-save is on, so a
                 // manual bookmark shows only this turn's cards.

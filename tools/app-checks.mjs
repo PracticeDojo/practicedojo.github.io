@@ -167,6 +167,8 @@ export default async (page) => {
         const botDemo = JSON.parse(await App.decodeMaybeGzip(await (await fetch('/app/defaults/demos/set14_example2.dojo.json.gz')).arrayBuffer()));
         App.state = App.decompressState(JSON.parse(botDemo.data.bookmarks.find(b => b.id === 'gwop5bnzw').state));
         App.history = [];
+        const faceUp = (pi) => App.state.players[pi].inkwell.filter(c => c.faceUp).length;
+        const upBefore = faceUp(0);
         App.setBotSpeed(50);
         App.setBot(1);
         await new Promise((done) => {
@@ -175,7 +177,7 @@ export default async (page) => {
             tick();
         });
         const said = App.state.log.map(l => (l && (l.msg || l.text)) || String(l));
-        check('bot: plays its turn, the engine hands it back', `${App.state.turn} ${App.state.activePlayer} ${said.some(t => /^Bot: /.test(t))} ${said.includes('Ready and draw steps (rules engine)')} ${App.bot.note || 'ok'}`, '5 0 true true ok');
+        check('bot: plays its turn, the engine hands it back', `${App.state.turn} ${App.state.activePlayer} ${said.some(t => /^Bot: /.test(t))} ${said.includes('Ready and draw steps (rules engine)')} ${upBefore} ${faceUp(0)} ${App.bot.note || 'ok'}`, '5 0 true true 1 0 ok');
         // Undo with the bot on pauses it; ending your turn hands the next one back to it, playing.
         const botBack = (turn) => new Promise((done) => {
             const t0 = Date.now();
