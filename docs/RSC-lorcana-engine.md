@@ -384,6 +384,26 @@ Tiers 2 and 3 only need the read side of tier 1 (hydrate and project) plus the e
 
 Measured results, newest first. The work itself lives on `feat/68-rules-engine` (AGENTS.md, *Long-lived branch*).
 
+### 2026-10-30 · What-if, second pass: game A replays exactly 5 turns back, and a win turns up
+
+The four fixes the first pass asked for, then the same experiment again on the same two games.
+
+**Fixes**
+- **Bodyguard entering exerted.** The cause of game A's drift: on turn 20 their Broadway entered play exerted, which made 3 exerted characters, so both Elinors' end-of-turn ability fired (damage, lore, a card each). The bot's candidates have only the ready way; the replay now asks for the exerted way (`resolveOptional`) when the log says the player chose it, and the ready way when it says that.
+- **Options.** "Yes" and "declined" answer a "may" ability (`resolveOptional` true or false); other named options are matched in the candidate. A player's next three choices are tried, so one that doesn't fit doesn't block the rest.
+- **Plays from the discard** (Remember Me) aren't among the bot's candidates; the replay builds the move.
+- **Unknown cards** were free 0-cost items in the engine, which the bot could play. Now they can be neither played nor inked (everywhere the engine reads a board). Before a run, the start board's unknown cards are filled from what later boards know (hand first, then deck).
+- **Your real move** is left out of the lines tried (it was among the top lines at 9 of 10 levels).
+- Tried and dropped: reordering each deck by when later boards show cards leaving it. In game B it made the replay worse (3 turns back went from 11 of 11 real moves matched to 10), because the engine's draws there already differ (next point).
+
+**Results**
+- **Game A replays exactly from all 5 levels** (19–20 on turn 24, every real move matched).
+- **Game B replays exactly from 1 turn back.** From 2 and 3 turns back every real move matches, but they finish 2 lore and 2 cards short: their Merlin's Shop and Smithy ("once during your turn, whenever a character moves here, draw a card and gain 1 lore") fired twice in the real game and not at all in the engine. It looks like an engine gap, to check and report upstream. From 4 turns back the import's reconstruction of their hidden cards no longer matches (a Hades they played on turn 22 is still in their deck).
+- **Game A, 3 turns back (turn 19): a win that holds up.** The replay reproduces the loss and the control (the real move, then the search) still loses. Line 2 wins on turn 21, 21–8: quest with Vixey instead of challenging Angela with her. Their turn 20 stays their real one (the score found nothing more than 1 better), Vixey isn't damaged so she survives Elinor's end-of-turn damage, and on turn 21 everything quests. Line 1 (the same, then challenge Angela with White Rabbit) wins on turn 23; line 3 on turn 25.
+- **Game A, 4 and 5 turns back:** the control wins too: the search, playing your later turns, finds the turn-19 improvement. So the first level with a win is the answer, as the owner asked.
+- **Game B:** no win where the replay holds (1–3 turns back, with the shop caveat).
+- **Time:** all 5 levels 174 s (A) and 156 s (B); stopping at the first win, game A takes about 90 s.
+
 ### 2026-10-30 · Spike: What-if, a different outcome for a lost game
 
 The owner's idea: load a lost game, go back to your last turn before they won, try other lines and play each out; if none wins, go back 2 turns, then 3, up to 5. The owner's calls: their turns replay what they really did unless our score finds something clearly better; only a win counts; stop at the first win unless you ask to go on; an unfinished game looks for the best lore race 2 turns past its last turn. Branch `claude/feat-68-what-if`, cut from `feat/68-rules-engine`.

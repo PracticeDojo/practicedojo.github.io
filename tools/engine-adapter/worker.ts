@@ -1157,6 +1157,7 @@ function drain(server: Server, prefer?: Prefer) {
 function ghostTurn(server: Server, who: string, real: RealTurn | undefined, prefer: Prefer) {
   let matched = 0, missed = 0;
   const missedMoves: string[] = [];
+  const played: string[] = [];
   for (const m of real?.moves ?? []) {
     if (!drain(server, prefer) || server.isGameOver()) break;
     if ((server.getState() as unknown as RawState).ctx.status.turnOwnerId !== who) break;
@@ -1198,9 +1199,10 @@ function ghostTurn(server: Server, who: string, real: RealTurn | undefined, pref
       continue;
     }
     matched++;
+    played.push(`${m.family}:${m.card}${m.target ? ">" + m.target : ""}`);
   }
   drain(server, prefer);
-  return { matched, missed, missedMoves };
+  return { matched, missed, missedMoves, played };
 }
 function botTurn(server: Server, who: string) {
   for (let i = 0; i < 40 && !server.isGameOver(); i++) {
@@ -1260,6 +1262,7 @@ function whatIf(args: SearchOpts & { board: Board; me: 0 | 1; first: number | "r
       row.lines = others.length;
       if (mode === "line") row.realAmong = r.best.length - others.length;
       if (pick) {
+        row.played = pick.acts.filter((x) => x.by === "me" && x.family !== "resolveBag" && x.family !== "resolveEffect").map((x) => `${x.family}:${fullName(x.card)}${x.target ? ">" + fullName(x.target) : ""}`);
         freshLoad(server, pick.state);
         if (mode === "line") firstPlan = pick.acts.filter((a) => a.by === "me").map((a) => `${a.family}:${fullName(a.card)}${a.target ? ">" + fullName(a.target) : ""}`);
       } else row.noLine = true;
@@ -1275,6 +1278,7 @@ function whatIf(args: SearchOpts & { board: Board; me: 0 | 1; first: number | "r
       const best = r.best[0];
       const useBest = !!best && best.score > gScore + (args.margin ?? 1);
       Object.assign(row, g, { ghostScore: +gScore.toFixed(2), bestScore: best ? +best.score.toFixed(2) : null, used: useBest ? "search" : "ghost" });
+      if (useBest) row.played = best.acts.filter((x) => x.by === "me" && x.family !== "resolveBag" && x.family !== "resolveEffect").map((x) => `${x.family}:${fullName(x.card)}${x.target ? ">" + fullName(x.target) : ""}`);
       freshLoad(server, useBest ? best.state : gState);
     } else botTurn(server, who);
     if (args.dump) {
