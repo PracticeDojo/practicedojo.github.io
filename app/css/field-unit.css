@@ -10751,6 +10751,11 @@ body.bot-on #btn-bot {
     line-height: 1.35;
 }
 
+/* Your choice: the banner is the thing to answer. */
+.bot-banner.is-asking {
+    box-shadow: 0 0 0 2px var(--text), var(--shadow-2);
+}
+
 .bb-key,
 .bb-lbl {
     font-family: var(--font-mono);

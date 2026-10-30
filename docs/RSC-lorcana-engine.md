@@ -384,6 +384,26 @@ Tiers 2 and 3 only need the read side of tier 1 (hydrate and project) plus the e
 
 Measured results, newest first. The work itself lives on `feat/68-rules-engine` (AGENTS.md, *Long-lived branch*).
 
+### 2026-10-30 · Fix: the bot hung after going back a turn
+
+**Reported:** against the bot, the owner took over, went back a turn, replayed it, put the bot back on Auto and ended the turn: nothing happened until the bot was switched off and on again.
+
+**Causes** (each reproduced in the browser on the Set 14 demo):
+- **A pause outlived its turn.** Undo pauses the bot (so Auto doesn't play the move straight back). Undo into your turn, replay it, End turn: the bot's turn began paused, with no message. On the version played (`a2e967f`) that stalled every time; switching the bot off and on cleared the pause, which is why that "fixed" it.
+- **Late replies.** Take over or Undo while the engine was working out a move, and its reply was still applied when it came back: the board changed after Take over on 4 runs of 4 (the bot's move landed on the board you'd moved to, or even ended the turn with the bot off), and a move undone mid-thought came straight back. The engine's game then no longer matched the board.
+- **Quiet stops.** A question for you, a stuck prompt or the end of the game only showed in the banner's text.
+
+**Fix**
+- Ending your turn hands the next one to the bot unpaused; a pause only lasts the bot's turn. While paused, the banner says "Paused … Play lets it carry on."
+- Every switch of the bot, Take over and Undo starts a new generation: a reply from an older one is dropped, and the engine reads the board again before the next move. So is a reply that comes back after the board changed (your edit, a Multiverse jump). End turn while the bot is thinking drops that move.
+- A question, a pause for trouble and the end of the game each also show a toast; while it asks, the banner is outlined.
+
+**Checked**
+- Take over mid-move: the board changes after it on 0 runs of 8; Undo mid-move stays undone.
+- The reported sequence through the Multiverse and through Undo: the bot plays its turn and hands it back.
+- A soak of random actions against the bot (End turn, Take over and back on, Undo, Multiverse back, Step and N, quests), 124 actions over 6 games: no hang, no page error.
+- `app-checks` 34/34 (one new: after Undo, ending your turn lets the bot play).
+
 ### 2026-10-30 · Tier 2, first cut: the bot opponent
 
 Built on `claude/feat-68-bot-opponent` (cut from `feat/68-rules-engine`), as the spike below said it could be.

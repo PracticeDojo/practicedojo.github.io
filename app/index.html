@@ -4806,7 +4806,10 @@
             undo() {
                 if (this.history.length === 0) return;
                 // Feature 68: Undo pauses the bot, or Auto would play the move straight back.
-                if (this.bot.seat != null) Object.assign(this.bot, { paused: true, ask: null, held: [], live: false });
+                if (this.bot.seat != null) {
+                    this.botDrop();
+                    Object.assign(this.bot, { paused: true, ask: null });
+                }
                 const prevCompressed = JSON.parse(this.history.pop());
                 this.state = this.decompressState(prevCompressed, this.state.log);
                 if (window.Mods) Mods.closePicker(); // Feature 61
@@ -6753,7 +6756,7 @@
             // on from the board as it is. The engine keeps the game through the bot's turn and runs the turn
             // changes (DojoRules.bot*, study §12); each finished move is one Undo step. Your seat stays at the
             // bottom. The bot never concedes: when it's stuck it pauses and the turn is yours to finish.
-            bot: { seat: null, pace: 'auto', speed: 1000, paused: false, busy: false, live: false, sig: null, ask: null, held: [], last: '', note: '', over: false },
+            bot: { seat: null, pace: 'auto', speed: 1000, paused: false, busy: false, live: false, sig: null, ask: null, held: [], last: '', note: '', over: false, gen: 0 },
 
             bottomSeat() {
                 return this.bot.seat != null ? 1 - this.bot.seat : this.state.activePlayer;
@@ -6761,7 +6764,8 @@
 
             setBot(seat) {
                 clearTimeout(this._botT);
-                Object.assign(this.bot, { seat, paused: false, live: false, ask: null, held: [], note: '', last: '', over: false });
+                this.botDrop();
+                Object.assign(this.bot, { seat, paused: false, ask: null, note: '', last: '', over: false });
                 if (this.state && this.state.players) this.logAction(seat != null ? `Bot plays P${seat + 1}.` : 'Bot off: you play both seats.', true);
                 this.renderBotMenu();
                 if (this.state && this.state.players) this.render();
@@ -6804,9 +6808,9 @@
                 const b = this.bot;
                 if (b.seat == null || b.busy || b.ask || b.over || !this.state || !this.state.players) return this.renderBot();
                 if (this.state.mulliganPending) {
-                    if (this.state.activePlayer === b.seat) this._botT = setTimeout(() => this.botKeepHand(), 300);
+                    if (this.state.activePlayer === b.seat) this._botT = setTimeout(() => { this._botT = null; this.botKeepHand(); }, 300);
                 } else if (this.state.activePlayer === b.seat && !b.paused && b.pace === 'auto') {
-                    this._botT = setTimeout(() => this.botNext(), b.speed);
+                    this._botT = setTimeout(() => { this._botT = null; this.botNext(); }, b.speed);
                 }
                 this.renderBot();
             },
@@ -6823,31 +6827,63 @@
                 this._finishMulligan();
             },
 
+            // A reply that's still on its way belongs to a board that's gone: switching the bot, Take over and
+            // Undo drop it (a new generation), and the engine reads the board again before its next move.
+            botDrop() {
+                Object.assign(this.bot, { gen: this.bot.gen + 1, busy: false, live: false, held: [] });
+            },
+
+            // One call to the engine for the bot. Its reply is null (dropped) when the bot was switched, Take over
+            // or Undo happened, or the board changed (your edit, a Multiverse jump) while the engine worked.
+            async botCall(work) {
+                const b = this.bot, gen = b.gen, sig = this.boardSig(this.state);
+                Object.assign(b, { busy: true, note: '' });
+                this.renderBot();
+                try {
+                    const r = await work();
+                    if (gen !== b.gen) return null;
+                    if (this.boardSig(this.state) !== sig) {
+                        this.botDrop();
+                        this.botKick();
+                        return null;
+                    }
+                    return r;
+                } catch (e) {
+                    if (gen === b.gen) throw e;
+                    return null;
+                }
+            },
+
             // The bot's next move (Next, N, or Auto's timer).
             async botNext() {
                 clearTimeout(this._botT);
                 const b = this.bot;
                 if (b.seat == null || b.busy || b.ask || b.over || !this.state || !this.state.players || this.state.mulliganPending || this.state.activePlayer !== b.seat) return;
-                Object.assign(b, { busy: true, note: '' });
-                this.renderBot();
                 try {
-                    // A board changed since its last move (your edit, Undo, a loaded node): the engine reads it.
-                    if (!b.live || b.sig !== this.boardSig(this.state)) await this.botRead();
-                    this.botApply(await DojoRules.botStep());
+                    const r = await this.botCall(async () => {
+                        // A board changed since its last move (your edit, Undo, a loaded node): the engine reads it.
+                        if ((!b.live || b.sig !== this.boardSig(this.state)) && !await this.botRead()) return null;
+                        return DojoRules.botStep();
+                    });
+                    if (r) this.botApply(r);
                 } catch (e) {
                     this.botTrouble("The rules engine couldn't play this board.", e);
                 }
             },
 
+            // The engine starts its game from the board on screen. False if the bot was reset meanwhile.
             async botRead() {
-                await DojoRules.botStart(this.state, id => this.cardKey(id), this.bot.seat);
-                this.bot.live = true;
-                this.bot.sig = this.boardSig(this.state);
+                const b = this.bot, gen = b.gen, sig = this.boardSig(this.state);
+                await DojoRules.botStart(this.state, id => this.cardKey(id), b.seat);
+                if (gen !== b.gen) return false;
+                Object.assign(b, { live: true, sig });
+                return true;
             },
 
             botTrouble(note, e) {
                 if (e) console.warn('Bot:', e);
                 Object.assign(this.bot, { busy: false, live: false, paused: true, held: [], note });
+                this.showToast(`Bot paused: ${note}`);
                 this.renderBot();
             },
 
@@ -6878,9 +6914,13 @@
                 }
                 if (r.ask) {
                     b.ask = r.ask;
+                    this.showToast('The bot needs your choice: see its banner.');
                     return this.render();
                 }
-                if (r.over) Object.assign(b, { over: true, note: r.winner === b.seat ? 'The bot reached the lore to win.' : 'You reached the lore to win.' });
+                if (r.over) {
+                    Object.assign(b, { over: true, note: r.winner === b.seat ? 'The bot reached the lore to win.' : 'You reached the lore to win.' });
+                    this.showToast(b.note);
+                }
                 else if (r.stuck) return this.botTrouble(`${r.stuck} Your call: play its turn out, or end it.`);
                 else if (r.done) return void this.botEndItsTurn();
                 this.render();
@@ -6896,11 +6936,14 @@
             // The engine ends `who`'s turn ('bot' or 'you') and starts the other's.
             async botPassTurn(who) {
                 const b = this.bot;
-                Object.assign(b, { busy: true, note: '' });
-                this.renderBot();
+                if (b.busy) this.botDrop(); // End turn while it was working out a move: that move is dropped
+                if (who === 'you') b.paused = false; // a pause (Undo makes one) lasts the bot's turn, not into its next
                 try {
-                    if (who === 'you' || !b.live || b.sig !== this.boardSig(this.state)) await this.botRead();
-                    this.botApply(await DojoRules.botPass(who));
+                    const r = await this.botCall(async () => {
+                        if ((who === 'you' || !b.live || b.sig !== this.boardSig(this.state)) && !await this.botRead()) return null;
+                        return DojoRules.botPass(who);
+                    });
+                    if (r) this.botApply(r);
                 } catch (e) {
                     if (who === 'bot') return this.botTrouble("The rules engine couldn't end the bot's turn. End it yourself.", e);
                     // Your End turn still happens, as the sandbox does it.
@@ -6912,11 +6955,11 @@
 
             async botChoose(i) {
                 const b = this.bot;
-                if (!b.ask) return;
-                Object.assign(b, { ask: null, busy: true });
-                this.renderBot();
+                if (!b.ask || b.busy) return;
+                b.ask = null;
                 try {
-                    this.botApply(await DojoRules.botChoose(i));
+                    const r = await this.botCall(() => DojoRules.botChoose(i));
+                    if (r) this.botApply(r);
                 } catch (e) {
                     this.botTrouble("The rules engine couldn't take that choice.", e);
                 }
@@ -6930,6 +6973,7 @@
                 if (!banner) return;
                 if (b.seat == null || !this.state || !this.state.players) return void (banner.hidden = true);
                 banner.hidden = false;
+                banner.classList.toggle('is-asking', !!b.ask);
                 const esc = (t) => this._esc(String(t));
                 const its = this.state.activePlayer === b.seat;
                 // Your choice: one button per distinct option (the engine can list two with the same effect).
@@ -6937,6 +6981,7 @@
                 const text = b.ask
                     ? `<span class="bb-lbl">Your choice</span>${options.map(([i, t]) => `<button class="btn" onclick="App.botChoose(${i})">${esc(t)}</button>`).join('')}`
                     : esc(b.note || (b.busy ? 'Thinking…' : this.state.mulliganPending ? (its ? 'Keeping its opening hand…' : 'Your opening hand first')
+                        : its && b.paused && b.pace === 'auto' ? `Paused${b.last ? ` after: ${b.last}` : ''}. Play lets it carry on.`
                         : its ? (b.last || 'Its turn') : 'Your turn: End turn hands it over'));
                 const key = b.pace === 'auto'
                     ? `<button class="btn" onclick="App.botTogglePause()" title="${b.paused ? 'Play' : 'Pause'}"><i class="fa-solid fa-${b.paused ? 'play' : 'pause'}"></i> ${b.paused ? 'Play' : 'Pause'}</button>`

@@ -176,6 +176,19 @@ export default async (page) => {
         });
         const said = App.state.log.map(l => (l && (l.msg || l.text)) || String(l));
         check('bot: plays its turn, the engine hands it back', `${App.state.turn} ${App.state.activePlayer} ${said.some(t => /^Bot: /.test(t))} ${said.includes('Ready and draw steps (rules engine)')} ${App.bot.note || 'ok'}`, '5 0 true true ok');
+        // Undo with the bot on pauses it; ending your turn hands the next one back to it, playing.
+        const botBack = (turn) => new Promise((done) => {
+            const t0 = Date.now();
+            const tick = () => ((App.state.activePlayer === 0 && App.state.turn === turn && !App.bot.busy) || App.bot.note || Date.now() - t0 > 90000 ? done() : setTimeout(tick, 100));
+            tick();
+        });
+        App.endTurn();
+        await botBack(6);
+        while (App.history.length && !(App.state.activePlayer === 0 && App.state.turn === 5)) App.undo();
+        const pausedAfterUndo = App.bot.paused;
+        App.endTurn();
+        await botBack(6);
+        check('bot: after Undo, ending your turn lets it play', `${pausedAfterUndo} ${App.state.turn} ${App.state.activePlayer} ${App.bot.paused} ${App.bot.note || 'ok'}`, 'true 6 0 false ok');
         App.setBot(null);
         return out;
     }, IMPORTS);
