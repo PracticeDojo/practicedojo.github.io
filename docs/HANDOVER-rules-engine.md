@@ -152,6 +152,8 @@ Scoring follows the plan in the study's §8.1. Done 2026-10-28: their reply, the
 4. **Exposure by matching.** Each attacker challenges once, trades count. *Reply* now sees their real challenges on the best lines, so this only sharpens the beam's ranking.
 5. **Hidden information.** The chance the opponent holds removal; *reply* ignores their hand on purpose.
 
+**What-if** (spike done 2026-10-30, study §12; branch `claude/feat-68-what-if`): load a lost game and look for a line that wins, going back one of your turns at a time (up to 5), their turns replaying what they really did unless the score finds clearly better. The worker op `whatIf` there is a SPIKE (no app code yet); the experiment's page script lives outside the repo. Next: fill the opponent's unknown cards from the log, trace game A's turn 20 (Elinor's end-of-turn draws), then build it (results as Multiverse branches, a check per level that the replay still reproduces the loss, stop at the first win).
+
 Other open work:
 - **Phones:** a tap opens the card drawer (`renderCardSheet`), which has no *Rules* section yet. *Suggest* is inside the ☰ drawer.
 - **Not passed to the engine yet:** cards played this turn (only the count of inked cards is). There is no mid-turn bag or pending state in the Dojo.

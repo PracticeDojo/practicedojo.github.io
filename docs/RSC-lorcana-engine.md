@@ -384,6 +384,32 @@ Tiers 2 and 3 only need the read side of tier 1 (hydrate and project) plus the e
 
 Measured results, newest first. The work itself lives on `feat/68-rules-engine` (AGENTS.md, *Long-lived branch*).
 
+### 2026-10-30 · Spike: What-if, a different outcome for a lost game
+
+The owner's idea: load a lost game, go back to your last turn before they won, try other lines and play each out; if none wins, go back 2 turns, then 3, up to 5. The owner's calls: their turns replay what they really did unless our score finds something clearly better; only a win counts; stop at the first win unless you ask to go on; an unfinished game looks for the best lore race 2 turns past its last turn. Branch `claude/feat-68-what-if`, cut from `feat/68-rules-engine`.
+
+**How it was measured.** A temporary worker op, `whatIf` (marked SPIKE), plays a game out from one turn's board:
+- **that turn:** one of the search's lines, or your real moves;
+- **your later turns:** the search's best line (300 nodes on the first turn, 120 after);
+- **their turns:** their real moves, matched to the engine's candidates by card name (a sung card and its singers, a target and whose card it is, choices made by either player), unless the search's best line scores more than 1 above them;
+- until someone wins, or 4 turns past the real end.
+
+Each level ran the real game replayed (both sides' real moves), a control (your real move that turn, then as above) and the search's top 4 lines. Two of the owner's Duels.ink replays, both lost on lore: game A (the owner went first, lost on turn 24) and game B (went second, lost on turn 28). Headless Chromium on a desktop.
+
+**Results**
+- **Replaying the real game reproduces the loss exactly** from 1 turn back in both games, and from 2 turns back in game A (19–20 on turn 24, every move matched).
+- **Further back it drifts:** from 3 turns back in A and 2 in B, some cards the opponent really played aren't in their hand in the replay, so the search plays their turn instead. In B the import leaves 4–7 of their cards unknown near the end, among them the third Raging Storm they played on turn 26. In A two of their cards differ by turn 22; their turn 20 had two end-of-turn draws (Elinor), not traced yet.
+- **No win that holds up** within the turns the replay follows: 1 and 2 turns back, every line loses (A 19–20; B 21 to 14–17).
+- **Wins appeared 3–5 turns back in A, but the control won too:** with two of their cards missing, the search played their turn 22, and weaker. So a level can only claim a win while the control still loses.
+- **Time:** a playout 0.1–15 s, a level (6 playouts) 5–70 s, all 5 levels 165 s (A) and 204 s (B).
+- **The deck order holds:** the import puts the real draws on top (5 of 6 checks; the sixth had a card never revealed).
+- **Fixed on the way:** Duels.ink counts turns from its own player 1's turn, so turns come from the log's "turn begins" lines. Matching by name alone picked the wrong singer and the wrong target (both players had Flash). A discard the opponent chose on your turn was chosen by the bot.
+
+**For the build**
+- How far back it can go is set by the replay, not by the 5-turn cap. Each level replays the real game first; where that no longer reproduces the loss, the run stops or marks the results unreliable.
+- A level reports a win only when the control (your real move under the same opponent) still loses.
+- First: fill the opponent's unknown cards from what the log shows them playing later (unknown cards become free items in the engine now), trace game A's turn 20, and drop alternatives that are your real move.
+
 ### 2026-10-30 · Fix: the bot hung after going back a turn
 
 **Reported:** against the bot, the owner took over, went back a turn, replayed it, put the bot back on Auto and ended the turn: nothing happened until the bot was switched off and on again.
