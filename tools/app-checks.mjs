@@ -125,6 +125,24 @@ export default async (page) => {
         check('plays: effects fold under their move', DojoRules.groupActs(L1).map(DojoRules.stepText).join(' | '), 'Play Milo Thatch → Vixey | Quest with Max Goof');
         check('plays: a line as how it differs from line 1', `${diff(L1.slice(0, 3))} / ${diff([L1[0], L1[1], { ...L1[2], targets: [pc('Tod')] }, L1[3]])}`,
             'Like line 1, but not quest with Max Goof / Like line 1, but Play Milo Thatch → Tod instead of Vixey');
+        // Score lab (Feature 68): an imported profiles file keeps known terms and weights in range, and
+        // each card in play's share adds up to the score's in-play parts.
+        const labFile = JSON.stringify({ dojoLab: 1, profiles: { Default: { weights: { lore: 2 } }, ' Control ': { weights: { lore: 0.7, evil: 9, body: 1e9, hand: 'x' }, off: ['hand', 'nope'] } } });
+        const labGot = DojoLab.parse(labFile);
+        const labRefused = ['nope', '{}', JSON.stringify({ dojoLab: 1, profiles: {} })].map(t => { try { DojoLab.parse(t); return 'took'; } catch (e) { return 'refused'; } }).join();
+        check('lab: an imported file keeps known terms only', `${JSON.stringify(labGot)} ${JSON.stringify(DojoLab.weightsFor(labGot.Control))} ${labRefused}`,
+            '{"Control":{"weights":{"lore":0.7,"body":100},"off":["hand"],"terms":[]}} {"lore":0.7,"body":100,"hand":0} refused,refused,refused');
+        const sc = await DojoRules.score(App.state, id => App.cardKey(id));
+        const shares = Object.values(sc.cards).flat().reduce((n, x) => n + x.v, 0);
+        check('lab: card shares add up to the in-play parts', `${Object.keys(sc.cards).length > 0} ${Math.abs(shares - (sc.parts.potential + sc.parts.body + sc.parts.exposed)) < 1e-9}`, 'true true');
+        // Your own terms: only known values survive, a term reads as a sentence, and the engine counts
+        // what it says (my cards in hand, 1 each, is my hand).
+        const term = DojoLab.termOf({ name: ' Evasive  pressure ', side: 'mine', zone: 'play', where: { type: 'character', keyword: 'Evasive', state: 'ready', costMax: 99, effect: 'nope', evil: 1 }, measure: 'lore', weight: 0.3, when: 'never' });
+        check('lab: a term keeps known values only', `${JSON.stringify(term)} ${DojoLab.describe(term)}`,
+            '{"name":"Evasive pressure","side":"mine","zone":"play","where":{"type":"character","keyword":"Evasive","state":"ready","costMax":20},"measure":"lore","weight":0.3,"when":"always","off":false} My ready Evasive characters in play costing up to 20: lore × 0.3.');
+        const hand = App.state.players[App.state.activePlayer].hand;
+        const counted = (await DojoRules.score(App.state, id => App.cardKey(id), undefined, [{ side: 'mine', zone: 'hand', where: {}, measure: 'count', weight: 1 }])).terms[0];
+        check('lab: the engine counts what a term says', `${counted.value} ${counted.hits.join() === hand.map(c => c.instanceId).join()}`, `${hand.length} true`);
 
         // Device library.
         const L = DojoLibrary, data = App.buildSessionData(), id = L.newId();

@@ -58,6 +58,7 @@
 
     <!-- Rules engine (Feature 68, experimental): what the rules allow, from the Lorcana engine in a worker -->
     <script src="js/rules.js"></script>
+    <script src="js/lab.js"></script>
 
     <!-- Help (Features 57-58): manual search, the manual, "Show me", guided tours. app/help/ holds the content -->
     <script src="js/help-search.js"></script>
@@ -1138,6 +1139,7 @@
                 <div class="seg prob-tabs" role="group" aria-label="Draw odds or proposed plays">
                     <button type="button" id="prob-tab-odds" aria-pressed="true" onclick="App.setProbTab('odds')">Odds <span class="prob-tab-n" id="prob-tab-odds-n"></span></button>
                     <button type="button" id="prob-tab-plays" aria-pressed="false" onclick="App.setProbTab('plays')">Plays</button>
+                    <button type="button" id="prob-tab-score" aria-pressed="false" onclick="App.setProbTab('score')">Score</button>
                 </div>
                 <button type="button" class="help-q" data-help="draw-odds" aria-label="Help: draw odds">?</button>
                 <button class="prob-toggle" id="prob-toggle" onclick="App.toggleProbPane()"
@@ -1157,6 +1159,7 @@
             </div>
             <div class="prob-list" id="prob-list"></div>
             <div class="prob-plays" id="prob-plays"></div>
+            <div class="prob-lab" id="prob-lab"></div>
         </aside>
     </div>
 
@@ -1274,6 +1277,8 @@
                     <button data-val="off" class="is-active" title="The sandbox: you are the referee">Off</button>
                     <button data-val="assist"
                         title="Marks what the rules allow the player whose turn it is, and says why a card can't be played. Never blocks a move">Assist</button>
+                    <button data-val="lab"
+                        title="Assist, plus the score lab: the weights proposed plays are scored with, profiles, and each card's share of the score">Lab</button>
                 </div>
                 <div class="tweak-hint">Experimental. Marks legal moves; it never blocks one.</div>
             </div>
@@ -7032,6 +7037,430 @@
                     + '<p class="bm-hint">The rules engine plays that seat, one move at a time. P switches Auto and Step; N plays its next move. Switch it off to take over.</p>';
             },
 
+            // --- Feature 68 (experimental): the score lab (Tweaks → Rules engine → Lab) ---
+            // The weights proposed plays are scored with, as profiles kept on this device (DojoLab); the
+            // odds column's Score tab to change them; and each card in play's share of the score, on the card.
+            labOn: false,
+            labView: null, // DojoRules.score of the board on screen, with the weights in use
+            labDefaults: null, // the engine's own weights (the Default profile)
+            labSel: null, // the term whose slider is open
+            labMore: false, // the profile tools row is open
+            _labSig: null,
+            _lab: null,
+
+            labStore() {
+                return this._lab || (this._lab = DojoLab.load());
+            },
+
+            // The profile in use: its draft while it has unsaved edits. Default is the engine's own weights.
+            labProfile() {
+                const s = this.labStore();
+                if (s.draft) return s.draft;
+                if (s.active !== DojoLab.DEFAULT && s.profiles[s.active]) return s.profiles[s.active];
+                return { weights: Object.assign({}, this.labDefaults || {}), off: [], terms: [] };
+            },
+
+            // What the engine is sent: nothing outside the lab, so Assist always scores with Default.
+            labWeights() {
+                return this.labOn ? DojoLab.weightsFor(this.labProfile()) : undefined;
+            },
+
+            labTerms() {
+                return this.labOn ? DojoLab.termsFor(this.labProfile()) : undefined;
+            },
+
+            // The weights and terms in use, as one string: a reading or a search made with others is stale.
+            labSig() {
+                return JSON.stringify([this.labWeights(), this.labTerms()]);
+            },
+
+            labIsDefault() {
+                const w = this.labWeights(), d = this.labDefaults;
+                return !w || !d || (DojoLab.KEYS.every(k => w[k] === undefined || w[k] === d[k]) && !this.labTerms().length);
+            },
+
+            // Like rulesRefresh: a changed board or weights asks the engine for the score again.
+            labRefresh() {
+                if (!this.labOn || !this.state || !this.state.players || this.state.mulliganPending) {
+                    this.labView = null;
+                    this._labSig = null;
+                    return;
+                }
+                const weights = this.labWeights(), terms = this.labTerms();
+                const sig = this.boardSig(this.state) + this.labSig();
+                if (sig === this._labSig) return;
+                this._labSig = sig;
+                DojoRules.score(this.state, id => this.cardKey(id), weights, terms).then(v => {
+                    if (this._labSig !== sig || !this.labOn) return;
+                    this.labDefaults = v.defaults;
+                    v.sent = terms; // v.terms[i] is the value of sent[i]
+                    this.labView = v;
+                    this.render();
+                }).catch(e => console.warn('Score lab:', e));
+            },
+
+            // A card's share of the score, on its top-right corner; hover for the sum.
+            labChip(iid, shares) {
+                const total = shares.reduce((n, s) => n + s.v, 0);
+                const chip = this.el('span', 'lab-chip' + (total < 0 ? ' is-neg' : ''));
+                chip.textContent = (total > 0 ? '+' : total < 0 ? '−' : '±') + Math.abs(total).toFixed(1);
+                chip.dataset.tip = 'share';
+                chip.dataset.iid = iid;
+                chip.addEventListener('mouseenter', () => this.playsTip(chip));
+                chip.addEventListener('mouseleave', () => this.playsTip(null));
+                return chip;
+            },
+
+            renderLab() {
+                const host = this.$('prob-lab');
+                if (!host || !this.labOn || !this.state || !this.state.players) return;
+                this.playsTip(null);
+                this.bindPlaysTips(host);
+                if (this.labForm) return void (host.innerHTML = this.labFormHtml());
+                const s = this.labStore(), v = this.labView, prof = this.labProfile();
+                const esc = (t) => this._esc(String(t));
+                const sign = (n) => (n > 0 ? '+' : n < 0 ? '−' : '±') + Math.abs(n).toFixed(1);
+                const me = this.state.activePlayer;
+                const names = [DojoLab.DEFAULT, ...Object.keys(s.profiles)];
+                const options = names.map(n => `<option value="${esc(n)}"${n === s.active ? ' selected' : ''}>${esc(n)}${n === s.active && s.draft ? ' · edited' : ''}</option>`).join('');
+                // Each term's worth on this board, and the measure behind it (hover).
+                const r = v && v.raw, w = v && v.weights;
+                const now = (k) => (!v || k === 'reply' ? null : k === 'potential' ? w.potential * r.potential[0] : k === 'threat' ? -w.threat * r.potential[1] : v.parts[k]);
+                const raw = (k) => !r ? '' : {
+                    lore: `${r.lore[0]} against ${r.lore[1]}`, potential: `${r.potential[0]} lore`, threat: `${r.potential[1]} lore`,
+                    body: `${r.body[0]} against ${r.body[1]}`, exposed: `${+r.exposed.toFixed(2)} at risk`, hand: `${r.hand} cards`, ink: `${r.ink} cards`,
+                    race: `you ${r.race[0]} turns, them ${r.race[1]}`,
+                }[k] || '';
+                // A log slider: 0.01 to 3.16; type a weight for anything else (negative, bigger).
+                const slider = (x) => Math.round(100 * Math.log10(Math.max(0.01, Math.min(3.16, x))));
+                const rows = DojoLab.TERMS.map(t => {
+                    const off = prof.off.includes(t.key), x = prof.weights[t.key], val = now(t.key);
+                    const sel = this.labSel === t.key && t.key !== 'reply';
+                    const name = `${esc(t.label)}${t.side ? ` <em>${t.side}</em>` : ''}`;
+                    return `<div class="lab-term${off ? ' is-off' : ''}${sel ? ' is-sel' : ''}">
+                        <input type="checkbox"${off ? '' : ' checked'} aria-label="Use ${esc(t.label)}${t.side ? ' ' + t.side : ''}" onchange="App.labToggle('${t.key}', this.checked)">
+                        <button type="button" class="lab-n" data-tip="text" data-head="${esc(t.label + (t.side ? ' · ' + t.side : ''))}" data-val="${esc(raw(t.key))}" data-text="${esc(t.help)}"
+                            onclick="App.labSelect('${t.key}')">${name}</button>
+                        ${t.key === 'reply' ? '<span></span><span class="lab-v">—</span>'
+                            : `<input class="input lab-w" type="number" step="0.01" value="${x == null ? '' : +(+x).toFixed(3)}" aria-label="Weight of ${esc(t.label)}${t.side ? ' ' + t.side : ''}" onchange="App.labSetWeight('${t.key}', this.value)">
+                               <span class="lab-v${val < 0 ? ' is-neg' : ''}">${val == null ? '' : sign(val)}</span>`}
+                        ${sel ? `<div class="lab-slide"><span>0.01</span><input type="range" min="-200" max="50" value="${slider(x)}" aria-label="Weight of ${esc(t.label)}" oninput="App.labSlide('${t.key}', this.value)"><span>3</span></div>` : ''}
+                    </div>`;
+                }).join('');
+                // Your own terms: the value of each one that's on is in v.terms, in the order they were sent.
+                let sent = 0;
+                const yours = (prof.terms || []).map((t, i) => {
+                    const val = t.off ? null : v && v.terms ? (v.terms[sent++] || {}).value : null;
+                    return `<div class="lab-term${t.off ? ' is-off' : ''}">
+                        <input type="checkbox"${t.off ? '' : ' checked'} aria-label="Use ${esc(t.name || 'term ' + (i + 1))}" onchange="App.labTermToggle(${i}, this.checked)">
+                        <button type="button" class="lab-n" data-tip="text" data-head="${esc(t.name || 'term ' + (i + 1))}" data-val="${DojoLab.peeks(t) ? 'peeks' : ''}" data-text="${esc(DojoLab.describe(t) + ' Click to edit.')}"
+                            onclick="App.labOpenTerm(${i})">${esc(t.name || 'term ' + (i + 1))}${DojoLab.peeks(t) ? '<span class="lab-peek">peeks</span>' : ''}</button>
+                        <input class="input lab-w" type="number" step="0.05" value="${+(+t.weight).toFixed(3)}" aria-label="Weight of ${esc(t.name || 'term ' + (i + 1))}" onchange="App.labTermWeight(${i}, this.value)">
+                        <span class="lab-v${val < 0 ? ' is-neg' : ''}">${val == null ? '' : sign(val)}</span>
+                    </div>`;
+                }).join('');
+                const named = s.active !== DojoLab.DEFAULT;
+                host.innerHTML = `<div class="lab-head">
+                        <select class="select" aria-label="Profile" onchange="App.labUse(this.value)">${options}</select>
+                        <button class="btn" onclick="App.labSave()" ${s.draft ? '' : 'disabled'} title="${named ? 'Save the edits to this profile' : 'Default stays as it is: save the edits as a new profile'}">Save</button>
+                        <button class="icon-btn" onclick="App.labMore = !App.labMore; App.renderLab()" aria-expanded="${this.labMore}" title="Save as, rename, delete, export, import"><i class="fa-solid fa-ellipsis"></i></button>
+                    </div>
+                    ${this.labMore ? `<div class="lab-tools">
+                        <button class="btn" onclick="App.labSaveAs()">Save as…</button>
+                        ${named ? '<button class="btn" onclick="App.labRename()">Rename</button><button class="btn" onclick="App.labDelete()">Delete</button>' : ''}
+                        ${s.draft ? '<button class="btn" onclick="App.labDiscard()">Undo edits</button>' : ''}
+                        <button class="btn" onclick="App.labExport()" ${Object.keys(s.profiles).length ? '' : 'disabled'}>Export</button>
+                        <button class="btn" onclick="App.labImport()">Import</button></div>` : ''}
+                    <div class="lab-now"><span class="rp-lbl">Score now · P${me + 1} to play</span><b>${v ? sign(v.score) : '…'}</b></div>
+                    <div class="lab-sec"><span class="rp-lbl">Terms</span><span class="rp-lbl">Weight · now</span></div>
+                    ${rows}
+                    <div class="lab-sec"><span class="rp-lbl">Your terms</span><span class="rp-lbl">Weight · now</span></div>
+                    ${yours || '<p class="rp-note">Count any cards you like: my or their cards in a zone, filtered, measured, weighed.</p>'}
+                    ${(prof.terms || []).length < DojoLab.TERM_MAX ? '<button class="rp-more" onclick="App.labNewTerm()">+ New term</button>' : ''}
+                    <p class="rp-note lab-foot">The number on each card in play is its share of lore on board, board, exposed and your terms that count cards in play. Their turn only counts in proposed plays.</p>`;
+            },
+
+            // Edits go to the profile's draft, kept until saved, discarded or another profile is picked.
+            labEdit(change) {
+                const s = this.labStore();
+                const d = s.draft || JSON.parse(JSON.stringify(this.labProfile()));
+                change(d);
+                s.draft = d;
+                DojoLab.save(s);
+                this.labRefresh();
+                this.renderLab();
+            },
+
+            // --- Your own terms: a form of dropdowns (DojoLab's lists); the preview asks the engine. ---
+            labForm: null, // { at: its index in the profile's terms, or -1 for a new one; term } while a term is open
+            _labHits: null, // the cards the open term counts, ringed on the board
+
+            labNewTerm() {
+                this.labForm = { at: -1, term: { name: '', side: 'mine', zone: 'play', where: {}, measure: 'count', weight: 0.2, when: 'always' } };
+                this.renderLab();
+                this.labPreview();
+            },
+
+            labOpenTerm(i) {
+                const t = (this.labProfile().terms || [])[i];
+                if (!t) return;
+                this.labForm = { at: i, term: JSON.parse(JSON.stringify(t)) };
+                this.renderLab();
+                this.labPreview();
+            },
+
+            labCloseForm() {
+                this.labForm = null;
+                this._labHits = null;
+                this.renderLab();
+                this.render();
+            },
+
+            labFormHtml() {
+                const f = this.labForm, t = f.term, w = t.where || {};
+                const esc = (x) => this._esc(String(x));
+                const opts = (list, cur, any) => (any ? `<option value="">${any}</option>` : '') + list.map(([v, l]) => `<option value="${esc(v)}"${v === cur ? ' selected' : ''}>${esc(l)}</option>`).join('');
+                const sel = (field, list, cur, any, label) => `<select class="select" aria-label="${label}" onchange="App.labFormSet('${field}', this.value)">${opts(list, cur, any)}</select>`;
+                const num = (field, ph) => `<input class="input" type="number" min="0" max="20" placeholder="${ph}" aria-label="Cost ${ph}" value="${w[field] != null ? w[field] : ''}" oninput="App.labFormSet('${field}', this.value)">`;
+                const when = DojoLab.WHENS.map(([v, l]) => `<button type="button" aria-pressed="${t.when === v}" onclick="App.labFormSet('when', '${v}'); this.parentNode.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b === this)))">${l}</button>`).join('');
+                return `<div class="lab-head"><span class="rp-lbl">${f.at < 0 ? 'New term' : 'Edit term'}</span>
+                        <button class="icon-btn" style="margin-left:auto" onclick="App.labCloseForm()" aria-label="Close"><i class="fa-solid fa-xmark"></i></button></div>
+                    <div class="lab-form">
+                        <label class="rp-lbl" for="lab-f-name">Name</label>
+                        <input id="lab-f-name" class="input" maxlength="${DojoLab.NAME_MAX}" placeholder="Evasive pressure" value="${esc(t.name || '')}" oninput="App.labFormSet('name', this.value)">
+                        <span class="rp-lbl">Whose</span>${sel('side', DojoLab.SIDES, t.side, '', 'Whose cards')}
+                        <span class="rp-lbl">Where</span>${sel('zone', DojoLab.ZONES, t.zone, '', 'Where')}
+                        <span class="rp-lbl">Type</span>${sel('type', DojoLab.TYPES, w.type, 'any type', 'Type')}
+                        <span class="rp-lbl">Keyword</span>${sel('keyword', DojoLab.KEYWORDS, w.keyword, 'any', 'Keyword')}
+                        <span class="rp-lbl" title="Classification">Class</span>
+                        <input class="input" list="lab-classes" maxlength="30" placeholder="any (Hero, Princess…)" aria-label="Classification" value="${esc(w.classification || '')}" oninput="App.labFormSet('classification', this.value)">
+                        <datalist id="lab-classes">${DojoLab.CLASSES.map(c => `<option value="${esc(c)}">`).join('')}</datalist>
+                        <span class="rp-lbl">State</span>${sel('state', DojoLab.STATES, w.state, 'any', 'State')}
+                        <span class="rp-lbl">Can</span>${sel('can', DojoLab.CANS, w.can, 'anything', 'Can')}
+                        <span class="rp-lbl" title="What its abilities do">Does</span>${sel('effect', DojoLab.EFFECTS, w.effect, 'anything', 'What its abilities do')}
+                        <span class="rp-lbl">Cost</span><div class="lab-pair">${num('costMin', 'from')}${num('costMax', 'to')}</div>
+                        <span class="rp-lbl">Named</span>
+                        <input class="input" maxlength="${DojoLab.NAME_MAX}" placeholder="any name" aria-label="Name contains" value="${esc(w.name || '')}" oninput="App.labFormSet('name~', this.value)">
+                        <span class="rp-lbl">Measure</span>${sel('measure', DojoLab.MEASURES, t.measure, '', 'Measure')}
+                        <span class="rp-lbl">Weight</span>
+                        <input class="input lab-w" type="number" step="0.05" aria-label="Weight" value="${+(+t.weight).toFixed(3)}" oninput="App.labFormSet('weight', this.value)">
+                        <span class="rp-lbl">When</span><div class="seg">${when}</div>
+                        <div class="lab-preview" id="lab-preview">Looking at this board…</div>
+                        <div class="lab-btns"><button class="btn" onclick="App.labSaveTerm()">${f.at < 0 ? 'Add term' : 'Save term'}</button>
+                            ${f.at >= 0 ? '<button class="btn" onclick="App.labDeleteTerm()">Delete</button>' : ''}
+                            <button class="btn" onclick="App.labCloseForm()">Cancel</button></div>
+                    </div>`;
+            },
+
+            // A field of the open term changed: keep it, and ask for a preview once typing pauses.
+            labFormSet(field, value) {
+                const f = this.labForm;
+                if (!f) return;
+                const t = f.term, w = t.where = t.where || {};
+                if (field === 'name' || field === 'side' || field === 'zone' || field === 'measure' || field === 'when') t[field] = value;
+                else if (field === 'weight') t.weight = value === '' ? 0 : Number(value);
+                else {
+                    const key = field === 'name~' ? 'name' : field;
+                    if (value === '' || value == null) delete w[key];
+                    else w[key] = value;
+                }
+                clearTimeout(this._labPreviewT);
+                this._labPreviewT = setTimeout(() => this.labPreview(), 200);
+            },
+
+            // What the open term is worth on this board and which cards it counts (ringed on the board).
+            async labPreview() {
+                const f = this.labForm;
+                if (!f || !this.state || !this.state.players) return;
+                const t = DojoLab.termOf(f.term);
+                let v;
+                try { v = await DojoRules.score(this.state, id => this.cardKey(id), this.labWeights(), [t]); } catch (e) { return console.warn('Score lab:', e); }
+                if (this.labForm !== f) return;
+                const r = v.terms[0];
+                this._labHits = new Set(r.hits);
+                this.render();
+                const box = this.$('lab-preview');
+                if (!box) return;
+                const esc = (x) => this._esc(String(x));
+                const names = r.hits.map(iid => { const c = this.findCard(iid); return c ? (this.cardDB[c.card.cardId] || {}).name : null; }).filter(Boolean);
+                const ahead = v.raw.race[0] < v.raw.race[1];
+                const idle = (t.when === 'ahead' && !ahead) || (t.when === 'behind' && ahead);
+                const sign = (n) => (n > 0 ? '+' : n < 0 ? '−' : '±') + Math.abs(n).toFixed(2);
+                box.innerHTML = `${esc(DojoLab.describe(t))}<br>On this board: <b>${sign(r.value)}</b>, ${names.length
+                    ? `counting ${names.length} card${names.length === 1 ? '' : 's'}: ${esc(names.slice(0, 6).join(', '))}${names.length > 6 ? ` and ${names.length - 6} more` : ''}`
+                    : 'no card matches'}${idle ? `, but you're ${ahead ? 'ahead' : 'behind'}, so it adds nothing` : ''}.${t.zone === 'play' && names.length ? ' They are ringed on the board.' : ''}
+                    ${DojoLab.peeks(t) ? '<span class="lab-warn">Peeks: it looks at which cards they hold or inked, which you couldn\'t see in a real game.</span>' : ''}`;
+            },
+
+            labSaveTerm() {
+                const f = this.labForm;
+                if (!f) return;
+                const t = DojoLab.termOf(f.term);
+                t.off = false;
+                if (!t.name) t.name = `term ${(this.labProfile().terms || []).length + (f.at < 0 ? 1 : 0)}`;
+                this.labEdit(d => {
+                    d.terms = d.terms || [];
+                    if (f.at >= 0) d.terms[f.at] = t;
+                    else d.terms.push(t);
+                });
+                this.labCloseForm();
+            },
+
+            labDeleteTerm() {
+                const f = this.labForm;
+                if (!f || f.at < 0) return;
+                this.labEdit(d => { d.terms.splice(f.at, 1); });
+                this.labCloseForm();
+            },
+
+            labTermToggle(i, on) {
+                this.labEdit(d => { if (d.terms[i]) d.terms[i].off = !on; });
+            },
+
+            labTermWeight(i, value) {
+                const w = Number(value);
+                if (value === '' || !Number.isFinite(w)) return this.renderLab();
+                this.labEdit(d => { if (d.terms[i]) d.terms[i].weight = Math.max(-100, Math.min(100, w)); });
+            },
+
+            labSetWeight(k, value) {
+                const w = Number(value);
+                if (value === '' || !Number.isFinite(w)) return this.renderLab();
+                this.labEdit(d => { d.weights[k] = Math.max(-100, Math.min(100, w)); });
+            },
+
+            labSlide(k, s) {
+                const w = +Math.pow(10, s / 100).toPrecision(2);
+                const input = this.$('prob-lab').querySelector('.lab-term.is-sel .lab-w');
+                if (input) input.value = w;
+                clearTimeout(this._labSlideT);
+                this._labSlideT = setTimeout(() => this.labEdit(d => { d.weights[k] = w; }), 120);
+            },
+
+            labToggle(k, on) {
+                this.labEdit(d => { d.off = on ? d.off.filter(x => x !== k) : [...new Set([...d.off, k])]; });
+            },
+
+            labSelect(k) {
+                this.labSel = this.labSel === k ? null : k;
+                this.renderLab();
+            },
+
+            async labUse(name) {
+                const s = this.labStore();
+                if (s.draft && !await this.dialog({ title: 'Discard your edits?', message: `The edits to ${s.active} aren't saved.`, confirmText: 'Discard', cancelText: 'Keep editing', danger: true })) return this.renderLab();
+                s.active = name;
+                s.draft = null;
+                DojoLab.save(s);
+                this.labRefresh();
+                this.renderLab();
+            },
+
+            labSave() {
+                const s = this.labStore();
+                if (!s.draft) return;
+                if (s.active === DojoLab.DEFAULT) return this.labSaveAs();
+                s.profiles[s.active] = s.draft;
+                s.draft = null;
+                DojoLab.save(s);
+                this.renderLab();
+            },
+
+            async labAskName(title, value) {
+                const raw = await this.dialog({ title, prompt: true, value, placeholder: 'Control', maxLength: DojoLab.NAME_MAX, confirmText: 'Save', cancelText: 'Cancel' });
+                const name = DojoLab.nameOf(raw);
+                if (!name) return null;
+                if (name === DojoLab.DEFAULT) {
+                    this.dialogAlert("Default is the engine's own weights. Pick another name.", 'Name taken');
+                    return null;
+                }
+                const s = this.labStore();
+                if (s.profiles[name] && name !== s.active && !await this.dialog({ title: `Replace ${name}?`, message: 'A profile with that name is saved on this device.', confirmText: 'Replace', cancelText: 'Cancel', danger: true })) return null;
+                return name;
+            },
+
+            async labSaveAs() {
+                const s = this.labStore();
+                const name = await this.labAskName('Save profile as', s.active === DojoLab.DEFAULT ? '' : s.active);
+                if (!name) return;
+                s.profiles[name] = JSON.parse(JSON.stringify(this.labProfile()));
+                s.active = name;
+                s.draft = null;
+                this.labMore = false;
+                DojoLab.save(s);
+                this.renderLab();
+            },
+
+            async labRename() {
+                const s = this.labStore(), old = s.active;
+                const name = await this.labAskName('Rename profile', old);
+                if (!name || name === old) return;
+                s.profiles[name] = s.profiles[old];
+                delete s.profiles[old];
+                s.active = name;
+                DojoLab.save(s);
+                this.renderLab();
+            },
+
+            async labDelete() {
+                const s = this.labStore(), name = s.active;
+                if (!await this.dialog({ title: `Delete ${name}?`, message: 'It is removed from this device.', confirmText: 'Delete', cancelText: 'Cancel', danger: true })) return;
+                delete s.profiles[name];
+                s.active = DojoLab.DEFAULT;
+                s.draft = null;
+                this.labMore = false;
+                DojoLab.save(s);
+                this.labRefresh();
+                this.renderLab();
+            },
+
+            labDiscard() {
+                const s = this.labStore();
+                s.draft = null;
+                DojoLab.save(s);
+                this.labRefresh();
+                this.renderLab();
+            },
+
+            labExport() {
+                const blob = new Blob([DojoLab.exportText(this.labStore())], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'score-lab-profiles.json';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                setTimeout(() => URL.revokeObjectURL(url), 1000);
+            },
+
+            // An imported file is checked by DojoLab.parse; its profiles join this device's, replacing any
+            // with the same name once you agree.
+            labImport() {
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.accept = '.json,application/json';
+                input.onchange = async () => {
+                    const file = input.files && input.files[0];
+                    if (!file) return;
+                    let got;
+                    try {
+                        if (file.size > 200000) throw new Error("That file is too big to be a score lab file.");
+                        got = DojoLab.parse(await file.text());
+                    } catch (e) {
+                        return this.dialogAlert(e.message, "Couldn't import");
+                    }
+                    const s = this.labStore();
+                    const clash = Object.keys(got).filter(n => s.profiles[n]);
+                    if (clash.length && !await this.dialog({ title: 'Replace profiles?', message: `This file has profiles named ${clash.join(', ')}, which are saved on this device too.`, confirmText: 'Replace', cancelText: 'Cancel', danger: true })) return;
+                    Object.assign(s.profiles, got);
+                    DojoLab.save(s);
+                    this.showToast(`Imported ${Object.keys(got).length} profile${Object.keys(got).length === 1 ? '' : 's'}`);
+                    this.renderLab();
+                };
+                input.click();
+            },
+
             // --- Feature 68 (experimental): proposed plays ---
             // The rules engine searches the rest of this turn (DojoRules.explore). The best lines show in
             // the odds column's Plays tab (on phones, a sheet): line 1 open, the others as how they differ
@@ -7048,11 +7477,12 @@
                 this.probTab = tab;
                 const pane = this.$('prob-pane');
                 pane.classList.toggle('is-plays', tab === 'plays');
-                this.$('prob-tab-odds').setAttribute('aria-pressed', String(tab === 'odds'));
-                this.$('prob-tab-plays').setAttribute('aria-pressed', String(tab === 'plays'));
+                pane.classList.toggle('is-score', tab === 'score');
+                ['odds', 'plays', 'score'].forEach(t => this.$('prob-tab-' + t).setAttribute('aria-pressed', String(tab === t)));
                 this.playsTip(null);
-                if (tab !== 'plays') return;
+                if (tab === 'odds') return;
                 if (pane.classList.contains('is-collapsed')) this.toggleProbPane();
+                if (tab === 'score') return this.renderLab();
                 if (this._plays) this.renderPlays();
                 else this.suggestPlays();
             },
@@ -7060,17 +7490,28 @@
             async suggestPlays() {
                 if (!this.rulesOn || !this.state || !this.state.players || this.state.mulliganPending) return;
                 const sig = this.boardSig(this.state);
-                const p = this._plays = { sig, result: null, error: null, open: 0 };
+                const weights = this.labWeights(), terms = this.labTerms();
+                const p = this._plays = { sig, wsig: this.labSig(), terms, result: null, error: null, open: 0, profile: this.labOn ? this.labStore().active : null };
                 if (this.isPhoneUI()) this.$('rules-plays').hidden = false;
                 else if (this.probTab !== 'plays') this.setProbTab('plays');
                 this.renderPlays();
                 try {
-                    p.result = await DojoRules.explore(this.state, id => this.cardKey(id), this.PLAYS_SEARCH);
+                    p.result = await DojoRules.explore(this.state, id => this.cardKey(id), Object.assign({}, this.PLAYS_SEARCH, { weights, terms }));
+                    // In the lab, Default's ranking too, for the ↑↓ against it.
+                    if (this.labOn && !this.labIsDefault() && this._plays === p) {
+                        const d = await DojoRules.explore(this.state, id => this.cardKey(id), this.PLAYS_SEARCH);
+                        p.defaultPlans = d.lines.map(l => this.playPlan(l));
+                    }
                 } catch (e) {
                     console.warn('Proposed plays:', e);
                     p.error = String(e && e.message || e);
                 }
                 if (this._plays === p) this.renderPlays();
+            },
+
+            // A line's plan, for matching lines across searches: its steps (inking aside) in any order.
+            playPlan(l) {
+                return DojoRules.groupActs(l.acts).filter(g => g.act.family !== 'putCardIntoInkwell').map(DojoRules.stepText).sort().join('|');
             },
 
             // The rest of the lines: the same search returned them.
@@ -7102,12 +7543,13 @@
                 const me = this.state.activePlayer;
                 const again = (r) => `<button class="icon-btn rp-again" onclick="App.suggestPlays()" aria-label="Search again"
                     title="Search again${r ? ` (${r.positions} positions in ${(r.ms / 1000).toFixed(1)} s${r.outOfTime ? ', out of time' : ''})` : ''}"><i class="fa-solid fa-rotate-right"></i></button>`;
-                const meta = (r) => `<div class="rp-meta"><span class="rp-lbl">Turn ${this.state.turn} · P${me + 1} to play</span>${r && r.outOfTime
+                const meta = (r) => `<div class="rp-meta"><span class="rp-lbl">Turn ${this.state.turn} · P${me + 1} to play${p && p.profile && p.profile !== DojoLab.DEFAULT ? ` · ${esc(p.profile)}` : ''}</span>${r && r.outOfTime
                     ? '<span class="rp-lbl rp-early" title="The search ran out of time before it finished, so searching again may give other lines.">· stopped early</span>' : ''}${again(r)}</div>`;
                 const note = (t, btn) => `${meta()}<p class="rp-note">${t}</p>${btn ? `<button class="btn rp-find" onclick="App.suggestPlays()">${btn}</button>` : ''}`;
                 // rulesRefresh keeps _rulesSig on the board on screen.
                 if (!p) return void (host.innerHTML = note('The rules engine tries orders of play for the rest of this turn and proposes the best lines.', 'Find plays'));
                 if (this._rulesSig && this._rulesSig !== p.sig) return void (host.innerHTML = note('The board has changed since these lines were found.', 'Search again'));
+                if (p.wsig !== this.labSig()) return void (host.innerHTML = note('The weights or terms have changed since these lines were found.', 'Search again'));
                 if (p.error) return void (host.innerHTML = note("The rules engine couldn't search this board.", 'Try again'));
                 if (!p.result) return void (host.innerHTML = note('Trying orders of play…'));
 
@@ -7139,11 +7581,26 @@
                 };
                 // The three reasons that moved most against ending the turn now; hover one for what it means.
                 const PARTS = { lore: 'lore', potential: 'lore on board', body: 'board', exposed: 'exposed', hand: 'hand', ink: 'ink', race: 'race to 20', reply: 'their turn' };
+                (p.terms || []).forEach((t, i) => { PARTS['t' + i] = t.name || `term ${i + 1}`; });
                 const why = (l) => Object.keys(PARTS)
                     .map(k => [k, part(l.parts, k) - part(r.base.parts, k)])
                     .filter(([, d]) => Math.abs(d) >= 0.05)
                     .sort((a, b) => Math.abs(b[1]) - Math.abs(a[1])).slice(0, 3)
                     .map(([k, d]) => `<span class="rp-chip${d < 0 ? ' is-neg' : ''}" data-tip="why" data-k="${k}" data-d="${d}">${PARTS[k]} <b>${sign(d)}</b></span>`).join('');
+                // The lab: where each line stood with Default, and every term for the open line.
+                const W = r.weights || {};
+                const sign2 = (n) => (n > 0 ? '+' : n < 0 ? '−' : '±') + Math.abs(n).toFixed(2);
+                const move = (l, i) => {
+                    if (!p.defaultPlans) return '';
+                    const d = p.defaultPlans.indexOf(this.playPlan(l));
+                    if (d === i) return '';
+                    return d < 0 ? '<span class="rp-move is-new" title="Not among Default\'s lines">new</span>'
+                        : `<span class="rp-move ${d > i ? 'is-up' : 'is-down'}" title="Line ${d + 1} with Default">${d > i ? '↑' : '↓'}${Math.abs(d - i)}</span>`;
+                };
+                const weightOf = (k) => (k === 'reply' ? (W.reply ? 'on' : 'off') : k === 'potential' ? `${+(+W.potential).toFixed(2)} / ${+(+W.threat).toFixed(2)}`
+                    : /^t\d+$/.test(k) ? +(+p.terms[+k.slice(1)].weight).toFixed(2) : +(+W[k]).toFixed(2));
+                const allTerms = (l) => `<div class="rp-all"><span class="rp-lbl">All terms</span><span class="rp-lbl">Weight</span><span class="rp-lbl">vs now</span>
+                    ${Object.keys(PARTS).map(k => `<span>${PARTS[k]}</span><span>${weightOf(k)}</span><span>${sign2(part(l.parts, k) - part(r.base.parts, k))}</span>`).join('')}</div>`;
                 const summary = (l, i) => {
                     const diff = i ? DojoRules.lineDiff(l.acts, r.lines[0].acts) : null;
                     return diff ? diff.map(([t, c]) => (c ? `<em>${esc(t)}</em>` : esc(t))).join('')
@@ -7159,7 +7616,7 @@
                     const reasons = why(l);
                     return `<div class="rp-line${open ? ' is-open' : ''}">
                         <button type="button" class="rp-lhead" onclick="App.openPlay(${i})" aria-expanded="${open}">
-                            <span class="rp-rank">${i + 1}</span>
+                            <span class="rp-rank">${i + 1}</span>${move(l, i)}
                             <span class="rp-gain">${l.parts.win > 0 ? 'Wins' : `${gain >= 0 ? '+' : '−'}${Math.abs(gain)} lore`}</span>
                             ${theyWin(l.parts) ? '<span class="rp-flag">They win next</span>' : `<span class="rp-pair" title="Lore after this line: yours–theirs">${end[me].lore}–${end[1 - me].lore}</span>`}
                             <span class="rp-score" data-tip="score">${sign(delta(l))}</span>
@@ -7167,6 +7624,7 @@
                         </button>
                         ${open ? `<div class="rp-lbody"><ol class="rp-steps">${steps}</ol>
                             ${reasons ? `<div class="rp-why"><span class="rp-lbl">Why</span><span class="rp-chips">${reasons}</span></div>` : ''}
+                            ${this.labOn ? allTerms(l) : ''}
                             <div class="rp-acts"><button class="btn" onclick="App.playLine(${i})">Play it</button>
                                 <button class="btn" onclick="App.saveLine(${i})">Save as branch</button></div></div>`
                             : `<div class="rp-sum"><span>${summary(l, i)}</span></div>`}
@@ -7207,16 +7665,29 @@
                 const tip = this.$('rp-tip');
                 this._tipEl = el;
                 if (!tip) return;
-                if (!el || !this._plays || !this._plays.result || this.isPhoneUI()) return void (tip.hidden = true);
+                if (!el || this.isPhoneUI()) return void (tip.hidden = true);
+                const kind = el.dataset.tip;
                 const p = this._plays;
-                const W = p.result.weights || {};
+                if (kind !== 'text' && kind !== 'share' && !(p && p.result)) return void (tip.hidden = true);
+                const W = (p && p.result && p.result.weights) || {};
                 const esc = (t) => this._esc(String(t));
                 const sign = (n) => (n > 0 ? '+' : n < 0 ? '−' : '±') + Math.abs(n).toFixed(1);
                 const head = (k, v) => `<div class="rp-tip-k">${esc(k)}<b>${esc(v)}</b></div>`;
                 tip.className = 'rp-tip';
                 tip.innerHTML = '';
-                const kind = el.dataset.tip;
-                if (kind === 'card') {
+                if (kind === 'text') {
+                    tip.innerHTML = head(el.dataset.head, el.dataset.val || '') + esc(el.dataset.text);
+                } else if (kind === 'share') {
+                    // The lab: a card in play's share of the score, part by part.
+                    const v = this.labView, shares = v && v.cards[el.dataset.iid], f = this.findCard(el.dataset.iid);
+                    if (!shares || !f) return void (tip.hidden = true);
+                    const LBL = { potential: 'lore on board', threat: 'their lore on board', body: 'board', exposed: 'exposed' };
+                    (v.sent || []).forEach((t, i) => { LBL['t' + i] = t.name || `term ${i + 1}`; });
+                    const sign2 = (n) => (n > 0 ? '+' : n < 0 ? '−' : '±') + Math.abs(n).toFixed(2);
+                    tip.innerHTML = head((this.cardDB[f.card.cardId] || {}).name || '', sign(shares.reduce((n, x) => n + x.v, 0)))
+                        + shares.map(x => `<div class="rp-tip-row"><span>${esc(LBL[x.k])}</span><span>${+x.x.toFixed(2)} × ${+(+(/^t\d+$/.test(x.k) ? v.sent[+x.k.slice(1)].weight : v.weights[x.k])).toFixed(2)}</span><span>${sign2(x.v)}</span></div>`).join('')
+                        + '<div class="rp-tip-n">Change or swap the card and the numbers follow.</div>';
+                } else if (kind === 'card') {
                     const db = this.playsCardDb(p.refs[+el.dataset.ref]);
                     if (!db) return void (tip.hidden = true);
                     tip.classList.add('is-card');
@@ -7232,6 +7703,7 @@
                     if (ab) this.appendSymbolized(tip.appendChild(document.createElement('span')), ab.effect || ab.fullText || '');
                 } else if (kind === 'why') {
                     const k = el.dataset.k, d = +el.dataset.d;
+                    const yours = /^t\d+$/.test(k) && p.terms && p.terms[+k.slice(1)];
                     const turns = W.race ? Math.round(Math.abs(d) / W.race) : 0;
                     const EXPLAIN = {
                         lore: 'Lore gained this turn.',
@@ -7243,15 +7715,19 @@
                         race: `Turns each side needs to reach 20 at the lore now in play. This line moves the race ${turns} turn${turns === 1 ? '' : 's'} ${d > 0 ? 'your way' : 'their way'}.`,
                         reply: `Their next turn, played by the engine with the cards they have in play: their quests and challenges. Their hand is left out, since you can't see it. This line holds up ${d > 0 ? 'better' : 'worse'} against it than ending the turn now.`,
                     };
-                    tip.innerHTML = head(el.firstChild.textContent.trim(), sign(d)) + esc(EXPLAIN[k] || '') + '<div class="rp-tip-n">Against ending the turn now.</div>';
+                    tip.innerHTML = head(el.firstChild.textContent.trim(), sign(d)) + esc(yours ? 'Your term: ' + DojoLab.describe(yours) : EXPLAIN[k] || '') + '<div class="rp-tip-n">Against ending the turn now.</div>';
                 } else {
                     tip.innerHTML = head('Score', el.textContent) + 'How much better this line leaves the game than ending the turn now. Hover a reason under the line to see where it comes from.';
                 }
                 tip.hidden = false;
-                const b = el.getBoundingClientRect(), col = el.closest('.prob-pane, .rules-plays').getBoundingClientRect();
+                // Beside the column; a card's share beside its card, to the right when there's room.
+                const card = kind === 'share' && el.closest('.card-wrap');
+                const b = (card || el).getBoundingClientRect(), col = (el.closest('.prob-pane, .rules-plays') || card || el).getBoundingClientRect();
                 const t = tip.getBoundingClientRect();
                 const top = Math.max(8, Math.min(innerHeight - t.height - 8, b.top + b.height / 2 - t.height / 2));
-                tip.style.left = `${Math.max(8, col.left - t.width - 10)}px`;
+                const right = card && b.right + 10 + t.width < innerWidth - 8;
+                tip.classList.toggle('is-right', !!right);
+                tip.style.left = `${right ? b.right + 10 : Math.max(8, col.left - t.width - 10)}px`;
                 tip.style.top = `${top}px`;
                 tip.style.setProperty('--nub', `${b.top + b.height / 2 - top}px`);
             },
@@ -12102,6 +12578,10 @@
                     wrap.classList.add('rules-legal');
                     wrap.appendChild(this.rulesPips(rv.moves));
                 }
+                // Feature 68: in the score lab, the card's share of the score.
+                const lv = this.labOn && this.labView && this.labView.cards[c.instanceId];
+                if (lv) wrap.appendChild(this.labChip(c.instanceId, lv));
+                if (this._labHits && this._labHits.has(c.instanceId)) wrap.classList.add('lab-hit');
                 const fx = this.takeFx(c.instanceId);
                 if (fx) this.applyFx(wrap, el, fx);
 
@@ -13641,6 +14121,7 @@
 
                 // Feature 68: a changed board drops the old rules reading before the cards are built.
                 this.rulesRefresh();
+                this.labRefresh();
 
                 // Feature 61: the modifier picker closes when its card is no longer in play.
                 if (window.Mods && Mods.isOpen()) {
@@ -13830,8 +14311,10 @@
 
                 // Feature 37: keep the open overlays in step with the new state.
                 this.renderFeature37Overlays();
-                // Feature 68: proposed plays say so when the board has moved on; the bot takes its next step.
+                // Feature 68: proposed plays say so when the board has moved on; the score lab follows it;
+                // the bot takes its next step.
                 if (this._plays) this.renderPlays();
+                if (this.probTab === 'score' && !this.labForm) this.renderLab();
                 this.botKick();
 
                 // Guided tours (Feature 58): a step waiting on the player checks here.
@@ -13932,12 +14415,14 @@
                 if (cm) cm.querySelectorAll('button').forEach(b => b.classList.toggle('is-active', b.dataset.val === this.cardMode));
 
                 // Feature 68 (experimental): the rules engine reads the board, or stays asleep.
-                this.rulesOn = t.rules === 'assist';
+                this.rulesOn = t.rules === 'assist' || t.rules === 'lab';
+                this.labOn = t.rules === 'lab';
                 document.body.classList.toggle('rules-on', this.rulesOn);
+                document.body.classList.toggle('lab-on', this.labOn);
                 if (!this.rulesOn && this._plays) this.closePlays();
-                if (!this.rulesOn && this.probTab === 'plays') this.setProbTab('odds');
+                if ((!this.rulesOn && this.probTab === 'plays') || (!this.labOn && this.probTab === 'score')) this.setProbTab('odds');
                 const ru = this.$('tweak-rules');
-                if (ru) ru.querySelectorAll('button').forEach(b => b.classList.toggle('is-active', b.dataset.val === (this.rulesOn ? 'assist' : 'off')));
+                if (ru) ru.querySelectorAll('button').forEach(b => b.classList.toggle('is-active', b.dataset.val === (this.labOn ? 'lab' : this.rulesOn ? 'assist' : 'off')));
 
                 // Redraw whatever is on the pane so the switch is visible immediately.
                 if (this._lastPreviewCard) this.showPreview(this._lastPreviewCard);

@@ -17,6 +17,10 @@
 //                                   Each → Promise of { acts, state, ask, stuck, done, owner, over, winner }:
 //                                   state is the Dojo board, or null while something is resolving; ask lists your
 //                                   choices; owner is whose turn it is now (0 or 1).
+//   score(state, keyOf, weights, terms) → Promise of the board as it stands, from the side of the player whose turn it is:
+//                                   { score, parts, raw, weights, defaults, cards: { [instanceId]: [{ k, v, x }] }, terms }
+//                                   defaults: the engine's own weights. terms: your own (DojoLab), each { value, hits: [instanceId] }.
+//                                   cards: each card in play's share (part k, value v, the measure x weighted).
 //   actText(act)                  one step of a line as a sentence.
 //   groupActs(acts)               a line's steps for display: [{ act, subs }], each move with what it set off.
 //   stepText(group)               a grouped step in a few words, for comparing lines.
@@ -122,6 +126,16 @@ window.DojoRules = (function () {
     const botStep = async () => botRead(await call('botStep', {}));
     const botChoose = async (index) => botRead(await call('botChoose', { index }));
     const botPass = async (who) => botRead(await call('botPass', { who }));
+
+    async function score(state, keyOf, weights, terms) {
+        await engine();
+        const r = await call('score', { board: boardFromState(state, keyOf), weights, terms });
+        const place = placesOf(state);
+        const cards = {};
+        for (const [p, shares] of Object.entries(r.cards)) if (place[p]) cards[place[p]] = shares;
+        const found = r.terms.map(t => ({ value: t.value, hits: t.hits.map(p => place[p]).filter(Boolean) }));
+        return { score: r.score, parts: r.parts, raw: r.raw, weights: r.weights, defaults: r.defaults, cards, terms: found };
+    }
 
     // One step of a proposed line. `by: 'opp'` steps are the bot answering for the opponent.
     function actText(a) {
@@ -327,5 +341,5 @@ window.DojoRules = (function () {
         };
     }
 
-    return { UNKNOWN, VERBS, whyText, actText, groupActs, stepText, lineDiff, boardFromState, analyze, explore, botStart, botStep, botChoose, botPass, stateForLine, start, call };
+    return { UNKNOWN, VERBS, whyText, actText, groupActs, stepText, lineDiff, boardFromState, analyze, explore, botStart, botStep, botChoose, botPass, score, stateForLine, start, call };
 })();

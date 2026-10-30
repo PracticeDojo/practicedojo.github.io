@@ -350,7 +350,7 @@ Each phase is one or more entries in `docs/features.md` and ends in a decision.
 | **0 · Spike** (days). **Done 2026-10-26: go** (§12) | `tools/build-engine.mjs` at a pinned SHA. A worker that hydrates the Set 14 demo and lists legal moves. A bot-vs-bot game in the worker. A timing page. | Bundle gzip ≤ 600 KB and cards gzip ≤ 1.5 MB, or split by set. Cold start ≤ 1.5 s desktop and ≤ 4 s mid-range phone. `getAvailableMoves` ≤ 20 ms. A bot turn ≤ 300 ms. One search node ≤ 10 ms. The demo's hydrate → project is lossless. **If any gate fails badly, stop and rethink.** |
 | **1a · Bridge, read-only**. **First cut 2026-10-26** (§12) | Card and state bridge, highlights, "why not" | The demos round-trip |
 | **1b · Assist** | Execute, effects, prompts, translation, persistence | §6 done |
-| **2 · Bot**. **First cut 2026-10-30** (§12), on `claude/feat-68-bot-opponent` | Seats, loop, Step mode, perspective, hint | §7 done |
+| **2 · Bot**. **First cut 2026-10-30** (§12), merged from `claude/feat-68-bot-opponent` | Seats, loop, Step mode, perspective, hint | §7 done |
 | **3 · Explorer**. **First cut 2026-10-26: proposed plays** (§12), ahead of 1b at the owner's call | Search, scoring, ghost branches | §8 done |
 | **Upkeep** | Re-pin when upstream fixes card bugs or adds a set. Contract tests guard each re-pin. | — |
 
@@ -430,6 +430,27 @@ The owner asked for a bot opponent (Tier 2, §7) that plays its actions one by o
 - **Hidden information:** the server's planning board is the player's own view (`getAutomatedPlanningBoardForPlayer`, `role: "player"`), so the bot doesn't see your hand or your deck order.
 - **Your side at the bottom:** the Dojo flips the board to the player whose turn it is. `render()` and two drop handlers (`position === 'bottom' ? activePlayer : …`) are all that tie the bottom to the active player, so a seat lock is small.
 - **Known limits:** effects that last into your turn aren't kept by the Dojo while you play (you're the referee, as everywhere in the sandbox); the bot can get stuck on a few prompts the upstream bot can't answer (§12, tuning), and must then stop and hand you the turn, never concede; its mulligan wasn't checked.
+### 2026-10-29 · The score lab: your own terms
+
+The owner's next ask: build new building blocks, not just weigh the old ones.
+
+- **A term is data, never code:** whose cards, where (in play, hand, inkwell, discard), filters, a measure, a weight, and always / ahead / behind in the race. `DojoLab.termOf` keeps known values only (the trust boundary: storage and imported files); in the worker an unknown value matches nothing, so a bad term can't break a search.
+- **The engine reads the rules for it:** filters use the engine's projected cards (keywords and stats with modifiers, classifications, exerted, damage, quest and challenge restrictions). "What its abilities do" walks the card's definition for effect types: draw (`draw`), removal (`banish`, `deal-damage`, `put-damage`, `return-to-hand`, `put-on-bottom`, `shuffle-into-deck`), ramp (`put-into-inkwell`, `additional-inkwell`, `cost-reduction`), lore (`gain-lore`). An approximation: who an effect hits isn't checked, so Elinor - Renowned Diplomat (deals 1 damage) counts as removal.
+- **Everywhere the score is:** each term is a part of its own (`t0`, `t1`, …) in `evaluate`, so it counts in the score, in the card numbers (terms over cards in play), in proposed lines and in their reply's re-score. With no terms, lines score exactly as before (1014.03, 1013.22, … on the demo's turn 9).
+- **The form** (Score tab → + New term) previews the term on the board as you build it and rings the cards it counts. On that board, "my ready Evasive characters in play: lore × 0.3" counts Prince Phillip (+0.9); "their cards in hand that banish, damage or bounce: how many × −0.3" counts Elinor, Elinor and Strength of a Raging Fire (−0.9).
+- **Peeks:** their hand and inkwell are hidden, so how many cards is public but anything about which cards isn't. A term that looks at that is tagged *peeks*, with a warning in the form.
+- Checked: `app-checks` 36/36 (two new: a term keeps known values only and reads as a sentence; the engine's count of my cards in hand is my hand). Screenshots of building both terms through the form, the Score tab, a card's sum with a term in it, and Plays with terms.
+
+### 2026-10-29 · The score lab, first part
+
+The owner wanted the building blocks of the score in reach: to change them, see how each card contributes, and later make new ones. Worked through as options (weights, an inspector, your own terms, testing against the bot, move preferences), then mocked up in the live app. Built on `claude/feat-68-score-lab`, to merge into `feat/68-rules-engine` once it holds up.
+
+- **Lab** is a third setting of the rules switch (Off · Assist · Lab); Off and Assist are unchanged, and Assist always scores with the engine's own weights.
+- **The engine:** `evaluate` now records each card in play's share as it sums lore on board, board and exposed, so the card numbers can't drift from the score; it also returns the measures behind each part. Proposed lines score exactly as before (checked on the demo's turn 9: 1014.03, 1013.22, …). A new `score` op reads the board as it stands: 88 ms on that board.
+- **What the lab shows:** the Score tab (score now, every term with its weight and worth, profiles), a number on each card in play with its sum on hover, and Plays ranked with the profile in use, with ↑↓ against Default and every term for the open line. With a "Control" profile (lore 0.7, board 0.25, their lore on board 1.4, exposed 0.8, race 0.3), lines 2 and 3 move up 4 places against Default on that board.
+- **Hot swap:** turning Prince Phillip into Tadashi Hamada on that board moves the score from −6.2 to −7.5 under Control, and the cards' numbers with it.
+- **Profiles** live on the device (`app/js/lab.js`). An imported file is checked: known terms only, finite weights within ±100, a name that isn't Default, at most 50 profiles.
+- Checked: `app-checks` 34/34 (two new: an imported file keeps known terms only; the card shares add up to the score's in-play parts). Screenshots by day and night, on phones (card numbers only), hover states, editing and saving a profile, Plays against Default, the hot swap.
 
 ### 2026-10-28 · Fix: the same board gave different lines
 
