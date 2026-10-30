@@ -206,7 +206,7 @@ function botGame(args: { deck1: string; deck2: string; seed?: string; strategy?:
 // (deck, hand, play + each card's cardsUnder, inkwell, discard; player one then two), so they
 // can be computed up front: that's how locations are pointed at, and how `pos` maps each engine
 // card back to its Dojo place ("<player>:<zone>:<index>"). Cards the engine doesn't know become
-// cost-0 placeholders; their ids are in `unknownIds`.
+// placeholders that can be neither played nor inked; their ids are in `unknownIds`.
 function hydrate(board: Board, seed = "dojo-hydrate") {
   const t0 = now();
   const unknown: string[] = [];
@@ -223,7 +223,7 @@ function hydrate(board: Board, seed = "dojo-hydrate") {
       unknown.push(sn);
       unknownIds.add(id);
     }
-    return { id, def: d ?? { id: `unknown:${sn}`, name: `Unknown ${sn}`, cardType: "item", cost: 0, inkable: true } };
+    return { id, def: d ?? { id: `unknown:${sn}`, name: `Unknown ${sn}`, cardType: "item", cost: 99, inkable: false } };
   };
   const inkIds: string[][] = [];
   const modded: [string, Mod[]][] = [];
@@ -258,11 +258,16 @@ function hydrate(board: Board, seed = "dojo-hydrate") {
   const server = engineOf(match);
   const state = structuredClone(server.getState()) as unknown as {
     ctx: { status: Record<string, unknown>; priority: { holder: string }; zones: { private: { cardMeta: Record<string, Record<string, Record<string, number> | undefined>> } } };
-    G: { turnMetadata: { inkedThisTurn: string[] }; continuousEffects: { nextSeq: number; instances: unknown[]; byTarget: Record<string, unknown[]> } };
+    G: { turnMetadata: { inkedThisTurn: string[] }; continuousEffects: { nextSeq: number; instances: unknown[]; byTarget: Record<string, unknown[]> }; turnsCompletedByPlayer: Record<string, number> };
   };
   state.ctx.status.turn = board.turn;
   state.ctx.status.turnOwnerId = PIDS[board.active];
   state.ctx.priority.holder = PIDS[board.active];
+  // Trigger restrictions ("during your turn") work out whose turn it is from who went first and the turns
+  // each player has completed, not from the turn owner: counts that agree with it, so they still agree
+  // after the engine's own turn changes. Not the first turn, so no first-turn rule applies.
+  state.ctx.status.otp = PIDS[0];
+  state.G.turnsCompletedByPlayer = { [PIDS[0]]: board.active === 1 ? 2 : 1, [PIDS[1]]: 1 };
   // The Dojo knows how many cards were inked this turn, not which: the newest ink cards.
   const inked = Math.min(board.inkedThisTurn ?? 0, inkIds[board.active].length);
   state.G.turnMetadata.inkedThisTurn = inked ? inkIds[board.active].slice(-inked) : [];
