@@ -11,6 +11,12 @@
 //                                   { lines: [{ score, delta, parts, acts, state }], base, weights, ms, nodes, outOfTime }
 //                                   Each line's `state` is the Dojo state it ends on. opts go to the
 //                                   worker's search (beam, perNode, depth, nodes, timeMs, lines, replyLines).
+//   botStart(state, keyOf, seat)  the bot opponent (Tier 2): the engine starts a game from this board and plays
+//                                   `seat`. botStep() plays its next move and what that sets off; botChoose(i)
+//                                   answers a choice it asked you; botPass('bot' | 'you') runs the turn change.
+//                                   Each → Promise of { acts, state, ask, stuck, done, owner, over, winner }:
+//                                   state is the Dojo board, or null while something is resolving; ask lists your
+//                                   choices; owner is whose turn it is now (0 or 1).
 //   actText(act)                  one step of a line as a sentence.
 //   groupActs(acts)               a line's steps for display: [{ act, subs }], each move with what it set off.
 //   stepText(group)               a grouped step in a few words, for comparing lines.
@@ -97,6 +103,25 @@ window.DojoRules = (function () {
         })));
         return ids;
     }
+
+    // The bot opponent. The engine's ids are of the board the game started from (bot.from), so every reply's
+    // board and cards are read against it.
+    let bot = null;
+    async function botStart(state, keyOf, seat) {
+        await engine();
+        const r = await call('botStart', { board: boardFromState(state, keyOf), seat });
+        bot = { from: JSON.parse(JSON.stringify(state)), ids: r.ids, place: placesOf(state) };
+    }
+    function botRead(r) {
+        if (!bot || r.error) return r;
+        const iid = (c) => (c ? Object.assign(c, { iid: bot.place[bot.ids[c.id]] || null }) : c);
+        [...(r.acts || []), ...(r.ask || [])].forEach(a => [a.card, a.target, ...(a.with || []), ...(a.targets || [])].forEach(iid));
+        r.state = r.end ? stateForLine(bot.from, bot.ids, r.end) : null;
+        return r;
+    }
+    const botStep = async () => botRead(await call('botStep', {}));
+    const botChoose = async (index) => botRead(await call('botChoose', { index }));
+    const botPass = async (who) => botRead(await call('botPass', { who }));
 
     // One step of a proposed line. `by: 'opp'` steps are the bot answering for the opponent.
     function actText(a) {
@@ -302,5 +327,5 @@ window.DojoRules = (function () {
         };
     }
 
-    return { UNKNOWN, VERBS, whyText, actText, groupActs, stepText, lineDiff, boardFromState, analyze, explore, stateForLine, start, call };
+    return { UNKNOWN, VERBS, whyText, actText, groupActs, stepText, lineDiff, boardFromState, analyze, explore, botStart, botStep, botChoose, botPass, stateForLine, start, call };
 })();

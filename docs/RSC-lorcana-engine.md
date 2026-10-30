@@ -350,7 +350,7 @@ Each phase is one or more entries in `docs/features.md` and ends in a decision.
 | **0 · Spike** (days). **Done 2026-10-26: go** (§12) | `tools/build-engine.mjs` at a pinned SHA. A worker that hydrates the Set 14 demo and lists legal moves. A bot-vs-bot game in the worker. A timing page. | Bundle gzip ≤ 600 KB and cards gzip ≤ 1.5 MB, or split by set. Cold start ≤ 1.5 s desktop and ≤ 4 s mid-range phone. `getAvailableMoves` ≤ 20 ms. A bot turn ≤ 300 ms. One search node ≤ 10 ms. The demo's hydrate → project is lossless. **If any gate fails badly, stop and rethink.** |
 | **1a · Bridge, read-only**. **First cut 2026-10-26** (§12) | Card and state bridge, highlights, "why not" | The demos round-trip |
 | **1b · Assist** | Execute, effects, prompts, translation, persistence | §6 done |
-| **2 · Bot** | Seats, loop, Step mode, perspective, hint | §7 done |
+| **2 · Bot**. **First cut 2026-10-30** (§12), on `claude/feat-68-bot-opponent` | Seats, loop, Step mode, perspective, hint | §7 done |
 | **3 · Explorer**. **First cut 2026-10-26: proposed plays** (§12), ahead of 1b at the owner's call | Search, scoring, ghost branches | §8 done |
 | **Upkeep** | Re-pin when upstream fixes card bugs or adds a set. Contract tests guard each re-pin. | — |
 
@@ -383,6 +383,20 @@ Tiers 2 and 3 only need the read side of tier 1 (hydrate and project) plus the e
 ## 12. Spike log
 
 Measured results, newest first. The work itself lives on `feat/68-rules-engine` (AGENTS.md, *Long-lived branch*).
+
+### 2026-10-30 · Tier 2, first cut: the bot opponent
+
+Built on `claude/feat-68-bot-opponent` (cut from `feat/68-rules-engine`), as the spike below said it could be.
+
+- **The key:** top bar → **Bot** (next to Challenge, while the rules engine is on) opens a menu: *Bot plays* Off · P1 · P2, *Pace* Auto · Step, *Speed* Slow · Normal · Fast. On, the key reads "Bot P2" and a banner under the top bar shows the bot's last move ("Play Strength of a Raging Fire → Prince Phillip"), Auto / Step, Pause or Next, and **Take over**. P switches Auto and Step; N plays its next move.
+- **One move at a time:** each move, and everything it sets off, is one Undo step, logged as "Bot: …", and counted in the turn's recap. Undo pauses the bot.
+- **The engine keeps the game for the bot's turn** (worker ops `botStart`, `botStep`, `botChoose`, `botPass`) and the board shows each finished move. A board changed since its last move (your edit, Undo, a loaded node) is read again first.
+- **The engine runs the turn changes** both ways (`endTurn({ engine })` takes its board instead of the sandbox's own ready and draw), so start- and end-of-turn abilities happen. The exception is the second player's first turn while their opening hand waits: the sandbox does that one. Every turn still gets its Multiverse node.
+- **Your choices during its turn** show in the banner as buttons (one per distinct option). Moves made before the question wait for the answer and go onto the board with it.
+- **Your seat stays at the bottom** while the bot is on (`bottomSeat()`; the halves' "to play / waiting" follow the turn). Take over switches it off and the board flips as usual; switched on again, the bot carries on from the board as it is.
+- **The bot keeps its opening hand** (shortcut: the engine's own mulligan isn't asked yet). It plays the engine's default bot, from its own view (it doesn't see your hand).
+- **It never concedes:** stuck on a prompt it can't answer, it pauses and says so; the turn is yours to finish.
+- Checked in the browser: from the demo's turn 1, the bot (P2) kept its hand and won on turn 7 while you only ended turns (0-0, 0-1, 0-4, 0-8, 0-13, 0-19, 0-20), with no deadlock and no stuck prompt; on turn 4 its Chernabog asked you (Milo Thatch, Max Goof, or skip) and the game went on after the answer; Step and N play one move; P switches the pace; Take over flips the board back. `app-checks` 33/33 (one new: the bot plays P2's turn and the engine hands it back).
 
 ### 2026-10-29 · Spike: can the bot play against you, one action at a time?
 

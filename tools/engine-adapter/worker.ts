@@ -764,6 +764,96 @@ function explore(args: SearchOpts & { board: Board }) {
   };
 }
 
+// --- The bot opponent (Feature 68, Tier 2, study §7 and §12): the engine plays one seat, one move at a time.
+// The worker keeps the game for the whole of the bot's turn: the Dojo board can't hold what the engine
+// tracks mid-turn (effects that last the turn, what was played, abilities resolving), and re-reading it
+// before each move changed the bot's play. The engine also runs the turn changes, so start- and
+// end-of-turn abilities happen. The app shows each finished move on the Dojo board; when you change the
+// board, it starts a new game here from it. The bot plans from its own view (it doesn't see your hand).
+type BotLive = { server: Server; seat: string; other: string };
+let botLive: BotLive | null = null;
+
+// A new game from a Dojo board; `seat` (0 or 1) is the bot's. Returns the engine ids of the board's cards.
+function botStart(args: { board: Board; seat: 0 | 1 }) {
+  const { match, pos } = hydrate(args.board);
+  botLive = { server: bareServer(match), seat: PIDS[args.seat], other: PIDS[1 - args.seat] };
+  return { ids: Object.fromEntries(pos) };
+}
+
+// Whatever is pending gets resolved: the bot answers for itself; a choice that's yours stops and asks.
+function botResolve(g: BotLive, acts: Act[]): { ask?: Act[]; stuck?: string } {
+  const { server } = g;
+  for (let i = 0; i < 60; i++) {
+    if (server.isGameOver() || (!server.getBagCount() && !server.getPendingEffects().length)) return {};
+    const en = server.enumerateAutomatedActionsForCurrentActor();
+    if (!en.actorId) return { stuck: "Nothing can resolve what is waiting." };
+    if (en.actorId !== g.seat) return { ask: en.candidates.map((c) => describe(server, c as never, "opp")) };
+    const c = en.candidates[0];
+    if (!c) return { stuck: "The bot can't answer what is waiting." };
+    acts.push(describe(server, c as never, "me"));
+    if (!applyCandidate(server, g.seat, c).success) return { stuck: "The engine refused the bot's answer." };
+  }
+  return { stuck: "The bot went on too long without finishing." };
+}
+
+// Where the game stands after a step. `end` (the board, for the Dojo) only when nothing is resolving.
+function botReply(g: BotLive, acts: Act[], r: { ask?: Act[]; stuck?: string; done?: boolean } = {}) {
+  const { server } = g;
+  const st = server.getState() as unknown as RawState;
+  const quiet = !server.getBagCount() && !server.getPendingEffects().length;
+  const winner = server.getWinner();
+  return {
+    acts,
+    ...r,
+    end: quiet ? endOf(st) : null,
+    owner: PIDS.indexOf(st.ctx.status.turnOwnerId as (typeof PIDS)[number]),
+    over: server.isGameOver(),
+    winner: winner ? PIDS.indexOf(winner as (typeof PIDS)[number]) : null,
+  };
+}
+
+// The bot's next move and everything it sets off. `done` when it has nothing left to do this turn.
+function botStep() {
+  const g = botLive;
+  if (!g) return { error: "no game" };
+  const { server } = g;
+  const acts: Act[] = [];
+  const first = botResolve(g, acts);
+  if (first.ask || first.stuck) return botReply(g, acts, first);
+  const owner = (server.getState() as unknown as RawState).ctx.status.turnOwnerId;
+  if (server.isGameOver() || owner !== g.seat) return botReply(g, acts);
+  const en = server.enumerateAutomatedActionsForCurrentActor();
+  const c = en.actorId === g.seat ? en.candidates[0] : undefined;
+  if (!c) return botReply(g, acts, { done: true });
+  acts.push(describe(server, c as never, "me"));
+  if (!applyCandidate(server, g.seat, c).success) return botReply(g, acts, { stuck: "The engine refused the bot's move." });
+  return botReply(g, acts, botResolve(g, acts));
+}
+
+// Your answer to what the bot asked: the index of one of the choices it listed.
+function botChoose(args: { index: number }) {
+  const g = botLive;
+  if (!g) return { error: "no game" };
+  const { server } = g;
+  const en = server.enumerateAutomatedActionsForCurrentActor();
+  const c = en.candidates[args.index];
+  const acts: Act[] = [];
+  if (!c || !en.actorId || en.actorId === g.seat) return botReply(g, acts, { stuck: "That choice is no longer there." });
+  acts.push(describe(server, c as never, "opp"));
+  if (!applyCandidate(server, en.actorId, c).success) return botReply(g, acts, { stuck: "The engine refused that choice." });
+  return botReply(g, acts, botResolve(g, acts));
+}
+
+// The turn change, run by the engine: `who` ends their turn (the bot, or you), then the other player's
+// turn begins (ready, draw, start-of-turn abilities). Both sides' abilities resolve on the way.
+function botPass(args: { who: "bot" | "you" }) {
+  const g = botLive;
+  if (!g) return { error: "no game" };
+  const acts: Act[] = [];
+  if (!g.server.passTurn(args.who === "bot" ? g.seat : g.other).success) return botReply(g, acts, { stuck: "The engine couldn't end the turn." });
+  return botReply(g, acts, botResolve(g, acts));
+}
+
 // One game for tools/engine-tune.mjs: on its own turns, player `explorer` plays the best line the
 // search finds with `weights`; every other choice (both mulligans, the other player's whole game,
 // answers to prompts) is the engine's default bot.
@@ -888,7 +978,7 @@ function searchCost(args: { deck1: string; deck2: string; seed?: string; turn?: 
   };
 }
 
-const ops: Record<string, (args: never) => unknown> = { init, names, analyze, explore, selfPlay, botGame, roundTrip, searchCost };
+const ops: Record<string, (args: never) => unknown> = { init, names, analyze, explore, botStart, botStep, botChoose, botPass, selfPlay, botGame, roundTrip, searchCost };
 (globalThis as Record<string, unknown>).DojoEngine = ops;
 
 const scope = globalThis as unknown as { WorkerGlobalScope?: unknown; onmessage: unknown; postMessage(m: unknown): void };

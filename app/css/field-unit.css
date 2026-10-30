@@ -1619,6 +1619,15 @@ body.palette-competition .player-row::before {
     color: var(--fu-glass-mute);
 }
 
+/* The bot opponent keeps your seat at the bottom, so on its turn the top half is the one to play. */
+body.top-to-play .board-half.top .board-bg-letter::after {
+    content: '· to play';
+}
+
+body.top-to-play .board-half.bottom .board-bg-letter::after {
+    content: '· waiting';
+}
+
 /* Drop targets: a paper hairline, never orange. */
 .drop-target,
 .drop-zone.drop-target-active {
@@ -10673,5 +10682,122 @@ body.rules-on .prob-pane.is-plays:not(.is-collapsed) .prob-plays {
 
     .rp-head .rp-title {
         flex: 1;
+    }
+}
+
+/* The bot opponent (Feature 68): the Bot key in the turn controls (only while the rules engine is on),
+   its menu, and a paper banner under the top bar while it plays a seat: whose seat, what it just did or
+   your choice, and its keys. No colour of its own: it isn't a state of the game. */
+body:not(.rules-on) #btn-bot {
+    display: none;
+}
+
+body.bot-on #btn-bot {
+    background: var(--fu-glass);
+    color: var(--fu-light);
+}
+
+.bot-menu {
+    position: fixed;
+    z-index: 70;
+    width: 280px;
+    padding: 6px 12px 10px;
+    background: var(--surface);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-3);
+}
+
+.bot-menu[hidden],
+.bot-banner[hidden] {
+    display: none;
+}
+
+.bm-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 6px 0;
+}
+
+.bm-hint {
+    margin: 6px 0 0;
+    font-size: 11.5px;
+    line-height: 1.4;
+    color: var(--text-dim);
+}
+
+.bot-banner {
+    position: fixed;
+    top: calc(var(--topbar-h, 46px) + 8px);
+    left: 0;
+    right: 0;
+    z-index: 60;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: fit-content;
+    max-width: min(1040px, calc(100vw - 32px));
+    margin: 0 auto;
+    padding: 6px 6px 6px 14px;
+    background: var(--surface);
+    color: var(--text-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-2);
+    font-size: 13px;
+    line-height: 1.35;
+}
+
+.bb-key,
+.bb-lbl {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: var(--label-track);
+    text-transform: uppercase;
+    white-space: nowrap;
+    color: var(--text);
+}
+
+.bb-lbl {
+    color: var(--text-dim);
+}
+
+.bb-text {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+    color: var(--text);
+}
+
+.bb-text.is-note {
+    color: var(--danger);
+}
+
+.bot-banner .btn {
+    height: 28px;
+    padding: 0 10px;
+    font-size: 12px;
+    white-space: nowrap;
+}
+
+.bb-kbd {
+    margin-left: 4px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--text-dim);
+}
+
+@media (max-width: 760px) {
+    .bot-banner {
+        flex-wrap: wrap;
+        top: auto;
+        bottom: calc(8px + env(safe-area-inset-bottom));
+        max-width: calc(100vw - 16px);
     }
 }

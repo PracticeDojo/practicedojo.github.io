@@ -167,6 +167,10 @@
                     title="Challenge mode (C) — drag or tap one of your characters, then an opponent"
                     aria-label="Challenge mode" aria-pressed="false"><i class="fa-solid fa-hand-fist"></i>
                     <span>Challenge</span></button>
+                <!-- Feature 68 (experimental): the bot opponent, while the rules engine is on -->
+                <button class="icon-btn" id="btn-bot" onclick="App.toggleBotMenu(event)" title="Bot opponent: the rules engine plays a seat"
+                    aria-label="Bot opponent" aria-haspopup="true" aria-expanded="false" aria-controls="bot-menu"><i
+                        class="fa-solid fa-robot"></i> <span id="btn-bot-label">Bot</span></button>
             </div>
         </div>
         <div class="topbar-right">
@@ -1170,6 +1174,10 @@
         </div>
         <div id="rules-plays-body"></div>
     </section>
+
+    <!-- Feature 68 (experimental): the bot opponent's menu and banner -->
+    <div id="bot-menu" class="bot-menu" hidden role="dialog" aria-label="Bot opponent"></div>
+    <div id="bot-banner" class="bot-banner" hidden role="status" aria-live="polite"></div>
 
     <!-- Feature 37: challenge mode banner + forecast -->
     <div id="challenge-banner" class="chal-banner" role="status" aria-live="polite" onclick="event.stopPropagation()">
@@ -4797,6 +4805,8 @@
 
             undo() {
                 if (this.history.length === 0) return;
+                // Feature 68: Undo pauses the bot, or Auto would play the move straight back.
+                if (this.bot.seat != null) Object.assign(this.bot, { paused: true, ask: null, held: [], live: false });
                 const prevCompressed = JSON.parse(this.history.pop());
                 this.state = this.decompressState(prevCompressed, this.state.log);
                 if (window.Mods) Mods.closePicker(); // Feature 61
@@ -5004,9 +5014,13 @@
                 this.render();
             },
 
-            endTurn() {
+            // opts.engine: the rules engine ran the turn change (the bot opponent, Feature 68): its board,
+            // already on this.state (saved for Undo before it went on), has the ready and draw steps and the
+            // start- and end-of-turn abilities, so they're skipped here. opts.dojo: the sandbox's own change.
+            endTurn(opts = {}) {
                 if (this.state.mulliganPending) return; // the opening hand comes first (Feature 54)
-                this.saveState();
+                if (!opts.engine && !opts.dojo && this.botRunsTurnChange()) return void this.botPassTurn(this.state.activePlayer === this.bot.seat ? 'bot' : 'you');
+                if (!opts.engine) this.saveState();
                 this._closeTurnNode();
 
                 this.expireModifiers('end'); // Feature 61: "this turn" ends with the turn
@@ -5033,23 +5047,25 @@
                 this.logAction(`--- Turn ${this.state.turn} Begins ---`, true);
                 // Feature 61: this player's "until my next turn" modifiers end now.
                 this.expireModifiers('start', this.state.activePlayer);
-                this.logAction(`Ready step: characters and items readied`, true);
+                if (!opts.engine) {
+                    this.logAction(`Ready step: characters and items readied`, true);
 
-                // Ready Characters and Items (Not Locations)
-                p.field.forEach(c => {
-                    const dbCard = this.cardDB[c.cardId];
-                    if (dbCard && dbCard.type !== 'Location') {
+                    // Ready Characters and Items (Not Locations)
+                    p.field.forEach(c => {
+                        const dbCard = this.cardDB[c.cardId];
+                        if (dbCard && dbCard.type !== 'Location') {
+                            c.exerted = false;
+                        }
+                        c.drying = false; // Remove drying state at the start of their turn
+                    });
+
+                    // Ready Inkwell and flip newly inked cards face down
+                    p.inkwell.forEach(c => {
                         c.exerted = false;
-                    }
-                    c.drying = false; // Remove drying state at the start of their turn
-                });
-
-                // Ready Inkwell and flip newly inked cards face down
-                p.inkwell.forEach(c => {
-                    c.exerted = false;
-                    c.faceUp = false;
-                });
-                p.inkReady = p.inkTotal;
+                        c.faceUp = false;
+                    });
+                    p.inkReady = p.inkTotal;
+                } else this.logAction('Ready and draw steps (rules engine)', true);
 
                 // The new turn's buffers. Cleared whether or not auto-save is on, so a
                 // manual bookmark shows only this turn's cards.
@@ -5069,7 +5085,8 @@
                     return;
                 }
 
-                this._drawStep();
+                if (opts.engine) this._captureTurnStartHand(this.state.activePlayer);
+                else this._drawStep();
                 this._openTurnNode();
                 this.render();
             },
@@ -6730,6 +6747,242 @@
                 return box;
             },
 
+            // --- Feature 68 (experimental): the bot opponent (top bar → Bot) ---
+            // The rules engine plays one seat, one move at a time: Auto (a move every second or so) or Step
+            // (Next, or N); P switches between them. Switch it off to take over; switched on again, it carries
+            // on from the board as it is. The engine keeps the game through the bot's turn and runs the turn
+            // changes (DojoRules.bot*, study §12); each finished move is one Undo step. Your seat stays at the
+            // bottom. The bot never concedes: when it's stuck it pauses and the turn is yours to finish.
+            bot: { seat: null, pace: 'auto', speed: 1000, paused: false, busy: false, live: false, sig: null, ask: null, held: [], last: '', note: '', over: false },
+
+            bottomSeat() {
+                return this.bot.seat != null ? 1 - this.bot.seat : this.state.activePlayer;
+            },
+
+            setBot(seat) {
+                clearTimeout(this._botT);
+                Object.assign(this.bot, { seat, paused: false, live: false, ask: null, held: [], note: '', last: '', over: false });
+                if (this.state && this.state.players) this.logAction(seat != null ? `Bot plays P${seat + 1}.` : 'Bot off: you play both seats.', true);
+                this.renderBotMenu();
+                if (this.state && this.state.players) this.render();
+                else this.renderBot();
+            },
+
+            setBotPace(pace) {
+                Object.assign(this.bot, { pace, paused: false, note: '' });
+                this.renderBotMenu();
+                this.botKick();
+            },
+
+            toggleBotPace() {
+                if (this.bot.seat == null) return;
+                this.setBotPace(this.bot.pace === 'auto' ? 'step' : 'auto');
+                this.showToast(this.bot.pace === 'auto' ? 'Bot: Auto' : 'Bot: Step (N for its next move)');
+            },
+
+            setBotSpeed(ms) {
+                this.bot.speed = ms;
+                this.renderBotMenu();
+                this.botKick();
+            },
+
+            botTogglePause() {
+                Object.assign(this.bot, { paused: !this.bot.paused, note: '' });
+                this.botKick();
+            },
+
+            // With the bot on, the engine runs the turn change, except into the second player's first turn
+            // while their opening hand waits (that turn opens on the mulligan, before the draw).
+            botRunsTurnChange() {
+                if (this.bot.seat == null || !this.state || this.state.mulliganPending) return false;
+                return !(this.state.turn === 1 && !this.state.players[this.state.inactivePlayer].hasMulliganed);
+            },
+
+            // What the bot does next: now, after its pause, or nothing. Runs after every render.
+            botKick() {
+                clearTimeout(this._botT);
+                const b = this.bot;
+                if (b.seat == null || b.busy || b.ask || b.over || !this.state || !this.state.players) return this.renderBot();
+                if (this.state.mulliganPending) {
+                    if (this.state.activePlayer === b.seat) this._botT = setTimeout(() => this.botKeepHand(), 300);
+                } else if (this.state.activePlayer === b.seat && !b.paused && b.pace === 'auto') {
+                    this._botT = setTimeout(() => this.botNext(), b.speed);
+                }
+                this.renderBot();
+            },
+
+            // shortcut: the bot always keeps its opening hand; the engine's bot could choose its mulligan later.
+            botKeepHand() {
+                const p = this.state && this.state.players && this.state.players[this.state.activePlayer];
+                if (!p || !this.state.mulliganPending || this.state.activePlayer !== this.bot.seat || p.hasMulliganed) return;
+                if (this.openingMode === 'build' || this.openingMode === 'replay') return;
+                this.saveState();
+                p.hasMulliganed = true;
+                this.logAction('Bot kept its opening hand.');
+                this.closeMulligan();
+                this._finishMulligan();
+            },
+
+            // The bot's next move (Next, N, or Auto's timer).
+            async botNext() {
+                clearTimeout(this._botT);
+                const b = this.bot;
+                if (b.seat == null || b.busy || b.ask || b.over || !this.state || !this.state.players || this.state.mulliganPending || this.state.activePlayer !== b.seat) return;
+                Object.assign(b, { busy: true, note: '' });
+                this.renderBot();
+                try {
+                    // A board changed since its last move (your edit, Undo, a loaded node): the engine reads it.
+                    if (!b.live || b.sig !== this.boardSig(this.state)) await this.botRead();
+                    this.botApply(await DojoRules.botStep());
+                } catch (e) {
+                    this.botTrouble("The rules engine couldn't play this board.", e);
+                }
+            },
+
+            async botRead() {
+                await DojoRules.botStart(this.state, id => this.cardKey(id), this.bot.seat);
+                this.bot.live = true;
+                this.bot.sig = this.boardSig(this.state);
+            },
+
+            botTrouble(note, e) {
+                if (e) console.warn('Bot:', e);
+                Object.assign(this.bot, { busy: false, live: false, paused: true, held: [], note });
+                this.renderBot();
+            },
+
+            // A reply from the engine: a finished move or the turn change goes onto the board (one Undo step);
+            // a choice of yours waits in the banner; trouble pauses the bot.
+            botApply(r) {
+                const b = this.bot;
+                b.busy = false;
+                if (!r || r.error) return this.botTrouble('The bot lost track of the game. Next lets it read the board again.');
+                // Moves made before a question wait for its answer: the board only changes when nothing resolves.
+                r.acts = b.held.concat(r.acts);
+                b.held = r.state ? [] : r.acts;
+                const plain = (a) => DojoRules.actText(Object.assign({}, a, { by: 'me' }));
+                const say = (a) => `${a.by === 'opp' ? 'You' : 'Bot'}: ${plain(a)}`;
+                const moves = DojoRules.groupActs(r.acts.filter(a => a.by === 'me'));
+                if (moves.length) b.last = DojoRules.stepText(moves[moves.length - 1]);
+                if (r.state) {
+                    const changed = r.owner !== this.state.activePlayer;
+                    if (r.acts.length || changed) {
+                        this.saveState();
+                        this._applyEngineMoves(r.acts, r.state.players, { say, noDrawFor: changed ? r.owner : undefined });
+                        if (changed) {
+                            b.last = '';
+                            this.endTurn({ engine: true });
+                        }
+                    }
+                    b.sig = this.boardSig(this.state);
+                }
+                if (r.ask) {
+                    b.ask = r.ask;
+                    return this.render();
+                }
+                if (r.over) Object.assign(b, { over: true, note: r.winner === b.seat ? 'The bot reached the lore to win.' : 'You reached the lore to win.' });
+                else if (r.stuck) return this.botTrouble(`${r.stuck} Your call: play its turn out, or end it.`);
+                else if (r.done) return void this.botEndItsTurn();
+                this.render();
+            },
+
+            // The bot has nothing left to do, so its turn ends.
+            botEndItsTurn() {
+                if (this.botRunsTurnChange()) return void this.botPassTurn('bot');
+                this.bot.live = false;
+                this.endTurn({ dojo: true });
+            },
+
+            // The engine ends `who`'s turn ('bot' or 'you') and starts the other's.
+            async botPassTurn(who) {
+                const b = this.bot;
+                Object.assign(b, { busy: true, note: '' });
+                this.renderBot();
+                try {
+                    if (who === 'you' || !b.live || b.sig !== this.boardSig(this.state)) await this.botRead();
+                    this.botApply(await DojoRules.botPass(who));
+                } catch (e) {
+                    if (who === 'bot') return this.botTrouble("The rules engine couldn't end the bot's turn. End it yourself.", e);
+                    // Your End turn still happens, as the sandbox does it.
+                    console.warn('Bot:', e);
+                    Object.assign(b, { busy: false, live: false });
+                    this.endTurn({ dojo: true });
+                }
+            },
+
+            async botChoose(i) {
+                const b = this.bot;
+                if (!b.ask) return;
+                Object.assign(b, { ask: null, busy: true });
+                this.renderBot();
+                try {
+                    this.botApply(await DojoRules.botChoose(i));
+                } catch (e) {
+                    this.botTrouble("The rules engine couldn't take that choice.", e);
+                }
+            },
+
+            // The banner under the top bar: whose seat, what the bot just did (or your choice), and its keys.
+            renderBot() {
+                const b = this.bot, banner = this.$('bot-banner'), label = this.$('btn-bot-label');
+                document.body.classList.toggle('bot-on', b.seat != null);
+                if (label) label.textContent = b.seat != null ? `Bot P${b.seat + 1}` : 'Bot';
+                if (!banner) return;
+                if (b.seat == null || !this.state || !this.state.players) return void (banner.hidden = true);
+                banner.hidden = false;
+                const esc = (t) => this._esc(String(t));
+                const its = this.state.activePlayer === b.seat;
+                // Your choice: one button per distinct option (the engine can list two with the same effect).
+                const options = b.ask ? b.ask.map((a, i) => [i, DojoRules.actText(Object.assign({}, a, { by: 'me' }))]).filter(([, t], k, all) => all.findIndex(o => o[1] === t) === k) : [];
+                const text = b.ask
+                    ? `<span class="bb-lbl">Your choice</span>${options.map(([i, t]) => `<button class="btn" onclick="App.botChoose(${i})">${esc(t)}</button>`).join('')}`
+                    : esc(b.note || (b.busy ? 'Thinking…' : this.state.mulliganPending ? (its ? 'Keeping its opening hand…' : 'Your opening hand first')
+                        : its ? (b.last || 'Its turn') : 'Your turn: End turn hands it over'));
+                const key = b.pace === 'auto'
+                    ? `<button class="btn" onclick="App.botTogglePause()" title="${b.paused ? 'Play' : 'Pause'}"><i class="fa-solid fa-${b.paused ? 'play' : 'pause'}"></i> ${b.paused ? 'Play' : 'Pause'}</button>`
+                    : `<button class="btn" onclick="App.botNext()" title="Its next move (N)"${its && !b.busy && !b.ask && !b.over ? '' : ' disabled'}>Next <span class="bb-kbd">N</span></button>`;
+                banner.innerHTML = `<span class="bb-key">Bot · P${b.seat + 1}</span>
+                    <span class="bb-text${b.note ? ' is-note' : ''}">${text}</span>
+                    <div class="seg" role="group" aria-label="Pace (P)" title="Auto or Step (P)">
+                        <button type="button" aria-pressed="${b.pace === 'auto'}" onclick="App.setBotPace('auto')">Auto</button>
+                        <button type="button" aria-pressed="${b.pace === 'step'}" onclick="App.setBotPace('step')">Step</button></div>
+                    ${key}
+                    <button class="btn" onclick="App.setBot(null)" title="Switch the bot off and play its seat yourself">Take over</button>`;
+            },
+
+            // The top bar's Bot menu: which seat it plays, its pace and its speed.
+            toggleBotMenu(e) {
+                if (e) e.stopPropagation();
+                const menu = this.$('bot-menu'), btn = this.$('btn-bot');
+                const open = menu.hidden;
+                menu.hidden = !open;
+                btn.setAttribute('aria-expanded', String(open));
+                if (!open) return;
+                this.renderBotMenu();
+                const r = btn.getBoundingClientRect();
+                menu.style.top = `${r.bottom + 6}px`;
+                menu.style.left = `${Math.max(8, Math.min(innerWidth - menu.offsetWidth - 8, r.left + r.width / 2 - menu.offsetWidth / 2))}px`;
+                const away = (ev) => {
+                    if (menu.contains(ev.target) || btn.contains(ev.target)) return;
+                    menu.hidden = true;
+                    btn.setAttribute('aria-expanded', 'false');
+                    document.removeEventListener('pointerdown', away, true);
+                };
+                document.addEventListener('pointerdown', away, true);
+            },
+
+            renderBotMenu() {
+                const menu = this.$('bot-menu');
+                if (!menu) return;
+                const b = this.bot;
+                const seg = (label, items, cur, fn) => `<div class="bm-row"><span class="rp-lbl">${label}</span><div class="seg" role="group" aria-label="${label}">${items
+                    .map(([v, t]) => `<button type="button" aria-pressed="${v === cur}" onclick="App.${fn}(${typeof v === 'string' ? `'${v}'` : v})">${t}</button>`).join('')}</div></div>`;
+                menu.innerHTML = seg('Bot plays', [[null, 'Off'], [0, 'P1'], [1, 'P2']], b.seat, 'setBot')
+                    + seg('Pace', [['auto', 'Auto'], ['step', 'Step']], b.pace, 'setBotPace')
+                    + seg('Speed', [[2000, 'Slow'], [1000, 'Normal'], [400, 'Fast']], b.speed, 'setBotSpeed')
+                    + '<p class="bm-hint">The rules engine plays that seat, one move at a time. P switches Auto and Step; N plays its next move. Switch it off to take over.</p>';
+            },
+
             // --- Feature 68 (experimental): proposed plays ---
             // The rules engine searches the rest of this turn (DojoRules.explore). The best lines show in
             // the odds column's Plays tab (on phones, a sheet): line 1 open, the others as how they differ
@@ -6959,16 +7212,27 @@
             playLine(i) {
                 const l = this._plays && this._plays.result && this._plays.result.lines[i];
                 if (!l) return;
+                this.saveState();
+                this._applyEngineMoves(l.acts, l.state.players);
+                this.logAction(`Played proposed line ${i + 1} (rules engine).`, true);
+                this.closePlays();
+                this.render();
+                this.saveToDevice();
+            },
+
+            // The engine's board goes onto the Dojo's, and its moves are recorded as the sandbox records its
+            // own (turn recap, played-this-turn, log). opts.noDrawFor: a player whose draws belong to the turn
+            // that starts next, not this one. opts.say(act): the log line for a step.
+            _applyEngineMoves(acts, players, opts = {}) {
                 const was = {};
                 const cardId = {};
                 this.state.players.forEach(p => ['deck', 'hand', 'field', 'inkwell', 'discard'].forEach(z => p[z].forEach(c => {
                     was[c.instanceId] = z;
                     cardId[c.instanceId] = c.cardId;
                 })));
-                this.saveState();
-                this.state.players = l.state.players;
+                this.state.players = players;
                 const played = new Set();
-                l.acts.filter(a => a.by === 'me' && a.card && a.card.iid).forEach(a => {
+                acts.filter(a => a.by === 'me' && a.card && a.card.iid).forEach(a => {
                     const id = cardId[a.card.iid];
                     if (a.family === 'putCardIntoInkwell' || a.family === 'playCard') {
                         if (!this.state.cardsPlayedThisTurn) this.state.cardsPlayedThisTurn = [];
@@ -6982,17 +7246,13 @@
                     if (a.family === 'quest') this._trackAction('quested', id);
                 });
                 // Draws, banishes and discards the effects made, from where each card went.
-                this.state.players.forEach(p => ['hand', 'discard'].forEach(z => p[z].forEach(c => {
+                this.state.players.forEach((p, pi) => ['hand', 'discard'].forEach(z => p[z].forEach(c => {
                     const from = was[c.instanceId];
-                    if (z === 'hand' && from === 'deck') this._trackAction('drawn', c.cardId);
+                    if (z === 'hand' && from === 'deck' && pi !== opts.noDrawFor) this._trackAction('drawn', c.cardId);
                     if (z === 'discard' && from === 'field') this._trackAction('banished', c.cardId);
                     if (z === 'discard' && from === 'hand' && !played.has(c.instanceId)) this._trackAction('discarded', c.cardId);
                 })));
-                l.acts.forEach(a => this.logAction(DojoRules.actText(a)));
-                this.logAction(`Played proposed line ${i + 1} (rules engine).`, true);
-                this.closePlays();
-                this.render();
-                this.saveToDevice();
+                acts.forEach(a => this.logAction(opts.say ? opts.say(a) : DojoRules.actText(a)));
             },
 
             // Keep a line as a Multiverse node beside the board, which stays as it is.
@@ -9478,7 +9738,7 @@
             },
 
             dragStartTopCard(ev, position) {
-                const playerIndex = position === 'bottom' ? this.state.activePlayer : this.state.inactivePlayer;
+                const playerIndex = position === 'bottom' ? this.bottomSeat() : 1 - this.bottomSeat();
                 const p = this.state.players[playerIndex];
                 if (p.deck.length > 0) {
                     const topCard = p.deck[0];
@@ -9509,7 +9769,7 @@
                 let found = this.findCard(instanceId);
                 if (!found) return;
 
-                const targetPlayerIndex = position === 'bottom' ? this.state.activePlayer : this.state.inactivePlayer;
+                const targetPlayerIndex = position === 'bottom' ? this.bottomSeat() : 1 - this.bottomSeat();
                 const targetPlayer = this.state.players[targetPlayerIndex];
 
                 // Deduct ink automatically if dropping from hand to field
@@ -13401,24 +13661,29 @@
                 const divider = document.getElementById('board-divider');
                 if (divider) divider.classList.toggle('is-live', !!this.state.activeTimelineColor);
 
+                // Feature 68: with the bot on, your seat stays at the bottom; otherwise whoever's turn it is.
+                const bp = this.state.players[this.bottomSeat()];
+                const tp = this.state.players[1 - this.bottomSeat()];
+                document.body.classList.toggle('top-to-play', this.bottomSeat() !== this.state.activePlayer);
+
                 // Apply Player Identity Colors dynamically to Top and Bottom Boards
                 // P1 (id=0) -> .is-p1 (amber), P2 (id=1) -> .is-p2 (cyan). Color follows identity (Feature 16).
                 const topBoard = document.getElementById('top-board');
                 const bottomBoard = document.getElementById('bottom-board');
                 topBoard.classList.remove('is-p1', 'is-p2');
                 bottomBoard.classList.remove('is-p1', 'is-p2');
-                topBoard.classList.add(ip.id === 0 ? 'is-p1' : 'is-p2');
-                bottomBoard.classList.add(ap.id === 0 ? 'is-p1' : 'is-p2');
+                topBoard.classList.add(tp.id === 0 ? 'is-p1' : 'is-p2');
+                bottomBoard.classList.add(bp.id === 0 ? 'is-p1' : 'is-p2');
 
-                // --- TOP BOARD (Inactive Player) ---
-                document.getElementById('top-player-bg-text').innerHTML = `<span class="deck-icon is-p${ip.id + 1}"></span>P${ip.id + 1}`;
-                document.getElementById('top-lore').innerText = ip.lore;
-                document.getElementById('top-lore-chip').innerText = ip.lore;
+                // --- TOP BOARD (the inactive player; with the bot on, the bot's seat) ---
+                document.getElementById('top-player-bg-text').innerHTML = `<span class="deck-icon is-p${tp.id + 1}"></span>P${tp.id + 1}`;
+                document.getElementById('top-lore').innerText = tp.lore;
+                document.getElementById('top-lore-chip').innerText = tp.lore;
                 document.body.classList.toggle('ink-drops-on', this.inkDropsInPlay());
-                document.getElementById('top-ink-drops').innerText = ip.inkDrops || 0;
-                document.getElementById('top-ink').innerText = `${ip.inkReady}/${ip.inkTotal}`;
-                document.getElementById('top-deck-count').innerText = ip.deck.length;
-                document.getElementById('top-discard-count').innerText = ip.discard.length;
+                document.getElementById('top-ink-drops').innerText = tp.inkDrops || 0;
+                document.getElementById('top-ink').innerText = `${tp.inkReady}/${tp.inkTotal}`;
+                document.getElementById('top-deck-count').innerText = tp.deck.length;
+                document.getElementById('top-discard-count').innerText = tp.discard.length;
 
                 // Note: Reveal button state is handled dynamically by setHandReveal to prevent animation stuttering
                 // Top Hand (Hidden by default unless currently held down)
@@ -13434,15 +13699,15 @@
                     th.classList.remove('translate-y-[120px]', 'scale-[1.1]', 'z-50');
                     th.classList.add('scale-[0.85]');
                 }
-                th.style.setProperty('--hand-overlap', this.calcHandOverlap(ip.hand.length));
-                ip.hand.forEach(c => th.appendChild(this.createCardElement(c, !this.state.opponentHandRevealed)));
+                th.style.setProperty('--hand-overlap', this.calcHandOverlap(tp.hand.length));
+                tp.hand.forEach(c => th.appendChild(this.createCardElement(c, !this.state.opponentHandRevealed)));
 
                 // Top Field (opponent — Feature 19: isOpponent=true for challenge targeting)
                 const tf = document.getElementById('top-field');
-                this.buildField(ip, tf, true);
+                this.buildField(tp, tf, true);
 
                 // Top Inkwell — Feature 37: a ready/total counter with one pip per ink
-                this.renderInkCounter(ip, document.getElementById('top-inkwell-cards'), document.getElementById('top-ink-new'));
+                this.renderInkCounter(tp, document.getElementById('top-inkwell-cards'), document.getElementById('top-ink-new'));
 
                 // Top Discard
                 const td = document.getElementById('top-discard');
@@ -13450,7 +13715,7 @@
                 // .pile-label and the .pile-inspect touch button (mobile's only path
                 // to Inspect Discard), so the button vanished after the first render.
                 td.querySelectorAll(':scope > .card-wrap').forEach(el => el.remove());
-                ip.discard.forEach((c, i) => {
+                tp.discard.forEach((c, i) => {
                     const el = this.createCardElement(c);
                     el.style.position = 'absolute';
                     el.style.left = Math.min(i * 2, 10) + 'px';
@@ -13458,16 +13723,16 @@
                     el.style.zIndex = i;
                     td.appendChild(el);
                 });
-                this.renderDiscardList(ip, document.getElementById('top-discard-list'));
+                this.renderDiscardList(tp, document.getElementById('top-discard-list'));
 
-                // --- BOTTOM BOARD (Active Player) ---
-                document.getElementById('bottom-player-bg-text').innerHTML = `<span class="deck-icon is-p${ap.id + 1}"></span>P${ap.id + 1}`;
-                document.getElementById('bottom-lore').innerText = ap.lore;
-                document.getElementById('bottom-lore-chip').innerText = ap.lore;
-                document.getElementById('bottom-ink-drops').innerText = ap.inkDrops || 0;
-                document.getElementById('bottom-ink').innerText = `${ap.inkReady}/${ap.inkTotal}`;
-                document.getElementById('bottom-deck-count').innerText = ap.deck.length;
-                document.getElementById('bottom-discard-count').innerText = ap.discard.length;
+                // --- BOTTOM BOARD (the active player; with the bot on, your seat) ---
+                document.getElementById('bottom-player-bg-text').innerHTML = `<span class="deck-icon is-p${bp.id + 1}"></span>P${bp.id + 1}`;
+                document.getElementById('bottom-lore').innerText = bp.lore;
+                document.getElementById('bottom-lore-chip').innerText = bp.lore;
+                document.getElementById('bottom-ink-drops').innerText = bp.inkDrops || 0;
+                document.getElementById('bottom-ink').innerText = `${bp.inkReady}/${bp.inkTotal}`;
+                document.getElementById('bottom-deck-count').innerText = bp.deck.length;
+                document.getElementById('bottom-discard-count').innerText = bp.discard.length;
 
                 // Turn Comment Box Update
                 document.getElementById('turn-comment-header-num').innerText = this.state.turn;
@@ -13485,26 +13750,26 @@
                 // Bottom Hand (Visible)
                 const bh = document.getElementById('bottom-hand');
                 bh.innerHTML = '';
-                bh.style.setProperty('--hand-overlap', this.calcHandOverlap(ap.hand.length));
-                ap.hand.forEach(c => bh.appendChild(this.createCardElement(c, false, false, { chips: true, loc: 'hand' })));
+                bh.style.setProperty('--hand-overlap', this.calcHandOverlap(bp.hand.length));
+                bp.hand.forEach(c => bh.appendChild(this.createCardElement(c, false, false, { chips: true, loc: 'hand' })));
                 // Feature 37: phone hand fan (geometry vars + the count label)
-                this.layoutHandFan(bh, ap.hand.length);
+                this.layoutHandFan(bh, bp.hand.length);
                 const bhWrap = bh.closest('.hand-wrap');
-                if (bhWrap) bhWrap.dataset.count = String(ap.hand.length);
-                if (!ap.hand.length) this.setHandFan(false);
+                if (bhWrap) bhWrap.dataset.count = String(bp.hand.length);
+                if (!bp.hand.length) this.setHandFan(false);
 
                 // Bottom Field
                 const bf = document.getElementById('bottom-field');
-                this.buildField(ap, bf);
+                this.buildField(bp, bf);
 
                 // Bottom Inkwell — Feature 37: counter (manage it from the inkwell panel)
-                this.renderInkCounter(ap, document.getElementById('bottom-inkwell-cards'), document.getElementById('bottom-ink-new'));
+                this.renderInkCounter(bp, document.getElementById('bottom-inkwell-cards'), document.getElementById('bottom-ink-new'));
 
                 // Bottom Discard
                 const bd = document.getElementById('bottom-discard');
                 // Keep .pile-label + .pile-inspect alive (see top-discard note above).
                 bd.querySelectorAll(':scope > .card-wrap').forEach(el => el.remove());
-                ap.discard.forEach((c, i) => {
+                bp.discard.forEach((c, i) => {
                     const el = this.createCardElement(c);
                     el.style.position = 'absolute';
                     el.style.left = Math.min(i * 2, 10) + 'px';
@@ -13512,12 +13777,13 @@
                     el.style.zIndex = i;
                     bd.appendChild(el);
                 });
-                this.renderDiscardList(ap, document.getElementById('bottom-discard-list'));
+                this.renderDiscardList(bp, document.getElementById('bottom-discard-list'));
 
                 // Feature 37: keep the open overlays in step with the new state.
                 this.renderFeature37Overlays();
-                // Feature 68: proposed plays say so when the board has moved on.
+                // Feature 68: proposed plays say so when the board has moved on; the bot takes its next step.
                 if (this._plays) this.renderPlays();
+                this.botKick();
 
                 // Guided tours (Feature 58): a step waiting on the player checks here.
                 if (window.DojoTour && DojoTour.onRender) DojoTour.onRender();
@@ -14032,6 +14298,15 @@
             }
             if (keyStr === 'q') {
                 App.questWithAll();
+                return;
+            }
+            // Feature 68: the bot opponent's pace (Auto or Step) and its next move.
+            if (keyStr === 'p' && App.bot.seat != null) {
+                App.toggleBotPace();
+                return;
+            }
+            if (keyStr === 'n' && App.bot.seat != null) {
+                App.botNext();
                 return;
             }
             if (e.key === ' ' || e.code === 'Space') {

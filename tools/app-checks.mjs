@@ -163,6 +163,20 @@ export default async (page) => {
         settle(); App.endTurn();
         const twins = App.bookmarks.filter(b => b.name === 'Turn 1 - Player 1 Active');
         check('auto-save: turn 1 replays from the mulligan, as a branch', `${reopened} ${twins.length} ${twins[0].parentId === twins[1].parentId}`, 'true 2 true');
+        // Bot opponent (Feature 68): it plays P2's turn on the demo's turn 4, and the engine hands the turn back.
+        const botDemo = JSON.parse(await App.decodeMaybeGzip(await (await fetch('/app/defaults/demos/set14_example2.dojo.json.gz')).arrayBuffer()));
+        App.state = App.decompressState(JSON.parse(botDemo.data.bookmarks.find(b => b.id === 'gwop5bnzw').state));
+        App.history = [];
+        App.setBotSpeed(50);
+        App.setBot(1);
+        await new Promise((done) => {
+            const t0 = Date.now();
+            const tick = () => (App.state.activePlayer === 0 || App.bot.note || App.bot.over || Date.now() - t0 > 90000 ? done() : setTimeout(tick, 100));
+            tick();
+        });
+        const said = App.state.log.map(l => (l && (l.msg || l.text)) || String(l));
+        check('bot: plays its turn, the engine hands it back', `${App.state.turn} ${App.state.activePlayer} ${said.some(t => /^Bot: /.test(t))} ${said.includes('Ready and draw steps (rules engine)')} ${App.bot.note || 'ok'}`, '5 0 true true ok');
+        App.setBot(null);
         return out;
     }, IMPORTS);
     writeFileSync(process.env.APP_CHECKS_OUT, JSON.stringify(results));

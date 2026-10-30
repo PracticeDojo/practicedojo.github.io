@@ -39,7 +39,9 @@ For the next agent picking up Feature 68. Read this first, then `AGENTS.md` and 
    - **Play it** puts the line's end on the board (one Undo step; the recap, played-this-turn and log are recorded);
    - **Save as branch** adds a Multiverse node.
 
-Tier 2 (the bot opponent) and Phase 1b (playing moves through the engine) are **not built**.
+3. **The bot opponent** (Tier 2, first cut, branch `claude/feat-68-bot-opponent`): top bar → **Bot** → *Bot plays* P1 or P2. It plays that seat one move at a time, **Auto** or **Step** (P switches, N plays its next move), with a banner under the top bar (its last move, Pause / Next, **Take over**). Each move is one Undo step and a "Bot: …" log line; your seat stays at the bottom; the engine runs the turn changes (start- and end-of-turn abilities); your choices during its turn are asked in the banner. Study §12, 2026-10-30.
+
+Phase 1b (playing moves through the engine) is **not built**.
 
 ## 3. How it works (short)
 
@@ -141,7 +143,7 @@ Other open work:
 - **Phones:** a tap opens the card drawer (`renderCardSheet`), which has no *Rules* section yet. *Suggest* is inside the ☰ drawer.
 - **Not passed to the engine yet:** cards played this turn (only the count of inked cards is). There is no mid-turn bag or pending state in the Dojo.
 - **Phase 1b:** make the menu's *Rules* rows actionable, with effects and target prompts run by the engine (§6 of the study).
-- **Tier 2, bot opponent:** §7 of the study. It needs a "keep my seat at the bottom" option, because the Dojo flips the board each turn.
+- **Bot opponent, next:** the stronger bot (the Proposed plays search finds its line, then it plays it one move at a time; the search's lines would have to keep their engine candidates to be replayed); its mulligan from the engine (it keeps its hand now); "What would the bot do?" for your own side (§7); effects that last into your turn are dropped at the Dojo board (you're the referee there).
 - **Upstream reports:** the scry bug, the speed fix, and the bot gaps (Taran, Meilin Lee, Remember Me v Retro Leviathan decking out). Re-pin and rebuild when upstream fixes them; a `PATCHES` entry that stops matching tells you.
 - **When it ships:** a manual article and tour step, `targets.json` ids, a version bump, and a landing refresh.
 
