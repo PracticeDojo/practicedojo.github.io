@@ -258,11 +258,16 @@ function hydrate(board: Board, seed = "dojo-hydrate") {
   const server = engineOf(match);
   const state = structuredClone(server.getState()) as unknown as {
     ctx: { status: Record<string, unknown>; priority: { holder: string }; zones: { private: { cardMeta: Record<string, Record<string, Record<string, number> | undefined>> } } };
-    G: { turnMetadata: { inkedThisTurn: string[] }; continuousEffects: { nextSeq: number; instances: unknown[]; byTarget: Record<string, unknown[]> } };
+    G: { turnMetadata: { inkedThisTurn: string[] }; continuousEffects: { nextSeq: number; instances: unknown[]; byTarget: Record<string, unknown[]> }; turnsCompletedByPlayer: Record<string, number> };
   };
   state.ctx.status.turn = board.turn;
   state.ctx.status.turnOwnerId = PIDS[board.active];
   state.ctx.priority.holder = PIDS[board.active];
+  // Trigger restrictions ("during your turn") work out whose turn it is from who went first and the turns
+  // each player has completed, not from the turn owner: counts that agree with it, so they still agree
+  // after the engine's own turn changes. Not the first turn, so no first-turn rule applies.
+  state.ctx.status.otp = PIDS[0];
+  state.G.turnsCompletedByPlayer = { [PIDS[0]]: board.active === 1 ? 2 : 1, [PIDS[1]]: 1 };
   // The Dojo knows how many cards were inked this turn, not which: the newest ink cards.
   const inked = Math.min(board.inkedThisTurn ?? 0, inkIds[board.active].length);
   state.G.turnMetadata.inkedThisTurn = inked ? inkIds[board.active].slice(-inked) : [];
@@ -1158,6 +1163,7 @@ function ghostTurn(server: Server, who: string, real: RealTurn | undefined, pref
   let matched = 0, missed = 0;
   const missedMoves: string[] = [];
   const played: string[] = [];
+  const movedTo = new Set<string>();
   for (const m of real?.moves ?? []) {
     if (!drain(server, prefer) || server.isGameOver()) break;
     if ((server.getState() as unknown as RawState).ctx.status.turnOwnerId !== who) break;
@@ -1171,6 +1177,9 @@ function ghostTurn(server: Server, who: string, real: RealTurn | undefined, pref
       return true;
     });
     // A card played or used with a target picks it now: the one the real game chose.
+    // Two locations of one name: the one nobody moved to this turn ("once during your turn").
+    const unused = fits.filter((x) => !movedTo.has(String((x as { locationId?: string }).locationId)));
+    if (m.family === "moveCharacterToLocation" && unused.length) fits.splice(0, fits.length, ...unused);
     // Bodyguard and the like: entered exerted or ready, as the real game chose (the engine's "may" for it).
     const way = m.exerted == null ? fits : fits.filter((x) => ((x as { resolveOptional?: boolean }).resolveOptional === true) === m.exerted);
     const ways = way.length ? way : fits;
@@ -1199,7 +1208,8 @@ function ghostTurn(server: Server, who: string, real: RealTurn | undefined, pref
       continue;
     }
     matched++;
-    played.push(`${m.family}:${m.card}${m.target ? ">" + m.target : ""}`);
+    if (m.family === "moveCharacterToLocation") movedTo.add(String((c as { locationId?: string }).locationId));
+    played.push(`${m.family}:${m.card}${m.target ? ">" + m.target : ""} L${server.getLore(who as never)}/${server.getBagCount()}`);
   }
   drain(server, prefer);
   return { matched, missed, missedMoves, played };
