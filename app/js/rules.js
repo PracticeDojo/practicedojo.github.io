@@ -16,7 +16,8 @@
 //                                   answers a choice it asked you; botPass('bot' | 'you') runs the turn change.
 //                                   Each → Promise of { acts, state, ask, stuck, done, owner, over, winner }:
 //                                   state is the Dojo board, or null while something is resolving; ask lists your
-//                                   choices; owner is whose turn it is now (0 or 1).
+//                                   choices; owner is whose turn it is now (0 or 1). botRebase(state): after the app's
+//                                   own turn-change steps, later replies are read against this board.
 //   score(state, keyOf, weights, terms) → Promise of the board as it stands, from the side of the player whose turn it is:
 //                                   { score, parts, raw, weights, defaults, cards: { [instanceId]: [{ k, v, x }] }, terms }
 //                                   defaults: the engine's own weights. terms: your own (DojoLab), each { value, hits: [instanceId] }.
@@ -115,6 +116,17 @@ window.DojoRules = (function () {
         await engine();
         const r = await call('botStart', { board: boardFromState(state, keyOf), seat });
         bot = { from: JSON.parse(JSON.stringify(state)), ids: r.ids, place: placesOf(state) };
+    }
+    // After a turn change the app changes what the engine doesn't track (ink turned face down, modifiers
+    // that ended), so the board as it is now becomes the one later replies are read against.
+    function botRebase(state) {
+        if (!bot) return;
+        const place = placesOf(state);
+        const at = {};
+        Object.entries(place).forEach(([p, iid]) => { at[iid] = p; });
+        const ids = {};
+        Object.entries(bot.ids).forEach(([eid, p]) => { ids[eid] = at[bot.place[p]]; });
+        bot = { from: JSON.parse(JSON.stringify(state)), ids, place };
     }
     function botRead(r) {
         if (!bot || r.error) return r;
@@ -341,5 +353,5 @@ window.DojoRules = (function () {
         };
     }
 
-    return { UNKNOWN, VERBS, whyText, actText, groupActs, stepText, lineDiff, boardFromState, analyze, explore, botStart, botStep, botChoose, botPass, score, stateForLine, start, call };
+    return { UNKNOWN, VERBS, whyText, actText, groupActs, stepText, lineDiff, boardFromState, analyze, explore, botStart, botStep, botChoose, botPass, botRebase, score, stateForLine, start, call };
 })();

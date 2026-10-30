@@ -215,6 +215,22 @@ export default async (page) => {
         App.setBot(1);
         App.startGame({ asked: true });
         check('bot: a loaded or new game starts with it off', `${offAfterLoad} ${App.bot.seat} ${document.body.classList.contains('bot-on')}`, 'null null false');
+        // Its ink turns face down when its turn begins, and stays so through its moves: on your turn 4, only
+        // what it inked on its turn 3 is face up, none of the ink it had before.
+        settle();
+        App.setBot(1);
+        let oldInk = [];
+        const t0 = Date.now();
+        while (!(App.state.turn === 4 && App.state.activePlayer === 0 && !App.bot.busy) && !App.bot.note && Date.now() - t0 < 90000) {
+            if (App.state.activePlayer === 0 && !App.bot.busy && !App.state.mulliganPending) {
+                if (App.state.turn === 3) oldInk = App.state.players[1].inkwell.map(c => c.instanceId);
+                App.endTurn();
+            }
+            await new Promise(r => setTimeout(r, 50));
+        }
+        const backUp = App.state.players[1].inkwell.filter(c => c.faceUp && oldInk.includes(c.instanceId)).length;
+        check('bot: its ink turns face down too', `${App.state.turn} ${oldInk.length > 0} ${backUp} ${App.bot.note || 'ok'}`, '4 true 0 ok');
+        App.setBot(null);
         return out;
     }, IMPORTS);
     writeFileSync(process.env.APP_CHECKS_OUT, JSON.stringify(results));

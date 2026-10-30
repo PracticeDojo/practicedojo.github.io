@@ -6921,6 +6921,7 @@
                         if (changed) {
                             b.last = '';
                             this.endTurn({ engine: true });
+                            DojoRules.botRebase(this.state);
                         }
                     }
                     b.sig = this.boardSig(this.state);
