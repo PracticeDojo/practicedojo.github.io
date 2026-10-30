@@ -11237,6 +11237,11 @@ body:not(.rules-on) .whatif-key {
     margin-top: 16px;
 }
 
+.wi-foot .btn {
+    flex-shrink: 0;
+    white-space: nowrap;
+}
+
 .wi-progress {
     font-family: var(--font-mono);
     font-size: 11px;
