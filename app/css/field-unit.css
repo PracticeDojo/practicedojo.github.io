@@ -11455,6 +11455,10 @@ body:not(.rules-on) .whatif-key {
     box-shadow: none;
 }
 
+.wi-mv .rules-pip.key-bone {
+    box-shadow: inset 0 0 0 1px var(--border-strong);
+}
+
 /* The meter: a segment for each turn back, Trace while it runs, then its verdict's colour */
 .wi-foot {
     display: flex;

@@ -7088,7 +7088,7 @@
             async runWhatIf() {
                 const w = this._whatIf;
                 if (!w || !w.game || w.running) return;
-                Object.assign(w, { running: true, stopping: false, why: '', from: w.next, t0: Date.now() });
+                Object.assign(w, { running: true, stopping: false, why: '', from: w.next, t0: Date.now(), shown: false });
                 // A turn back that was stopped part-way runs again from its start.
                 w.levels = w.levels.filter(l => l.back < w.next);
                 this.renderWhatIf();
@@ -7228,7 +7228,7 @@
                 const BADGE = { running: 'Searching', won: 'Win', none: 'No win', drift: 'Can’t follow', stopped: 'Stopped' };
                 const levels = w.levels.map((l, li) => {
                     const open = (l.open != null ? l.open : l.state === 'won' || l.state === 'running' || l.state === 'drift') ? ' open' : '';
-                    const sum = `<summary class="wi-sum"><span class="wi-back">${l.back} back</span><span class="wi-turn">Turn ${l.turn}</span><span class="wi-badge is-${l.state}">${BADGE[l.state]}</span></summary>`;
+                    const sum = `<summary class="wi-sum" onclick="App._whatIf.levels[${li}].open = !this.parentNode.open"><span class="wi-back">${l.back} back</span><span class="wi-turn">Turn ${l.turn}</span><span class="wi-badge is-${l.state}">${BADGE[l.state]}</span></summary>`;
                     const checks = [];
                     if (l.exact) checks.push(l.reproduced
                         ? `<li><i class="wi-dot is-ok"></i>The real game replays as it ended</li>`
@@ -7238,7 +7238,7 @@
                         <div class="wi-line-top"><span class="wi-idx">Line ${x.index + 1}</span><span class="wi-pair">${pair(x)}</span><span class="wi-t">${outcome(x)} · T${endOf(x)}</span>
                         <button class="btn wi-show" onclick="App.whatIfShow(${li}, ${ii})" title="Pick this line's last node in the Multiverse">Show</button></div>
                         <div class="wi-moves">${moves(x)}</div></li>`).join('');
-                    return `<details class="wi-level is-${l.state}"${open} ontoggle="App._whatIf.levels[${li}].open = this.open">${sum}
+                    return `<details class="wi-level is-${l.state}"${open}>${sum}
                         <ul class="wi-checks">${checks.join('')}</ul>${lines ? `<ol class="wi-lines">${lines}</ol>` : ''}</details>`;
                 }).join('');
                 let foot;
@@ -7254,6 +7254,12 @@
                     foot = `<p class="wi-note">${note}</p>${go && !w.done ? `<div class="wi-actions"><button class="btn btn-primary" onclick="App.runWhatIf()">${go}</button></div>` : ''}`;
                 }
                 host.innerHTML = `${head}${well}${levels ? `<div class="wi-levels">${levels}</div>` : ''}<div class="wi-foot">${foot}</div>`;
+                // A run that ends on a win brings that turn back into view, once.
+                const won = !w.running && w.why === 'won' && !w.shown && host.querySelector('.wi-level.is-won:last-of-type, .wi-level.is-won');
+                if (won) {
+                    w.shown = true;
+                    won.scrollIntoView({ block: 'start', behavior: 'smooth' });
+                }
             },
 
             // --- Feature 68 (experimental): the score lab (Tweaks → Rules engine → Lab) ---

@@ -384,6 +384,28 @@ Tiers 2 and 3 only need the read side of tier 1 (hydrate and project) plus the e
 
 Measured results, newest first. The work itself lives on `feat/68-rules-engine` (AGENTS.md, *Long-lived branch*).
 
+### 2026-10-31 · What-if moves into the Multiverse panel
+
+The owner's notes on the first cut:
+- an opened line didn't end on a win node (the plot's square);
+- the dialog read samey: use the signal family;
+- show progress while it runs;
+- put each line in the Multiverse as soon as it exists.
+
+What changed:
+- **The panel, not a dialog.** What-if is a block at the top of the Multiverse's panel (the What-if tool toggles it; the mini Multiverse's key opens the Multiverse on it), so the canvas stays in view. The run carries on if the panel or the Multiverse closes.
+- **Live branches.** `DojoWhatIf.run` reports as it goes: a turn back beginning (`on.level`), each line played (`on.line`), every other step (`on.change`). Each line becomes a branch straight away, so the canvas fills while the run goes on.
+- **Game-over nodes** are victory nodes (`isVictory`, `playerIdx`, the winner's deck colours), as `checkBranchOver` makes them: a square in the plot with its 20-lore plate. **Show** picks a line's last node and centres it.
+- **Colour carries the reading** (Field Unit's keys):
+  - Olive: a win (the banking key), as a badge, a spine and a numeral;
+  - Coral: their lore reaching 20 (the hotter numeral), on losing lines and the real result;
+  - Trace: the instrument, i.e. the meter, the "searching" badge and the check that the real game replays;
+  - Graphite with danger text: a turn back the replay can't follow;
+  - the real result sits on glass;
+  - each move carries its verb's pip (Olive quest and ink, Coral challenge, Bone the rest).
+- **The meter:** one segment per turn back the run may visit, filled as its playouts end (Trace while running, then the verdict's colour), with the step and the time under it.
+- Turns back without a win fold once done; a run that ends on a win scrolls to it.
+
 ### 2026-10-31 · What-if, first cut; "during your turn" triggers after the engine's turn change
 
 **The trigger fix** (also on `feat/68-rules-engine`, `2c429fb`). The owner asked for Merlin's Shop and Smithy to work ("once during your turn, whenever a character moves here, draw a card and gain 1 lore"). It worked on a freshly loaded board and failed after the engine changed the turn. Cause: our loader told the engine whose turn it was, but left each player's completed-turn count at 0. Trigger restrictions ("during your turn") don't read the turn owner; they work it out from who went first plus those counts. So from a board on player two's turn, after one turn change the engine thought player two was still active, and every "during your turn" trigger of player one stopped firing. That hit the bot opponent's turn changes and proposed plays' replies as well as What-if. The loader now sets counts that agree with the active player (and it isn't anyone's first turn).
