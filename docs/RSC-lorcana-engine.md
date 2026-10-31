@@ -405,6 +405,8 @@ What changed:
   - each move carries its verb's pip (Olive quest and ink, Coral challenge, Bone the rest).
 - **The meter:** one segment per turn back the run may visit, filled as its playouts end (Trace while running, then the verdict's colour), with the step and the time under it.
 - Turns back without a win fold once done; a run that ends on a win scrolls to it.
+- **A new or loaded game resets What-if** (asked for next): the same two places that switch the bot off (`_applySessionData`, `startGame`) call `whatIfReset`. It hides the panel; a run for the old game stops at its next playout, and what it still reports is dropped (a run belongs to its game). Checked: loading game B in the middle of game A's run left B with no What-if node 15 s later, and What-if then opened on B.
+- **It shows that it's working:** a Trace sweep along the meter segment being searched and through a placeholder row for the line being played, a pulse on the *Searching* badge, and a pulsing Trace dot on the What-if keys and the top bar's Multiverse key while a run goes on, so a run is visible with the panel or the Multiverse closed. The clock alone updates each second, and the animations take their phase from the clock, so a redraw doesn't restart them. Still for reduced motion.
 - **Remove losing lines** (asked for next): every line that didn't win comes out of the Multiverse at once, with an Undo toast as for any delete; their results stay in the panel and Show plots one again. On the owner's game it took 9 lines (30 nodes) out and left the 3 wins.
 
 ### 2026-10-31 · What-if, first cut; "during your turn" triggers after the engine's turn change

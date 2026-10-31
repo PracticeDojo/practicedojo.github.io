@@ -11516,3 +11516,93 @@ body:not(.rules-on) .whatif-key {
 .wi-actions .btn {
     white-space: nowrap;
 }
+
+/* What-if at work: a Trace sweep along the turn back being searched and the row of the line being played,
+   a pulse on its badge, and a pulsing Trace dot on the What-if keys and the top bar's Multiverse key while a
+   run goes on anywhere (the panel or the Multiverse may be closed). Each animation lasts a whole fraction
+   of 4.8 s and starts at --wi-phase, so a redraw doesn't restart it. Still for reduced motion. */
+@keyframes wi-sweep {
+    from { transform: translateX(-100%); }
+    to { transform: translateX(250%); }
+}
+
+@keyframes wi-pulse {
+    50% { opacity: 0.25; transform: scale(0.7); }
+}
+
+.wi-seg {
+    position: relative;
+}
+
+.wi-seg.is-running::after,
+.wi-line.is-pending::after {
+    content: "";
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 40%;
+    background: linear-gradient(90deg, transparent, color-mix(in oklab, var(--wi-trace) 55%, transparent), transparent);
+    animation: wi-sweep 1.6s ease-in-out infinite;
+    animation-delay: var(--wi-phase, 0s);
+    pointer-events: none;
+}
+
+.wi-line.is-pending {
+    position: relative;
+    overflow: hidden;
+    background: transparent;
+    box-shadow: inset 3px 0 0 var(--wi-trace), 0 0 0 1px var(--border-soft);
+}
+
+.wi-line.is-pending::after {
+    background: linear-gradient(90deg, transparent, color-mix(in oklab, var(--wi-trace) 16%, transparent), transparent);
+}
+
+.wi-line.is-pending .wi-idx {
+    color: var(--wi-trace-text);
+}
+
+.wi-badge.is-running::before,
+body.whatif-running .whatif-key::after,
+body.whatif-running #btn-multiverse::after {
+    content: "";
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--wi-trace);
+    animation: wi-pulse 1.2s ease-in-out infinite;
+    animation-delay: var(--wi-phase, 0s);
+}
+
+.wi-badge.is-running::before {
+    display: inline-block;
+    margin-right: 6px;
+    vertical-align: 1px;
+}
+
+body.whatif-running .whatif-key,
+body.whatif-running #btn-multiverse {
+    position: relative;
+}
+
+body.whatif-running .whatif-key::after,
+body.whatif-running #btn-multiverse::after {
+    position: absolute;
+    top: 3px;
+    right: 3px;
+    width: 7px;
+    height: 7px;
+    box-shadow: 0 0 0 2px var(--surface);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .wi-seg.is-running::after,
+    .wi-line.is-pending::after {
+        display: none;
+    }
+
+    .wi-badge.is-running::before,
+    body.whatif-running .whatif-key::after,
+    body.whatif-running #btn-multiverse::after {
+        animation: none;
+    }
+}

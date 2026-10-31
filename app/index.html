@@ -1738,6 +1738,7 @@
                 this.session = null;
                 this.endSharedView();
                 this.setBot(null, { quiet: true }); // Feature 68: a loaded game starts with the bot off
+                this.whatIfReset(); // and What-if afresh
                 this.state = nextState;
                 this.bookmarks = clean.bookmarks;
                 this.autoSaves = clean.autoSaves;
@@ -4952,6 +4953,7 @@
                 this.session = null;
                 this.endSharedView();
                 this.setBot(null, { quiet: true }); // Feature 68: a new game starts with the bot off
+                this.whatIfReset(); // and What-if afresh
 
                 // Seat the same saved decks next time (pasted lists aren't kept).
                 DojoLibrary.setPref('lastDecks', {
@@ -7065,6 +7067,7 @@
                 const turns = DojoWhatIf.turnsOf(this.bookmarks, s => this.decompressState(s));
                 const key = turns.map(t => t.id).join();
                 if (!this._whatIf || (this._whatIf.key !== key && !this._whatIf.running)) {
+                    this.whatIfReset();
                     const last = turns[turns.length - 1];
                     const game = turns.length > 1 ? { turns, keyOf: id => this.cardKey(id), known: id => !!this.cardDB[id], me: 1 - last.active } : null;
                     this._whatIf = { key, game, levels: [], running: false, next: 1, from: 1, why: '', branches: {} };
@@ -7092,22 +7095,41 @@
                 // A turn back that was stopped part-way runs again from its start.
                 w.levels = w.levels.filter(l => l.back < w.next);
                 this.renderWhatIf();
+                document.body.classList.add('whatif-running');
                 const tick = setInterval(() => this.renderWhatIfMeter(), 1000);
+                // A run belongs to its game: once another game is loaded (whatIfReset), what it still
+                // reports goes nowhere, and it stops at the next playout.
+                const live = () => this._whatIf === w;
                 let r;
                 try {
                     r = await DojoWhatIf.run(w.game, w.next, {
-                        level: (l) => { w.levels.push(l); this.renderWhatIf(); },
-                        line: (l, x) => this.whatIfBranch(l, x),
-                        change: () => this.renderWhatIf()
-                    }, () => w.stopping);
+                        level: (l) => { if (live()) { w.levels.push(l); this.renderWhatIf(); } },
+                        line: (l, x) => { if (live()) this.whatIfBranch(l, x); },
+                        change: () => { if (live()) this.renderWhatIf(); }
+                    }, () => w.stopping || !live());
                 } catch (e) {
                     console.warn('What-if:', e);
                     r = { done: true, why: 'error' };
                 }
                 clearInterval(tick);
-                Object.assign(w, { running: false, why: r.why, next: r.next || w.next, done: r.done });
+                w.running = false;
+                if (!live()) return;
+                document.body.classList.remove('whatif-running');
+                Object.assign(w, { why: r.why, next: r.next || w.next, done: r.done });
                 this.renderWhatIf();
                 if (r.why === 'won') this.showToast('What-if found a line that wins.');
+            },
+
+            // A new or loaded game: What-if starts afresh, and a run for the old game stops.
+            whatIfReset() {
+                if (!this._whatIf) return;
+                this._whatIf.stopping = true;
+                this._whatIf = null;
+                document.body.classList.remove('whatif-running');
+                const host = this.$('tp-whatif');
+                if (host) { host.hidden = true; host.innerHTML = ''; }
+                const key = this.$('tree-whatif');
+                if (key) key.setAttribute('aria-pressed', 'false');
             },
 
             stopWhatIf() {
@@ -7234,15 +7256,20 @@
                     return `<span class="wi-seg${l ? ` is-${l.state}` : ''}"><i style="width:${fill}%"></i></span>`;
                 }).join('');
                 const now = levels[levels.length - 1];
-                const secs = Math.round((Date.now() - w.t0) / 1000);
                 const cap = now ? `${now.back} back · T${now.turn} · ${this._esc(now.step)}` : 'Starting the rules engine';
                 return `<div class="wi-meter" role="progressbar" aria-label="What-if progress" aria-valuemin="0" aria-valuemax="${DojoWhatIf.BACK}" aria-valuenow="${levels.filter(l => l.state !== 'running').length}">${segs}</div>
-                    <div class="wi-meter-cap"><span>${w.stopping ? 'Stopping after this playout' : cap}</span><span>${Math.floor(secs / 60)}:${String(secs % 60).padStart(2, '0')}</span></div>`;
+                    <div class="wi-meter-cap"><span>${w.stopping ? 'Stopping after this playout' : cap}</span><span class="wi-time">${this.whatIfClock()}</span></div>`;
             },
 
+            whatIfClock() {
+                const secs = Math.round((Date.now() - this._whatIf.t0) / 1000);
+                return `${Math.floor(secs / 60)}:${String(secs % 60).padStart(2, '0')}`;
+            },
+
+            // Each second, just the clock: the meter's sweep isn't redrawn, so it doesn't restart.
             renderWhatIfMeter() {
-                const host = this.$('wi-meter-host');
-                if (host && this._whatIf && this._whatIf.running) host.innerHTML = this.whatIfMeter();
+                const time = document.querySelector('#tp-whatif .wi-time');
+                if (time && this._whatIf && this._whatIf.running) time.textContent = this.whatIfClock();
             },
 
             renderWhatIf() {
@@ -7284,8 +7311,9 @@
                         <div class="wi-line-top"><span class="wi-idx">Line ${x.index + 1}</span><span class="wi-pair">${pair(x)}</span><span class="wi-t">${outcome(x)} · T${endOf(x)}</span>
                         <button class="btn wi-show" onclick="App.whatIfShow(${li}, ${ii})" title="Pick this line's last node in the Multiverse">Show</button></div>
                         <div class="wi-moves">${moves(x)}</div></li>`).join('');
+                    const pending = l.state === 'running' && w.running ? `<li class="wi-line is-pending"><span class="wi-idx">${esc(l.step)}</span></li>` : '';
                     return `<details class="wi-level is-${l.state}"${open}>${sum}
-                        <ul class="wi-checks">${checks.join('')}</ul>${lines ? `<ol class="wi-lines">${lines}</ol>` : ''}</details>`;
+                        <ul class="wi-checks">${checks.join('')}</ul>${lines || pending ? `<ol class="wi-lines">${lines}${pending}</ol>` : ''}</details>`;
                 }).join('');
                 let foot;
                 if (w.running) foot = `<div id="wi-meter-host">${this.whatIfMeter()}</div><div class="wi-actions"><button class="btn" onclick="App.stopWhatIf()"${w.stopping ? ' disabled' : ''}>Stop</button></div>`;
@@ -7303,6 +7331,8 @@
                     foot = `<p class="wi-note">${note}</p>${remove || keep ? `<div class="wi-actions">${remove}${keep}</div>` : ''}`;
                 }
                 host.innerHTML = `${head}${well}${levels ? `<div class="wi-levels">${levels}</div>` : ''}<div class="wi-foot">${foot}</div>`;
+                // The animations keep their phase across redraws (one cycle is 4.8 s, the length of each).
+                host.style.setProperty('--wi-phase', `-${Date.now() % 4800}ms`);
                 // A run that ends on a win brings that turn back into view, once.
                 const won = !w.running && w.why === 'won' && !w.shown && host.querySelector('.wi-level.is-won:last-of-type, .wi-level.is-won');
                 if (won) {
