@@ -436,7 +436,7 @@ type RawState = {
   G: { lore: Record<string, number>; inkDrops?: Record<string, number>; loreToWin?: Record<string, number>; turnMetadata?: { inkedThisTurn?: unknown[] }; continuousEffects?: { instances?: unknown[] } };
 };
 type ActCard = { id: string; name: string; version?: string };
-type Act = { by: "me" | "opp"; family: string; card?: ActCard; target?: ActCard; via?: string; with?: ActCard[]; targets?: ActCard[]; ability?: string; skipped?: boolean };
+type Act = { by: "me" | "opp"; family: string; card?: ActCard; target?: ActCard; via?: string; with?: ActCard[]; targets?: ActCard[]; ability?: string; skipped?: boolean; extra?: boolean };
 
 // Score = sum of these, from the side of the player whose turn it is. Tuned by tools/engine-tune.mjs
 // (spike log, §12); `lore` sets the scale and `win` just has to dwarf the rest.
@@ -1260,9 +1260,18 @@ function whatIf(args: SearchOpts & { board: Board; me: 0 | 1; first: number | "r
       Object.assign(row, { how: tried ? "line" : "search", acts: pick.acts });
       realChoices = false;
     } else {
-      // Their turn: what they really did, unless the search finds clearly better.
+      // Their turn: what they really did, then the rest of the turn as the search plays it, so what this board
+      // gives them that the real one didn't (a character that survived here, ink left over) still gets used.
+      // Unless the search, from the start of their turn, finds clearly better.
       const s0 = structuredClone(server.getState());
       const g = realTurn(server, who, real, prefer);
+      // The search leaves the engine on whatever it looked at last: back to their real moves unless it adds some.
+      const afterReal = structuredClone(server.getState());
+      const rest = server.isGameOver() ? undefined : search(server, who, other, { ...args, lines: 1, nodes: args.laterNodes ?? args.nodes }).best[0];
+      if (rest && rest.acts.some((a) => a.by === "me")) {
+        freshLoad(server, rest.state);
+        g.acts.push(...rest.acts.map((a) => ({ ...a, extra: true }))); // beyond the real game
+      } else freshLoad(server, afterReal);
       const gState = structuredClone(server.getState());
       const gScore = lineScore(server, who, other, W);
       freshLoad(server, s0);

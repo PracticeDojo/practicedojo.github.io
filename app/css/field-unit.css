@@ -11379,6 +11379,12 @@ body:not(.rules-on) .whatif-key {
     box-shadow: inset 3px 0 0 var(--wi-hot);
 }
 
+/* What you really did: the line every other is read against, so neutral (Bone), on paper. */
+.wi-line.is-real {
+    background: var(--surface);
+    box-shadow: inset 3px 0 0 var(--key-bone), 0 0 0 1px var(--border-soft);
+}
+
 .wi-line-top {
     display: flex;
     align-items: center;

@@ -384,6 +384,17 @@ Tiers 2 and 3 only need the read side of tier 1 (hydrate and project) plus the e
 
 Measured results, newest first. The work itself lives on `feat/68-rules-engine` (AGENTS.md, *Long-lived branch*).
 
+### 2026-10-31 · What-if: their turns use what the changed board gives them; branches read like the game
+
+**Reported:** on a third lost game (owner as P2, lost on turn 20), the winning lines seemed to start "from a board with more lore than the main line".
+
+**What was really there.** Each line started from the real board (turn 17: 12–11). On the real turn 17 the owner sang Strength of a Raging Fire with one Vixey to banish their Omnidroid and quested with the other (11 → 13); the lines quested with both Vixeys (11 → 15) and Omnidroid lived. Two real faults made it look wrong:
+- **Their turns didn't use what the changed board gave them.** Their real moves were replayed and nothing else, so the Omnidroid that survived here (dead in the real game) stood idle on turn 18. Now their real moves are followed by the rest of the turn as the search plays it (the extra moves are marked "beyond the real game" in the node's note). Here the surviving Omnidroid quests (16 → 17). It can't challenge a Vixey (Evasive), so the win on turn 19 holds, 20–17.
+- **The branch read one turn off.** Its first node was "Turn 18" with turn 17's moves in its note, so it looked like the line *began* at 15 lore. The game's own nodes hold a turn's start board with the moves played from it as the note. Branches now do the same: the first node is turn 17 itself, beside the real turn 17 and on the same board (12–11), its note the moves played instead.
+- **The panel shows what you did** as a row above the lines (Bone, neutral): the real moves of that turn and how they end with the search's later turns (here 18–20 on turn 20), so each line reads against it.
+
+**A bug found on the way:** when the search added nothing to their real moves, the engine was left on the last position the search looked at (a reply it had simulated), the turn change failed and the playout stopped early (the control read "18–16, no winner, turn 17"). The real-moves board is now restored. A new `app-checks` check runs the control from game A's turn 21 to the end; it fails with the bug ("null 17-10 t21") and passes without (19–20 on turn 24). With their turns finished by the search, game A's line 2 from turn 19 now wins 21–9 (their surviving Angela quests); the check was updated. `app-checks` 43/43.
+
 ### 2026-10-31 · What-if moves into the Multiverse panel
 
 The owner's notes on the first cut:

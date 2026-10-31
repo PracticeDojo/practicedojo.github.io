@@ -7137,45 +7137,58 @@
                 this.renderWhatIf();
             },
 
-            // A line played out, as a Multiverse branch from that turn's node: a node for each turn it
-            // reached, and a game-over node (a square in the plot) where someone wins.
+            // A line played out, as a Multiverse branch laid out as the game's own: a node for the start of each
+            // turn, holding the board then and, as its note, the moves played from it. The branch starts beside
+            // the real turn it replays, on the same board, so both read from the same lore; a game-over node (a
+            // square in the plot) ends it where someone wins.
             whatIfBranch(level, line) {
                 const w = this._whatIf, key = `${level.turn}:${line.index}`;
                 if (w.branches[key] && this.bookmarks.some(b => b.id === w.branches[key].first)) return Object.assign(line, w.branches[key]);
-                let parentId = level.nodeId, prev = level.start, first = null, last = null;
-                const ids = [];
+                const realNode = this.bookmarks.find(b => b.id === level.nodeId);
+                const label = `What-if from turn ${level.turn}, line ${line.index + 1}`;
+                const nameOf = (st, i) => st.players[i].name || `P${i + 1}`;
+                const notes = (st, t) => {
+                    if (!t) return '';
+                    const who = nameOf(st, t.who);
+                    const moves = (t.acts || []).filter(a => a.by === 'me').map(a => `- ${who}: ${DojoRules.actText(a)}${a.extra ? ' (beyond the real game)' : ''}`);
+                    if (t.how === 'better') moves.unshift(`- ${who}'s real turn scored lower than the search's line, so this is the search's.`);
+                    return moves.join('\n');
+                };
+                // Each node: the board at the start of a turn (the first is the real one's), then the end.
+                const boards = [{ turn: level.turn, active: line.turns[0].who, players: level.start.players, row: line.turns[0] }];
                 line.turns.forEach((t, k) => {
                     const over = k === line.turns.length - 1 && line.winner !== null;
-                    const turn = over ? t.turn : t.turn + 1;
-                    const active = over ? t.who : 1 - t.who;
+                    boards.push(over ? { turn: t.turn, active: t.who, players: t.state.players, over: true, playedBy: t.who }
+                        : { turn: t.turn + 1, active: 1 - t.who, players: t.state.players, row: line.turns[k + 1], playedBy: t.who });
+                });
+                let parentId = realNode ? realNode.parentId || null : level.nodeId, prev = level.start, first = null, last = null;
+                const ids = [];
+                boards.forEach((b, k) => {
                     const st = JSON.parse(JSON.stringify(level.start));
-                    Object.assign(st, { players: JSON.parse(JSON.stringify(t.state.players)), turn, activePlayer: active, inactivePlayer: 1 - active,
-                        log: [], cardsPlayedThisTurn: [], mulliganPending: false, opponentHandRevealed: false, branchOverFlag: over });
-                    // Ink inked in the turn just played shows face up; the rest face down.
-                    st.players.forEach((p, pi) => {
+                    Object.assign(st, { players: JSON.parse(JSON.stringify(b.players)), turn: b.turn, activePlayer: b.active, inactivePlayer: 1 - b.active,
+                        log: [], cardsPlayedThisTurn: [], mulliganPending: false, opponentHandRevealed: false, branchOverFlag: !!b.over });
+                    // Ink inked in the turn just played shows face up; the rest face down. The first board is the real one's.
+                    if (k) st.players.forEach((p, pi) => {
                         const had = new Set(prev.players[pi].inkwell.map(c => c.instanceId));
-                        p.inkwell.forEach(c => { c.faceUp = pi === t.who && !had.has(c.instanceId); });
+                        p.inkwell.forEach(c => { c.faceUp = pi === b.playedBy && !had.has(c.instanceId); });
                     });
                     const id = this.uuid();
                     st.activeBookmarkId = id;
-                    const who = st.players[t.who].name || `P${t.who + 1}`;
-                    const moves = (t.acts || []).filter(a => a.by === 'me').map(a => `- ${who}: ${DojoRules.actText(a)}`);
-                    if (t.how === 'better') moves.unshift(`- ${who}'s real turn scored lower than the search's line, so this is the search's.`);
                     const node = {
                         id, parentId,
-                        name: `Turn ${turn} – P${active + 1} Active (What-if from turn ${level.turn}, line ${line.index + 1})`,
-                        stats: `Turn ${turn} | P1: ${st.players[0].lore} - P2: ${st.players[1].lore}`,
-                        comment: moves.join('\n'),
-                        color: this.playerBookmarkColor(active), gradient: null,
+                        name: `Turn ${b.turn} – P${b.active + 1} Active (${label})`,
+                        stats: `Turn ${b.turn} | P1: ${st.players[0].lore} - P2: ${st.players[1].lore}`,
+                        comment: notes(st, b.row),
+                        color: this.playerBookmarkColor(b.active), gradient: null,
                         state: JSON.stringify(this.compressState(st, true)),
                         timestamp: Date.now(), isDeckEdit: false, turnStart: true, cardsPlayedData: []
                     };
-                    if (over) {
+                    if (b.over) {
                         // As the Dojo marks a game's end (checkBranchOver): the winner's deck colours, a victory node.
                         const winner = line.winner, colours = this.getDeckGradient(this.getDeckColors(winner));
                         Object.assign(node, {
-                            name: `Game Over - ${st.players[winner].name || `P${winner + 1}`} Wins! (What-if from turn ${level.turn}, line ${line.index + 1})`,
-                            comment: `${moves.join('\n')}\n\n${st.players[winner].name || `P${winner + 1}`} reached 20 lore.`,
+                            name: `Game Over - ${nameOf(st, winner)} Wins! (${label})`,
+                            comment: `${nameOf(st, winner)} reached 20 lore.`,
                             color: typeof colours === 'string' && !colours.includes('gradient') ? colours : 'var(--accent)',
                             gradient: colours.includes('gradient') ? colours : null,
                             isVictory: true, playerIdx: winner, turnStart: false
@@ -7295,6 +7308,16 @@
                     const acts = ((x.turns[0] || {}).acts || []).filter(a => a.by === 'me' && DojoRules.VERBS[a.family]);
                     return acts.length ? acts.map(a => `<span class="wi-mv">${pip(a)}${esc(DojoRules.actText(a))}</span>`).join('') : '<span class="wi-mv">End the turn</span>';
                 };
+                // A real move from the game's log, in the same words as the lines' moves.
+                const realMoves = (r) => {
+                    const n = (x) => esc(String(x || '').split(' - ')[0]);
+                    const say = { playCard: (m) => (m.with ? `Sing ${n(m.card)} with ${m.with.map(n).join(' and ')}` : `Play ${n(m.card)}`),
+                        quest: (m) => `Quest with ${n(m.card)}`, challenge: (m) => `Challenge ${n(m.target)} with ${n(m.card)}`,
+                        putCardIntoInkwell: (m) => `Ink ${n(m.card)}`, moveCharacterToLocation: (m) => `Move ${n(m.card)} to ${n(m.target)}`,
+                        activateAbility: (m) => `Use ${n(m.card)}` };
+                    const moves = (r && r.moves || []).filter(m => say[m.family]);
+                    return moves.length ? moves.map(m => `<span class="wi-mv">${pip(m)}${say[m.family](m)}</span>`).join('') : '<span class="wi-mv">End the turn</span>';
+                };
                 const pair = (x) => `<b class="wi-num${x.winner === me ? ' is-win' : ''}">${x.lore[me]}</b><span class="wi-dash">–</span><b class="wi-num${x.winner === 1 - me ? ' is-hot' : ''}">${x.lore[1 - me]}</b>`;
                 const endOf = (x) => (x.turns.length ? x.turns[x.turns.length - 1].turn : '?');
                 const outcome = (x) => (x.winner === me ? 'Wins' : x.winner !== null ? 'Loses' : 'No winner');
@@ -7306,8 +7329,12 @@
                     if (l.exact) checks.push(l.reproduced
                         ? `<li><i class="wi-dot is-ok"></i>The real game replays as it ended</li>`
                         : `<li><i class="wi-dot is-bad"></i>Replayed with the real moves, the game ends differently, so lines from here can't be trusted</li>`);
-                    if (l.control) checks.push(`<li><i class="wi-dot${l.control.winner === me ? ' is-win' : ' is-hot'}"></i>Your real move, then the search: ${outcome(l.control).toLowerCase()} <span class="wi-pair">${pair(l.control)}</span> · T${endOf(l.control)}${l.control.winner === me ? ', so the win is in a later turn' : ''}</li>`);
-                    const lines = l.lines.map((x, ii) => `<li class="wi-line is-${x.winner === me ? 'win' : x.winner !== null ? 'loss' : 'open'}">
+                    // What you really did that turn, as a row like the lines: the move, and how it ends with the search after.
+                    const realTurn = (g.turns.find(t => t.turn === l.turn) || {}).real;
+                    const did = l.control ? `<li class="wi-line is-real">
+                        <div class="wi-line-top"><span class="wi-idx">What you did</span><span class="wi-pair">${pair(l.control)}</span><span class="wi-t">${outcome(l.control)} · T${endOf(l.control)}</span></div>
+                        <div class="wi-moves">${realMoves(realTurn)}</div>${l.control.winner === me ? '<div class="wi-moves">With the search’s later turns this wins too, so the win is in a later turn.</div>' : ''}</li>` : '';
+                    const lines = did + l.lines.map((x, ii) => `<li class="wi-line is-${x.winner === me ? 'win' : x.winner !== null ? 'loss' : 'open'}">
                         <div class="wi-line-top"><span class="wi-idx">Line ${x.index + 1}</span><span class="wi-pair">${pair(x)}</span><span class="wi-t">${outcome(x)} · T${endOf(x)}</span>
                         <button class="btn wi-show" onclick="App.whatIfShow(${li}, ${ii})" title="Pick this line's last node in the Multiverse">Show</button></div>
                         <div class="wi-moves">${moves(x)}</div></li>`).join('');
