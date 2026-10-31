@@ -5,6 +5,7 @@ For the next agent picking up Feature 68. Read this first, then `AGENTS.md` and 
 ## 1. Ground rules
 
 - **Branch:** all of this lives on the long-lived branch **`feat/68-rules-engine`**. Commit and push to it directly. Never open a PR from it into `main`; it ships only when the owner says so. Merge `main` into it when `main` moves (no rebase, no force-push). There are no version bumps, landing-page refreshes or manual articles until it ships (AGENTS.md, *Long-lived branch*).
+- **Newer work is on `claude/feat-68-what-if`** (head `55ecf7f`, 2026-10-31): What-if (a lost game played out again to find a winning line) and the latest handover. It's built on this branch with it merged in, and not merged back yet: the owner hasn't said to. Read that branch's copy of this file first.
 - **The AGENTS.md rule isn't on `main` yet.** It's on `claude/docs-lorcana-engine-feasibility` (head `2c10864`, docs only: the study, the Feature 68 entry, the AGENTS.md section). Until it's merged, a session that starts from `main` won't see it. The owner was asked whether to open that PR and hasn't answered; ask again.
 - **The sandbox comes first.** The Dojo is a sandbox where the player is the referee. Rules mode is opt-in (Tweaks → *Rules engine: Off · Assist*), never blocks a move, and Off must leave today's Dojo untouched.
 - **Owner preferences this session:**
