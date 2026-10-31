@@ -7121,6 +7121,7 @@
                 const w = this._whatIf, key = `${level.turn}:${line.index}`;
                 if (w.branches[key] && this.bookmarks.some(b => b.id === w.branches[key].first)) return Object.assign(line, w.branches[key]);
                 let parentId = level.nodeId, prev = level.start, first = null, last = null;
+                const ids = [];
                 line.turns.forEach((t, k) => {
                     const over = k === line.turns.length - 1 && line.winner !== null;
                     const turn = over ? t.turn : t.turn + 1;
@@ -7159,16 +7160,60 @@
                         });
                     }
                     this.bookmarks.push(node);
+                    ids.push(id);
                     if (!first) first = id;
                     last = id;
                     parentId = id;
                     prev = st;
                 });
-                w.branches[key] = { first, last };
+                w.branches[key] = { first, last, ids };
                 Object.assign(line, w.branches[key]);
                 this.renderTree();
                 this.saveToDevice();
                 return line;
+            },
+
+            // Every line that didn't win comes out of the Multiverse, at once, with an Undo toast as for any
+            // delete. Their results stay in the panel, and Show plots one again. A node of yours saved after one
+            // of them moves to the turn the line branched from.
+            whatIfRemoveLosing() {
+                const w = this._whatIf;
+                if (!w || w.running) return;
+                const me = w.game.me, gone = new Map(), keys = [];
+                w.levels.forEach(l => l.lines.forEach(x => {
+                    const key = `${l.turn}:${x.index}`, b = w.branches[key];
+                    if (x.winner === me || !b || !this.bookmarks.some(n => n.id === b.first)) return;
+                    keys.push(key);
+                    b.ids.forEach(id => gone.set(id, l.nodeId));
+                }));
+                if (!keys.length) return;
+                const snapshot = { bookmarks: this.bookmarks.map(b => ({ ...b })), branches: { ...w.branches }, active: this.state.activeBookmarkId, sel: this.treeNavActiveId };
+                const lines = () => w.levels.forEach(l => l.lines.forEach(x => {
+                    delete x.first; delete x.last; delete x.ids;
+                    Object.assign(x, w.branches[`${l.turn}:${x.index}`] || {});
+                }));
+                this.bookmarks.forEach(b => { if (!gone.has(b.id) && gone.has(b.parentId)) b.parentId = gone.get(b.parentId); });
+                this.bookmarks = this.bookmarks.filter(b => !gone.has(b.id));
+                if (gone.has(this.state.activeBookmarkId)) this.state.activeBookmarkId = gone.get(this.state.activeBookmarkId);
+                if (gone.has(this.treeNavActiveId)) this.treeNavActiveId = gone.get(this.treeNavActiveId);
+                keys.forEach(k => delete w.branches[k]);
+                lines();
+                this.renderTree();
+                this.saveToDevice();
+                this.renderWhatIf();
+                this.showToast(`Removed ${keys.length} line${keys.length > 1 ? 's' : ''} that didn't win`, {
+                    actionLabel: 'Undo',
+                    onAction: () => {
+                        this.bookmarks = snapshot.bookmarks;
+                        w.branches = snapshot.branches;
+                        this.state.activeBookmarkId = snapshot.active;
+                        this.treeNavActiveId = snapshot.sel;
+                        lines();
+                        this.renderTree();
+                        this.saveToDevice();
+                        this.renderWhatIf();
+                    }
+                });
             },
 
             // A line's last node (the game over, when there is one), picked and centred on the canvas.
@@ -7177,6 +7222,7 @@
                 if (!line) return;
                 this.whatIfBranch(level, line);
                 this.selectTreeNode(line.last, true);
+                this.renderWhatIf();
             },
 
             // The progress meter: one segment for each turn back this run may visit, filled as its playouts end.
@@ -7251,7 +7297,10 @@
                         : w.why === 'drift' ? (w.levels.length === 1 ? 'Replayed from your last turn, the game doesn’t end as it did, so What-if can’t follow it.' : 'From here back the replay no longer follows the real game, so What-if stops.')
                         : `No winning line ${w.levels.length} turn${w.levels.length > 1 ? 's' : ''} back.`;
                     const go = !w.why ? 'Look for a win' : w.why === 'won' || w.why === 'none' ? 'Keep going' : w.why === 'stopped' ? 'Carry on' : '';
-                    foot = `<p class="wi-note">${note}</p>${go && !w.done ? `<div class="wi-actions"><button class="btn btn-primary" onclick="App.runWhatIf()">${go}</button></div>` : ''}`;
+                    const losing = w.levels.reduce((n, l) => n + l.lines.filter(x => x.winner !== me && x.first && this.bookmarks.some(b => b.id === x.first)).length, 0);
+                    const remove = losing ? `<button class="btn" onclick="App.whatIfRemoveLosing()" title="Take the lines that didn't win out of the Multiverse (Undo puts them back)">Remove ${losing} losing line${losing > 1 ? 's' : ''}</button>` : '';
+                    const keep = go && !w.done ? `<button class="btn btn-primary" onclick="App.runWhatIf()">${go}</button>` : '';
+                    foot = `<p class="wi-note">${note}</p>${remove || keep ? `<div class="wi-actions">${remove}${keep}</div>` : ''}`;
                 }
                 host.innerHTML = `${head}${well}${levels ? `<div class="wi-levels">${levels}</div>` : ''}<div class="wi-foot">${foot}</div>`;
                 // A run that ends on a win brings that turn back into view, once.

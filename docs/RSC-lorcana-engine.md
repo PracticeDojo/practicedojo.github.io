@@ -405,6 +405,7 @@ What changed:
   - each move carries its verb's pip (Olive quest and ink, Coral challenge, Bone the rest).
 - **The meter:** one segment per turn back the run may visit, filled as its playouts end (Trace while running, then the verdict's colour), with the step and the time under it.
 - Turns back without a win fold once done; a run that ends on a win scrolls to it.
+- **Remove losing lines** (asked for next): every line that didn't win comes out of the Multiverse at once, with an Undo toast as for any delete; their results stay in the panel and Show plots one again. On the owner's game it took 9 lines (30 nodes) out and left the 3 wins.
 
 ### 2026-10-31 · What-if, first cut; "during your turn" triggers after the engine's turn change
 
