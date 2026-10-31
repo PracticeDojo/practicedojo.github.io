@@ -11124,69 +11124,239 @@ body.bot-on #btn-bot {
     }
 }
 
-/* ----- Feature 68 (experimental): What-if (Multiverse → What-if) ----- */
+/* ----- Feature 68 (experimental): What-if (Multiverse → What-if) -----
+   It lives in the Multiverse's panel, above the selected node, so branches appear on the canvas as lines
+   finish. The key colours carry the reading: Olive a win (the banking key), Coral their lore reaching 20
+   (the hotter numeral), Trace the meter (the instrument), Graphite with danger text the turns the replay
+   can't follow. The real result sits on glass, like every lore count. */
+:root {
+    --wi-win: var(--key-olive);
+    --wi-win-text: #66641E;
+    --wi-hot: var(--key-coral);
+    --wi-hot-text: #C23315;
+    --wi-trace: var(--key-trace);
+    --wi-trace-text: #1E716B;
+}
+
+:root[data-theme="night"] {
+    --wi-win: #9C9A34;
+    --wi-win-text: #C6C45A;
+    --wi-hot-text: #F26446;
+    --wi-trace-text: #3DB2A9;
+}
+
 body:not(.rules-on) .whatif-key {
     display: none;
 }
 
-.whatif-modal {
-    position: fixed;
-    inset: 0;
-    z-index: 95;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 16px;
+.tp-whatif {
+    gap: 10px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--border-soft);
 }
 
-.whatif-modal[hidden] {
+.tp-whatif[hidden] {
     display: none;
 }
 
-.whatif-card {
-    width: min(640px, 100%);
+.wi-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.wi-top .icon-btn {
+    width: 26px;
+    height: 26px;
+}
+
+/* The real result, on glass */
+.wi-well {
+    padding: 10px 12px;
+    border-radius: 10px;
+    background: var(--fu-glass);
+    color: var(--fu-glass-2);
+}
+
+.wi-well .wi-score {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+}
+
+.wi-well .wi-num {
+    font-family: var(--font-display);
+    font-size: 26px;
+    font-weight: 520;
+    letter-spacing: -0.04em;
+    line-height: 1;
+    color: #F4F0E8;
+}
+
+.wi-well .wi-num.is-hot {
+    color: #F26446;
+}
+
+.wi-well .wi-name {
+    font-size: 12px;
+    color: var(--fu-glass-2);
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.wi-well .wi-dash {
+    color: var(--fu-glass-mute);
+}
+
+.wi-cap,
+.wi-meter-cap,
+.wi-back,
+.wi-turn,
+.wi-idx,
+.wi-badge {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: var(--label-track);
+    text-transform: uppercase;
+}
+
+.wi-cap {
+    margin-top: 6px;
+    color: var(--fu-glass-mute);
 }
 
 .wi-intro,
-.wi-checks {
+.wi-note {
     margin: 0;
-    font-size: 13px;
+    font-size: 12px;
     line-height: 1.45;
     color: var(--text-2);
 }
 
-.wi-checks {
-    margin: 4px 0 8px;
-    font-size: 12px;
-    color: var(--text-dim);
+/* A turn back: a row you can open */
+.wi-levels {
+    display: flex;
+    flex-direction: column;
 }
 
 .wi-level {
-    margin-top: 14px;
-    padding-top: 12px;
     border-top: 1px solid var(--fu-row-rule);
 }
 
-.wi-head {
+.wi-level:last-child {
+    border-bottom: 1px solid var(--fu-row-rule);
+}
+
+.wi-sum {
     display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: 10px;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 0;
+    cursor: pointer;
+    list-style: none;
 }
 
-.wi-verdict {
-    font-size: 12.5px;
-    font-weight: 560;
-    color: var(--text-2);
+.wi-sum::-webkit-details-marker {
+    display: none;
 }
 
-.wi-level.is-won .wi-verdict {
+.wi-sum::before {
+    content: "\25B8";
+    width: 8px;
+    font-size: 10px;
+    color: var(--text-dim);
+}
+
+.wi-level[open] > .wi-sum::before {
+    content: "\25BE";
+}
+
+.wi-back {
     color: var(--text);
 }
 
+.wi-turn {
+    color: var(--text-dim);
+    margin-right: auto;
+}
+
+/* Verdicts, as keys: Olive a win, Trace while searching, Graphite with danger text where the replay
+   can't follow, Bone otherwise. */
+.wi-badge {
+    padding: 3px 7px;
+    border-radius: 6px;
+    background: var(--key-bone);
+    color: var(--key-bone-ink);
+    white-space: nowrap;
+}
+
+.wi-badge.is-won {
+    background: var(--wi-win);
+    color: var(--key-olive-ink);
+}
+
+.wi-badge.is-running {
+    background: transparent;
+    box-shadow: inset 0 0 0 1px var(--wi-trace);
+    color: var(--wi-trace-text);
+}
+
+.wi-badge.is-drift {
+    background: var(--key-graphite);
+    box-shadow: inset 0 0 0 1px var(--key-graphite-line);
+    color: var(--key-graphite-ink);
+}
+
+.wi-checks {
+    list-style: none;
+    margin: 0 0 8px;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    font-size: 11.5px;
+    line-height: 1.4;
+    color: var(--text-2);
+}
+
+.wi-checks li {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+}
+
+.wi-dot {
+    flex: none;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--text-dim);
+    transform: translateY(-1px);
+}
+
+.wi-dot.is-ok {
+    background: var(--wi-trace);
+}
+
+.wi-dot.is-win {
+    background: var(--wi-win);
+}
+
+.wi-dot.is-hot {
+    background: var(--wi-hot);
+}
+
+.wi-dot.is-bad {
+    background: var(--key-graphite);
+    box-shadow: 0 0 0 1px var(--key-graphite-ink);
+}
+
+/* A line: a spine in its result's colour, the lore pair as numerals, its first turn's moves with pips */
 .wi-lines {
     list-style: none;
-    margin: 0;
+    margin: 0 0 10px;
     padding: 0;
     display: flex;
     flex-direction: column;
@@ -11194,85 +11364,149 @@ body:not(.rules-on) .whatif-key {
 }
 
 .wi-line {
-    padding: 8px 10px;
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
+    padding: 7px 8px 7px 11px;
+    border-radius: 8px;
+    background: var(--surface-2);
+    box-shadow: inset 3px 0 0 var(--border-strong);
+}
+
+.wi-line.is-win {
     background: var(--surface);
+    box-shadow: inset 3px 0 0 var(--wi-win), 0 0 0 1px var(--wi-win);
 }
 
-.wi-line.is-won {
-    border-color: var(--key-olive);
-    box-shadow: inset 3px 0 0 var(--key-olive);
+.wi-line.is-loss {
+    box-shadow: inset 3px 0 0 var(--wi-hot);
 }
 
-.wi-line-head {
+.wi-line-top {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    gap: 10px;
+    gap: 8px;
 }
 
-.wi-res {
+.wi-idx {
+    color: var(--text-dim);
+}
+
+.wi-pair {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 2px;
+    font-family: var(--font-mono);
     font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+}
+
+.wi-line .wi-pair {
+    font-size: 15px;
+}
+
+.wi-pair .wi-dash {
+    color: var(--text-dim);
+    font-weight: 400;
+}
+
+.wi-pair .wi-num.is-win {
+    color: var(--wi-win-text);
+}
+
+.wi-pair .wi-num.is-hot {
+    color: var(--wi-hot-text);
+}
+
+.wi-t {
+    margin-right: auto;
+    font-size: 11.5px;
+    color: var(--text-dim);
+}
+
+.wi-line.is-win .wi-t {
+    color: var(--wi-win-text);
     font-weight: 560;
 }
 
-.wi-line-head .btn {
-    min-height: 28px;
-    padding: 0 10px;
+.wi-show {
+    min-height: 26px;
+    padding: 0 9px;
+    font-size: 12px;
 }
 
 .wi-moves {
-    margin-top: 3px;
-    font-size: 12px;
-    line-height: 1.4;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 3px 10px;
+    margin-top: 5px;
+    font-size: 11.5px;
+    line-height: 1.35;
     color: var(--text-2);
 }
 
+.wi-mv {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.wi-mv .rules-pip {
+    width: 7px;
+    height: 7px;
+    box-shadow: none;
+}
+
+/* The meter: a segment for each turn back, Trace while it runs, then its verdict's colour */
 .wi-foot {
     display: flex;
-    align-items: center;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.wi-meter {
+    display: flex;
+    gap: 3px;
+}
+
+.wi-seg {
+    flex: 1;
+    height: 4px;
+    border-radius: 999px;
+    background: var(--fu-line, #E0DBD1);
+    overflow: hidden;
+}
+
+.wi-seg i {
+    display: block;
+    height: 100%;
+    background: var(--wi-trace);
+    transition: width 0.4s ease;
+}
+
+.wi-seg.is-won i {
+    background: var(--wi-win);
+}
+
+.wi-seg.is-none i,
+.wi-seg.is-stopped i {
+    background: var(--text-dim);
+}
+
+.wi-seg.is-drift i {
+    background: var(--key-graphite);
+}
+
+.wi-meter-cap {
+    display: flex;
     justify-content: space-between;
-    gap: 12px;
-    margin-top: 16px;
+    gap: 8px;
+    color: var(--wi-trace-text);
 }
 
-.wi-foot .btn {
-    flex-shrink: 0;
+.wi-actions {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.wi-actions .btn {
     white-space: nowrap;
-}
-
-.wi-progress {
-    font-family: var(--font-mono);
-    font-size: 11px;
-    letter-spacing: 0.02em;
-    color: var(--text-dim);
-}
-
-.wi-level > summary {
-    cursor: pointer;
-    list-style: none;
-}
-
-.wi-level > summary::-webkit-details-marker {
-    display: none;
-}
-
-.wi-level > summary::before {
-    content: "\25B8";
-    margin-right: 6px;
-    font-size: 10px;
-    color: var(--text-dim);
-}
-
-.wi-level[open] > summary::before {
-    content: "\25BE";
-}
-
-.wi-level > summary .rp-lbl {
-    margin-right: auto;
-}
-
-.wi-level[open] > summary {
-    margin-bottom: 4px;
 }

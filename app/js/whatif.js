@@ -115,9 +115,13 @@ window.DojoWhatIf = (() => {
         return st;
     }
 
-    // The run. game: { turns (turnsOf), keyOf, known, me (the seat to find a win for) }.
-    // on: { progress(text), level(result) }; stop(): true to stop between playouts.
-    // A level's result: { back, turn, nodeId, start, reproduced, control, lines: [{ index, winner, lore, turns }] }.
+    // The run, from `from` turns back, for up to BACK turns back. game: { turns (turnsOf), keyOf, known, me
+    // (the seat to find a win for) }. It reports as it goes, so the page can show each line as it comes:
+    //   on.level(level)   a turn back begins: { back, turn, nodeId, start, steps, done, step, state, lines }
+    //   on.line(level, line)  a line has been played out: { index, winner, lore, turns }
+    //   on.change()       anything else moved on (done, step, state, the checks)
+    // A level's state: 'running', then 'won', 'none' (no win), 'drift' (the replay no longer follows the
+    // real game) or 'stopped'. stop(): true to stop between playouts.
     async function run(game, from, on, stop) {
         const { turns, keyOf, known, me } = game;
         const end = turns[turns.length - 1].turn;
@@ -125,32 +129,53 @@ window.DojoWhatIf = (() => {
         const mine = turns.map((t, i) => i).filter(i => turns[i].active === me && turns[i].turn < end).reverse();
         const play = (start, opts) => DojoRules.whatIf(start, keyOf, { me, real, nodes: 300, laterNodes: 120, margin: 1, ...opts });
         const realWinner = turns[turns.length - 1].active; // the game ends on the winner's turn
-        for (let back = from; back <= Math.min(BACK, mine.length); back++) {
-            const at = mine[back - 1];
-            const t = turns[at];
-            const start = filled(turns, at, known);
-            const level = { back, turn: t.turn, nodeId: t.id, start, lines: [] };
-            on.progress(`${back} turn${back > 1 ? 's' : ''} back (turn ${t.turn}): replaying the real game`);
-            const exact = await play(start, { first: 'real', exact: true, horizon: end });
+        const last = Math.min(from + BACK - 1, mine.length);
+        for (let back = from; back <= last; back++) {
+            const t = turns[mine[back - 1]];
+            const level = { back, turn: t.turn, nodeId: t.id, start: filled(turns, mine[back - 1], known), steps: 2 + LINES, done: 0, step: 'Replaying the real game', state: 'running', lines: [] };
+            on.level(level);
+            const exact = await play(level.start, { first: 'real', exact: true, horizon: end });
+            level.done++;
+            level.exact = { winner: exact.winner, lore: exact.lore };
             level.reproduced = exact.winner === realWinner;
-            if (!level.reproduced) { on.level(level); return { done: true, why: 'drift' }; }
-            if (stop()) return { done: false };
-            on.progress(`${back} turn${back > 1 ? 's' : ''} back (turn ${t.turn}): your real move, then the search`);
-            const control = await play(start, { first: 'real', horizon: end + PAST });
+            if (!level.reproduced) {
+                level.state = 'drift';
+                on.change();
+                return { done: true, why: 'drift' };
+            }
+            const halt = () => {
+                level.state = 'stopped';
+                on.change();
+                return { done: false, why: 'stopped', next: back };
+            };
+            if (stop()) return halt();
+            level.step = 'Your real move, then the search';
+            on.change();
+            const control = await play(level.start, { first: 'real', horizon: end + PAST });
+            level.done++;
             level.control = { winner: control.winner, lore: control.lore, turns: control.turns };
+            on.change();
             for (let i = 0; i < LINES; i++) {
-                if (stop()) return { done: false };
-                on.progress(`${back} turn${back > 1 ? 's' : ''} back (turn ${t.turn}): line ${i + 1}`);
-                const r = await play(start, { first: i, horizon: end + PAST });
-                if (r.lines !== null && r.lines <= i) break;
-                level.lines.push({ index: i, winner: r.winner, lore: r.lore, turns: r.turns });
+                if (stop()) return halt();
+                level.step = `Line ${i + 1} of ${LINES}`;
+                on.change();
+                const r = await play(level.start, { first: i, horizon: end + PAST });
+                level.done++;
+                if (r.lines !== null && r.lines <= i) {
+                    level.steps = level.done; // no more lines this turn
+                    break;
+                }
+                const line = { index: i, winner: r.winner, lore: r.lore, turns: r.turns };
+                level.lines.push(line);
+                on.line(level, line);
+                on.change();
             }
             level.won = level.control.winner !== me && level.lines.some(l => l.winner === me);
-            on.level(level);
-            if (level.won) return { done: back >= Math.min(BACK, mine.length), why: 'won' };
-            if (stop()) return { done: false };
+            level.state = level.won ? 'won' : 'none';
+            on.change();
+            if (level.won) return { done: back >= mine.length, why: 'won', next: back + 1 };
         }
-        return { done: true, why: 'none' };
+        return { done: last >= mine.length, why: 'none', next: last + 1 };
     }
 
     return { BACK, LINES, movesFromReplay, realOf, turnsOf, filled, run };
