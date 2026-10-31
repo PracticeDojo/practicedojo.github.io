@@ -220,8 +220,31 @@ export default async (page) => {
         // turn 24), and line 2 from turn 19 (quest with Vixey instead of challenging) wins 21-9 on turn 21 (their
         // Angela, alive in this line, quests after their real moves).
         const wiReplay = JSON.parse(await App.decodeMaybeGzip(await (await fetch('/docs/samples/01a15b0a-313b-73d3-846f-37752210870b_p1.replay.gz')).arrayBuffer()));
-        const wiTurns = DojoWhatIf.turnsOf(App.buildSessionFromReplay(wiReplay).bookmarks, s => App.decompressState(s));
+        const wiDec = s => App.decompressState(s), wiNodes = App.buildSessionFromReplay(wiReplay).bookmarks;
+        const wiTurns = DojoWhatIf.lineOf(wiNodes, wiDec).turns;
         check('what-if: the import keeps each turn\'s real moves', wiTurns.map(t => t.real.moves.length).join(' '), '2 2 3 2 3 3 4 4 4 2 2 4 4 4 3 2 4 3 4 3 4 5 4 8');
+        // A text log keeps them too (each challenge once), and who won. Its replay (01a08b6d) has the same counts
+        // but on turns 13 and 17: plays from DARK DANCE, which the log credits to "You", and a play taken back.
+        const wiText = DojoWhatIf.lineOf(App.buildSessionFromLog(App.parseDojoLog(await (await fetch('/docs/samples/new_log_20261004.txt')).text())).bookmarks, wiDec);
+        check('what-if: a text log keeps each turn\'s moves, and who won', `${wiText.winner} ${wiText.turns.map(t => t.real.moves.length).join(' ')}`, '0 1 2 2 2 2 3 2 4 3 5 2 7 2 3 2 4 2 4 2 3 4 5 4 5 3 1');
+        // The game's line: the replay alone (lost, one line; What-if's own branches don't count), cut short
+        // (unfinished), with a turn played again by hand that wins (forked: no line until one is picked), that
+        // branch picked, and a turn before the fork picked (the line played first). turns · winner · forked · picked
+        const wiTwin = { ...wiNodes[19], id: 'wi-twin', real: undefined };
+        const wiTree = [...wiNodes, wiTwin, { id: 'wi-won', parentId: 'wi-twin', name: 'Game Over - P1 Wins!', isVictory: true, playerIdx: 0, state: wiNodes[19].state }];
+        const wiOurs = { ...wiNodes[5], id: 'wi-ours', parentId: wiNodes[4].id, name: 'Turn 6 – P2 Active (What-if from turn 5, line 1)' };
+        const wiLineOf = (nodes, pick) => { const l = DojoWhatIf.lineOf(nodes, wiDec, pick); return `${l.turns.length} ${l.winner} ${l.branched} ${l.at}`; };
+        check('what-if: the game\'s line, where it forks, and how it ends', [wiLineOf([...wiNodes, wiOurs]), wiLineOf(wiNodes.slice(0, 18)), wiLineOf(wiTree), wiLineOf(wiTree, 'wi-twin'), wiLineOf(wiTree, wiNodes[3].id)].join(' | '),
+            '24 1 false 23 | 18 null false 17 | 0 null true -1 | 20 0 true 19 | 24 1 true 3');
+        // A game played here counts rounds (both players' turn 1); the engine counts each player's turn. The
+        // demo's line to its first win: its first turns, its end, and the number two turns past it.
+        const wiDemoNodes = botDemo.data.bookmarks, wiLeaf = wiDemoNodes.find(b => b.isVictory && !wiDemoNodes.some(c => c.parentId === b.id));
+        const wiDemo = DojoWhatIf.lineOf(wiDemoNodes, wiDec, wiLeaf.id), wiEnd = wiDemo.turns[wiDemo.turns.length - 1];
+        check('what-if: a game played here counts rounds, the engine each turn', `${wiDemo.turns.slice(0, 4).map(t => `${t.label}=${t.turn}`).join(' ')} … ${wiEnd.label}=${wiEnd.turn} w${wiDemo.winner} +2: ${wiDemo.label(wiEnd.turn + 2)}`, '1=1 1=2 2=3 2=4 … 11=21 w0 +2: 12');
+        // Without a record of the moves, the search plays their turns, and nothing is "beyond the real game".
+        const wiK = wiDemo.turns.length - 4, wiFree = await DojoRules.whatIf(DojoWhatIf.filled(wiDemo.turns, wiK, id => !!App.cardDB[id]), id => App.cardKey(id),
+            { me: wiDemo.turns[wiK].active, real: {}, first: 0, horizon: wiDemo.turns[wiK].turn + 3, nodes: 300, laterNodes: 120, margin: 1 });
+        check('what-if: without a record, the search plays their turns', `${wiFree.turns.map(t => t.how).join(' ')} ${wiFree.turns.some(t => (t.acts || []).some(a => a.extra))} ${wiFree.lore.join('-')}`, 'line search search search false 18-19');
         const wiReal = Object.fromEntries(wiTurns.map(t => [t.turn, t.real]));
         const wiAt = (turn) => DojoWhatIf.filled(wiTurns, wiTurns.findIndex(t => t.turn === turn), id => !!App.cardDB[id]);
         const wiOpts = { me: 0, real: wiReal, nodes: 300, laterNodes: 120, margin: 1 };

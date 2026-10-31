@@ -5860,6 +5860,7 @@
                         timestamp: Date.now(),
                         isDeckEdit: false,
                         turnStart: true, turnPlayed: true, // a turn's start board and what was played from it
+                        real: window.DojoWhatIf ? DojoWhatIf.movesFromLog(t, p) : undefined, // Feature 68: the active player's moves, for What-if
                         cardsPlayedData,
                         sections: nodeSections
                     });
@@ -7056,25 +7057,51 @@
             },
 
             // --- Feature 68 (experimental): What-if (Multiverse → What-if) ---
-            // A game imported from a Duels.ink replay, played out again from your turns before the loss, looking
-            // for a line that would have won (DojoWhatIf, app/js/whatif.js). It lives in the Multiverse's panel,
-            // so each line's branch shows on the canvas as soon as it has been played. Results stay while the
-            // page is open.
-            _whatIf: null, // { key, game, levels, running, stopping, next, why, from, t0, branches }
+            // A game saved turn by turn, played out again from your turns before the loss, looking for a line that
+            // would have won (DojoWhatIf, app/js/whatif.js); an unfinished one, for a better lore race. A game with
+            // more than one line, or unfinished, starts where the player picks on the canvas. It lives in the
+            // Multiverse's panel, so each line's branch shows on the canvas as soon as it has been played. Results
+            // stay while the page is open.
+            _whatIf: null, // { key, line, game, levels, running, stopping, next, why, from, t0, branches }
 
             openWhatIf() {
                 if (!this.rulesOn) return this.showToast('What-if needs the rules engine: Tweaks → Rules engine → Assist.');
-                const turns = DojoWhatIf.turnsOf(this.bookmarks, s => this.decompressState(s));
-                const key = turns.map(t => t.id).join();
-                if (!this._whatIf || (this._whatIf.key !== key && !this._whatIf.running)) {
+                const line = DojoWhatIf.lineOf(this.bookmarks, s => this.decompressState(s));
+                if (!this._whatIf || (this._whatIf.key !== line.key && !this._whatIf.running)) {
                     this.whatIfReset();
-                    const last = turns[turns.length - 1];
-                    const game = turns.length > 1 ? { turns, keyOf: id => this.cardKey(id), known: id => !!this.cardDB[id], me: 1 - last.active } : null;
-                    this._whatIf = { key, game, levels: [], running: false, next: 1, from: 1, why: '', branches: {} };
+                    const game = line.branched || line.winner === null ? null : this.whatIfGame();
+                    this._whatIf = { key: line.key, line, game, levels: [], running: false, next: 1, from: 1, why: '', branches: {} };
                 }
                 if (document.getElementById('tree-modal').classList.contains('hidden')) this.openTreeModal();
                 this.$('tp-whatif').hidden = false;
                 this.$('tree-whatif').setAttribute('aria-pressed', 'true');
+                this.renderWhatIf();
+            },
+
+            // The game What-if plays: the line through the picked node (or the only line). A finished game is played
+            // for its loser, from their turn at or before the pick; an unfinished one for whoever's turn is picked.
+            whatIfGame(pickId) {
+                const line = DojoWhatIf.lineOf(this.bookmarks, s => this.decompressState(s), pickId);
+                const { turns, winner } = line;
+                if (turns.length < 2) return null;
+                const me = winner !== null ? 1 - winner : turns[line.at].active;
+                let start = line.at;
+                while (start >= 0 && (turns[start].active !== me || (winner !== null && start === turns.length - 1))) start--;
+                return start < 0 ? null : { turns, winner, me, start, label: line.label, picked: !!pickId, keyOf: id => this.cardKey(id), known: id => !!this.cardDB[id] };
+            },
+
+            // Start from the turn picked on the canvas; or back to picking (the branches made stay).
+            whatIfStart() {
+                const w = this._whatIf, game = w && !w.running && this.whatIfGame(this.treeNavActiveId);
+                if (!game) return;
+                Object.assign(w, { game, levels: [], why: '', next: 1, from: 1, done: false });
+                this.runWhatIf();
+            },
+
+            whatIfPickAgain() {
+                const w = this._whatIf;
+                if (!w || w.running) return;
+                Object.assign(w, { game: null, levels: [], why: '', next: 1, from: 1, done: false });
                 this.renderWhatIf();
             },
 
@@ -7117,7 +7144,7 @@
                 document.body.classList.remove('whatif-running');
                 Object.assign(w, { why: r.why, next: r.next || w.next, done: r.done });
                 this.renderWhatIf();
-                if (r.why === 'won') this.showToast('What-if found a line that wins.');
+                if (r.why === 'won') this.showToast(w.game.winner === null ? 'What-if found a better lore race.' : 'What-if found a line that wins.');
             },
 
             // A new or loaded game: What-if starts afresh, and a run for the old game stops.
@@ -7142,10 +7169,10 @@
             // the real turn it replays, on the same board, so both read from the same lore; a game-over node (a
             // square in the plot) ends it where someone wins.
             whatIfBranch(level, line) {
-                const w = this._whatIf, key = `${level.turn}:${line.index}`;
+                const w = this._whatIf, key = `${level.nodeId}:${line.index}`;
                 if (w.branches[key] && this.bookmarks.some(b => b.id === w.branches[key].first)) return Object.assign(line, w.branches[key]);
                 const realNode = this.bookmarks.find(b => b.id === level.nodeId);
-                const label = `What-if from turn ${level.turn}, line ${line.index + 1}`;
+                const L = w.game.label, label = `What-if from turn ${L(level.turn)}, line ${line.index + 1}`;
                 const nameOf = (st, i) => st.players[i].name || `P${i + 1}`;
                 const notes = (st, t) => {
                     if (!t) return '';
@@ -7165,7 +7192,7 @@
                 const ids = [];
                 boards.forEach((b, k) => {
                     const st = JSON.parse(JSON.stringify(level.start));
-                    Object.assign(st, { players: JSON.parse(JSON.stringify(b.players)), turn: b.turn, activePlayer: b.active, inactivePlayer: 1 - b.active,
+                    Object.assign(st, { players: JSON.parse(JSON.stringify(b.players)), turn: L(b.turn), activePlayer: b.active, inactivePlayer: 1 - b.active,
                         log: [], cardsPlayedThisTurn: [], mulliganPending: false, opponentHandRevealed: false, branchOverFlag: !!b.over });
                     // Ink inked in the turn just played shows face up; the rest face down. The first board is the real one's.
                     if (k) st.players.forEach((p, pi) => {
@@ -7176,8 +7203,8 @@
                     st.activeBookmarkId = id;
                     const node = {
                         id, parentId,
-                        name: `Turn ${b.turn} – P${b.active + 1} Active (${label})`,
-                        stats: `Turn ${b.turn} | P1: ${st.players[0].lore} - P2: ${st.players[1].lore}`,
+                        name: `Turn ${st.turn} – P${b.active + 1} Active (${label})`,
+                        stats: `Turn ${st.turn} | P1: ${st.players[0].lore} - P2: ${st.players[1].lore}`,
                         comment: notes(st, b.row),
                         color: this.playerBookmarkColor(b.active), gradient: null,
                         state: JSON.stringify(this.compressState(st, true)),
@@ -7214,10 +7241,10 @@
             whatIfRemoveLosing() {
                 const w = this._whatIf;
                 if (!w || w.running) return;
-                const me = w.game.me, gone = new Map(), keys = [];
+                const gone = new Map(), keys = [];
                 w.levels.forEach(l => l.lines.forEach(x => {
-                    const key = `${l.turn}:${x.index}`, b = w.branches[key];
-                    if (x.winner === me || !b || !this.bookmarks.some(n => n.id === b.first)) return;
+                    const key = `${l.nodeId}:${x.index}`, b = w.branches[key];
+                    if (x.good || !b || !this.bookmarks.some(n => n.id === b.first)) return;
                     keys.push(key);
                     b.ids.forEach(id => gone.set(id, l.nodeId));
                 }));
@@ -7225,7 +7252,7 @@
                 const snapshot = { bookmarks: this.bookmarks.map(b => ({ ...b })), branches: { ...w.branches }, active: this.state.activeBookmarkId, sel: this.treeNavActiveId };
                 const lines = () => w.levels.forEach(l => l.lines.forEach(x => {
                     delete x.first; delete x.last; delete x.ids;
-                    Object.assign(x, w.branches[`${l.turn}:${x.index}`] || {});
+                    Object.assign(x, w.branches[`${l.nodeId}:${x.index}`] || {});
                 }));
                 this.bookmarks.forEach(b => { if (!gone.has(b.id) && gone.has(b.parentId)) b.parentId = gone.get(b.parentId); });
                 this.bookmarks = this.bookmarks.filter(b => !gone.has(b.id));
@@ -7236,7 +7263,7 @@
                 this.renderTree();
                 this.saveToDevice();
                 this.renderWhatIf();
-                this.showToast(`Removed ${keys.length} line${keys.length > 1 ? 's' : ''} that didn't win`, {
+                this.showToast(`Removed ${keys.length} line${keys.length > 1 ? 's' : ''} that ${w.game.winner === null ? 'weren’t better' : 'didn’t win'}`, {
                     actionLabel: 'Undo',
                     onAction: () => {
                         this.bookmarks = snapshot.bookmarks;
@@ -7269,9 +7296,14 @@
                     return `<span class="wi-seg${l ? ` is-${l.state}` : ''}"><i style="width:${fill}%"></i></span>`;
                 }).join('');
                 const now = levels[levels.length - 1];
-                const cap = now ? `${now.back} back · T${now.turn} · ${this._esc(now.step)}` : 'Starting the rules engine';
+                const cap = now ? `${this.whatIfBack(now)} · T${w.game.label(now.turn)} · ${this._esc(now.step)}` : 'Starting the rules engine';
                 return `<div class="wi-meter" role="progressbar" aria-label="What-if progress" aria-valuemin="0" aria-valuemax="${DojoWhatIf.BACK}" aria-valuenow="${levels.filter(l => l.state !== 'running').length}">${segs}</div>
                     <div class="wi-meter-cap"><span>${w.stopping ? 'Stopping after this playout' : cap}</span><span class="wi-time">${this.whatIfClock()}</span></div>`;
+            },
+
+            // A turn back's label: from the end, or from the start picked.
+            whatIfBack(l) {
+                return !this._whatIf.game.picked ? `${l.back} back` : l.back === 1 ? 'Start' : `${l.back - 1} before`;
             },
 
             whatIfClock() {
@@ -7285,6 +7317,35 @@
                 if (time && this._whatIf && this._whatIf.running) time.textContent = this.whatIfClock();
             },
 
+            // The game on glass: a lost one's result (their winning lore in Coral), or an unfinished one's last lore.
+            whatIfWell(g) {
+                const esc = (t) => this._esc(String(t)), me = g.me, end = g.turns[g.turns.length - 1];
+                const names = end.state.players.map((p, i) => esc(p.name || `P${i + 1}`));
+                const num = (v, hot) => `<b class="wi-num${hot ? ' is-hot' : ''}">${v}</b>`;
+                let score, cap;
+                if (g.winner === null) {
+                    const lore = end.state.players.map(p => p.lore);
+                    score = `<span class="wi-name">${names[me]}</span>${num(lore[me])}<span class="wi-dash">–</span>${num(lore[1 - me])}<span class="wi-name">${names[1 - me]}</span>`;
+                    cap = `Unfinished · turn ${end.label} · a better lore race for ${names[me]} by turn ${g.label(end.turn + DojoWhatIf.OPEN)}?`;
+                } else {
+                    const real = (this._whatIf.levels.find(l => l.exact && l.reproduced) || {}).exact;
+                    score = real ? `<span class="wi-name">${names[1 - me]}</span>${num(real.lore[1 - me], true)}<span class="wi-dash">–</span>${num(real.lore[me])}<span class="wi-name">${names[me]}</span>`
+                        : `<span class="wi-name">${names[1 - me]} won</span>`;
+                    cap = `Lost on turn ${end.label} · a win for ${names[me]}?`;
+                }
+                return `<div class="wi-well"><div class="wi-score">${score}</div><div class="wi-cap">${cap}</div></div>`;
+            },
+
+            // A game with more than one line, or unfinished: the player picks the turn to start from on the canvas.
+            whatIfPicker() {
+                const w = this._whatIf;
+                if (!w.line.branched && w.line.turns.length < 2) return '<p class="wi-intro">What-if needs a game saved turn by turn: a <b>Duels.ink replay or log</b> (Log or Import, above), or a game played here with <b>Auto-save every turn</b> on.</p>';
+                const g = this.whatIfGame(this.treeNavActiveId);
+                const intro = `<p class="wi-intro">${w.line.branched ? 'This game has more than one line' : 'This game isn’t finished'}, so pick where to start: select a turn in the Multiverse. What-if tries other lines from there, then goes back one turn at a time.${g && g.winner === null ? ` An unfinished line is played to two turns past its last and compared on the lore race: ${this._esc(g.turns[0].state.players[g.me].name || `P${g.me + 1}`)}’s lore minus the other’s.` : ''}</p>`;
+                if (!g) return intro;
+                return `${intro}${this.whatIfWell(g)}<div class="wi-actions"><button class="btn btn-primary" onclick="App.whatIfStart()">Start from turn ${g.turns[g.start].label}</button></div>`;
+            },
+
             renderWhatIf() {
                 const host = this.$('tp-whatif'), w = this._whatIf;
                 if (!host || host.hidden || !w) return;
@@ -7292,17 +7353,11 @@
                 const head = `<div class="wi-top"><span class="tp-label">What-if</span>
                     <button class="icon-btn" onclick="App.closeWhatIf()" title="Close What-if (a run carries on)" aria-label="Close What-if"><i class="fa-solid fa-xmark"></i></button></div>`;
                 if (!w.game) {
-                    host.innerHTML = `${head}<p class="wi-intro">What-if needs a game imported from a <b>Duels.ink replay</b> (.replay.gz or .json), which records both players' moves: Log or Import, above.</p>`;
+                    host.innerHTML = head + this.whatIfPicker();
                     return;
                 }
-                const g = w.game, me = g.me, end = g.turns[g.turns.length - 1];
-                const names = end.state.players.map((p, i) => esc(p.name || `P${i + 1}`));
-                const real = (w.levels.find(l => l.exact && l.reproduced) || {}).exact;
-                // The real result, on glass: their winning lore in Coral.
-                const score = real
-                    ? `<span class="wi-name">${names[1 - me]}</span><b class="wi-num is-hot">${real.lore[1 - me]}</b><span class="wi-dash">–</span><b class="wi-num">${real.lore[me]}</b><span class="wi-name">${names[me]}</span>`
-                    : `<span class="wi-name">${names[1 - me]} won</span>`;
-                const well = `<div class="wi-well"><div class="wi-score">${score}</div><div class="wi-cap">Lost on turn ${end.turn} · a win for ${names[me]}?</div></div>`;
+                const g = w.game, me = g.me, unfinished = g.winner === null;
+                const well = this.whatIfWell(g);
                 const pip = (a) => `<i class="rules-pip key-${(DojoRules.VERBS[a.family] || { key: 'bone' }).key}"></i>`;
                 const moves = (x) => {
                     const acts = ((x.turns[0] || {}).acts || []).filter(a => a.by === 'me' && DojoRules.VERBS[a.family]);
@@ -7318,23 +7373,34 @@
                     const moves = (r && r.moves || []).filter(m => say[m.family]);
                     return moves.length ? moves.map(m => `<span class="wi-mv">${pip(m)}${say[m.family](m)}</span>`).join('') : '<span class="wi-mv">End the turn</span>';
                 };
-                const pair = (x) => `<b class="wi-num${x.winner === me ? ' is-win' : ''}">${x.lore[me]}</b><span class="wi-dash">–</span><b class="wi-num${x.winner === 1 - me ? ' is-hot' : ''}">${x.lore[1 - me]}</b>`;
-                const endOf = (x) => (x.turns.length ? x.turns[x.turns.length - 1].turn : '?');
-                const outcome = (x) => (x.winner === me ? 'Wins' : x.winner !== null ? 'Loses' : 'No winner');
-                const BADGE = { running: 'Searching', won: 'Win', none: 'No win', drift: 'Can’t follow', stopped: 'Stopped' };
+                // A turn without a record of its moves: what its node's recap says was played.
+                const recap = (s) => {
+                    const n = (id) => (this.cardDB[id] || {}).name;
+                    const of = (ids, family) => (Array.isArray(ids) ? ids : []).map(id => ({ family, card: n(id) })).filter(m => m.card);
+                    return realMoves({ moves: [...of(s.inked, 'putCardIntoInkwell'), ...of(s.played, 'playCard'), ...of(s.quested, 'quest')] });
+                };
+                const pair = (x) => `<b class="wi-num${x.winner === me || x.good ? ' is-win' : ''}">${x.lore[me]}</b><span class="wi-dash">–</span><b class="wi-num${x.winner === 1 - me ? ' is-hot' : ''}">${x.lore[1 - me]}</b>`;
+                const endOf = (x) => (x.turns.length ? g.label(x.turns[x.turns.length - 1].turn) : '?');
+                const ahead = (x) => x.lore[me] - x.lore[1 - me];
+                const outcome = (x) => (x.winner === me ? 'Wins' : x.winner !== null ? 'Loses' : !unfinished ? 'No winner'
+                    : ahead(x) > 0 ? `Ahead by ${ahead(x)}` : ahead(x) < 0 ? `Behind by ${-ahead(x)}` : 'Level');
+                const BADGE = { running: 'Searching', won: unfinished ? 'Better' : 'Win', none: unfinished ? 'Not better' : 'No win', drift: 'Can’t follow', stopped: 'Stopped' };
                 const levels = w.levels.map((l, li) => {
                     const open = (l.open != null ? l.open : l.state === 'won' || l.state === 'running' || l.state === 'drift') ? ' open' : '';
-                    const sum = `<summary class="wi-sum" onclick="App._whatIf.levels[${li}].open = !this.parentNode.open"><span class="wi-back">${l.back} back</span><span class="wi-turn">Turn ${l.turn}</span><span class="wi-badge is-${l.state}">${BADGE[l.state]}</span></summary>`;
+                    const sum = `<summary class="wi-sum" onclick="App._whatIf.levels[${li}].open = !this.parentNode.open"><span class="wi-back">${this.whatIfBack(l)}</span><span class="wi-turn">Turn ${g.label(l.turn)}</span><span class="wi-badge is-${l.state}">${BADGE[l.state]}</span></summary>`;
                     const checks = [];
                     if (l.exact) checks.push(l.reproduced
                         ? `<li><i class="wi-dot is-ok"></i>The real game replays as it ended</li>`
                         : `<li><i class="wi-dot is-bad"></i>Replayed with the real moves, the game ends differently, so lines from here can't be trusted</li>`);
+                    if (!l.recorded) checks.push('<li><i class="wi-dot"></i>Not every move from here is on record, so the real game isn’t replayed; the search plays the turns that aren’t</li>');
+                    if (!l.control && l.state !== 'running') checks.push('<li><i class="wi-dot"></i>Nothing was played after this turn, so the lines are compared with each other</li>');
                     // What you really did that turn, as a row like the lines: the move, and how it ends with the search after.
-                    const realTurn = (g.turns.find(t => t.turn === l.turn) || {}).real;
+                    const realTurn = (g.turns.find(t => t.id === l.nodeId) || {}).real;
+                    const node = this.bookmarks.find(b => b.id === l.nodeId);
                     const did = l.control ? `<li class="wi-line is-real">
                         <div class="wi-line-top"><span class="wi-idx">What you did</span><span class="wi-pair">${pair(l.control)}</span><span class="wi-t">${outcome(l.control)} · T${endOf(l.control)}</span></div>
-                        <div class="wi-moves">${realMoves(realTurn)}</div>${l.control.winner === me ? '<div class="wi-moves">With the search’s later turns this wins too, so the win is in a later turn.</div>' : ''}</li>` : '';
-                    const lines = did + l.lines.map((x, ii) => `<li class="wi-line is-${x.winner === me ? 'win' : x.winner !== null ? 'loss' : 'open'}">
+                        <div class="wi-moves">${realTurn ? realMoves(realTurn) : node && node.sections ? recap(node.sections) : '<span class="wi-mv">As played</span>'}</div>${l.control.winner === me ? '<div class="wi-moves">With the search’s later turns this wins too, so the win is in a later turn.</div>' : ''}</li>` : '';
+                    const lines = did + l.lines.map((x, ii) => `<li class="wi-line is-${x.good ? 'win' : x.winner !== null && x.winner !== me ? 'loss' : 'open'}">
                         <div class="wi-line-top"><span class="wi-idx">Line ${x.index + 1}</span><span class="wi-pair">${pair(x)}</span><span class="wi-t">${outcome(x)} · T${endOf(x)}</span>
                         <button class="btn wi-show" onclick="App.whatIfShow(${li}, ${ii})" title="Pick this line's last node in the Multiverse">Show</button></div>
                         <div class="wi-moves">${moves(x)}</div></li>`).join('');
@@ -7345,17 +7411,19 @@
                 let foot;
                 if (w.running) foot = `<div id="wi-meter-host">${this.whatIfMeter()}</div><div class="wi-actions"><button class="btn" onclick="App.stopWhatIf()"${w.stopping ? ' disabled' : ''}>Stop</button></div>`;
                 else {
-                    const note = !w.why ? `Goes back one of your turns at a time, up to ${DojoWhatIf.BACK}, and stops at the first that wins. Their turns are what they really did, unless the search finds clearly better. About half a minute a turn.`
+                    const theirs = g.turns.some(t => t.real) ? 'Their turns are what they really did, unless the search finds clearly better.' : 'The search plays their turns.';
+                    const note = !w.why ? `Goes back one of your turns at a time, up to ${DojoWhatIf.BACK}, and stops at the first that wins. ${theirs} About half a minute a turn.`
                         : w.why === 'error' ? 'The rules engine stopped with an error.'
                         : w.why === 'stopped' ? 'Stopped.'
-                        : w.why === 'won' ? 'Stopped at the first turn back with a win.'
-                        : w.why === 'drift' ? (w.levels.length === 1 ? 'Replayed from your last turn, the game doesn’t end as it did, so What-if can’t follow it.' : 'From here back the replay no longer follows the real game, so What-if stops.')
-                        : `No winning line ${w.levels.length} turn${w.levels.length > 1 ? 's' : ''} back.`;
+                        : w.why === 'won' ? `Stopped at the first turn back with ${unfinished ? 'a better lore race' : 'a win'}.`
+                        : w.why === 'drift' ? (w.levels.length === 1 ? 'Replayed from this turn, the game doesn’t end as it did, so What-if can’t follow it.' : 'From here back the replay no longer follows the real game, so What-if stops.')
+                        : `No ${unfinished ? 'better lore race' : 'winning line'} ${w.levels.length} turn${w.levels.length > 1 ? 's' : ''} back.`;
                     const go = !w.why ? 'Look for a win' : w.why === 'won' || w.why === 'none' ? 'Keep going' : w.why === 'stopped' ? 'Carry on' : '';
-                    const losing = w.levels.reduce((n, l) => n + l.lines.filter(x => x.winner !== me && x.first && this.bookmarks.some(b => b.id === x.first)).length, 0);
-                    const remove = losing ? `<button class="btn" onclick="App.whatIfRemoveLosing()" title="Take the lines that didn't win out of the Multiverse (Undo puts them back)">Remove ${losing} losing line${losing > 1 ? 's' : ''}</button>` : '';
+                    const losing = w.levels.reduce((n, l) => n + l.lines.filter(x => !x.good && x.first && this.bookmarks.some(b => b.id === x.first)).length, 0);
+                    const remove = losing ? `<button class="btn" onclick="App.whatIfRemoveLosing()" title="Take these lines out of the Multiverse (Undo puts them back)">Remove ${losing} ${unfinished ? `line${losing > 1 ? 's' : ''} that aren’t better` : `losing line${losing > 1 ? 's' : ''}`}</button>` : '';
+                    const again = g.picked ? '<button class="btn" onclick="App.whatIfPickAgain()" title="Pick another turn to start from in the Multiverse">Pick another start</button>' : '';
                     const keep = go && !w.done ? `<button class="btn btn-primary" onclick="App.runWhatIf()">${go}</button>` : '';
-                    foot = `<p class="wi-note">${note}</p>${remove || keep ? `<div class="wi-actions">${remove}${keep}</div>` : ''}`;
+                    foot = `<p class="wi-note">${note}</p>${remove || again || keep ? `<div class="wi-actions">${remove}${again}${keep}</div>` : ''}`;
                 }
                 host.innerHTML = `${head}${well}${levels ? `<div class="wi-levels">${levels}</div>` : ''}<div class="wi-foot">${foot}</div>`;
                 // The animations keep their phase across redraws (one cycle is 4.8 s, the length of each).
@@ -9155,6 +9223,7 @@
                 this.placeTreeCursor();
                 this.renderTreePanel();
                 this.updateTreeKeys();
+                if (this._whatIf && !this._whatIf.game) this.renderWhatIf(); // Feature 68: What-if's start is the node picked
                 if (center) this.centerTreeOnNode(id);
             },
 

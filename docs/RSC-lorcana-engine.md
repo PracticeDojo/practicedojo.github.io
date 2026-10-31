@@ -384,6 +384,27 @@ Tiers 2 and 3 only need the read side of tier 1 (hydrate and project) plus the e
 
 Measured results, newest first. The work itself lives on `feat/68-rules-engine` (AGENTS.md, *Long-lived branch*).
 
+### 2026-10-31 · What-if: text logs, games played here, unfinished games, and where to start
+
+**Asked:** What-if for games without a replay and for unfinished games; for an unfinished game, or one with more than one line, ask the player where to start.
+
+**What changed**
+- **Text logs** (Duels.ink's text export) keep each turn's moves at import, as replays do (`DojoWhatIf.movesFromLog`): the active player's inks, plays, songs and singers, quests, challenges and abilities, by name. A challenge's detail line ("… | dealt 2 dmg") repeats the line before it and is skipped. A text log names no choices; the bot makes them.
+- **Who won** is kept at import: a replay's `winner` when it won on lore (a concession or a timeout counts as unfinished), a text log's "won with 20 [LORE]", a game played here's game-over node. Before this, What-if took the last turn's player as the winner.
+- **Games played here** (auto-save each turn) have no record of the moves. The real game isn't replayed (the panel says so); the search plays their turns (one search, not two: there's nothing real to compare it with), and *What you did* is the real board at the start of their next turn, played on by the search. The panel lists what the turn's recap says was played (inks, plays, quests).
+- **Unfinished games** are played to 2 turns past the last one (the owner's call) and compared on the lore race: your lore minus theirs, a win beating any number. A line is better when it beats *What you did*; the badge reads *Better*, the line's spine and numeral Olive. The real game must replay to no winner and reach the last turn on its real lore.
+- **Where to start.** The game is now the line of turn nodes through a picked node (`DojoWhatIf.lineOf`); below a fork, the line played first. What-if's own branches don't count. A finished game on one line starts by itself, as before. Otherwise the panel asks: select a turn in the Multiverse, then **Start from turn N**. A finished line is played for its loser, from their turn at or before the pick; an unfinished one for whoever's turn is picked. Turns back from a picked start read *Start*, *1 before*, … **Pick another start** goes back to the picker; the branches made stay.
+- **Turn numbers.** A game played here counts rounds (both players' turn 1, then turn 2: the turn goes up when P1 starts); imports count each player's turn; a line can mix both (an imported game played on by hand). `lineOf` numbers turns one per player's turn for the engine and keeps each node's own number as its label, so the panel and the branches it makes read like the game (`label(turn)`, past the end too).
+- Branches are now keyed by node, not turn number (two lines can share one).
+
+**Measured** (headless Chromium, desktop):
+- **Text log v replay, same game** (`new_log_20261004.txt` and `01a08b6d…replay.gz`, the owner won, What-if for the opponent): identical runs. The real game replays from 1 turn back (20–14) and drifts from 2 back (19–14) in both, so the drift is the replay's own limit there, not the text log's. 19 s each. Real moves match turn for turn except the text log's free plays: DARK DANCE's "Played Cheshire Cat for free" is logged as "You played …" on the opponent's turn, so it isn't one of their moves; the engine plays it through the ability.
+- **Unfinished** (game A cut at turn 18, P2 to move): the real game replays to turn 18 with no winner; *What you did* ends 6–14 on turn 20; line 4 ends 9–16, one better on the race. 20 s.
+- **Played here** (the Set 14 demo's shortest lost line, P2 won on its turn 8, no record): 5 turns back, no winning line, 158 s.
+- `app-checks` 47/47 (four new: a text log's moves and winner; the line, its forks and its end on game A with a hand-played winning branch; round numbering on the demo; a playout without a record, whose turns are all the search's and nothing "beyond the real game").
+
+**Found, not fixed:** a replay's taken-back moves stay in its real moves (`FREE_UNDO` isn't read): game A has one undone quest, the other sample one undone Chernabog. Game A still replays exactly. Text logs already drop them.
+
 ### 2026-10-31 · What-if: their turns use what the changed board gives them; branches read like the game
 
 **Reported:** on a third lost game (owner as P2, lost on turn 20), the winning lines seemed to start "from a board with more lore than the main line".

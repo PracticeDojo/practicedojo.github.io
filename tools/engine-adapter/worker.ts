@@ -1270,15 +1270,16 @@ function whatIf(args: SearchOpts & { board: Board; me: 0 | 1; first: number | "r
       const rest = server.isGameOver() ? undefined : search(server, who, other, { ...args, lines: 1, nodes: args.laterNodes ?? args.nodes }).best[0];
       if (rest && rest.acts.some((a) => a.by === "me")) {
         freshLoad(server, rest.state);
-        g.acts.push(...rest.acts.map((a) => ({ ...a, extra: true }))); // beyond the real game
+        g.acts.push(...rest.acts.map((a) => (real ? { ...a, extra: true } : a))); // beyond the real game
       } else freshLoad(server, afterReal);
+      // No record of their turn (a game played in the Dojo): the search just played all of it.
       const gState = structuredClone(server.getState());
-      const gScore = lineScore(server, who, other, W);
+      const gScore = real ? lineScore(server, who, other, W) : 0;
       freshLoad(server, s0);
-      const best = search(server, who, other, { ...args, lines: 1, nodes: args.laterNodes ?? args.nodes }).best[0];
+      const best = real ? search(server, who, other, { ...args, lines: 1, nodes: args.laterNodes ?? args.nodes }).best[0] : undefined;
       const better = !!best && best.score > gScore + (args.margin ?? 1);
-      freshLoad(server, better ? best.state : gState);
-      Object.assign(row, better ? { how: "better", acts: best.acts, matched: g.matched, missed: g.missed } : { how: "real", ...g });
+      freshLoad(server, better ? best!.state : gState);
+      Object.assign(row, better ? { how: "better", acts: best!.acts, matched: g.matched, missed: g.missed } : { how: real ? "real" : "search", ...g });
       realChoices = !better;
     }
     if (!server.isGameOver()) {
