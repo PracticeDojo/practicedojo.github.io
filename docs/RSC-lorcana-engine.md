@@ -408,6 +408,8 @@ Two things on the way:
 | `01a08b6d` replay (DARK DANCE turns 13, 17) | 9 / 22 (from 18) | 20 / 22 (all but 9, 10), 1 move missed from 12–23 |
 | Its text log | 9 / 22 | 9 / 22, but much closer: from 14–17, 18–14 or 19–14 and 5 missed, before 9–14 and 15–18 |
 
+A full What-if run on that game (for the opponent; the owner won): from the replay, the real game now replays at all 5 turns back (before, the run stopped at 2 back: "Can't follow"), no winning line for them, 326 s; from the text log, at 4 back, then it stops at turn 17, 186 s.
+
 The text log still falls a lore or two short there: it names no choices, so the bot makes DARK DANCE's (it shuffles Agustin away where the real game chose Ursula, and plays Hamm from the discard where the owner played Alma). `app-checks` 52/52 (new: after a shuffle, the real draws).
 
 ### 2026-11-01 · Why the other sample replay drifted: Boost, then shuffles
