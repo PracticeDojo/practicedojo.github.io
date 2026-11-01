@@ -217,7 +217,9 @@ window.DojoWhatIf = (() => {
         const horizon = end + (winner === null ? OPEN : PAST);
         const lastLore = turns[turns.length - 1].state.players.map(p => p.lore);
         const race = (x) => (x.winner === me ? 1000 : x.winner !== null ? -1000 : x.lore[me] - x.lore[1 - me]);
-        const play = (board, opts) => DojoRules.whatIf(board, keyOf, { me, real, nodes: 300, laterNodes: 120, margin: 1, ...opts });
+        // Each turn's decks as the real game had them, so a shuffle keeps the real draws (the worker's realDecks).
+        const decks = Object.fromEntries(turns.map(t => [t.turn, t.state.players.map(p => p.deck.map(c => keyOf(c.cardId)))]));
+        const play = (board, opts) => DojoRules.whatIf(board, keyOf, { me, real, decks, nodes: 300, laterNodes: 120, margin: 1, ...opts });
         const last = Math.min(from + BACK - 1, mine.length);
         for (let back = from; back <= last; back++) {
             const at = mine[back - 1], t = turns[at], after = turns[at + 1];
