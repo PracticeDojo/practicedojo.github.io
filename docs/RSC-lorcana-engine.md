@@ -384,12 +384,38 @@ Tiers 2 and 3 only need the read side of tier 1 (hydrate and project) plus the e
 
 Measured results, newest first. The work itself lives on `feat/68-rules-engine` (AGENTS.md, *Long-lived branch*).
 
+### 2026-11-01 · What-if keeps the real draws after a shuffle
+
+Asked (the owner): keep the real draws after a shuffle, as without one.
+
+**How.** At the end of each turn of a playout, a deck the engine shuffled that turn (a card joined it, or the order of the cards it kept changed) is put in the real game's order (`realDecks` in the worker). The Dojo passes each turn's real decks and hands (card keys, `?` for a hidden card). The deck takes the order the real game's next turn has:
+- cards the real deck no longer has but the real hand does (drawn first) stay on top;
+- a card the real game hasn't named takes a hidden card's place;
+- a card that joined and the real game never had there goes to the bottom;
+- past the end of the real game, a shuffled deck keeps the order it had when the turn began.
+It applies to every playout, so *What you did* and the lines get the real draws too, and only to decks the playout shuffled: a line that doesn't shuffle keeps the deck as it was.
+
+Two things on the way:
+- **A replay's deck is the real order; a text log's is "the next draws first".** The first try (keep the order the deck had when the turn began, put the new card where the real next turn has it) helped the text log and not the replay: there the real shuffle had put Demona, not Gaston, on top. Ordering by the real next turn works for both.
+- **The text-log import didn't know Boost takes the top card.** It put the next draws on top, so the engine's turn-16 boost took Demona, the next real draw. A boost now takes an unnamed card off the top in its place among the draws. Its "(2 cards under)" is how many are under now, not how many were added: the import added 2 for a second boost (no sample has one in a text log; `019ea30a`'s replay does).
+
+**Measured**: the real game replayed exactly from every turn from 5 on, in each sample (✓ ends as it did; turns that do / turns tried):
+
+| Game | Before | After |
+|---|---|---|
+| Game A (`01a15b0a`, no shuffle) | 14 / 20 | 14 / 20, the same |
+| `019ea30a` (no shuffle) | 13 / 15 | 13 / 15, the same |
+| `01a08b6d` replay (DARK DANCE turns 13, 17) | 9 / 22 (from 18) | 20 / 22 (all but 9, 10), 1 move missed from 12–23 |
+| Its text log | 9 / 22 | 9 / 22, but much closer: from 14–17, 18–14 or 19–14 and 5 missed, before 9–14 and 15–18 |
+
+The text log still falls a lore or two short there: it names no choices, so the bot makes DARK DANCE's (it shuffles Agustin away where the real game chose Ursula, and plays Hamm from the discard where the owner played Alma). `app-checks` 52/52 (new: after a shuffle, the real draws).
+
 ### 2026-11-01 · Why the other sample replay drifted: Boost, then shuffles
 
 Asked: why `01a08b6d…` (the owner won; What-if for the opponent) drifted replayed from turns 9–15, with misses on turns 16 and 20. Measured by replaying the real game from turns 13, 14 and 15 and, after every turn, comparing the engine's board with the real next node (lore, cards in play, hands, discards, ink, the top of each deck).
 
 - **Boost wasn't replayed.** "You boosted Cheshire Cat (1 card under)" on turn 14 and "You boosted Ursula" on turn 16: Boost puts the top card of your deck facedown under the character. The log line (`CARD_BOOSTED`) wasn't read as a move, so the replay never boosted: the deck stayed a card behind (turn 16 drew Gaston, not Agustin) and Ursula quested for 2, not 3 (a lore short). Boost is an activated ability in the engine, so a boost is now an `activateAbility` move on that card, from a replay and from a text log ("You boosted …"). Replayed from turn 14 or 15, turns 14–16 now match the real game exactly; turn 17 starts 6–7 with Gaston, Dumbo, Hades on top of the owner's deck, as in the real game. Boosts are in two of the three sample replays (5 in `019ea30a`, 3 here) and in the text log (3).
-- **Then a shuffle.** On turn 17 (theirs), DARK DANCE shuffles the owner's Ursula into their deck. The engine shuffles with its own random order, so the owner's next draw is Hades, not the real Demona, and Demona is missed on turn 20. Replayed from turn 13 back, it's turn 13's DARK DANCE (Dumbo shuffled in): the turn 14 draw is Sven, not Agustin. Not changed: keeping the real draws after a shuffle means re-ordering the engine's hidden cards from the real game's next turn, a change to how What-if treats hidden cards (an earlier attempt at re-ordering decks made game B worse, 2026-10-30). Left for the owner to decide.
+- **Then a shuffle.** On turn 17 (theirs), DARK DANCE shuffles the owner's Ursula into their deck. The engine shuffles with its own random order, so the owner's next draw is Hades, not the real Demona, and Demona is missed on turn 20. Replayed from turn 13 back, it's turn 13's DARK DANCE (Dumbo shuffled in): the turn 14 draw is Sven, not Agustin. Fixed next (the entry above): What-if now keeps the real draws after a shuffle.
 - Smaller: the card under a boosted character is unknown in the import until it's revealed (Gaston, in the discard when Cheshire Cat is banished on turn 17), so the replay's discard shows an unknown card there.
 
 `app-checks` 51/51 (new: turn 16's boost replayed; the text log's counts now include its boosts and still match the replay's).

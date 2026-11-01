@@ -1209,39 +1209,39 @@ function realTurn(server: Server, who: string, real: RealTurn | undefined, prefe
 }
 
 // A shuffle (DARK DANCE shuffles a character into its player's deck) gets the engine's own order, so the draws after
-// it wouldn't be the real game's. They come back: the cards the deck had when the turn began keep that order (the
-// import put the real draws first), and a card that joined it goes where the real game's next turn has it: after
-// the last card that comes before it there, else at the bottom. before: each deck when the turn began (engine
-// order, top last); next: each deck's keys at the real next turn (Dojo order, top first).
-function realDecks(server: Server, keys: Map<string, string>, before: string[][], next?: string[][]) {
+// it wouldn't be the real game's. They come back: a deck shuffled this turn takes the order the real game's next
+// turn has (its hidden cards are places for the cards it didn't name), cards it no longer had there (it drew or
+// used them first) on top, cards it never had at the bottom.
+// before: each deck when the turn began (engine order, top last); next: each deck's keys at the real next turn
+// (Dojo order, top first; "?" a hidden card), hands: each hand's keys there. Past the real game, a shuffled deck keeps
+// the order it had when the turn began.
+function realDecks(server: Server, keys: Map<string, string>, before: string[][], next?: string[][], hands?: string[][]) {
   const st = structuredClone(server.getState()) as unknown as RawState;
   const zc = st.ctx.zones.private.zoneCards;
   let shuffled = false;
   PIDS.forEach((p, pi) => {
     const top = [...(zc[`deck:${p}`] ?? [])].reverse();
-    const order = [...before[pi]].reverse().filter((id) => top.includes(id));
+    const kept = [...before[pi]].reverse().filter((id) => top.includes(id));
     const joined = top.filter((id) => !before[pi].includes(id));
-    if (!joined.length && order.every((id, i) => top[i] === id)) return; // only drawn from the top
+    if (!joined.length && kept.every((id, i) => top[i] === id)) return; // only drawn from the top
     shuffled = true;
-    // Each card's place in the real deck (the first unused copy of its key).
     const real = [...(next?.[pi] ?? [])];
-    const at = new Map<string, number>();
-    const place = (id: string) => {
-      const j = real.indexOf(keys.get(id) ?? "");
+    const at = new Map<string, number>(); // each card's place in the real deck: the first unused copy of its key
+    const match = (id: string, key: string) => {
+      const j = real.indexOf(key);
       if (j >= 0) { real[j] = ""; at.set(id, j); }
     };
-    order.forEach(place);
-    for (const id of joined) {
-      place(id);
-      const j = at.get(id);
-      let k = order.length;
-      if (j !== undefined) {
-        const before_ = order.map((x, i) => [at.get(x), i] as const).filter(([a]) => a !== undefined && a < j);
-        k = before_.length ? before_[before_.length - 1][1] + 1 : Math.max(0, order.findIndex((x) => at.has(x)));
-      }
-      order.splice(k, 0, id);
+    for (const id of [...kept, ...joined]) match(id, keys.get(id) ?? "");
+    // A card the real next turn has in hand was drawn first (stays on top); one it hasn't named takes a hidden card's place.
+    const hand = [...(hands?.[pi] ?? [])];
+    for (const id of kept) {
+      if (at.has(id)) continue;
+      const h = hand.indexOf(keys.get(id) ?? "");
+      if (h >= 0) hand[h] = "";
+      else match(id, "?");
     }
-    zc[`deck:${p}`] = order.reverse();
+    const placed = [...kept, ...joined].filter((id) => at.has(id)).sort((a, b) => at.get(a)! - at.get(b)!);
+    zc[`deck:${p}`] = [...kept.filter((id) => !at.has(id)), ...placed, ...joined.filter((id) => !at.has(id))].reverse();
   });
   if (shuffled) freshLoad(server, st);
 }
@@ -1268,7 +1268,7 @@ const realPlan = (real?: RealTurn) => (real?.moves ?? []).filter((m) => PLAN.has
 //          the search finds a line scoring more than `margin` above them.
 // Each turn: who played it and how, the moves, and `end`, the board the next turn starts on (or the game's
 // end). `lines`: how many lines the first turn had to choose from.
-function whatIf(args: SearchOpts & { board: Board; me: 0 | 1; first: number | "real"; exact?: boolean; real: Record<string, RealTurn>; decks?: Record<string, string[][]>; margin?: number; horizon: number; laterNodes?: number }) {
+function whatIf(args: SearchOpts & { board: Board; me: 0 | 1; first: number | "real"; exact?: boolean; real: Record<string, RealTurn>; decks?: Record<string, string[][]>; hands?: Record<string, string[][]>; margin?: number; horizon: number; laterNodes?: number }) {
   const t0 = now();
   const { match, pos } = hydrate(args.board);
   const server = bareServer(match);
@@ -1323,7 +1323,7 @@ function whatIf(args: SearchOpts & { board: Board; me: 0 | 1; first: number | "r
       realChoices = !better;
     }
     if (!server.isGameOver()) {
-      realDecks(server, keys, decks0, args.decks?.[String(turn + 1)]);
+      realDecks(server, keys, decks0, args.decks?.[String(turn + 1)], args.hands?.[String(turn + 1)]);
       if (!server.passTurn(who).success) break;
       drain(server, realChoices ? prefer : undefined);
     }
