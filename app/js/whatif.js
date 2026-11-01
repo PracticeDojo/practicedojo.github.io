@@ -25,12 +25,12 @@ window.DojoWhatIf = (() => {
     // player's turn; so do the log's "turn begins" lines). Duels.ink player n is Dojo seat n - 1.
     function movesFromReplay(rp) {
         const real = {};
-        let turn = 0;
+        let turn = 0, active; // whose turn it is
         const T = () => (real[turn] = real[turn] || { moves: [], choices: [] });
         const exert = {}; // a player's "enter exerted / ready" choice, for the card they play next
         const marks = {}; // by turn: how many choices came before each move, so a move taken back takes its own
         (rp && Array.isArray(rp.logs) ? rp.logs : []).forEach((l, i) => {
-            if (l.type === 'TURN_START') turn++;
+            if (l.type === 'TURN_START') { turn++; active = l.player ? l.player - 1 : undefined; }
             if (!turn) return;
             const refs = Array.isArray(l.cardRefs) ? l.cardRefs : [];
             const by = l.player ? l.player - 1 : undefined;
@@ -52,6 +52,7 @@ window.DojoWhatIf = (() => {
             }
             const family = FAMILIES[l.type];
             if (!family || (family === 'challenge' && String(l.message).includes('|'))) return; // the detail line repeats it
+            if (active !== undefined && by !== undefined && by !== active) return; // made by an ability on the other's turn (DARK DANCE's free play): its choices make it
             const move = { family, card: refs[0].name };
             if ((family === 'challenge' || family === 'moveCharacterToLocation') && refs[1]) move.target = refs[1].name;
             if (family === 'playCard' && l.data && l.data.isSung) move.with = refs.slice(1).map(r => r.name);
