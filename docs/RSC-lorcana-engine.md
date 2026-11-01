@@ -384,6 +384,17 @@ Tiers 2 and 3 only need the read side of tier 1 (hydrate and project) plus the e
 
 Measured results, newest first. The work itself lives on `feat/68-rules-engine` (AGENTS.md, *Long-lived branch*).
 
+### 2026-11-01 · Moves taken back in a replay; challenges in the turn recap
+
+**Moves taken back.** `movesFromReplay` didn't read Duels.ink's undo lines, so a move a player took back stayed among the real moves. Game A's turn 13: the owner quested with Launchpad, took it back (`FREE_UNDO`) and used his ability instead; then took back a discard (`CHOICE_UNDO`: Strength of a Raging Fire, then Mushu). Replayed, Launchpad quested (+1 lore) and his ability then failed. In the other sample, turn 13: Chernabog was played, DARK DANCE declined, all of it taken back and Chernabog played again; replayed, the undone "no" answered DARK DANCE. Now a `FREE_UNDO` drops the last move with the choices made after it, and a `CHOICE_UNDO` that player's last choice (text logs already dropped theirs).
+- Game A, the real game replayed exactly from each turn (winner, lore, real moves it couldn't play): from turn 13, 12 and 11, before 13–20 with 15 missed, now 19–20 with none. From 14 on it was already exact. From 9–10 it still drifts (their ink on turn 12). So *Keep going* can now go two more of the owner's turns back on game A.
+- The other sample drifts from every turn tried (9–15) for other reasons; turn 13 now plays Chernabog once (25 → 23 moves missed from turn 13).
+- Still open: Duels.ink logs DARK DANCE's free play as a play by the other player ("You played Cheshire Cat (cost 3 → 0)" on the opponent's turn), in replays and text logs alike, so the replay tries it as a move and misses it.
+
+**Challenges in the turn recap.** Live play never recorded challenges in a turn's recap: its sections were Played, Inked, Drawn, Discarded, Banished, Quested and Starting hand, and a challenge went only to the game log (imported games show challenges because their notes come from the Duels.ink log). Now each challenge is tracked as `{ id, target }` (attacker and defender card ids), from a challenge on the board (`performChallenge`) and from the engine's moves (`_applyEngineMoves`: proposed lines, the bot). The recap reads "**Challenged:** Max Goof with Vixey" (defender with attacker, as Duels.ink writes it), a session file's entries are cut to card ids, and What-if's *What you did* lists them for games played here. The node's card sections are unchanged. The manual's auto-save article lists challenges.
+
+`app-checks` 49/49 (two new: a replay from game A's turn 13; a challenge in the recap, and a session file's challenges cut to card ids).
+
 ### 2026-10-31 · What-if: text logs, games played here, unfinished games, and where to start
 
 **Asked:** What-if for games without a replay and for unfinished games; for an unfinished game, or one with more than one line, ask the player where to start.

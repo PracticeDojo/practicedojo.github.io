@@ -121,7 +121,7 @@ cd practicedojo.github.io && git checkout feat/68-rules-engine
 export DOJO_ENGINE_CACHE=<scratch>/engine-cache       # anywhere outside the repo
 node tools/build-engine.mjs                           # after any change to tools/engine-adapter/*
 node tools/engine-spike.mjs --games 1                 # bridge check, bot games, demo round trips, search cost
-node tools/app-checks.mjs                             # 47 headless checks on the What-if branch (CI runs them)
+node tools/app-checks.mjs                             # 49 headless checks on the What-if branch (CI runs them)
 node tools/help.mjs --check && node tools/refresh-landing.mjs --check
 node tools/engine-tune.mjs --compare '[{"exposed":0.5},{"hand":0.2}]' --holdout 256 --tag check5   # A/B changes, ~8 min each + 8 for the start
 ```
@@ -166,7 +166,7 @@ node tools/engine-tune.mjs --compare '[{"exposed":0.5},{"hand":0.2}]' --holdout 
 13. **The bot's candidates miss some legal moves:** Bodyguard's exerted entry (ask with `resolveOptional: true` on the play), playing a character from the discard (Remember Me: build the `playCard` move by hand). What-if's `realTurn` does both.
 14. **Matching a real move by card name isn't enough.** Both players can have the same card (both had Flash); a song has singers; two locations can share a name ("once during your turn"); choices can be the other player's. `realTurn` and `pickChoice` handle each; add to them rather than around them.
 15. **A game played here counts rounds; imports count each player's turn.** The Dojo's turn goes up when P1 starts (both players have a turn 1); replays and text logs number every player's turn. A line can mix both. What-if numbers turns one per player's turn (`lineOf`'s `turn`, and `state.turn` on the boards it hands the engine) and shows the node's own number (`label`). Use `game.label(turn)` for anything the player reads.
-16. **Taken-back moves stay in a replay's real moves** (`FREE_UNDO` isn't read by `movesFromReplay`). Game A has one undone quest and still replays exactly. Not fixed yet; text logs drop them already.
+16. **Duels.ink logs moves that were taken back** (`FREE_UNDO`, `CHOICE_UNDO`). `movesFromReplay` drops them (the last move with the choices after it; that player's last choice); without that, game A drifted from turn 13 back. It also logs DARK DANCE's free play as a play by the other player, so the replay misses it: still open.
 
 ## 8. Next steps (owner to choose)
 
@@ -184,8 +184,8 @@ Scoring follows the plan in the study's §8.1. Done 2026-10-28: their reply, the
 **What-if** (built, branch `claude/feat-68-what-if`; §2 item 5). Open:
 - **Merge it into `feat/68-rules-engine`** when the owner says so (asked twice, no answer yet). Expect a conflict only in the generated `engine.worker.js`: rebuild it.
 - Done 2026-10-31: text logs, games played here, unfinished games, and where to start (a picker for games that fork or are unfinished).
-- **Taken-back moves in replays** (gotcha 16): read `FREE_UNDO` and drop that player's last move.
-- **Games played here:** *What you did* lists the turn's recap (inks, plays, quests); the recap has no challenges or songs.
+- Done 2026-11-01: taken-back moves dropped from replays (gotcha 16); the turn recap records challenges, so *What you did* lists them for games played here (songs show as plays).
+- **Free plays by an ability** (DARK DANCE) are logged as the other player's play; the replay misses them (gotcha 16).
 - **The opponent model** is the weak point: their real moves, then the search's rest of the turn, or the search's own line when it scores more than 1 above. Watch for wins that come from the opponent not using something; the owner spots them.
 - **Results don't survive a reload** (branches do). Not asked for.
 - A manual article when Feature 68 ships.

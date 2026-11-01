@@ -4837,7 +4837,7 @@
             },
 
             _emptyTurnActions() {
-                return { drawn: [], inked: [], played: [], shifted: [], discarded: [], banished: [], quested: [] };
+                return { drawn: [], inked: [], played: [], shifted: [], discarded: [], banished: [], quested: [], challenged: [] };
             },
 
             // A saved turn's actions, from a session file that may come from anyone
@@ -4846,6 +4846,9 @@
                 const out = this._emptyTurnActions();
                 if (!ta || typeof ta !== 'object') return out;
                 Object.keys(out).forEach(k => { if (Array.isArray(ta[k])) out[k] = ta[k].slice(); });
+                // A challenge: the attacker's and the defender's card ids.
+                const id = (v) => typeof v === 'string' || typeof v === 'number';
+                out.challenged = out.challenged.filter(e => e && id(e.id) && id(e.target)).map(e => ({ id: e.id, target: e.target }));
                 if (typeof ta.opening === 'string') out.opening = ta.opening;
                 return out;
             },
@@ -4899,6 +4902,7 @@
                     discarded: arr(ta.discarded),
                     banished: arr(ta.banished),
                     quested: arr(ta.quested),
+                    challenged: arr(ta.challenged), // { id, target }: attacker and defender
                     startingHand: this._buildStartingHandSection()
                 };
             },
@@ -4920,6 +4924,9 @@
                 const shifted = fmt(ta.shifted); if (shifted) lines.push(`- **Shifted:** ${shifted}`);
                 const discarded = fmt(ta.discarded); if (discarded) lines.push(`- **Discarded:** ${discarded}`);
                 const quested = fmt(ta.quested); if (quested) lines.push(`- **Quested:** ${quested}`);
+                const name = (id) => (this.cardDB[id] && this.cardDB[id].name) || 'Unknown card';
+                const challenged = (ta.challenged || []).map(e => `${name(e.target)} with ${name(e.id)}`).join(', ');
+                if (challenged) lines.push(`- **Challenged:** ${challenged}`);
                 const banished = fmt(ta.banished); if (banished) lines.push(`- **Banished:** ${banished}`);
                 if (!lines.length) return '';
                 return `\n\n**Turn recap**\n${lines.join('\n')}`;
@@ -7377,7 +7384,8 @@
                 const recap = (s) => {
                     const n = (id) => (this.cardDB[id] || {}).name;
                     const of = (ids, family) => (Array.isArray(ids) ? ids : []).map(id => ({ family, card: n(id) })).filter(m => m.card);
-                    return realMoves({ moves: [...of(s.inked, 'putCardIntoInkwell'), ...of(s.played, 'playCard'), ...of(s.quested, 'quest')] });
+                    const fights = (Array.isArray(s.challenged) ? s.challenged : []).map(e => ({ family: 'challenge', card: n(e && e.id), target: n(e && e.target) })).filter(m => m.card && m.target);
+                    return realMoves({ moves: [...of(s.inked, 'putCardIntoInkwell'), ...of(s.played, 'playCard'), ...of(s.quested, 'quest'), ...fights] });
                 };
                 const pair = (x) => `<b class="wi-num${x.winner === me || x.good ? ' is-win' : ''}">${x.lore[me]}</b><span class="wi-dash">–</span><b class="wi-num${x.winner === 1 - me ? ' is-hot' : ''}">${x.lore[1 - me]}</b>`;
                 const endOf = (x) => (x.turns.length ? g.label(x.turns[x.turns.length - 1].turn) : '?');
@@ -8168,6 +8176,7 @@
                         this._trackAction(a.via === 'shift' ? 'shifted' : 'played', id);
                     }
                     if (a.family === 'quest') this._trackAction('quested', id);
+                    if (a.family === 'challenge' && a.target && cardId[a.target.iid] != null) this._trackAction('challenged', { id, target: cardId[a.target.iid] });
                 });
                 // Draws, banishes and discards the effects made, from where each card went.
                 this.state.players.forEach((p, pi) => ['hand', 'discard'].forEach(z => p[z].forEach(c => {
@@ -11207,6 +11216,7 @@
                 const { toDef: dmgToDefender, toAtt: dmgToChallenger } = this.challengeOutcome(challengerInstanceId, defenderInstanceId);
 
                 this.saveState();
+                this._trackAction('challenged', { id: cf.card.cardId, target: df.card.cardId });
 
                 cf.card.damage = (cf.card.damage || 0) + dmgToChallenger;
                 df.card.damage = (df.card.damage || 0) + dmgToDefender;

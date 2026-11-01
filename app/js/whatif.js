@@ -28,11 +28,15 @@ window.DojoWhatIf = (() => {
         let turn = 0;
         const T = () => (real[turn] = real[turn] || { moves: [], choices: [] });
         const exert = {}; // a player's "enter exerted / ready" choice, for the card they play next
+        const marks = {}; // by turn: how many choices came before each move, so a move taken back takes its own
         (rp && Array.isArray(rp.logs) ? rp.logs : []).forEach((l, i) => {
             if (l.type === 'TURN_START') turn++;
             if (!turn) return;
             const refs = Array.isArray(l.cardRefs) ? l.cardRefs : [];
             const by = l.player ? l.player - 1 : undefined;
+            // Taken back: the last move, with the choices that resolved it; or that player's last choice.
+            if (l.type === 'FREE_UNDO' && real[turn] && real[turn].moves.length) { real[turn].moves.pop(); real[turn].choices.length = marks[turn].pop(); return; }
+            if (l.type === 'CHOICE_UNDO' && real[turn]) { const i = real[turn].choices.map(c => c.by).lastIndexOf(by); if (i >= 0) real[turn].choices.splice(i, 1); return; }
             const opt = l.type === 'CHOICE_RESOLVED' && !refs.length && (String(l.message).match(/chose (option\w+)/) || [])[1];
             if (opt === 'optionEnterExerted' || opt === 'optionEnterReady') { exert[by] = opt === 'optionEnterExerted'; return; }
             if (opt) { T().choices.push({ option: opt === 'optionYes' ? 'yes' : opt.replace(/^option/, ''), by }); return; }
@@ -52,6 +56,7 @@ window.DojoWhatIf = (() => {
             if ((family === 'challenge' || family === 'moveCharacterToLocation') && refs[1]) move.target = refs[1].name;
             if (family === 'playCard' && l.data && l.data.isSung) move.with = refs.slice(1).map(r => r.name);
             if (family === 'playCard' && exert[by] != null) { move.exerted = exert[by]; delete exert[by]; }
+            (marks[turn] = marks[turn] || []).push(T().choices.length);
             T().moves.push(move);
         });
         // A game won on lore: the winner, on its last turn (a concession or a timeout leaves it unfinished).

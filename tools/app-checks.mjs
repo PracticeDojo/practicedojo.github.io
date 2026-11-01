@@ -181,6 +181,14 @@ export default async (page) => {
         settle(); App.endTurn();
         const twins = App.bookmarks.filter(b => b.name === 'Turn 1 - Player 1 Active');
         check('auto-save: turn 1 replays from the mulligan, as a branch', `${reopened} ${twins.length} ${twins[0].parentId === twins[1].parentId}`, 'true 2 true');
+        // The recap names each challenge (defender with attacker); a session file's challenges keep card ids only.
+        const fighters = Object.values(App.cardDB).filter(c => c && c.type === 'Character' && c.willpower >= 5).slice(0, 2);
+        const [att, def] = fighters.map(c => App.makeCardInstance(c.id));
+        App.state.players[App.state.activePlayer].field.push(att);
+        App.state.players[1 - App.state.activePlayer].field.push(def);
+        App.performChallenge(att.instanceId, def.instanceId);
+        const readBack = App._readTurnActions({ challenged: [App.state.turnActions.challenged.at(-1), { id: {}, target: 1 }, 'x', null] });
+        check('auto-save: the recap names each challenge', `${App._formatTurnActions().split('\n').pop()} | ${readBack.challenged.length}`, `- **Challenged:** ${fighters[1].name} with ${fighters[0].name} | 1`);
         // Bot opponent (Feature 68): it plays P2's turn on the demo's turn 4, and the engine hands the turn back.
         const botDemo = JSON.parse(await App.decodeMaybeGzip(await (await fetch('/app/defaults/demos/set14_example2.dojo.json.gz')).arrayBuffer()));
         App.state = App.decompressState(JSON.parse(botDemo.data.bookmarks.find(b => b.id === 'gwop5bnzw').state));
@@ -222,7 +230,7 @@ export default async (page) => {
         const wiReplay = JSON.parse(await App.decodeMaybeGzip(await (await fetch('/docs/samples/01a15b0a-313b-73d3-846f-37752210870b_p1.replay.gz')).arrayBuffer()));
         const wiDec = s => App.decompressState(s), wiNodes = App.buildSessionFromReplay(wiReplay).bookmarks;
         const wiTurns = DojoWhatIf.lineOf(wiNodes, wiDec).turns;
-        check('what-if: the import keeps each turn\'s real moves', wiTurns.map(t => t.real.moves.length).join(' '), '2 2 3 2 3 3 4 4 4 2 2 4 4 4 3 2 4 3 4 3 4 5 4 8');
+        check('what-if: the import keeps each turn\'s real moves', wiTurns.map(t => t.real.moves.length).join(' '), '2 2 3 2 3 3 4 4 4 2 2 4 3 4 3 2 4 3 4 3 4 5 4 8');
         // A text log keeps them too (each challenge once), and who won. Its replay (01a08b6d) has the same counts
         // but on turns 13 and 17: plays from DARK DANCE, which the log credits to "You", and a play taken back.
         const wiText = DojoWhatIf.lineOf(App.buildSessionFromLog(App.parseDojoLog(await (await fetch('/docs/samples/new_log_20261004.txt')).text())).bookmarks, wiDec);
@@ -249,6 +257,9 @@ export default async (page) => {
         const wiAt = (turn) => DojoWhatIf.filled(wiTurns, wiTurns.findIndex(t => t.turn === turn), id => !!App.cardDB[id]);
         const wiOpts = { me: 0, real: wiReal, nodes: 300, laterNodes: 120, margin: 1 };
         const wiExact = await DojoRules.whatIf(wiAt(23), id => App.cardKey(id), { ...wiOpts, first: 'real', exact: true, horizon: 24 });
+        // On turn 13 a quest and a discard were taken back (FREE_UNDO, CHOICE_UNDO): replayed, they made it 13-20.
+        const wiUndo = await DojoRules.whatIf(wiAt(13), id => App.cardKey(id), { ...wiOpts, first: 'real', exact: true, horizon: 24 });
+        check('what-if: a move taken back isn\'t replayed', `${wiUndo.winner} ${wiUndo.lore.join('-')} ${wiUndo.turns.reduce((n, t) => n + (t.missed || []).length, 0)}`, '1 19-20 0');
         const wiLine = await DojoRules.whatIf(wiAt(19), id => App.cardKey(id), { ...wiOpts, first: 1, horizon: 28 });
         // The control: the real move, then the search, with their real turns finished by the search. It must
         // carry on to the end (once, a search that added nothing left the engine on a position it had looked at).
