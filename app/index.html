@@ -5494,7 +5494,7 @@
                     if ((m = RX.banish.exec(line))) { if (named(m[1])) ev({ t: 'banish', name: m[1].trim() }); continue; }
                     if ((m = RX.toDeck.exec(line))) { ev({ t: 'toDeck', owner: whose(m[2], -1), name: m[1].trim() }); continue; }
                     if ((m = RX.toHand.exec(line))) { ev({ t: 'toHand', name: m[1].trim() }); continue; }
-                    if ((m = RX.boost.exec(line))) { ev({ t: 'under', p: who(m[1]), name: m[2].trim(), n: parseInt(m[3], 10) }); continue; }
+                    if ((m = RX.boost.exec(line))) { ev({ t: 'under', p: who(m[1]), name: m[2].trim(), n: 1 }); continue; } // "(2 cards under)" is how many are under now: a boost adds one
                     if ((m = RX.under.exec(line))) { ev({ t: 'under', p: -1, name: m[1].trim(), n: 1 }); continue; }
                     if ((m = RX.moveDmg.exec(line))) { ev({ t: 'moveDmg', n: parseInt(m[1], 10), from: m[2].trim(), to: m[3].trim() }); continue; }
                     if ((m = RX.activate.exec(line))) { ev({ t: 'activate', p: who(m[1]), ability: m[2].trim(), name: m[3].trim() }); continue; }
@@ -5532,10 +5532,12 @@
                 const willpower = (name) => { const c = resolve(name); return c && c.willpower != null ? c.willpower : Infinity; };
 
                 // Every card a player draws or reveals, in order, so a snapshot's deck
-                // can put the known future draws on top.
+                // can put the known future draws on top. A boost takes the top card first,
+                // facedown: a card the log never names.
                 const allDraws = [[], []];
                 for (const t of turns) for (const e of t.events) {
                     if ((e.t === 'draw' || e.t === 'reveal') && e.p >= 0 && e.p <= 1) allDraws[e.p].push(e.name);
+                    if (e.t === 'under' && e.p >= 0 && e.p <= 1) allDraws[e.p].push(null);
                 }
                 // Zones hold card names; null = a card the log never named.
                 let drawn, hands, fields, inkwells, discards, lore;
@@ -5694,6 +5696,7 @@
                             break;
                         }
                         case 'under': {
+                            if (p >= 0) drawn[p]++; // a boost: the top card of the deck
                             const hit = p >= 0 && fieldCard(p, e.name) ? { p } : locate(e.name, active);
                             const f = hit && fieldCard(hit.p, e.name);
                             if (f) f.under = (f.under || 0) + (e.n || 1);

@@ -250,6 +250,12 @@ export default async (page) => {
             { me: 0, real: Object.fromEntries(wiDance.turns.map(t => [t.turn, t.real])), first: 'real', exact: true, horizon: 16, nodes: 300, laterNodes: 120, margin: 1 })).turns.at(-1).state;
         const wiTop = (st) => st.players[0].deck.slice(0, 3).map(c => App.cardDB[c.cardId].name).join(', ');
         check('what-if: a boost is replayed', `${wiT16.players.map(p => p.lore).join('-')} ${wiTop(wiT16)} | real ${wiReal17.players.map(p => p.lore).join('-')} ${wiTop(wiReal17)}`, '6-7 Gaston, Dumbo, Hades | real 6-7 Gaston, Dumbo, Hades');
+        // After a shuffle (turn 17's DARK DANCE shuffles the owner's Ursula into their deck), the real draws: replayed
+        // from turn 15 it ends as the real game did, 20-14 (with the engine's own shuffle, 9-14 and 15 moves missed).
+        const wiZone = (z) => Object.fromEntries(wiDance.turns.map(t => [t.turn, t.state.players.map(p => p[z].map(c => App.cardKey(c.cardId) || '?'))]));
+        const wiShuffled = await DojoRules.whatIf(DojoWhatIf.filled(wiDance.turns, wiK15, id => !!App.cardDB[id]), id => App.cardKey(id),
+            { me: 0, real: Object.fromEntries(wiDance.turns.map(t => [t.turn, t.real])), decks: wiZone('deck'), hands: wiZone('hand'), first: 'real', exact: true, horizon: 26, nodes: 300, laterNodes: 120, margin: 1 });
+        check('what-if: after a shuffle, the real draws', `${wiShuffled.winner} ${wiShuffled.lore.join('-')} | missed ${wiShuffled.turns.reduce((n, t) => n + (t.missed || []).length, 0)}`, '0 20-14 | missed 1');
         check('what-if: a free play inside the other\'s ability is the ability\'s', `${wiT13.state.players[0].field.map(c => App.cardDB[c.cardId].name).join(', ')} | missed ${wiT13.missed.length}`, 'Hamm, Cheshire Cat | missed 0');
         // The game's line: the replay alone (lost, one line; What-if's own branches don't count), cut short
         // (unfinished), with a turn played again by hand that wins (forked: no line until one is picked), that
