@@ -181,6 +181,14 @@ export default async (page) => {
         settle(); App.endTurn();
         const twins = App.bookmarks.filter(b => b.name === 'Turn 1 - Player 1 Active');
         check('auto-save: turn 1 replays from the mulligan, as a branch', `${reopened} ${twins.length} ${twins[0].parentId === twins[1].parentId}`, 'true 2 true');
+        // The recap names each challenge (defender with attacker); a session file's challenges keep card ids only.
+        const fighters = Object.values(App.cardDB).filter(c => c && c.type === 'Character' && c.willpower >= 5).slice(0, 2);
+        const [att, def] = fighters.map(c => App.makeCardInstance(c.id));
+        App.state.players[App.state.activePlayer].field.push(att);
+        App.state.players[1 - App.state.activePlayer].field.push(def);
+        App.performChallenge(att.instanceId, def.instanceId);
+        const readBack = App._readTurnActions({ challenged: [App.state.turnActions.challenged.at(-1), { id: {}, target: 1 }, 'x', null] });
+        check('auto-save: the recap names each challenge', `${App._formatTurnActions().split('\n').pop()} | ${readBack.challenged.length}`, `- **Challenged:** ${fighters[1].name} with ${fighters[0].name} | 1`);
         // Bot opponent (Feature 68): it plays P2's turn on the demo's turn 4, and the engine hands the turn back.
         const botDemo = JSON.parse(await App.decodeMaybeGzip(await (await fetch('/app/defaults/demos/set14_example2.dojo.json.gz')).arrayBuffer()));
         App.state = App.decompressState(JSON.parse(botDemo.data.bookmarks.find(b => b.id === 'gwop5bnzw').state));
@@ -215,6 +223,58 @@ export default async (page) => {
         App.setBot(1);
         App.startGame({ asked: true });
         check('bot: a loaded or new game starts with it off', `${offAfterLoad} ${App.bot.seat} ${document.body.classList.contains('bot-on')}`, 'null null false');
+        // What-if (Feature 68): a replay's import keeps both players' real moves on each turn's node, and the
+        // engine replays them. The sample is a lost game: from turn 23 the real game ends as it did (19-20 on
+        // turn 24), and line 2 from turn 19 (quest with Vixey instead of challenging) wins 21-9 on turn 21 (their
+        // Angela, alive in this line, quests after their real moves).
+        const wiReplay = JSON.parse(await App.decodeMaybeGzip(await (await fetch('/docs/samples/01a15b0a-313b-73d3-846f-37752210870b_p1.replay.gz')).arrayBuffer()));
+        const wiDec = s => App.decompressState(s), wiNodes = App.buildSessionFromReplay(wiReplay).bookmarks;
+        const wiTurns = DojoWhatIf.lineOf(wiNodes, wiDec).turns;
+        check('what-if: the import keeps each turn\'s real moves', wiTurns.map(t => t.real.moves.length).join(' '), '2 2 3 2 3 3 4 4 4 2 2 4 3 4 3 2 4 3 4 3 4 5 4 8');
+        // A text log keeps them too (each challenge once), and who won; the same game's replay (01a08b6d) the same
+        // moves: without the play taken back on turn 13, or DARK DANCE's free plays on turns 13 and 17 (made by
+        // the other player inside the ability, so not moves of the turn).
+        const wiText = DojoWhatIf.lineOf(App.buildSessionFromLog(App.parseDojoLog(await (await fetch('/docs/samples/new_log_20261004.txt')).text())).bookmarks, wiDec);
+        const wiDance = DojoWhatIf.lineOf(App.buildSessionFromReplay(JSON.parse(await App.decodeMaybeGzip(await (await fetch('/docs/samples/01a08b6d-cb54-743f-9bfd-debe26bb528a_p1.replay.gz')).arrayBuffer()))).bookmarks, wiDec);
+        const wiCounts = (l) => l.turns.map(t => t.real.moves.length).join(' ');
+        check('what-if: a text log keeps each turn\'s moves, and who won', `${wiText.winner} ${wiCounts(wiText)} | replay ${wiCounts(wiDance) === wiCounts(wiText) ? 'the same' : wiCounts(wiDance)}`,
+            '0 1 2 2 2 2 3 2 4 3 5 2 7 2 3 2 4 2 4 2 3 4 5 4 5 3 1 | replay the same');
+        // Replayed, turn 13's DARK DANCE has P1 (whose Dumbo it shuffles away) play Cheshire Cat from the discard.
+        const wiK13 = wiDance.turns.findIndex(t => t.turn === 13);
+        const wiT13 = (await DojoRules.whatIf(DojoWhatIf.filled(wiDance.turns, wiK13, id => !!App.cardDB[id]), id => App.cardKey(id),
+            { me: 1, real: Object.fromEntries(wiDance.turns.map(t => [t.turn, t.real])), first: 'real', exact: true, horizon: 13, nodes: 300, laterNodes: 120, margin: 1 })).turns[0];
+        check('what-if: a free play inside the other\'s ability is the ability\'s', `${wiT13.state.players[0].field.map(c => App.cardDB[c.cardId].name).join(', ')} | missed ${wiT13.missed.length}`, 'Hamm, Cheshire Cat | missed 0');
+        // The game's line: the replay alone (lost, one line; What-if's own branches don't count), cut short
+        // (unfinished), with a turn played again by hand that wins (forked: no line until one is picked), that
+        // branch picked, and a turn before the fork picked (the line played first). turns · winner · forked · picked
+        const wiTwin = { ...wiNodes[19], id: 'wi-twin', real: undefined };
+        const wiTree = [...wiNodes, wiTwin, { id: 'wi-won', parentId: 'wi-twin', name: 'Game Over - P1 Wins!', isVictory: true, playerIdx: 0, state: wiNodes[19].state }];
+        const wiOurs = { ...wiNodes[5], id: 'wi-ours', parentId: wiNodes[4].id, name: 'Turn 6 – P2 Active (What-if from turn 5, line 1)' };
+        const wiLineOf = (nodes, pick) => { const l = DojoWhatIf.lineOf(nodes, wiDec, pick); return `${l.turns.length} ${l.winner} ${l.branched} ${l.at}`; };
+        check('what-if: the game\'s line, where it forks, and how it ends', [wiLineOf([...wiNodes, wiOurs]), wiLineOf(wiNodes.slice(0, 18)), wiLineOf(wiTree), wiLineOf(wiTree, 'wi-twin'), wiLineOf(wiTree, wiNodes[3].id)].join(' | '),
+            '24 1 false 23 | 18 null false 17 | 0 null true -1 | 20 0 true 19 | 24 1 true 3');
+        // A game played here counts rounds (both players' turn 1); the engine counts each player's turn. The
+        // demo's line to its first win: its first turns, its end, and the number two turns past it.
+        const wiDemoNodes = botDemo.data.bookmarks, wiLeaf = wiDemoNodes.find(b => b.isVictory && !wiDemoNodes.some(c => c.parentId === b.id));
+        const wiDemo = DojoWhatIf.lineOf(wiDemoNodes, wiDec, wiLeaf.id), wiEnd = wiDemo.turns[wiDemo.turns.length - 1];
+        check('what-if: a game played here counts rounds, the engine each turn', `${wiDemo.turns.slice(0, 4).map(t => `${t.label}=${t.turn}`).join(' ')} … ${wiEnd.label}=${wiEnd.turn} w${wiDemo.winner} +2: ${wiDemo.label(wiEnd.turn + 2)}`, '1=1 1=2 2=3 2=4 … 11=21 w0 +2: 12');
+        // Without a record of the moves, the search plays their turns, and nothing is "beyond the real game".
+        const wiK = wiDemo.turns.length - 4, wiFree = await DojoRules.whatIf(DojoWhatIf.filled(wiDemo.turns, wiK, id => !!App.cardDB[id]), id => App.cardKey(id),
+            { me: wiDemo.turns[wiK].active, real: {}, first: 0, horizon: wiDemo.turns[wiK].turn + 3, nodes: 300, laterNodes: 120, margin: 1 });
+        check('what-if: without a record, the search plays their turns', `${wiFree.turns.map(t => t.how).join(' ')} ${wiFree.turns.some(t => (t.acts || []).some(a => a.extra))} ${wiFree.lore.join('-')}`, 'line search search search false 18-19');
+        const wiReal = Object.fromEntries(wiTurns.map(t => [t.turn, t.real]));
+        const wiAt = (turn) => DojoWhatIf.filled(wiTurns, wiTurns.findIndex(t => t.turn === turn), id => !!App.cardDB[id]);
+        const wiOpts = { me: 0, real: wiReal, nodes: 300, laterNodes: 120, margin: 1 };
+        const wiExact = await DojoRules.whatIf(wiAt(23), id => App.cardKey(id), { ...wiOpts, first: 'real', exact: true, horizon: 24 });
+        // On turn 13 a quest and a discard were taken back (FREE_UNDO, CHOICE_UNDO): replayed, they made it 13-20.
+        const wiUndo = await DojoRules.whatIf(wiAt(13), id => App.cardKey(id), { ...wiOpts, first: 'real', exact: true, horizon: 24 });
+        check('what-if: a move taken back isn\'t replayed', `${wiUndo.winner} ${wiUndo.lore.join('-')} ${wiUndo.turns.reduce((n, t) => n + (t.missed || []).length, 0)}`, '1 19-20 0');
+        const wiLine = await DojoRules.whatIf(wiAt(19), id => App.cardKey(id), { ...wiOpts, first: 1, horizon: 28 });
+        // The control: the real move, then the search, with their real turns finished by the search. It must
+        // carry on to the end (once, a search that added nothing left the engine on a position it had looked at).
+        const wiControl = await DojoRules.whatIf(wiAt(21), id => App.cardKey(id), { ...wiOpts, first: 'real', horizon: 28 });
+        check('what-if: your real move, then the search, loses as the game did', `${wiControl.winner} ${wiControl.lore.join('-')} t${wiControl.turns[wiControl.turns.length - 1].turn}`, '1 19-20 t24');
+        check('what-if: the real game replays, and a line from turn 19 wins', `${wiExact.winner} ${wiExact.lore.join('-')} | ${wiLine.winner} ${wiLine.lore.join('-')} t${wiLine.turns[wiLine.turns.length - 1].turn}`, '1 19-20 | 0 21-9 t21');
         // Its ink turns face down when its turn begins, and stays so through its moves: on your turn 4, only
         // what it inked on its turn 3 is face up, none of the ink it had before.
         settle();

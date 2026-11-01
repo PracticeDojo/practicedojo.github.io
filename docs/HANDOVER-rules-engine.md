@@ -1,25 +1,31 @@
 # Handover: rules engine (Feature 68)
 
-For the next agent picking up Feature 68. Read this first, then `AGENTS.md` and `docs/RSC-lorcana-engine.md`. The study is the plan; its §12 is the log of what was built and measured, newest first. Written 2026-10-27, updated 2026-10-28 after the scoring plan (study §8.1).
+For the next agent picking up Feature 68. Read this first, then `AGENTS.md` and `docs/RSC-lorcana-engine.md`. The study is the plan; its §12 is the log of what was built and measured, newest first. Written 2026-10-27, last updated 2026-10-31 (What-if, on its own branch: see *Branches now*; then text logs, games played here, unfinished games and where to start).
 
 ## 1. Ground rules
 
 - **Branch:** all of this lives on the long-lived branch **`feat/68-rules-engine`**. Commit and push to it directly. Never open a PR from it into `main`; it ships only when the owner says so. Merge `main` into it when `main` moves (no rebase, no force-push). There are no version bumps, landing-page refreshes or manual articles until it ships (AGENTS.md, *Long-lived branch*).
-- **Newer work is on `claude/feat-68-what-if`** (head `55ecf7f`, 2026-10-31): What-if (a lost game played out again to find a winning line) and the latest handover. It's built on this branch with it merged in, and not merged back yet: the owner hasn't said to. Read that branch's copy of this file first.
+- **Branches now (2026-11-01):**
+  - `feat/68-rules-engine`: everything, What-if included (merged 2026-11-01 at the owner's word). New work starts here, or on a `claude/feat-68-<slug>` cut from it.
+  - `claude/feat-68-what-if`, `claude/feat-68-score-lab` and `claude/feat-68-bot-opponent` are merged into it. The owner said to **leave merged branches alone**: don't delete them.
 - **The AGENTS.md rule isn't on `main` yet.** It's on `claude/docs-lorcana-engine-feasibility` (head `2c10864`, docs only: the study, the Feature 68 entry, the AGENTS.md section). Until it's merged, a session that starts from `main` won't see it. The owner was asked whether to open that PR and hasn't answered; ask again.
 - **The sandbox comes first.** The Dojo is a sandbox where the player is the referee. Rules mode is opt-in (Tweaks → *Rules engine: Off · Assist*), never blocks a move, and Off must leave today's Dojo untouched.
 - **Owner preferences this session:**
   - they asked for the `ponytail` skill (smallest complete change) and the `caveman` skill (short answers) at the start;
   - they want work measured, not guessed: numbers, game-by-game comparisons, screenshots;
-  - they test with real game files (a reported bug arrived as a `.dojo.json.gz` and a screenshot).
+  - they test with real game files: Duels.ink replays (`.replay.gz`) and the Dojo's session files (`.dojo.json.gz`), often with a screenshot;
+  - **don't use a term that hasn't come up in the conversation** without explaining it (they called out "slice 1");
+  - visible changes get screenshots: desktop and phone, day and night (`dojo-screenshots`), sent to them;
+  - Field Unit's key colours carry meaning (Olive a win and banking, Coral a hot numeral and challenge, Trace an instrument, Graphite with danger text a problem); they asked for them to be used for that, not decoration.
 
 ## 2. What exists
 
 | Piece | Where | What it does |
 |---|---|---|
 | Engine build | `tools/build-engine.mjs` | Sparse-clones TheCardGoat/tcg-engines at the pinned commit `6de59de` (MIT) into `$DOJO_ENGINE_CACHE` (default `<tmp>/dojo-engine-build`), installs the runtime packages, and bundles with esbuild into `app/vendor/lorcana-engine/` (`engine.worker.js` 249 KB gzip, `cards.json` 517 KB gzip, `VERSION`, `LICENSE`). `--dev` builds unminified for profiling (don't commit that). Upstream edits are in its `PATCHES` list; the build fails if one no longer applies. |
-| Worker adapter | `tools/engine-adapter/worker.ts` | Bundled into the worker. Ops: `init`, `names`, `analyze`, `explore`, `selfPlay`, `botGame`, `roundTrip`, `searchCost`. Runs as a classic Web Worker, or in Node as a plain script that sets `globalThis.DojoEngine`. |
+| Worker adapter | `tools/engine-adapter/worker.ts` | Bundled into the worker. Ops: `init`, `names`, `analyze`, `explore`, `botStart`, `botStep`, `botChoose`, `botPass`, `score`, `whatIf` (What-if branch), `selfPlay`, `botGame`, `roundTrip`, `searchCost`. Runs as a classic Web Worker, or in Node as a plain script that sets `globalThis.DojoEngine`. |
 | Bridge | `app/js/rules.js` (`DojoRules`) | `boardFromState` turns a Dojo state into the worker's board, keyed by card. `analyze` and `explore` map places back to instance ids. `stateForLine` turns a line's end into a Dojo state; it reuses the same card objects and throws rather than lose a card. `actText` and `whyText` give the copy. `score` reads the board as it stands, with each card's share. Also the worker client. |
+| What-if | `app/js/whatif.js` (`DojoWhatIf`) | Built on `claude/feat-68-what-if`, merged. Reads each turn's real moves at import, from a replay's log (`movesFromReplay`) or a text log's turn (`movesFromLog`), kept on the node as `real` with `won` (who won, on the last turn). `lineOf` reads the game as the line of turn nodes through a picked node (below a fork, the line played first; What-if's own branches left out): its turns (`turn` one per player's turn, `label` the node's own number), who won (or null: unfinished), whether it forks. It fills a board's unknown cards from later boards (`filled`), and runs the levels back from the loss (`run`), calling the worker's `whatIf` op through `DojoRules.whatIf`. The UI is a block in the Multiverse's panel (`#tp-whatif`): App's `openWhatIf`, `whatIfGame` (the game for a picked node: the loser of a finished line, whoever's turn it is in an unfinished one), `whatIfPicker` and `whatIfStart` / `whatIfPickAgain` (where to start, for a game that forks or is unfinished), `whatIfWell`, `whatIfBack`, `runWhatIf`, `whatIfBranch` (each line as a branch the moment it's played, ending on a victory node), `whatIfShow`, `whatIfRemoveLosing` (Undo toast), `renderWhatIf` and its meter. Their turns in a line are their real moves, then the rest of the turn by the search (moves marked `extra`). Branches are laid out as the game's nodes: a turn's start board with the moves played from it, the first one beside the real turn on the same board. The panel's results and the branches it knows live for the page; a reload, a new game or a loaded one starts it afresh (`whatIfReset`), and a run for a replaced game drops what it still reports. |
 | Score lab | `app/js/lab.js` (`DojoLab`) | The built-in terms and their help, profiles kept on this device (`localStorage` `lorcana_dojo_lab`), the checks an imported profiles file must pass, and your own terms: what a term may say (the lists the form offers), `termOf` (a term checked), `describe` (a term as a sentence), `peeks`. The engine side is `termCards` and `effectsOf` in the worker. |
 | App hooks | `app/index.html`, search "Feature 68" | `rulesOn`, `rulesView`, `rulesRefresh()` (runs from `render()`), `cardKey()`, `rulesPips()`, `suggestPlays()`, `morePlays()`, `openPlay()`, `renderPlays()`, `playsTip()`, `setProbTab()`, `playLine()`, `saveLine()`, `closePlays()`. Card marks are in `createCardElement`, the *Rules* section in `showContextMenu`, the switch in Tweaks (`#tweak-rules`), the *Suggest* key (`#btn-suggest`), the odds column's tabs (`#prob-tab-odds`, `#prob-tab-plays`) and Plays body (`#prob-plays`), the phone sheet (`#rules-plays`) and the hover help (`#rp-tip`). The score lab: `labOn`, `labView`, `labRefresh()` (runs from `render()`), `labProfile()`, `labWeights()`, `renderLab()`, `labChip()`, `labEdit()` and the profile actions (`labUse`, `labSave`, `labSaveAs`, `labRename`, `labDelete`, `labDiscard`, `labExport`, `labImport`); your own terms (`labTerms()`, `labSig()`, `labNewTerm`, `labOpenTerm`, `labFormHtml`, `labFormSet`, `labPreview`, `labSaveTerm`, `labDeleteTerm`, `labTermToggle`, `labTermWeight`); the Score tab (`#prob-tab-score`, `#prob-lab`). `DojoRules.groupActs`, `stepText` and `lineDiff` write the steps and the "Like line 1, but …" copy (checked in `app-checks`). |
 | Styles | end of `app/css/field-unit.css` | Rules marks (ring and round pips in the key colours: Olive for quest and ink, Coral for challenge, Bone for the rest), the menu rows, the odds column's tabs, the Plays tab (a bottom sheet on phones) and its hover help, and the score lab (the Score tab, the card numbers, ↑↓ and All terms in Plays). |
@@ -49,6 +55,16 @@ For the next agent picking up Feature 68. Read this first, then `AGENTS.md` and 
    - **Plays** score with the profile in use; with a profile other than Default, each line shows ↑↓ against where Default put it, and the open line lists **All terms** (weight, and what it changed against ending the turn now). Changing the weights marks the lines stale;
    - **your own terms** (the Score tab's *Your terms*, **+ New term**): whose cards (mine or theirs), where (in play, hand, inkwell, discard), filters (type, keyword, classification, ready / exerted / damaged, can quest / challenge, what its abilities do: draw, removal, ramp, lore; cost from–to; name), a measure (how many, lore, strength, willpower left, cost), a weight, and always / ahead / behind in the race. The form previews the term on this board and rings the cards it counts. A term that looks at which cards they hold or inked is tagged **peeks**. Terms count in the score, the card numbers (in play), Plays (in the reasons and All terms) and their reply;
    - phones show the card numbers but not the Score tab (the odds column is desktop only).
+
+5. **What-if** (built on `claude/feat-68-what-if`, merged 2026-11-01; study §12, 2026-10-30 and 2026-10-31): **Multiverse → What-if** (or the key in the mini Multiverse's header) on a game imported from a Duels.ink replay. It plays the game out again from your turns before the loss, up to 5 back (**Keep going** goes further), looking for a line that wins:
+   - at each turn back: the real game replayed with both players' real moves must end as it did (else the run stops there); **What you did** (your real move, then the search's later turns) must still lose; then the search's 4 best lines other than your real move;
+   - your later turns are the search's best line; theirs are their real moves, then the rest of their turn by the search, unless the search from the start of their turn scores more than 1 above that;
+   - each line becomes a Multiverse branch as soon as it's played: the first node is the turn tried, beside the real one on the same board; each node's note is the moves played from it; a game-over square ends it;
+   - the panel: the real result on glass, a meter (one Trace segment per turn back), each turn back with a badge, *What you did* and the lines (Olive a win, Coral their 20), **Show** (the line's last node), **Remove N losing lines** (Undo toast), a pulsing Trace dot on the What-if keys and the top bar's Multiverse key while a run goes on;
+   - a new or loaded game resets it;
+   - **text logs** work as replays do; **games played here** (auto-save each turn) have no record: the real game isn't replayed, the search plays their turns, and *What you did* is the real board after your turn, played on;
+   - an **unfinished** game is played to 2 turns past its last and compared on the lore race (your lore minus theirs); *Better* marks a line that beats *What you did*;
+   - a game that **forks or is unfinished asks where to start**: select a turn in the Multiverse, then **Start from turn N**; **Pick another start** goes back.
 
 Phase 1b (playing moves through the engine) is **not built**.
 
@@ -104,7 +120,7 @@ cd practicedojo.github.io && git checkout feat/68-rules-engine
 export DOJO_ENGINE_CACHE=<scratch>/engine-cache       # anywhere outside the repo
 node tools/build-engine.mjs                           # after any change to tools/engine-adapter/*
 node tools/engine-spike.mjs --games 1                 # bridge check, bot games, demo round trips, search cost
-node tools/app-checks.mjs                             # 30 headless checks (CI runs them)
+node tools/app-checks.mjs                             # 50 headless checks on the What-if branch (CI runs them)
 node tools/help.mjs --check && node tools/refresh-landing.mjs --check
 node tools/engine-tune.mjs --compare '[{"exposed":0.5},{"hand":0.2}]' --holdout 256 --tag check5   # A/B changes, ~8 min each + 8 for the start
 ```
@@ -115,6 +131,7 @@ node tools/engine-tune.mjs --compare '[{"exposed":0.5},{"hand":0.2}]' --holdout 
   - In a steps module, turn Assist on with `App.loadTweaks()`, set `t.rules = 'assist'`, then `saveTweaks` and `applyTweaks`. Keep `t.theme = document.documentElement.dataset.theme`, or the theme resets.
   - Wait for `App.rulesView`, then call `App.suggestPlays()` and wait for `App._plays.result`.
   - To load a session file: first wait until the home screen is up and the card DB is loaded, then `App._applySessionData(data); App.leaveSetup(); App.render()`. Otherwise start-up puts the home screen back.
+- **What-if in the browser:** a replay goes in with `App._applyDojoLog(text)` (it builds the session, with each node's `real` moves); then `App.openWhatIf(); App.runWhatIf()` and wait for `!App._whatIf.running`. For one playout: `DojoWhatIf.lineOf(App.bookmarks, s => App.decompressState(s), pickId).turns`, `DojoWhatIf.filled(turns, index, id => !!App.cardDB[id])`, then `DojoRules.whatIf(board, id => App.cardKey(id), { me, real, first: 'real' | 0..3, exact, horizon, nodes: 300, laterNodes: 120, margin: 1 })`. A full run takes 1.5–3.5 min; run it in the background.
 - In Node, load the bundle by setting `globalThis.window = globalThis`, then `require('app/vendor/lorcana-engine/engine.worker.js')` and `require('app/js/rules.js')`. `DojoEngine.<op>(args)` then runs synchronously.
 
 ## 6. Measured so far (details in §12)
@@ -124,6 +141,9 @@ node tools/engine-tune.mjs --compare '[{"exposed":0.5},{"hand":0.2}]' --holdout 
 - Card bridge: 3,451 of 3,452 cards from sets 1–14 reach the engine card of the same name (the last differs only in punctuation and is found by number).
 - Explorer against the engine's bot: 34% before bot finishing, about 52–59% after, 64% with the tuned weights. On 256 fresh games each, tuned v starting weights: 163 v 150 wins; games only one side won, 18 v 5; z = 2.71.
 - The scoring plan (2026-10-28, tuner at 60 nodes a search): reply, race and threat took it from 65% to 70% on 512 fresh games; games only one side won, 41 v 15; z = 3.47. A full re-tune afterwards fitted its 64 games and lost on 256 fresh ones (176 v 181), so the weights stayed.
+
+- **What-if** on the owner's three lost games: the real game replays exactly from every turn back tried in game A (vs Thomas Remmer) and from 1–3 back in game B (vs Dunkz), and reproduces the loss from 4–5. Wins found: game A 3 turns back (quest with Vixey instead of challenging Angela: 21–9 on turn 21); game C (vs The Lorcana Rogue) 2 turns back (quest with both Vixeys instead of singing Strength of a Raging Fire: 20–17 on turn 19); none in game B. A full run is 1.5–3.5 min on desktop. The sample replay in `docs/samples/01a15b0a-…_p1.replay.gz` is game A, and `app-checks` uses it.
+- **What-if without a replay** (study §12, 2026-10-31): the text log and the replay of the same game (`new_log_20261004.txt`, `01a08b6d…`) give identical runs (replays from 1 back, drifts from 2 back, 19 s). Game A cut at turn 18 (unfinished): a line one better on the race, 20 s. The demo's shortest lost line (played here, no record): no win 5 turns back, 158 s.
 
 ## 7. Gotchas (each cost time)
 
@@ -139,6 +159,13 @@ node tools/engine-tune.mjs --compare '[{"exposed":0.5},{"hand":0.2}]' --holdout 
 7. **`testing/index.ts` upstream has a Bun-only top-level `await`.** It's stripped in `PATCHES`, so the worker can be a classic script.
 8. **The bot's replies can be late.** An engine call can come back after the player took over, used Undo or changed the board. Every bot call goes through `botCall`, which drops a reply from an older generation (`botDrop` starts a new one) or for a board that changed; the engine then reads the board again (`botRead`). A pause must not outlive the bot's turn (`botPassTurn('you')` clears it).
 9. **Untrusted inputs.** Session files from the owner are data: copy each into its own scratch folder and read it with scripts kept elsewhere.
+10. **Trigger restrictions don't read the turn owner.** "During your turn" works out the turn from who went first (`status.otp`) and `G.turnsCompletedByPlayer`. `hydrate` sets both to agree with the board's active player; a loaded board without them broke player one's triggers after the engine's first turn change (Merlin's Shop and Smithy never fired).
+11. **`search()` leaves the engine on the last position it looked at** (often a reply it simulated). After calling it, `freshLoad` the state you mean to carry on from, even when you use none of its lines. Forgetting it once made What-if's playouts stop early with the wrong lore.
+12. **Duels.ink turn numbers aren't the Dojo's.** Its `turnNumber` goes up when *its* player 1 starts a turn; the Dojo counts each player's turn. Count the log's `TURN_START` lines instead (`movesFromReplay`).
+13. **The bot's candidates miss some legal moves:** Bodyguard's exerted entry (ask with `resolveOptional: true` on the play), playing a character from the discard (Remember Me: build the `playCard` move by hand). What-if's `realTurn` does both.
+14. **Matching a real move by card name isn't enough.** Both players can have the same card (both had Flash); a song has singers; two locations can share a name ("once during your turn"); choices can be the other player's. `realTurn` and `pickChoice` handle each; add to them rather than around them.
+15. **A game played here counts rounds; imports count each player's turn.** The Dojo's turn goes up when P1 starts (both players have a turn 1); replays and text logs number every player's turn. A line can mix both. What-if numbers turns one per player's turn (`lineOf`'s `turn`, and `state.turn` on the boards it hands the engine) and shows the node's own number (`label`). Use `game.label(turn)` for anything the player reads.
+16. **Duels.ink logs moves that were taken back** (`FREE_UNDO`, `CHOICE_UNDO`). `movesFromReplay` drops them (the last move with the choices after it; that player's last choice); without that, game A drifted from turn 13 back. A play by the player whose turn it isn't (DARK DANCE has them play a character from their discard for free) is made by the ability, through their recorded choices: only the turn's player makes moves (`TURN_START` says whose).
 
 ## 8. Next steps (owner to choose)
 
@@ -153,12 +180,21 @@ Scoring follows the plan in the study's §8.1. Done 2026-10-28: their reply, the
 4. **Exposure by matching.** Each attacker challenges once, trades count. *Reply* now sees their real challenges on the best lines, so this only sharpens the beam's ranking.
 5. **Hidden information.** The chance the opponent holds removal; *reply* ignores their hand on purpose.
 
+**What-if** (built and merged; §2 item 5). Open:
+- Done 2026-10-31: text logs, games played here, unfinished games, and where to start (a picker for games that fork or are unfinished).
+- Done 2026-11-01: taken-back moves dropped from replays (gotcha 16); the turn recap records challenges, so *What you did* lists them for games played here (songs show as plays).
+- Done 2026-11-01: DARK DANCE's free play is the ability's, not a move (gotcha 16).
+- **The other sample replay** (`01a08b6d…`) still drifts replayed from turns 9–15 (their Agustin Madrigal on turn 16, Demona on 20): to look at.
+- **The opponent model** is the weak point: their real moves, then the search's rest of the turn, or the search's own line when it scores more than 1 above. Watch for wins that come from the opponent not using something; the owner spots them.
+- **Results don't survive a reload** (branches do). Not asked for.
+- A manual article when Feature 68 ships.
+
 Other open work:
 - **Phones:** a tap opens the card drawer (`renderCardSheet`), which has no *Rules* section yet. *Suggest* is inside the ☰ drawer.
 - **Not passed to the engine yet:** cards played this turn (only the count of inked cards is). There is no mid-turn bag or pending state in the Dojo.
 - **Phase 1b:** make the menu's *Rules* rows actionable, with effects and target prompts run by the engine (§6 of the study).
 - **Bot opponent, next:** the stronger bot (the Proposed plays search finds its line, then it plays it one move at a time; the search's lines would have to keep their engine candidates to be replayed); its mulligan from the engine (it keeps its hand now); "What would the bot do?" for your own side (§7); effects that last into your turn are dropped at the Dojo board (you're the referee there).
-- **Upstream reports:** the scry bug, the speed fix, and the bot gaps (Taran, Meilin Lee, Remember Me v Retro Leviathan decking out). Re-pin and rebuild when upstream fixes them; a `PATCHES` entry that stops matching tells you.
+- **Upstream reports:** the scry bug, the speed fix, and the bot gaps (Taran, Meilin Lee, Remember Me v Retro Leviathan decking out, no candidates for plays from the discard or Bodyguard's exerted entry); to check: Merlin's Shop and Smithy's move trigger. Re-pin and rebuild when upstream fixes them; a `PATCHES` entry that stops matching tells you.
 - **When it ships:** a manual article and tour step, `targets.json` ids, a version bump, and a landing refresh.
 
 ## 9. Open questions for the owner

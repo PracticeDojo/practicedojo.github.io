@@ -384,6 +384,135 @@ Tiers 2 and 3 only need the read side of tier 1 (hydrate and project) plus the e
 
 Measured results, newest first. The work itself lives on `feat/68-rules-engine` (AGENTS.md, *Long-lived branch*).
 
+### 2026-11-01 · Moves taken back in a replay; challenges in the turn recap
+
+**Moves taken back.** `movesFromReplay` didn't read Duels.ink's undo lines, so a move a player took back stayed among the real moves. Game A's turn 13: the owner quested with Launchpad, took it back (`FREE_UNDO`) and used his ability instead; then took back a discard (`CHOICE_UNDO`: Strength of a Raging Fire, then Mushu). Replayed, Launchpad quested (+1 lore) and his ability then failed. In the other sample, turn 13: Chernabog was played, DARK DANCE declined, all of it taken back and Chernabog played again; replayed, the undone "no" answered DARK DANCE. Now a `FREE_UNDO` drops the last move with the choices made after it, and a `CHOICE_UNDO` that player's last choice (text logs already dropped theirs).
+- Game A, the real game replayed exactly from each turn (winner, lore, real moves it couldn't play): from turn 13, 12 and 11, before 13–20 with 15 missed, now 19–20 with none. From 14 on it was already exact. From 9–10 it still drifts (their ink on turn 12). So *Keep going* can now go two more of the owner's turns back on game A.
+- The other sample drifts from every turn tried (9–15) for other reasons; turn 13 now plays Chernabog once (25 → 23 moves missed from turn 13).
+- **DARK DANCE's free play** (fixed the same day). Chernabog - Unnatural Force: "you may shuffle chosen opposing character into their player's deck. If you do, that player may play a character from their discard for free." On their turn 13 the owner's Dumbo was shuffled away and the owner played Cheshire Cat from the discard: the log's "You played Cheshire Cat (cost 3 → 0)" is right, it's the owner's play inside their ability. `movesFromReplay` took it for a move of the turn, and the replay, trying it as their move, missed it. Now only the turn's player makes moves (`TURN_START` says whose turn it is), as text logs already did; a play by the other player is made by the ability, through their recorded choices (*play a character*, Cheshire Cat). Checked: replayed, turn 13 ends with Hamm and Cheshire Cat in the owner's play, Dumbo in their deck, nothing missed, as in the real game. The samples' only other one is turn 17 (Alma Madrigal). The replay's moves now match the text log's on every turn. Misses replaying the real game from turns 9–15: 29–14, from 31–15; it still drifts from each (their Agustin Madrigal on turn 16, Demona on 20), to look at.
+
+**Challenges in the turn recap.** Live play never recorded challenges in a turn's recap: its sections were Played, Inked, Drawn, Discarded, Banished, Quested and Starting hand, and a challenge went only to the game log (imported games show challenges because their notes come from the Duels.ink log). Now each challenge is tracked as `{ id, target }` (attacker and defender card ids), from a challenge on the board (`performChallenge`) and from the engine's moves (`_applyEngineMoves`: proposed lines, the bot). The recap reads "**Challenged:** Max Goof with Vixey" (defender with attacker, as Duels.ink writes it), a session file's entries are cut to card ids, and What-if's *What you did* lists them for games played here. The node's card sections are unchanged. The manual's auto-save article lists challenges.
+
+`app-checks` 50/50 (new: a replay from game A's turn 13; a challenge in the recap, and a session file's challenges cut to card ids; DARK DANCE's turn 13 replayed; the text log's moves checked against its replay's).
+
+### 2026-10-31 · What-if: text logs, games played here, unfinished games, and where to start
+
+**Asked:** What-if for games without a replay and for unfinished games; for an unfinished game, or one with more than one line, ask the player where to start.
+
+**What changed**
+- **Text logs** (Duels.ink's text export) keep each turn's moves at import, as replays do (`DojoWhatIf.movesFromLog`): the active player's inks, plays, songs and singers, quests, challenges and abilities, by name. A challenge's detail line ("… | dealt 2 dmg") repeats the line before it and is skipped. A text log names no choices; the bot makes them.
+- **Who won** is kept at import: a replay's `winner` when it won on lore (a concession or a timeout counts as unfinished), a text log's "won with 20 [LORE]", a game played here's game-over node. Before this, What-if took the last turn's player as the winner.
+- **Games played here** (auto-save each turn) have no record of the moves. The real game isn't replayed (the panel says so); the search plays their turns (one search, not two: there's nothing real to compare it with), and *What you did* is the real board at the start of their next turn, played on by the search. The panel lists what the turn's recap says was played (inks, plays, quests).
+- **Unfinished games** are played to 2 turns past the last one (the owner's call) and compared on the lore race: your lore minus theirs, a win beating any number. A line is better when it beats *What you did*; the badge reads *Better*, the line's spine and numeral Olive. The real game must replay to no winner and reach the last turn on its real lore.
+- **Where to start.** The game is now the line of turn nodes through a picked node (`DojoWhatIf.lineOf`); below a fork, the line played first. What-if's own branches don't count. A finished game on one line starts by itself, as before. Otherwise the panel asks: select a turn in the Multiverse, then **Start from turn N**. A finished line is played for its loser, from their turn at or before the pick; an unfinished one for whoever's turn is picked. Turns back from a picked start read *Start*, *1 before*, … **Pick another start** goes back to the picker; the branches made stay.
+- **Turn numbers.** A game played here counts rounds (both players' turn 1, then turn 2: the turn goes up when P1 starts); imports count each player's turn; a line can mix both (an imported game played on by hand). `lineOf` numbers turns one per player's turn for the engine and keeps each node's own number as its label, so the panel and the branches it makes read like the game (`label(turn)`, past the end too).
+- Branches are now keyed by node, not turn number (two lines can share one).
+
+**Measured** (headless Chromium, desktop):
+- **Text log v replay, same game** (`new_log_20261004.txt` and `01a08b6d…replay.gz`, the owner won, What-if for the opponent): identical runs. The real game replays from 1 turn back (20–14) and drifts from 2 back (19–14) in both, so the drift is the replay's own limit there, not the text log's. 19 s each. Real moves match turn for turn except turns 13 and 17, where the replay also counted a move taken back and DARK DANCE's free plays (fixed 2026-11-01: they now match on every turn).
+- **Unfinished** (game A cut at turn 18, P2 to move): the real game replays to turn 18 with no winner; *What you did* ends 6–14 on turn 20; line 4 ends 9–16, one better on the race. 20 s.
+- **Played here** (the Set 14 demo's shortest lost line, P2 won on its turn 8, no record): 5 turns back, no winning line, 158 s.
+- `app-checks` 47/47 (four new: a text log's moves and winner; the line, its forks and its end on game A with a hand-played winning branch; round numbering on the demo; a playout without a record, whose turns are all the search's and nothing "beyond the real game").
+
+**Found, not fixed:** a replay's taken-back moves stay in its real moves (`FREE_UNDO` isn't read): game A has one undone quest, the other sample one undone Chernabog. Game A still replays exactly. Text logs already drop them.
+
+### 2026-10-31 · What-if: their turns use what the changed board gives them; branches read like the game
+
+**Reported:** on a third lost game (owner as P2, lost on turn 20), the winning lines seemed to start "from a board with more lore than the main line".
+
+**What was really there.** Each line started from the real board (turn 17: 12–11). On the real turn 17 the owner sang Strength of a Raging Fire with one Vixey to banish their Omnidroid and quested with the other (11 → 13); the lines quested with both Vixeys (11 → 15) and Omnidroid lived. Two real faults made it look wrong:
+- **Their turns didn't use what the changed board gave them.** Their real moves were replayed and nothing else, so the Omnidroid that survived here (dead in the real game) stood idle on turn 18. Now their real moves are followed by the rest of the turn as the search plays it (the extra moves are marked "beyond the real game" in the node's note). Here the surviving Omnidroid quests (16 → 17). It can't challenge a Vixey (Evasive), so the win on turn 19 holds, 20–17.
+- **The branch read one turn off.** Its first node was "Turn 18" with turn 17's moves in its note, so it looked like the line *began* at 15 lore. The game's own nodes hold a turn's start board with the moves played from it as the note. Branches now do the same: the first node is turn 17 itself, beside the real turn 17 and on the same board (12–11), its note the moves played instead.
+- **The panel shows what you did** as a row above the lines (Bone, neutral): the real moves of that turn and how they end with the search's later turns (here 18–20 on turn 20), so each line reads against it.
+
+**A bug found on the way:** when the search added nothing to their real moves, the engine was left on the last position the search looked at (a reply it had simulated), the turn change failed and the playout stopped early (the control read "18–16, no winner, turn 17"). The real-moves board is now restored. A new `app-checks` check runs the control from game A's turn 21 to the end; it fails with the bug ("null 17-10 t21") and passes without (19–20 on turn 24). With their turns finished by the search, game A's line 2 from turn 19 now wins 21–9 (their surviving Angela quests); the check was updated. `app-checks` 43/43.
+
+### 2026-10-31 · What-if moves into the Multiverse panel
+
+The owner's notes on the first cut:
+- an opened line didn't end on a win node (the plot's square);
+- the dialog read samey: use the signal family;
+- show progress while it runs;
+- put each line in the Multiverse as soon as it exists.
+
+What changed:
+- **The panel, not a dialog.** What-if is a block at the top of the Multiverse's panel (the What-if tool toggles it; the mini Multiverse's key opens the Multiverse on it), so the canvas stays in view. The run carries on if the panel or the Multiverse closes.
+- **Live branches.** `DojoWhatIf.run` reports as it goes: a turn back beginning (`on.level`), each line played (`on.line`), every other step (`on.change`). Each line becomes a branch straight away, so the canvas fills while the run goes on.
+- **Game-over nodes** are victory nodes (`isVictory`, `playerIdx`, the winner's deck colours), as `checkBranchOver` makes them: a square in the plot with its 20-lore plate. **Show** picks a line's last node and centres it.
+- **Colour carries the reading** (Field Unit's keys):
+  - Olive: a win (the banking key), as a badge, a spine and a numeral;
+  - Coral: their lore reaching 20 (the hotter numeral), on losing lines and the real result;
+  - Trace: the instrument, i.e. the meter, the "searching" badge and the check that the real game replays;
+  - Graphite with danger text: a turn back the replay can't follow;
+  - the real result sits on glass;
+  - each move carries its verb's pip (Olive quest and ink, Coral challenge, Bone the rest).
+- **The meter:** one segment per turn back the run may visit, filled as its playouts end (Trace while running, then the verdict's colour), with the step and the time under it.
+- Turns back without a win fold once done; a run that ends on a win scrolls to it.
+- **A new or loaded game resets What-if** (asked for next): the same two places that switch the bot off (`_applySessionData`, `startGame`) call `whatIfReset`. It hides the panel; a run for the old game stops at its next playout, and what it still reports is dropped (a run belongs to its game). Checked: loading game B in the middle of game A's run left B with no What-if node 15 s later, and What-if then opened on B.
+- **It shows that it's working:** a Trace sweep along the meter segment being searched and through a placeholder row for the line being played, a pulse on the *Searching* badge, and a pulsing Trace dot on the What-if keys and the top bar's Multiverse key while a run goes on, so a run is visible with the panel or the Multiverse closed. The clock alone updates each second, and the animations take their phase from the clock, so a redraw doesn't restart them. Still for reduced motion.
+- **Remove losing lines** (asked for next): every line that didn't win comes out of the Multiverse at once, with an Undo toast as for any delete; their results stay in the panel and Show plots one again. On the owner's game it took 9 lines (30 nodes) out and left the 3 wins.
+
+### 2026-10-31 · What-if, first cut; "during your turn" triggers after the engine's turn change
+
+**The trigger fix** (also on `feat/68-rules-engine`, `2c429fb`). The owner asked for Merlin's Shop and Smithy to work ("once during your turn, whenever a character moves here, draw a card and gain 1 lore"). It worked on a freshly loaded board and failed after the engine changed the turn. Cause: our loader told the engine whose turn it was, but left each player's completed-turn count at 0. Trigger restrictions ("during your turn") don't read the turn owner; they work it out from who went first plus those counts. So from a board on player two's turn, after one turn change the engine thought player two was still active, and every "during your turn" trigger of player one stopped firing. That hit the bot opponent's turn changes and proposed plays' replies as well as What-if. The loader now sets counts that agree with the active player (and it isn't anyone's first turn).
+- Checked: after a turn change, moving to the shop gives +1 lore and a card. The search uses it: on a test board its best lines move characters there. Game B now replays exactly from 1, 2 and 3 turns back (21–14 on turn 28) and reproduces the loss from 4 and 5. `app-checks` 40/40, and 6 more runs clean.
+- The replay also sends a second move to the other copy of a location (the real game moved Dumbo to one shop, then the other).
+
+**What-if, built** (branch `claude/feat-68-what-if`):
+- **Where:** Multiverse → **What-if** (and a key in the mini Multiverse's header), while the rules engine is on.
+- **What it needs:** a game imported from a Duels.ink replay. The import now keeps each turn's real moves and choices on its node (`real`), read from the replay's log (`DojoWhatIf.movesFromReplay`). The run checks them as data: known kinds of move, plain names.
+- **The run** (`app/js/whatif.js`, `DojoWhatIf.run`): up to 5 of your turns back. At each: the real game replayed (if it doesn't end as it did, the run stops there); the control; then the search's 4 best lines other than your real move. It stops at the first turn back with a winning line and a losing control; **Keep going** looks further; **Stop** waits for the current playout.
+- **The worker op** `whatIf` replaces the spike's: each turn returns its moves and the board the next turn starts on, and `DojoRules.whatIf` turns those into Dojo states.
+- **Results:** each winning line becomes a Multiverse branch from that turn's node, one node per turn ("Turn 21 – P1 wins (What-if from turn 19, line 2)"), with that turn's moves in the comment and the ink of the turn just played face up. **Open** loads a line, saving it first if it isn't saved. In the dialog, a turn back without a win folds to one line.
+- **Checked:** game A in the browser found the win 3 turns back in 85 s, with 3 winning lines saved and opened on the board. `app-checks` +2 on the repo's sample replay (which is game A): the import keeps each turn's moves; the real game replays from turn 23 (19–20), and line 2 from turn 19 wins 21–8 on turn 21. Screenshots on desktop and phone, by day and night.
+- **Not yet:** games from text logs or played in the Dojo (no real moves recorded); unfinished games (the owner's call: the best lore race 2 turns past the end); a manual article.
+
+### 2026-10-30 · What-if, second pass: game A replays exactly 5 turns back, and a win turns up
+
+The four fixes the first pass asked for, then the same experiment again on the same two games.
+
+**Fixes**
+- **Bodyguard entering exerted.** The cause of game A's drift: on turn 20 their Broadway entered play exerted, which made 3 exerted characters, so both Elinors' end-of-turn ability fired (damage, lore, a card each). The bot's candidates have only the ready way; the replay now asks for the exerted way (`resolveOptional`) when the log says the player chose it, and the ready way when it says that.
+- **Options.** "Yes" and "declined" answer a "may" ability (`resolveOptional` true or false); other named options are matched in the candidate. A player's next three choices are tried, so one that doesn't fit doesn't block the rest.
+- **Plays from the discard** (Remember Me) aren't among the bot's candidates; the replay builds the move.
+- **Unknown cards** were free 0-cost items in the engine, which the bot could play. Now they can be neither played nor inked (everywhere the engine reads a board). Before a run, the start board's unknown cards are filled from what later boards know (hand first, then deck).
+- **Your real move** is left out of the lines tried (it was among the top lines at 9 of 10 levels).
+- Tried and dropped: reordering each deck by when later boards show cards leaving it. In game B it made the replay worse (3 turns back went from 11 of 11 real moves matched to 10), because the engine's draws there already differ (next point).
+
+**Results**
+- **Game A replays exactly from all 5 levels** (19–20 on turn 24, every real move matched).
+- **Game B replays exactly from 1 turn back.** From 2 and 3 turns back every real move matches, but they finish 2 lore and 2 cards short: their Merlin's Shop and Smithy ("once during your turn, whenever a character moves here, draw a card and gain 1 lore") fired twice in the real game and not at all in the engine. It looks like an engine gap, to check and report upstream. From 4 turns back the import's reconstruction of their hidden cards no longer matches (a Hades they played on turn 22 is still in their deck).
+- **Game A, 3 turns back (turn 19): a win that holds up.** The replay reproduces the loss and the control (the real move, then the search) still loses. Line 2 wins on turn 21, 21–8: quest with Vixey instead of challenging Angela with her. Their turn 20 stays their real one (the score found nothing more than 1 better), Vixey isn't damaged so she survives Elinor's end-of-turn damage, and on turn 21 everything quests. Line 1 (the same, then challenge Angela with White Rabbit) wins on turn 23; line 3 on turn 25.
+- **Game A, 4 and 5 turns back:** the control wins too: the search, playing your later turns, finds the turn-19 improvement. So the first level with a win is the answer, as the owner asked.
+- **Game B:** no win where the replay holds (1–3 turns back, with the shop caveat).
+- **Time:** all 5 levels 174 s (A) and 156 s (B); stopping at the first win, game A takes about 90 s.
+
+### 2026-10-30 · Spike: What-if, a different outcome for a lost game
+
+The owner's idea: load a lost game, go back to your last turn before they won, try other lines and play each out; if none wins, go back 2 turns, then 3, up to 5. The owner's calls: their turns replay what they really did unless our score finds something clearly better; only a win counts; stop at the first win unless you ask to go on; an unfinished game looks for the best lore race 2 turns past its last turn. Branch `claude/feat-68-what-if`, cut from `feat/68-rules-engine`.
+
+**How it was measured.** A temporary worker op, `whatIf` (marked SPIKE), plays a game out from one turn's board:
+- **that turn:** one of the search's lines, or your real moves;
+- **your later turns:** the search's best line (300 nodes on the first turn, 120 after);
+- **their turns:** their real moves, matched to the engine's candidates by card name (a sung card and its singers, a target and whose card it is, choices made by either player), unless the search's best line scores more than 1 above them;
+- until someone wins, or 4 turns past the real end.
+
+Each level ran the real game replayed (both sides' real moves), a control (your real move that turn, then as above) and the search's top 4 lines. Two of the owner's Duels.ink replays, both lost on lore: game A (the owner went first, lost on turn 24) and game B (went second, lost on turn 28). Headless Chromium on a desktop.
+
+**Results**
+- **Replaying the real game reproduces the loss exactly** from 1 turn back in both games, and from 2 turns back in game A (19–20 on turn 24, every move matched).
+- **Further back it drifts:** from 3 turns back in A and 2 in B, some cards the opponent really played aren't in their hand in the replay, so the search plays their turn instead. In B the import leaves 4–7 of their cards unknown near the end, among them the third Raging Storm they played on turn 26. In A two of their cards differ by turn 22; their turn 20 had two end-of-turn draws (Elinor), not traced yet.
+- **No win that holds up** within the turns the replay follows: 1 and 2 turns back, every line loses (A 19–20; B 21 to 14–17).
+- **Wins appeared 3–5 turns back in A, but the control won too:** with two of their cards missing, the search played their turn 22, and weaker. So a level can only claim a win while the control still loses.
+- **Time:** a playout 0.1–15 s, a level (6 playouts) 5–70 s, all 5 levels 165 s (A) and 204 s (B).
+- **The deck order holds:** the import puts the real draws on top (5 of 6 checks; the sixth had a card never revealed).
+- **Fixed on the way:** Duels.ink counts turns from its own player 1's turn, so turns come from the log's "turn begins" lines. Matching by name alone picked the wrong singer and the wrong target (both players had Flash). A discard the opponent chose on your turn was chosen by the bot.
+
+**For the build**
+- How far back it can go is set by the replay, not by the 5-turn cap. Each level replays the real game first; where that no longer reproduces the loss, the run stops or marks the results unreliable.
+- A level reports a win only when the control (your real move under the same opponent) still loses.
+- First: fill the opponent's unknown cards from what the log shows them playing later (unknown cards become free items in the engine now), trace game A's turn 20, and drop alternatives that are your real move.
+
 ### 2026-10-30 · Fix: the bot hung after going back a turn
 
 **Reported:** against the bot, the owner took over, went back a turn, replayed it, put the bot back on Auto and ended the turn: nothing happened until the bot was switched off and on again.

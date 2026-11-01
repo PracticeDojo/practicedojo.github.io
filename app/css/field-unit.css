@@ -11123,3 +11123,492 @@ body.bot-on #btn-bot {
         max-width: calc(100vw - 16px);
     }
 }
+
+/* ----- Feature 68 (experimental): What-if (Multiverse → What-if) -----
+   It lives in the Multiverse's panel, above the selected node, so branches appear on the canvas as lines
+   finish. The key colours carry the reading: Olive a win (the banking key), Coral their lore reaching 20
+   (the hotter numeral), Trace the meter (the instrument), Graphite with danger text the turns the replay
+   can't follow. The real result sits on glass, like every lore count. */
+:root {
+    --wi-win: var(--key-olive);
+    --wi-win-text: #66641E;
+    --wi-hot: var(--key-coral);
+    --wi-hot-text: #C23315;
+    --wi-trace: var(--key-trace);
+    --wi-trace-text: #1E716B;
+}
+
+:root[data-theme="night"] {
+    --wi-win: #9C9A34;
+    --wi-win-text: #C6C45A;
+    --wi-hot-text: #F26446;
+    --wi-trace-text: #3DB2A9;
+}
+
+body:not(.rules-on) .whatif-key {
+    display: none;
+}
+
+.tp-whatif {
+    gap: 10px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--border-soft);
+}
+
+.tp-whatif[hidden] {
+    display: none;
+}
+
+.wi-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.wi-top .icon-btn {
+    width: 26px;
+    height: 26px;
+}
+
+/* The real result, on glass */
+.wi-well {
+    padding: 10px 12px;
+    border-radius: 10px;
+    background: var(--fu-glass);
+    color: var(--fu-glass-2);
+}
+
+.wi-well .wi-score {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+}
+
+.wi-well .wi-num {
+    font-family: var(--font-display);
+    font-size: 26px;
+    font-weight: 520;
+    letter-spacing: -0.04em;
+    line-height: 1;
+    color: #F4F0E8;
+}
+
+.wi-well .wi-num.is-hot {
+    color: #F26446;
+}
+
+.wi-well .wi-name {
+    font-size: 12px;
+    color: var(--fu-glass-2);
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.wi-well .wi-dash {
+    color: var(--fu-glass-mute);
+}
+
+.wi-cap,
+.wi-meter-cap,
+.wi-back,
+.wi-turn,
+.wi-idx,
+.wi-badge {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: var(--label-track);
+    text-transform: uppercase;
+}
+
+.wi-cap {
+    margin-top: 6px;
+    color: var(--fu-glass-mute);
+}
+
+.wi-intro,
+.wi-note {
+    margin: 0;
+    font-size: 12px;
+    line-height: 1.45;
+    color: var(--text-2);
+}
+
+/* A turn back: a row you can open */
+.wi-levels {
+    display: flex;
+    flex-direction: column;
+}
+
+.wi-level {
+    border-top: 1px solid var(--fu-row-rule);
+}
+
+.wi-level:last-child {
+    border-bottom: 1px solid var(--fu-row-rule);
+}
+
+.wi-sum {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 0;
+    cursor: pointer;
+    list-style: none;
+}
+
+.wi-sum::-webkit-details-marker {
+    display: none;
+}
+
+.wi-sum::before {
+    content: "\25B8";
+    width: 8px;
+    font-size: 10px;
+    color: var(--text-dim);
+}
+
+.wi-level[open] > .wi-sum::before {
+    content: "\25BE";
+}
+
+.wi-back {
+    color: var(--text);
+}
+
+.wi-turn {
+    color: var(--text-dim);
+    margin-right: auto;
+}
+
+/* Verdicts, as keys: Olive a win, Trace while searching, Graphite with danger text where the replay
+   can't follow, Bone otherwise. */
+.wi-badge {
+    padding: 3px 7px;
+    border-radius: 6px;
+    background: var(--key-bone);
+    color: var(--key-bone-ink);
+    white-space: nowrap;
+}
+
+.wi-badge.is-won {
+    background: var(--wi-win);
+    color: var(--key-olive-ink);
+}
+
+.wi-badge.is-running {
+    background: transparent;
+    box-shadow: inset 0 0 0 1px var(--wi-trace);
+    color: var(--wi-trace-text);
+}
+
+.wi-badge.is-drift {
+    background: var(--key-graphite);
+    box-shadow: inset 0 0 0 1px var(--key-graphite-line);
+    color: var(--key-graphite-ink);
+}
+
+.wi-checks {
+    list-style: none;
+    margin: 0 0 8px;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    font-size: 11.5px;
+    line-height: 1.4;
+    color: var(--text-2);
+}
+
+.wi-checks li {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+}
+
+.wi-dot {
+    flex: none;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--text-dim);
+    transform: translateY(-1px);
+}
+
+.wi-dot.is-ok {
+    background: var(--wi-trace);
+}
+
+.wi-dot.is-win {
+    background: var(--wi-win);
+}
+
+.wi-dot.is-hot {
+    background: var(--wi-hot);
+}
+
+.wi-dot.is-bad {
+    background: var(--key-graphite);
+    box-shadow: 0 0 0 1px var(--key-graphite-ink);
+}
+
+/* A line: a spine in its result's colour, the lore pair as numerals, its first turn's moves with pips */
+.wi-lines {
+    list-style: none;
+    margin: 0 0 10px;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.wi-line {
+    padding: 7px 8px 7px 11px;
+    border-radius: 8px;
+    background: var(--surface-2);
+    box-shadow: inset 3px 0 0 var(--border-strong);
+}
+
+.wi-line.is-win {
+    background: var(--surface);
+    box-shadow: inset 3px 0 0 var(--wi-win), 0 0 0 1px var(--wi-win);
+}
+
+.wi-line.is-loss {
+    box-shadow: inset 3px 0 0 var(--wi-hot);
+}
+
+/* What you really did: the line every other is read against, so neutral (Bone), on paper. */
+.wi-line.is-real {
+    background: var(--surface);
+    box-shadow: inset 3px 0 0 var(--key-bone), 0 0 0 1px var(--border-soft);
+}
+
+.wi-line-top {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.wi-idx {
+    color: var(--text-dim);
+}
+
+.wi-pair {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 2px;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+}
+
+.wi-line .wi-pair {
+    font-size: 15px;
+}
+
+.wi-pair .wi-dash {
+    color: var(--text-dim);
+    font-weight: 400;
+}
+
+.wi-pair .wi-num.is-win {
+    color: var(--wi-win-text);
+}
+
+.wi-pair .wi-num.is-hot {
+    color: var(--wi-hot-text);
+}
+
+.wi-t {
+    margin-right: auto;
+    font-size: 11.5px;
+    color: var(--text-dim);
+}
+
+.wi-line.is-win .wi-t {
+    color: var(--wi-win-text);
+    font-weight: 560;
+}
+
+.wi-show {
+    min-height: 26px;
+    padding: 0 9px;
+    font-size: 12px;
+}
+
+.wi-moves {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 3px 10px;
+    margin-top: 5px;
+    font-size: 11.5px;
+    line-height: 1.35;
+    color: var(--text-2);
+}
+
+.wi-mv {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.wi-mv .rules-pip {
+    width: 7px;
+    height: 7px;
+    box-shadow: none;
+}
+
+.wi-mv .rules-pip.key-bone {
+    box-shadow: inset 0 0 0 1px var(--border-strong);
+}
+
+/* The meter: a segment for each turn back, Trace while it runs, then its verdict's colour */
+.wi-foot {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.wi-meter {
+    display: flex;
+    gap: 3px;
+}
+
+.wi-seg {
+    flex: 1;
+    height: 4px;
+    border-radius: 999px;
+    background: var(--fu-line, #E0DBD1);
+    overflow: hidden;
+}
+
+.wi-seg i {
+    display: block;
+    height: 100%;
+    background: var(--wi-trace);
+    transition: width 0.4s ease;
+}
+
+.wi-seg.is-won i {
+    background: var(--wi-win);
+}
+
+.wi-seg.is-none i,
+.wi-seg.is-stopped i {
+    background: var(--text-dim);
+}
+
+.wi-seg.is-drift i {
+    background: var(--key-graphite);
+}
+
+.wi-meter-cap {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    color: var(--wi-trace-text);
+}
+
+.wi-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+.wi-actions .btn {
+    white-space: nowrap;
+}
+
+/* What-if at work: a Trace sweep along the turn back being searched and the row of the line being played,
+   a pulse on its badge, and a pulsing Trace dot on the What-if keys and the top bar's Multiverse key while a
+   run goes on anywhere (the panel or the Multiverse may be closed). Each animation lasts a whole fraction
+   of 4.8 s and starts at --wi-phase, so a redraw doesn't restart it. Still for reduced motion. */
+@keyframes wi-sweep {
+    from { transform: translateX(-100%); }
+    to { transform: translateX(250%); }
+}
+
+@keyframes wi-pulse {
+    50% { opacity: 0.25; transform: scale(0.7); }
+}
+
+.wi-seg {
+    position: relative;
+}
+
+.wi-seg.is-running::after,
+.wi-line.is-pending::after {
+    content: "";
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 40%;
+    background: linear-gradient(90deg, transparent, color-mix(in oklab, var(--wi-trace) 55%, transparent), transparent);
+    animation: wi-sweep 1.6s ease-in-out infinite;
+    animation-delay: var(--wi-phase, 0s);
+    pointer-events: none;
+}
+
+.wi-line.is-pending {
+    position: relative;
+    overflow: hidden;
+    background: transparent;
+    box-shadow: inset 3px 0 0 var(--wi-trace), 0 0 0 1px var(--border-soft);
+}
+
+.wi-line.is-pending::after {
+    background: linear-gradient(90deg, transparent, color-mix(in oklab, var(--wi-trace) 16%, transparent), transparent);
+}
+
+.wi-line.is-pending .wi-idx {
+    color: var(--wi-trace-text);
+}
+
+.wi-badge.is-running::before,
+body.whatif-running .whatif-key::after,
+body.whatif-running #btn-multiverse::after {
+    content: "";
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--wi-trace);
+    animation: wi-pulse 1.2s ease-in-out infinite;
+    animation-delay: var(--wi-phase, 0s);
+}
+
+.wi-badge.is-running::before {
+    display: inline-block;
+    margin-right: 6px;
+    vertical-align: 1px;
+}
+
+body.whatif-running .whatif-key,
+body.whatif-running #btn-multiverse {
+    position: relative;
+}
+
+body.whatif-running .whatif-key::after,
+body.whatif-running #btn-multiverse::after {
+    position: absolute;
+    top: 3px;
+    right: 3px;
+    width: 7px;
+    height: 7px;
+    box-shadow: 0 0 0 2px var(--surface);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .wi-seg.is-running::after,
+    .wi-line.is-pending::after {
+        display: none;
+    }
+
+    .wi-badge.is-running::before,
+    body.whatif-running .whatif-key::after,
+    body.whatif-running #btn-multiverse::after {
+        animation: none;
+    }
+}
