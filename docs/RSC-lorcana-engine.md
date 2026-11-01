@@ -384,6 +384,16 @@ Tiers 2 and 3 only need the read side of tier 1 (hydrate and project) plus the e
 
 Measured results, newest first. The work itself lives on `feat/68-rules-engine` (AGENTS.md, *Long-lived branch*).
 
+### 2026-11-01 · Why the other sample replay drifted: Boost, then shuffles
+
+Asked: why `01a08b6d…` (the owner won; What-if for the opponent) drifted replayed from turns 9–15, with misses on turns 16 and 20. Measured by replaying the real game from turns 13, 14 and 15 and, after every turn, comparing the engine's board with the real next node (lore, cards in play, hands, discards, ink, the top of each deck).
+
+- **Boost wasn't replayed.** "You boosted Cheshire Cat (1 card under)" on turn 14 and "You boosted Ursula" on turn 16: Boost puts the top card of your deck facedown under the character. The log line (`CARD_BOOSTED`) wasn't read as a move, so the replay never boosted: the deck stayed a card behind (turn 16 drew Gaston, not Agustin) and Ursula quested for 2, not 3 (a lore short). Boost is an activated ability in the engine, so a boost is now an `activateAbility` move on that card, from a replay and from a text log ("You boosted …"). Replayed from turn 14 or 15, turns 14–16 now match the real game exactly; turn 17 starts 6–7 with Gaston, Dumbo, Hades on top of the owner's deck, as in the real game. Boosts are in two of the three sample replays (5 in `019ea30a`, 3 here) and in the text log (3).
+- **Then a shuffle.** On turn 17 (theirs), DARK DANCE shuffles the owner's Ursula into their deck. The engine shuffles with its own random order, so the owner's next draw is Hades, not the real Demona, and Demona is missed on turn 20. Replayed from turn 13 back, it's turn 13's DARK DANCE (Dumbo shuffled in): the turn 14 draw is Sven, not Agustin. Not changed: keeping the real draws after a shuffle means re-ordering the engine's hidden cards from the real game's next turn, a change to how What-if treats hidden cards (an earlier attempt at re-ordering decks made game B worse, 2026-10-30). Left for the owner to decide.
+- Smaller: the card under a boosted character is unknown in the import until it's revealed (Gaston, in the discard when Cheshire Cat is banished on turn 17), so the replay's discard shows an unknown card there.
+
+`app-checks` 51/51 (new: turn 16's boost replayed; the text log's counts now include its boosts and still match the replay's).
+
 ### 2026-11-01 · Moves taken back in a replay; challenges in the turn recap
 
 **Moves taken back.** `movesFromReplay` didn't read Duels.ink's undo lines, so a move a player took back stayed among the real moves. Game A's turn 13: the owner quested with Launchpad, took it back (`FREE_UNDO`) and used his ability instead; then took back a discard (`CHOICE_UNDO`: Strength of a Raging Fire, then Mushu). Replayed, Launchpad quested (+1 lore) and his ability then failed. In the other sample, turn 13: Chernabog was played, DARK DANCE declined, all of it taken back and Chernabog played again; replayed, the undone "no" answered DARK DANCE. Now a `FREE_UNDO` drops the last move with the choices made after it, and a `CHOICE_UNDO` that player's last choice (text logs already dropped theirs).

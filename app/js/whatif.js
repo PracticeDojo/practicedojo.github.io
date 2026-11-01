@@ -18,7 +18,8 @@ window.DojoWhatIf = (() => {
     const PAST = 4;      // turns played past the real game's end before calling it
     const OPEN = 2;      // an unfinished game: turns played past its last one, then the lore race compared
 
-    const FAMILIES = { CARD_INKED: 'putCardIntoInkwell', CARD_PLAYED: 'playCard', CARD_QUEST: 'quest', CARD_ATTACK: 'challenge', CARD_MOVED: 'moveCharacterToLocation', ABILITY_ACTIVATED: 'activateAbility' };
+    // Boost ("put the top card of your deck facedown under this character") is an activated ability in the engine.
+    const FAMILIES = { CARD_INKED: 'putCardIntoInkwell', CARD_PLAYED: 'playCard', CARD_QUEST: 'quest', CARD_ATTACK: 'challenge', CARD_MOVED: 'moveCharacterToLocation', ABILITY_ACTIVATED: 'activateAbility', CARD_BOOSTED: 'activateAbility' };
     const KNOWN = new Set(Object.values(FAMILIES));
 
     // Each turn's real moves and choices, from a replay's log, keyed by turn as the Dojo counts them (each
@@ -67,7 +68,7 @@ window.DojoWhatIf = (() => {
 
     // The same from a turn of a Duels.ink text log (parseDojoLog): the active player's moves, by name. A text
     // log names no choices, so the bot makes them.
-    const LOG = { ink: 'putCardIntoInkwell', play: 'playCard', sing: 'playCard', quest: 'quest', challenge: 'challenge', activate: 'activateAbility' };
+    const LOG = { ink: 'putCardIntoInkwell', play: 'playCard', sing: 'playCard', quest: 'quest', challenge: 'challenge', activate: 'activateAbility', under: 'activateAbility' }; // under: a boost (or, with no player, a card an effect put under)
     function movesFromLog(t, p) {
         const real = { moves: [], choices: [] };
         for (const e of t.events) {

@@ -233,16 +233,23 @@ export default async (page) => {
         check('what-if: the import keeps each turn\'s real moves', wiTurns.map(t => t.real.moves.length).join(' '), '2 2 3 2 3 3 4 4 4 2 2 4 3 4 3 2 4 3 4 3 4 5 4 8');
         // A text log keeps them too (each challenge once), and who won; the same game's replay (01a08b6d) the same
         // moves: without the play taken back on turn 13, or DARK DANCE's free plays on turns 13 and 17 (made by
-        // the other player inside the ability, so not moves of the turn).
+        // the other player inside the ability, so not moves of the turn), with the boosts on turns 14, 16 and 24.
         const wiText = DojoWhatIf.lineOf(App.buildSessionFromLog(App.parseDojoLog(await (await fetch('/docs/samples/new_log_20261004.txt')).text())).bookmarks, wiDec);
         const wiDance = DojoWhatIf.lineOf(App.buildSessionFromReplay(JSON.parse(await App.decodeMaybeGzip(await (await fetch('/docs/samples/01a08b6d-cb54-743f-9bfd-debe26bb528a_p1.replay.gz')).arrayBuffer()))).bookmarks, wiDec);
         const wiCounts = (l) => l.turns.map(t => t.real.moves.length).join(' ');
         check('what-if: a text log keeps each turn\'s moves, and who won', `${wiText.winner} ${wiCounts(wiText)} | replay ${wiCounts(wiDance) === wiCounts(wiText) ? 'the same' : wiCounts(wiDance)}`,
-            '0 1 2 2 2 2 3 2 4 3 5 2 7 2 3 2 4 2 4 2 3 4 5 4 5 3 1 | replay the same');
+            '0 1 2 2 2 2 3 2 4 3 5 2 7 2 4 2 5 2 4 2 3 4 5 4 6 3 1 | replay the same');
         // Replayed, turn 13's DARK DANCE has P1 (whose Dumbo it shuffles away) play Cheshire Cat from the discard.
         const wiK13 = wiDance.turns.findIndex(t => t.turn === 13);
         const wiT13 = (await DojoRules.whatIf(DojoWhatIf.filled(wiDance.turns, wiK13, id => !!App.cardDB[id]), id => App.cardKey(id),
             { me: 1, real: Object.fromEntries(wiDance.turns.map(t => [t.turn, t.real])), first: 'real', exact: true, horizon: 13, nodes: 300, laterNodes: 120, margin: 1 })).turns[0];
+        // Boost puts the top card of the deck under a character: replayed from turn 15, turn 16's boost (Ursula) leaves
+        // the deck and the lore as the real turn 17 has them (it was a lore short, the deck a card behind).
+        const wiK15 = wiDance.turns.findIndex(t => t.turn === 15), wiReal17 = wiDance.turns.find(t => t.turn === 17).state;
+        const wiT16 = (await DojoRules.whatIf(DojoWhatIf.filled(wiDance.turns, wiK15, id => !!App.cardDB[id]), id => App.cardKey(id),
+            { me: 0, real: Object.fromEntries(wiDance.turns.map(t => [t.turn, t.real])), first: 'real', exact: true, horizon: 16, nodes: 300, laterNodes: 120, margin: 1 })).turns.at(-1).state;
+        const wiTop = (st) => st.players[0].deck.slice(0, 3).map(c => App.cardDB[c.cardId].name).join(', ');
+        check('what-if: a boost is replayed', `${wiT16.players.map(p => p.lore).join('-')} ${wiTop(wiT16)} | real ${wiReal17.players.map(p => p.lore).join('-')} ${wiTop(wiReal17)}`, '6-7 Gaston, Dumbo, Hades | real 6-7 Gaston, Dumbo, Hades');
         check('what-if: a free play inside the other\'s ability is the ability\'s', `${wiT13.state.players[0].field.map(c => App.cardDB[c.cardId].name).join(', ')} | missed ${wiT13.missed.length}`, 'Hamm, Cheshire Cat | missed 0');
         // The game's line: the replay alone (lost, one line; What-if's own branches don't count), cut short
         // (unfinished), with a turn played again by hand that wins (forked: no line until one is picked), that
