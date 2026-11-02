@@ -187,7 +187,7 @@ Scoring follows the plan in the study's §8.1. Done 2026-10-28: their reply, the
 - Done 2026-11-01: Boost is replayed (it was skipped, so decks ran a card behind).
 - Done 2026-11-01: the real draws after a shuffle (`realDecks`). `01a08b6d…` now replays from 20 of 22 turns (9 before).
 - Done 2026-11-02: a text log's choices are read from its lines (`movesFromLog`; study §12). Its replay of `01a08b6d…` now ends as the real game did from every turn tried (5–26).
-- **`01a08b6d…`'s replay** still drifts replayed from turns 9–10 (its text log doesn't): to look at.
+- **`01a08b6d…`'s replay** still drifts replayed from turns 9–10 (its text log doesn't). Found 2026-11-02, not fixed: the Duels.ink replay import loses items in play. Duels.ink's state keeps items in their own zone (`myPlayer.items`; frames 30/37 and 49/50 add and remove the Junior Woodchuck Guidebook there) and `buildSessionFromReplay` reads only `field`, so the turn-10 board has no Guidebook and its THE BOOK KNOWS EVERYTHING can't be replayed. A bug in the import itself, on `main` too: ask the owner where to fix it.
 - **The opponent model** is the weak point: their real moves, then the search's rest of the turn, or the search's own line when it scores more than 1 above. Watch for wins that come from the opponent not using something; the owner spots them.
 - **Results don't survive a reload** (branches do). Not asked for.
 - A manual article when Feature 68 ships.
