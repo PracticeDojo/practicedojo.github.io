@@ -5425,7 +5425,13 @@
                     moveDmg: /^Moved (\d+) damage counters? from (.+?) to (.+)$/,
                     activate: re('WHO activated (.+?) on (.+)'),
                     setLore: re('Set step: .+ grants WHO \\+(\\d+) \\[LORE\\].*'),
-                    won: re('WHO won with (\\d+) \\[LORE\\]!?')
+                    won: re('WHO won with (\\d+) \\[LORE\\]!?'),
+                    // Choices, for What-if (Feature 68); the board ignores them.
+                    option: /^.+'s .+ chose "(.+)"$/,
+                    declined: re('WHO declined .+'),
+                    damaged: /^.+ dealt \d+ damage to (.+)$/,
+                    banishes: /^.+'s .+ banishes (.+)$/,
+                    exerts: /^.+'s .+ exerts a character$/
                 };
 
                 for (const line of lines) {
@@ -5460,9 +5466,11 @@
 
                     if ((m = RX.begins.exec(line))) { cur.activePlayerIndex = whose(m[1], 0); continue; }
                     if ((m = RX.undo.exec(line))) {
+                        // The player's last event; a decline goes with the action it declined in.
                         const p = who(m[1]);
                         for (let i = cur.events.length - 1; i >= 0; i--) {
-                            if (cur.events[i].p === p) { cur.events.splice(i, 1); break; }
+                            if (cur.events[i].p !== p) continue;
+                            if (cur.events.splice(i, 1)[0].t !== 'declined') break;
                         }
                         continue;
                     }
@@ -5500,6 +5508,11 @@
                     if ((m = RX.activate.exec(line))) { ev({ t: 'activate', p: who(m[1]), ability: m[2].trim(), name: m[3].trim() }); continue; }
                     if ((m = RX.setLore.exec(line))) { ev({ t: 'loreGain', p: who(m[1]), n: parseInt(m[2], 10) }); continue; }
                     if ((m = RX.won.exec(line))) { ev({ t: 'loreSet', p: who(m[1]), n: parseInt(m[2], 10) }); continue; }
+                    if ((m = RX.option.exec(line))) { ev({ t: 'option', text: m[1] }); continue; }
+                    if ((m = RX.declined.exec(line))) { ev({ t: 'declined', p: who(m[1]) }); continue; }
+                    if ((m = RX.damaged.exec(line))) { ev({ t: 'damaged', name: m[1].trim() }); continue; }
+                    if ((m = RX.banishes.exec(line))) { if (!/^a card$/i.test(m[1].trim())) ev({ t: 'banishes', name: m[1].trim() }); continue; }
+                    if (RX.exerts.test(line)) { ev({ t: 'exerts' }); continue; }
                 }
                 if (cur) turns.push(cur);
 
