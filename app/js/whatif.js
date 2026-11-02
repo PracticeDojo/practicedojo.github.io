@@ -57,6 +57,7 @@ window.DojoWhatIf = (() => {
             const move = { family, card: refs[0].name };
             if ((family === 'challenge' || family === 'moveCharacterToLocation') && refs[1]) move.target = refs[1].name;
             if (family === 'playCard' && l.data && l.data.isSung) move.with = refs.slice(1).map(r => r.name);
+            if (l.type === 'ABILITY_ACTIVATED' && l.data && l.data.abilityName) move.ability = l.data.abilityName; // which one, for a card with two
             if (family === 'playCard' && exert[by] != null) { move.exerted = exert[by]; delete exert[by]; }
             (marks[turn] = marks[turn] || []).push(T().choices.length);
             T().moves.push(move);
@@ -96,6 +97,7 @@ window.DojoWhatIf = (() => {
             const move = { family: LOG[e.t], card };
             if (e.t === 'challenge') move.target = e.target;
             if (e.t === 'sing') move.with = e.singers;
+            if (e.t === 'activate' && e.ability) move.ability = e.ability;
             real.moves.push(move);
         });
         return real;
@@ -112,7 +114,7 @@ window.DojoWhatIf = (() => {
             moves: r.moves.filter(m => m && KNOWN.has(m.family) && name(m.card)).slice(0, 100).map(m => ({
                 family: m.family, card: name(m.card), target: name(m.target),
                 with: Array.isArray(m.with) ? m.with.map(name).filter(Boolean).slice(0, 8) : undefined,
-                exerted: typeof m.exerted === 'boolean' ? m.exerted : undefined
+                exerted: typeof m.exerted === 'boolean' ? m.exerted : undefined, ability: name(m.ability)
             })),
             choices: (Array.isArray(r.choices) ? r.choices : []).slice(0, 100)
                 .map(c => ({ name: name(c && c.name), option: name(c && c.option), owner: seat(c && c.owner), by: seat(c && c.by) }))

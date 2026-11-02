@@ -1118,7 +1118,7 @@ function searchCost(args: { deck1: string; deck2: string; seed?: string; turn?: 
 // The game's log gives both players' real moves per turn, by card name. The replay matches them to the
 // engine's candidates: a sung card and its singers, a target and whose card it is, the other player's
 // choices, Bodyguard's exerted entry, a second move to the other copy of a location, plays from the discard.
-type RealMove = { family: string; card: string; target?: string; with?: string[]; exerted?: boolean };
+type RealMove = { family: string; card: string; target?: string; with?: string[]; exerted?: boolean; ability?: string };
 type Choice = { name?: string; option?: string; owner?: number; by?: number };
 type RealTurn = { moves: RealMove[]; choices: Choice[] };
 type Prefer = { choices: Choice[] };
@@ -1177,6 +1177,13 @@ function realTurn(server: Server, who: string, real: RealTurn | undefined, prefe
       const a = describe(server, x as never, "me");
       if (a.family !== m.family || !sameCard(a.card, m.card) || (m.target && !sameCard(a.target, m.target))) return false;
       // Sung, and by whom; or paid for.
+      // Which of the card's abilities (Gyro-Evac has two): the one the real game used. The engine counts the
+      // printed activated abilities, then granted ones (unnamed here, so they still fit).
+      if (m.ability) {
+        const d = server.getCardDefinitionByInstanceId((x as { cardId?: unknown }).cardId as never) as { abilities?: { type?: string; name?: string }[] } | undefined;
+        const name = (d?.abilities ?? []).filter((b) => b.type === "activated")[(x as { abilityIndex?: number }).abilityIndex ?? -1]?.name;
+        if (name && name.toUpperCase() !== m.ability.toUpperCase()) return false;
+      }
       if (m.family === "playCard") return m.with ? (a.via === "sing" || a.via === "singTogether") && m.with.every((n) => (a.with ?? []).some((w) => sameCard(w, n))) : a.via !== "sing" && a.via !== "singTogether";
       return true;
     });

@@ -6080,7 +6080,7 @@
                         hasMulliganed: true,
                         deck,
                         hand: (mp.hand || []).map(c => mapCard(c, false)),
-                        field: (mp.field || []).map(c => mapCard(c, false)),
+                        field: [...(mp.field || []), ...(mp.items || [])].map(c => mapCard(c, false)), // Duels.ink keeps items in play in their own zone
                         inkwell,
                         discard: (mp.discard || []).map(c => mapCard(c, false))
                     };
@@ -6094,7 +6094,7 @@
 
                     // Cards already visible on the opponent's board right now (don't re-infer these).
                     const visibleNow = new Set();
-                    (op.field || []).forEach(c => { if (c && c.instanceId) visibleNow.add(c.instanceId); });
+                    [...(op.field || []), ...(op.items || [])].forEach(c => { if (c && c.instanceId) visibleNow.add(c.instanceId); });
                     (op.discard || []).forEach(c => { if (c && c.instanceId) visibleNow.add(c.instanceId); });
                     (op.inkwell || []).forEach(e => { if (e && e.card && e.card.instanceId) visibleNow.add(e.card.instanceId); });
 
@@ -6128,7 +6128,7 @@
                         hasMulliganed: true,
                         deck,
                         hand,
-                        field: (op.field || []).map(c => mapCard(c, false)),
+                        field: [...(op.field || []), ...(op.items || [])].map(c => mapCard(c, false)),
                         inkwell,
                         discard: (op.discard || []).map(c => mapCard(c, false))
                     };

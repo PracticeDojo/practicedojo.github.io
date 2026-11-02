@@ -1,11 +1,11 @@
 # Handover: rules engine (Feature 68)
 
-For the next agent picking up Feature 68. Read this first, then `AGENTS.md` and `docs/RSC-lorcana-engine.md`. The study is the plan; its §12 is the log of what was built and measured, newest first. Written 2026-10-27, last updated 2026-10-31 (What-if, on its own branch: see *Branches now*; then text logs, games played here, unfinished games and where to start).
+For the next agent picking up Feature 68. Read this first, then `AGENTS.md` and `docs/RSC-lorcana-engine.md`. The study is the plan; its §12 is the log of what was built and measured, newest first. Written 2026-10-27, last updated 2026-11-02 (items in a replay's board, and an ability by its name: §8, What-if).
 
 ## 1. Ground rules
 
 - **Branch:** all of this lives on the long-lived branch **`feat/68-rules-engine`**. Commit and push to it directly. Never open a PR from it into `main`; it ships only when the owner says so. Merge `main` into it when `main` moves (no rebase, no force-push). There are no version bumps, landing-page refreshes or manual articles until it ships (AGENTS.md, *Long-lived branch*).
-- **Branches now (2026-11-01):**
+- **Branches now (2026-11-02):**
   - `feat/68-rules-engine`: everything, What-if included (merged 2026-11-01 at the owner's word). New work starts here, or on a `claude/feat-68-<slug>` cut from it.
   - `claude/feat-68-what-if`, `claude/feat-68-score-lab` and `claude/feat-68-bot-opponent` are merged into it. The owner said to **leave merged branches alone**: don't delete them.
 - **The AGENTS.md rule isn't on `main` yet.** It's on `claude/docs-lorcana-engine-feasibility` (head `2c10864`, docs only: the study, the Feature 68 entry, the AGENTS.md section). Until it's merged, a session that starts from `main` won't see it. The owner was asked whether to open that PR and hasn't answered; ask again.
@@ -187,7 +187,8 @@ Scoring follows the plan in the study's §8.1. Done 2026-10-28: their reply, the
 - Done 2026-11-01: Boost is replayed (it was skipped, so decks ran a card behind).
 - Done 2026-11-01: the real draws after a shuffle (`realDecks`). `01a08b6d…` now replays from 20 of 22 turns (9 before).
 - Done 2026-11-02: a text log's choices are read from its lines (`movesFromLog`; study §12). Its replay of `01a08b6d…` now ends as the real game did from every turn tried (5–26).
-- **`01a08b6d…`'s replay** still drifts replayed from turns 9–10 (its text log doesn't). Found 2026-11-02, not fixed: the Duels.ink replay import loses items in play. Duels.ink's state keeps items in their own zone (`myPlayer.items`; frames 30/37 and 49/50 add and remove the Junior Woodchuck Guidebook there) and `buildSessionFromReplay` reads only `field`, so the turn-10 board has no Guidebook and its THE BOOK KNOWS EVERYTHING can't be replayed. A bug in the import itself, on `main` too: ask the owner where to fix it.
+- Done 2026-11-02: items in play reach a replay's board (Duels.ink keeps them in `items`, beside `field`; the import read only `field`), and an activated ability is replayed by its name (Gyro-Evac has two). `01a08b6d…`'s replay now ends as the real game did from all 22 turns tried, `019ea30a` from all 15 (study §12). Fixed on this branch at the owner's word; **`main` still loses items** in a replay import (the first fix, 3 lines in `buildSessionFromReplay`, is `main`'s to take when Feature 68 ships or if the owner asks for it there).
+- From turn 11 of `01a08b6d…` the opponent's hidden cards don't line up exactly: `DojoWhatIf.filled` gives a card seen later (Milo Thatch) to an unknown hand slot where the real game inked an unknown card on turn 11. It doesn't change who wins. Left alone (the owner hasn't asked).
 - **The opponent model** is the weak point: their real moves, then the search's rest of the turn, or the search's own line when it scores more than 1 above. Watch for wins that come from the opponent not using something; the owner spots them.
 - **Results don't survive a reload** (branches do). Not asked for.
 - A manual article when Feature 68 ships.

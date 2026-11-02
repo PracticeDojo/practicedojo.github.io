@@ -384,6 +384,26 @@ Tiers 2 and 3 only need the read side of tier 1 (hydrate and project) plus the e
 
 Measured results, newest first. The work itself lives on `feat/68-rules-engine` (AGENTS.md, *Long-lived branch*).
 
+### 2026-11-02 · Items in play reach a replay's board; an item's ability, the one the real game used
+
+Asked (the owner): why `01a08b6d…`'s replay drifts replayed from turns 9–10 when its text log doesn't. Fixed on `feat/68-rules-engine` (the owner's choice; the import bug is on `main` too).
+
+- **Items in play were lost by the replay import.** Duels.ink's state keeps items in their own zone (`myPlayer.items`, `opponent.items`), beside `field`. `buildSessionFromReplay` read only `field`, so the turn-10 board had no Junior Woodchuck Guidebook (played on turn 8) and the owner's turn 10 couldn't use its THE BOOK KNOWS EVERYTHING ("draw 2": Cheshire Cat and Agustin, played next). Items now join the field on both sides, exerted or ready as Duels.ink has them. Two of the three sample replays have items: `01a08b6d` (the owner's Guidebook, twice) and `019ea30a` (the opponent's Lantern and Gyro-Evac, both lost until now). Game A has none.
+- **Then a card with two abilities.** With Gyro-Evac on the board, `019ea30a` replayed from turns 5–8 and 10 used CRASH LANDING (banish it: each player loses 2 lore) where the real game used TAKE HER UP (a character gains Evasive): the owner ended 2 lore short, 18–14. The real move said only `activateAbility: Gyro-Evac`. It now keeps the ability's name, from a replay (`ABILITY_ACTIVATED`'s `abilityName`) and a text log ("activated TAKE HER UP on …"), and the worker plays the candidate whose ability has that name (the engine numbers a card's printed activated abilities, then granted ones; those have no name here and still fit).
+
+**Measured**: the real game replayed exactly from every turn from 5 on, in each sample (ends as it did / turns tried; misses = real moves missed, from turn 5 · from the last turn tried):
+
+| Game | Before | Items only | Both fixes |
+|---|---|---|---|
+| Game A (`01a15b0a`, no items) | 14 / 20 | 14 / 20, the same | 14 / 20, the same |
+| `019ea30a` (their Lantern, Gyro-Evac) | 13 / 15, misses 17 · 0 | 10 / 15, misses 8 · 0 | 15 / 15, misses 8 · 0 |
+| `01a08b6d` replay (your Guidebook) | 20 / 22, not 9, 10 | 22 / 22 | 22 / 22 |
+| Its text log | 22 / 22 | 22 / 22, the same | 22 / 22, the same |
+
+All four: 69 / 79 to 73 / 79. `019ea30a` "ended as it did" before by luck: its opponent's Lantern moves missed every turn (17 moves missed from turn 5) and it ended 20–15. Now it ends exactly 20–18, as the real game did, from turn 9 and from 11 on (before, from 15 on), and 20–16 from the rest. `01a08b6d`'s replay now gives the same results as its text log from every turn.
+
+The import fingerprint of `019ea30a` changes (their field at the end: 2 to 4, the two items); no other. `app-checks` 56/56 (new: turn 10's board keeps the Guidebook; turn 14's Gyro-Evac uses TAKE HER UP). The worker is rebuilt (the build's only change).
+
 ### 2026-11-02 · What-if reads a text log's choices
 
 Asked (the owner): read the choices from text logs. Until now a text log gave What-if its moves only, and the bot made every choice.
