@@ -66,22 +66,38 @@ window.DojoWhatIf = (() => {
         return real;
     }
 
-    // The same from a turn of a Duels.ink text log (parseDojoLog): the active player's moves, by name. A text
-    // log names no choices, so the bot makes them.
+    // The same from a turn of a Duels.ink text log (parseDojoLog): the active player's moves, by name, and the
+    // choices the log shows, as the replay's are: a card revealed, discarded, sent back to a deck or a hand,
+    // damaged, banished or moved damage between, by an ability; a card played for free in the other's ability
+    // (DARK DANCE); an option ("chose "Put on bottom""); a "may" declined. Who chose: the active player, unless
+    // the line says. "Exerts a character" names none: it's taken to be the one the player challenges next that turn
+    // (why you'd exert it); if that doesn't fit the prompt, the bot chooses.
     const LOG = { ink: 'putCardIntoInkwell', play: 'playCard', sing: 'playCard', quest: 'quest', challenge: 'challenge', activate: 'activateAbility', under: 'activateAbility' }; // under: a boost (or, with no player, a card an effect put under)
+    const OPTION = { yes: 'yes', decline: 'no', no: 'no' };
     function movesFromLog(t, p) {
         const real = { moves: [], choices: [] };
-        for (const e of t.events) {
+        const choose = (c) => real.choices.push(c);
+        t.events.forEach((e, i) => {
             if (e.t === 'loreSet') real.won = e.p; // "… won with 20 [LORE]!"
+            if (e.t === 'reveal' || e.t === 'discard') return e.name && choose({ name: e.name, owner: e.t === 'discard' ? e.p : undefined, by: e.p });
+            if (e.t === 'toDeck' || e.t === 'toHand' || e.t === 'damaged' || e.t === 'banishes') return choose({ name: e.name, owner: e.owner >= 0 ? e.owner : undefined, by: p });
+            if (e.t === 'moveDmg') { choose({ name: e.from, by: p }); choose({ name: e.to, by: p }); return; }
+            if (e.t === 'option') return choose({ option: OPTION[e.text.toLowerCase()] || e.text.replace(/[^A-Za-z0-9]/g, '') });
+            if (e.t === 'declined') return choose({ option: 'no', by: e.p });
+            if (e.t === 'exerts') {
+                const next = t.events.slice(i + 1).find(x => x.t === 'challenge' && x.p === p);
+                return next && choose({ name: next.target, by: p });
+            }
+            if (e.t === 'play' && e.p !== p && e.p >= 0) return choose({ name: e.name, by: e.p }); // played inside the other's ability
             const card = e.t === 'challenge' ? e.attacker : e.name, last = real.moves[real.moves.length - 1];
-            if (e.p !== p || !LOG[e.t] || !card) continue;
+            if (e.p !== p || !LOG[e.t] || !card) return;
             // A challenge's detail line ("… | dealt 2 dmg") repeats the line before it.
-            if ('targetDamage' in e && last && last.family === 'challenge' && last.card === card && last.target === e.target) continue;
+            if ('targetDamage' in e && last && last.family === 'challenge' && last.card === card && last.target === e.target) return;
             const move = { family: LOG[e.t], card };
             if (e.t === 'challenge') move.target = e.target;
             if (e.t === 'sing') move.with = e.singers;
             real.moves.push(move);
-        }
+        });
         return real;
     }
 

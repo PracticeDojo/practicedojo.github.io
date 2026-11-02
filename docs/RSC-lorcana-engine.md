@@ -384,6 +384,23 @@ Tiers 2 and 3 only need the read side of tier 1 (hydrate and project) plus the e
 
 Measured results, newest first. The work itself lives on `feat/68-rules-engine` (AGENTS.md, *Long-lived branch*).
 
+### 2026-11-02 · What-if reads a text log's choices
+
+Asked (the owner): read the choices from text logs. Until now a text log gave What-if its moves only, and the bot made every choice.
+
+**What the lines say.** Set against the replay of the same game (`01a08b6d…`), the choices it records turn by turn mostly have a text-log line:
+- read before as board events, now also choices: a card revealed into the hand ("You revealed Luisa … put into hand"), discarded, sent back to a deck ("Dumbo … was returned to your deck") or a hand ("SPLENDERIFFIC BOUNCE returns Minnie Mouse … to hand"), damage moved between two cards, a card played in the other player's ability ("You played Cheshire Cat (cost 3 → 0)" on their turn);
+- read now (the parser's new events; the board ignores them): an option (`DARK DANCE chose "Play a character"`; "Yes" and "Decline" answer a "may"), a decline ("Opponent declined … DARK DANCE"), a damage target ("Three Arrows dealt 2 damage to Lumiere …"), a named banish target ("LEAVES NO TRACE banishes Cinderella …");
+- "exerts a character" names no card (Alma's PROTECTING THE FAMILY): it's taken to be the one the same player challenges next that turn, which is why you'd exert it; where that doesn't fit, the bot chooses.
+
+Who chose: the active player, unless the line says (a discard, a reveal, a decline, a play in the other's ability); an option is for whoever is asked. A take-back ("took back their action") now also removes the decline that went with the action it takes back. On that game the text log's choices match the replay's on every turn but turn 17's unnamed exert (by the other player) and one extra on turn 25.
+
+**Measured** (the real game replayed exactly from every turn from 5 on; ends as it did / turns tried):
+- the text log of `01a08b6d…`: 22 / 22, from 9 / 22 (from 12 on, 20–14 with 1 move missed, as its replay; it now does better than the replay, which still drifts from 9–10). The exert guess took turn 6 from 2–5 to the real result.
+- game A, `019ea30a` and the replay of `01a08b6d…`: the same. Every text log's import fingerprint is unchanged.
+
+`app-checks` 54/54 (new: a text log's choices; the text log replayed through both DARK DANCEs).
+
 ### 2026-11-01 · What-if keeps the real draws after a shuffle
 
 Asked (the owner): keep the real draws after a shuffle, as without one.

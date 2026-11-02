@@ -256,6 +256,16 @@ export default async (page) => {
         const wiShuffled = await DojoRules.whatIf(DojoWhatIf.filled(wiDance.turns, wiK15, id => !!App.cardDB[id]), id => App.cardKey(id),
             { me: 0, real: Object.fromEntries(wiDance.turns.map(t => [t.turn, t.real])), decks: wiZone('deck'), hands: wiZone('hand'), first: 'real', exact: true, horizon: 26, nodes: 300, laterNodes: 120, margin: 1 });
         check('what-if: after a shuffle, the real draws', `${wiShuffled.winner} ${wiShuffled.lore.join('-')} | missed ${wiShuffled.turns.reduce((n, t) => n + (t.missed || []).length, 0)}`, '0 20-14 | missed 1');
+        // A text log's choices, from its lines: an option ("chose "Play a character""), a card sent back to a deck, a card
+        // played inside the other's ability, an unnamed "exerts a character" taken as the next challenge's target.
+        const wiSay = (turn) => wiText.turns.find(t => t.turn === turn).real.choices.map(c => (c.name ? c.name.split(' - ')[0] : `"${c.option}"`) + (c.by != null ? `@${c.by}` : '')).join(', ');
+        check('what-if: a text log\'s choices', `T6 ${wiSay(6)} | T13 ${wiSay(13)} | T22 ${wiSay(22)}`, 'T6 Mickey Mouse@0 | T13 "Playacharacter", Dumbo@1, Cheshire Cat@0 | T22 "Putonbottom", Mickey Mouse & Minnie Mouse@0');
+        // With them (and the real draws after both DARK DANCEs), the text log replays from turn 13 as its replay does.
+        const wiTextZone = (z) => Object.fromEntries(wiText.turns.map(t => [t.turn, t.state.players.map(p => p[z].map(c => App.cardKey(c.cardId) || '?'))]));
+        const wiK13t = wiText.turns.findIndex(t => t.turn === 13);
+        const wiFromText = await DojoRules.whatIf(DojoWhatIf.filled(wiText.turns, wiK13t, id => !!App.cardDB[id]), id => App.cardKey(id),
+            { me: 1, real: Object.fromEntries(wiText.turns.map(t => [t.turn, t.real])), decks: wiTextZone('deck'), hands: wiTextZone('hand'), first: 'real', exact: true, horizon: 26, nodes: 300, laterNodes: 120, margin: 1 });
+        check('what-if: a text log replays through DARK DANCE', `${wiFromText.winner} ${wiFromText.lore.join('-')} | missed ${wiFromText.turns.reduce((n, t) => n + (t.missed || []).length, 0)}`, '0 20-14 | missed 1');
         check('what-if: a free play inside the other\'s ability is the ability\'s', `${wiT13.state.players[0].field.map(c => App.cardDB[c.cardId].name).join(', ')} | missed ${wiT13.missed.length}`, 'Hamm, Cheshire Cat | missed 0');
         // The game's line: the replay alone (lost, one line; What-if's own branches don't count), cut short
         // (unfinished), with a turn played again by hand that wins (forked: no line until one is picked), that
