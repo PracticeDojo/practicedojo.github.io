@@ -1308,7 +1308,7 @@
     <script>
         let cardFuse = null;
 
-        const APP_VERSION = "v3.21.1"; // Centralized version string (v3: Field Unit)
+        const APP_VERSION = "v3.22.0"; // Centralized version string (v3: Field Unit)
 
         // Tweaks panel accent presets (hue values for the OKLCH accent ramp)
         // Tweaks → Accent: the approved Field Unit signals only (design.md ·
@@ -12020,6 +12020,47 @@
                 return true;
             },
 
+            // Feature 69: 1–9 opens the menu of that card in your hand (left to right);
+            // B, then 1–9, a card on your battlefield. With a card's menu open, 1–9
+            // picks its option. A card in play under the pointer keeps its own keys.
+            handlePickHotkey(e) {
+                const k = e.key;
+                const menu = document.getElementById('context-menu');
+                if (menu.style.display === 'block' && /^[1-9]$/.test(k)) {
+                    const opt = menu.querySelector(`button.ctx-item[data-num="${k}"]`);
+                    if (opt) opt.click();
+                    return !!opt;
+                }
+                const field = this._kbField;
+                this._kbField = false;
+                if (this.challengeMode) return false;
+                const hov = this._hoverIid && this.findCard(this._hoverIid);
+                if (hov && hov.loc === 'field') return false;
+                if (k === 'b' || k === 'B') {
+                    this._kbField = true;
+                    this.showToast('Battlefield: press 1–9 to pick a card');
+                    return true;
+                }
+                if (!/^[1-9]$/.test(k)) return false;
+                const n = Number(k) - 1;
+                const p = this.state.players[this.bottomSeat()];
+                let wrap, iid;
+                if (field) {
+                    // DOM order is the order on screen; skip the cards stacked underneath.
+                    const ids = new Set(p.field.map(c => c.instanceId));
+                    wrap = [...document.querySelectorAll('#bottom-field .card-wrap[data-iid]')]
+                        .filter(w => ids.has(w.dataset.iid))[n];
+                    iid = wrap && wrap.dataset.iid;
+                } else {
+                    iid = p.hand[n] && p.hand[n].instanceId;
+                    wrap = document.querySelectorAll('#bottom-hand .card-wrap[data-hand-iid]')[n];
+                }
+                if (!wrap || !iid) return false;
+                const r = wrap.getBoundingClientRect();
+                this.showContextMenu({ clientX: r.left + r.width / 2, clientY: r.top + r.height / 2, stopPropagation: () => { } }, iid, true);
+                return true;
+            },
+
             // --- Challenge mode ----------------------------------------------------
             getChallengeForecast() {
                 if (!this._chalForecast) {
@@ -13373,12 +13414,18 @@
                 const isActivePlayerOwned = found.player.id === this.state.activePlayer;
 
                 // `key` shows a hover-hotkey hint; `cls` e.g. 'is-danger' (Feature 37).
+                // Feature 69: the first nine options are numbered; 1–9 picks one.
+                let optNum = 0;
                 const addOption = (text, onClick, key, cls) => {
                     const item = document.createElement('button');
                     item.className = 'ctx-item' + (cls ? ' ' + cls : '');
                     item.setAttribute('role', 'menuitem');
                     const label = document.createElement('span');
-                    label.textContent = text;
+                    if (++optNum <= 9) {
+                        item.dataset.num = String(optNum);
+                        label.appendChild(this.el('span', 'ctx-num', String(optNum)));
+                    }
+                    label.appendChild(document.createTextNode(text));
                     item.appendChild(label);
                     if (key) {
                         const k = document.createElement('span');
@@ -15149,6 +15196,7 @@
 
             // Escape: close the context menu first, then whichever modal is open
             if (e.key === 'Escape') {
+                App._kbField = false;
                 const menu = document.getElementById('context-menu');
                 if (menu.style.display === 'block') {
                     menu.style.display = 'none';
@@ -15216,7 +15264,10 @@
             const anyModal = ['tree-modal', 'setup-modal', 'inspect-deck-modal', 'inspect-discard-modal',
                 'import-log-modal', 'card-search-modal', 'mulligan-modal']
                 .some(id => { const m = document.getElementById(id); return m && !m.classList.contains('hidden'); });
-            if (!anyModal && App.state && App.state.players && App.handleCardHotkey(e)) {
+            // Feature 69: number keys pick a card in your hand (B: on your battlefield),
+            // then an option in its menu. Not during the mulligan.
+            if (!anyModal && App.state && App.state.players
+                && (App.handlePickHotkey(e) || App.handleCardHotkey(e))) {
                 e.preventDefault();
                 return;
             }

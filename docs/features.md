@@ -734,6 +734,17 @@ Duels.ink exports a deck with the printing at the end of each line, `4 Ursula - 
 - **Proposed plays count modifiers and keywords** (Feature 61 modifiers reach the engine; Evasive, Alert, Bodyguard, Resist, Challenger and Reckless change who is exposed and who brings lore), **the bot finishes each line**, and the score's weights were **tuned by play** against the engine's bot (59% → 64% wins on 256 fresh games). Cards go to the engine by name, so a promo printing that shares a number can't stand in for another card.
 - **What-if (first cut, branch `claude/feat-68-what-if`):** with Assist on, **Multiverse → What-if** takes a game imported from a Duels.ink replay and plays it out again from your turns before the loss, up to five back. At each it checks that the real game, replayed, still ends as it did; tries the search's four best lines other than your real move; and stops at the first turn back with a winning line (**Keep going** looks further). Their turns are what they really did unless the search finds clearly better. It runs in the Multiverse's panel: each line becomes a branch on the canvas as soon as it has been played (one node per turn, a game-over square where someone wins), a meter shows the progress, and the results read in Field Unit's key colours (Olive a win, Coral their lore reaching 20, Trace the meter). On the owner's lost game it found a win three turns back in about 85 s. Since then it also takes Duels.ink text logs (their moves are read the same way) and games played in the Dojo with auto-save on (no record of the moves: the search plays their turns, and *What you did* is the real board after your turn, played on). An unfinished game is played to two turns past its last and looks for a better lore race (your lore minus theirs). A game with more than one line, or unfinished, asks where to start: select a turn in the Multiverse, then **Start from turn N**. A turn's recap now records challenges too (*Challenged: Max Goof with Vixey*), so *What you did* lists them for games played here; moves taken back in a Duels.ink replay are no longer replayed.
 
+## Feature 69: Pick a card and its menu option with number keys (v3.22.0)
+
+### User Story
+- As a player at a keyboard, I want to open a card's menu and choose from it with number keys, so I can play a turn without the mouse.
+
+### Details
+- **Hand:** 1–9 opens the menu of that card in your hand (the bottom hand), counting from the left.
+- **Battlefield:** B, then 1–9, opens the menu of that card on your battlefield, in the order on screen. A toast says the battlefield is picked; any other key or Esc drops it.
+- **Menu:** the first nine options of a card's menu are numbered; 1–9 chooses one. The hover keys (E, B, C) still show and work.
+- A card in play under the pointer keeps its own keys (0–9 damage, B banish) unless a menu is open. Nothing in challenge mode, the mulligan or behind a window.
+
 ## Feature 67: Find a session or a deck in the Library and in Pick up again (v3.21.0)
 
 ### User Story
@@ -1234,4 +1245,5 @@ The public page (`index.html`) follows Field Unit too, as `docs/DESIGN-field-uni
 - [x] Feature 66: Find a deck — search by name or card, ink filter, your decks apart from the defaults
 - [x] Feature 67: Find a session or a deck in the Library and in Pick up again
 - [x] Patch: Challenge banner on narrower screens, and a way out of the mulligan
+- [x] Feature 69: Pick a card and its menu option with number keys
 - [ ] Feature 68: Rules engine — rules assist, bot opponent, turn explorer (experimental, on `feat/68-rules-engine`)
