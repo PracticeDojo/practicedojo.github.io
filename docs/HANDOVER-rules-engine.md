@@ -1,6 +1,6 @@
 # Handover: rules engine (Feature 68)
 
-For the next agent picking up Feature 68. Read this first, then `AGENTS.md` and `docs/RSC-lorcana-engine.md`. The study is the plan; its §12 is the log of what was built and measured, newest first. Written 2026-10-27, last updated 2026-10-31 (What-if, on its own branch: see *Branches now*; then text logs, games played here, unfinished games and where to start).
+For the next agent picking up Feature 68. Read this first, then `AGENTS.md` and `docs/RSC-lorcana-engine.md`. The study is the plan; its §12 is the log of what was built and measured, newest first. Written 2026-10-27, last updated 2026-11-03 (What-if, on its own branch: see *Branches now*; then text logs, games played here, unfinished games and where to start; then why a replay stopped following the real game: gotchas 17–19).
 
 ## 1. Ground rules
 
@@ -167,6 +167,9 @@ node tools/engine-tune.mjs --compare '[{"exposed":0.5},{"hand":0.2}]' --holdout 
 14. **Matching a real move by card name isn't enough.** Both players can have the same card (both had Flash); a song has singers; two locations can share a name ("once during your turn"); choices can be the other player's. `realTurn` and `pickChoice` handle each; add to them rather than around them.
 15. **A game played here counts rounds; imports count each player's turn.** The Dojo's turn goes up when P1 starts (both players have a turn 1); replays and text logs number every player's turn. A line can mix both. What-if numbers turns one per player's turn (`lineOf`'s `turn`, and `state.turn` on the boards it hands the engine) and shows the node's own number (`label`). Use `game.label(turn)` for anything the player reads.
 16. **Duels.ink logs moves that were taken back** (`FREE_UNDO`, `CHOICE_UNDO`). `movesFromReplay` drops them (the last move with the choices after it; that player's last choice); without that, game A drifted from turn 13 back. A play by the player whose turn it isn't (DARK DANCE has them play a character from their discard for free) is made by the ability, through their recorded choices: only the turn's player makes moves (`TURN_START` says whose).
+17. **A replay's import guesses the opponent's hidden hand** (`buildOppPlayer`): the cards seen later in the replay, soonest first, in hand then deck. A card seen while still hidden (your Ursula - Deceiver looks at their hand, FIND A FRIEND or Besties, Assemble! put it there) must stay in the guess until it's seen again; counting only its first sighting dropped it from their hand from then until played, so What-if couldn't replay their real plays. Cards under a shifted card are on the board, not hidden.
+18. **The bot's candidates stop at 8 targets a prompt** (`searchCaps`: `targetPool` 8, `targetCombinationsPerFamily` 16; the log's diagnostics say `overflow-skip`). On a busy board a real target (their Support on your Woolter & Jesse) is past the cut, and the fallback was their first candidate (Support on their own Darkwing, then GOT YOU NOW banishing it). `enumerateAutomatedActionsForCurrentActor({ searchCaps })` lifts it; What-if's `realTurn` and `drain` ask for every target (`EVERY`). The search keeps the default caps.
+19. **Ink drops are paid through the move's `inkDrops` arg**, which the bot's candidates never carry (the candidate-to-move mapping drops it). Imports now carry each player's ink drops, but What-if still can't replay a play paid with one (Mickey Mouse - Best in Town's HOT DOG): not fixed.
 
 ## 8. Next steps (owner to choose)
 
@@ -186,6 +189,8 @@ Scoring follows the plan in the study's §8.1. Done 2026-10-28: their reply, the
 - Done 2026-10-31: text logs, games played here, unfinished games, and where to start (a picker for games that fork or are unfinished).
 - Done 2026-11-01: taken-back moves dropped from replays (gotcha 16); the turn recap records challenges, so *What you did* lists them for games played here (songs show as plays).
 - Done 2026-11-01: DARK DANCE's free play is the ability's, not a move (gotcha 16).
+- Done 2026-11-03 (study §12): the owner's game v alex elliott stopped at 1 turn back; now it replays from 3 back. Their hidden hand at import (gotcha 17), the bot's 8-target cap (gotcha 18), and two targets of one name (a challenge's target is the one with the damage the log says it had).
+- **Still open from it:** ink drops (gotcha 19); look-at-the-top effects (Besties, Assemble! puts 3 cards on the bottom, so the known cards they really drew later are buried: drifts from turn 14); TO THE RESCUE heals the first of three Nick Wildes, not the damaged one (the log's choice has the offered instance ids, not used yet). Also fixed: a turn that can't follow no longer lists "Nothing was played after this turn" (it has no control because the run stopped there).
 - **The other sample replay** (`01a08b6d…`) still drifts replayed from turns 9–15 (their Agustin Madrigal on turn 16, Demona on 20): to look at.
 - **The opponent model** is the weak point: their real moves, then the search's rest of the turn, or the search's own line when it scores more than 1 above. Watch for wins that come from the opponent not using something; the owner spots them.
 - **Results don't survive a reload** (branches do). Not asked for.

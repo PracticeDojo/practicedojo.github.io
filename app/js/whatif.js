@@ -51,7 +51,12 @@ window.DojoWhatIf = (() => {
                 return;
             }
             const family = FAMILIES[l.type];
-            if (!family || (family === 'challenge' && String(l.message).includes('|'))) return; // the detail line repeats it
+            if (!family) return;
+            if (family === 'challenge' && String(l.message).includes('|')) { // the detail line repeats it, with the damage the target had
+                const last = T().moves[T().moves.length - 1], d = l.data || {};
+                if (last && last.family === 'challenge' && Number.isInteger(d.defenderTotalDamage)) last.targetDamage = d.defenderTotalDamage - (d.actualDamageToDefender || 0);
+                return;
+            }
             if (active !== undefined && by !== undefined && by !== active) return; // made by an ability on the other's turn (DARK DANCE's free play): its choices make it
             const move = { family, card: refs[0].name };
             if ((family === 'challenge' || family === 'moveCharacterToLocation') && refs[1]) move.target = refs[1].name;
@@ -94,6 +99,7 @@ window.DojoWhatIf = (() => {
         return {
             moves: r.moves.filter(m => m && KNOWN.has(m.family) && name(m.card)).slice(0, 100).map(m => ({
                 family: m.family, card: name(m.card), target: name(m.target),
+                targetDamage: Number.isInteger(m.targetDamage) && m.targetDamage >= 0 ? m.targetDamage : undefined,
                 with: Array.isArray(m.with) ? m.with.map(name).filter(Boolean).slice(0, 8) : undefined,
                 exerted: typeof m.exerted === 'boolean' ? m.exerted : undefined
             })),
