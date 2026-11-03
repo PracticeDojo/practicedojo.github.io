@@ -469,6 +469,23 @@ Asked: why `01a08b6d…` (the owner won; What-if for the opponent) drifted repla
 
 `app-checks` 51/51 (new: turn 16's boost replayed; the text log's counts now include its boosts and still match the replay's).
 
+### 2026-11-03 · Why a replay stopped following the real game: their hidden hand, the bot's 8-target cap
+
+**Asked:** the owner's game v alex elliott (Steel/Emerald v Amber/Sapphire, lost 13–20 on turn 21) showed *Can't follow* from 1 turn back, so What-if found nothing. Find out why.
+
+Each turn was replayed alone from its imported board with the real moves and compared with the next board, then the game from each of the owner's turns. Before: turns 4, 5, 7, 11, 13, 17, 19 didn't replay, and the game drifted from every turn tried (from turn 20: 13–19, one short). Four causes:
+- **Their hidden hand** (handover gotcha 17). The import fills it with the cards seen later in the replay, but counted only each card's first sighting. The owner's Ursula - Deceiver looked at their hand on turn 6 (Duels.ink's `revealedHand`: two Judy Hopps - Day Camp Instructor, two Nick Wilde - Toy Drive Officer), FIND A FRIEND and Besties, Assemble! revealed cards into it, and Ursula looked again on turn 18 (Lionheart). Each of those then dropped out of their hand until played, so their real plays on turns 7, 11, 13, 17 and 21 weren't in hand. Now a card counts from its next sighting after the board; cards under a shifted card are on the board.
+- **The bot's 8-target cap** (gotcha 18). Turn 21: their Nick Wilde's Support went on the owner's Woolter & Jesse so Judy Hopps - Always Vigilant could banish it (5 {S} or more). With 7 of their own characters and the owner's Mushu in the list, Woolter was past the cut; the fallback put Support on their own Darkwing Duck and GOT YOU NOW banished it. `realTurn` and `drain` now ask for every target.
+- **Two targets of one name.** Turn 17: Judy Hopps - Lead Detective challenged the undamaged Woolter & Jesse, Nick the one with 3 damage; the replay picked the first. A challenge's detail line gives the target's damage (`defenderTotalDamage − actualDamageToDefender`); `movesFromReplay` keeps it as `targetDamage` and `realTurn` prefers that target.
+- **Ink drops** (gotcha 19): not imported, and the engine pays them only through the move's `inkDrops` arg, which the bot's candidates never carry. Imports now carry them; the engine side is open (turns 4 and 5 still don't replay).
+
+**Measured** (exact replay; winner, lore, real moves missed):
+- The owner's game, on `main` (with `realDecks`): every turn from 6 to 20 replays alone except 19 (TO THE RESCUE heals the first of three Nick Wildes, not the damaged one: no change to the result). From turns 12 to 20 the game ends 13–20 as it did (before: from none; `main` alone still turns 7, 11, 13, 17 and 21 wrong). From 10 back it drifts (9–14): not looked at yet. Measured first on the old What-if branch, without `realDecks`, it drifted from 14: Besties, Assemble! on turn 15 put 3 cards on the bottom, burying the known cards they really drew later.
+- Measured on the old What-if branch: game A (`01a15b0a…`) exact from turn 9 (was 11); `01a08b6d…` unchanged.
+- A turn that can't follow no longer also lists "Nothing was played after this turn" (it has no control because the run stopped there).
+
+`app-checks` 50/50.
+
 ### 2026-11-01 · Moves taken back in a replay; challenges in the turn recap
 
 **Moves taken back.** `movesFromReplay` didn't read Duels.ink's undo lines, so a move a player took back stayed among the real moves. Game A's turn 13: the owner quested with Launchpad, took it back (`FREE_UNDO`) and used his ability instead; then took back a discard (`CHOICE_UNDO`: Strength of a Raging Fire, then Mushu). Replayed, Launchpad quested (+1 lore) and his ability then failed. In the other sample, turn 13: Chernabog was played, DARK DANCE declined, all of it taken back and Chernabog played again; replayed, the undone "no" answered DARK DANCE. Now a `FREE_UNDO` drops the last move with the choices made after it, and a `CHOICE_UNDO` that player's last choice (text logs already dropped theirs).

@@ -1118,7 +1118,7 @@ function searchCost(args: { deck1: string; deck2: string; seed?: string; turn?: 
 // The game's log gives both players' real moves per turn, by card name. The replay matches them to the
 // engine's candidates: a sung card and its singers, a target and whose card it is, the other player's
 // choices, Bodyguard's exerted entry, a second move to the other copy of a location, plays from the discard.
-type RealMove = { family: string; card: string; target?: string; with?: string[]; exerted?: boolean; ability?: string };
+type RealMove = { family: string; card: string; target?: string; targetDamage?: number; with?: string[]; exerted?: boolean; ability?: string };
 type Choice = { name?: string; option?: string; owner?: number; by?: number };
 type RealTurn = { moves: RealMove[]; choices: Choice[] };
 type Prefer = { choices: Choice[] };
@@ -1129,6 +1129,9 @@ const ownerOf = (server: Server, id: string) => {
 const fullName = (a?: ActCard) => (a ? (a.version ? `${a.name} - ${a.version}` : a.name) : "");
 const sameCard = (a: ActCard | undefined, name?: string) => !!a && !!name && (fullName(a) === name || a.name === name);
 const ownerTurn = (server: Server) => (server.getState() as unknown as RawState).ctx.status.turnOwnerId as string;
+// The bot's candidates stop at 8 targets a prompt (searchCaps): on a busy board the real target can be past
+// them (their Support on your character). Replaying the real game asks for all of them.
+const EVERY = { searchCaps: { targetPool: 64, targetCombinationsPerFamily: 512 } };
 
 // The candidate that is the actor's next real choice (used up when found): a target (whose card it is,
 // when known), yes / no for a "may" ability, or another named option. The two choices after the next one
@@ -1156,7 +1159,7 @@ function pickChoice(server: Server, actor: string, candidates: unknown[], prefer
 function drain(server: Server, prefer?: Prefer) {
   for (let i = 0; i < 60 && !server.isGameOver(); i++) {
     if (!server.getBagCount() && !server.getPendingEffects().length) return true;
-    const en = server.enumerateAutomatedActionsForCurrentActor();
+    const en = server.enumerateAutomatedActionsForCurrentActor(EVERY);
     if (!en.actorId || !en.candidates.length) return false;
     const c = (prefer && pickChoice(server, en.actorId, en.candidates, prefer)) || en.candidates[0];
     if (!applyCandidate(server, en.actorId, c).success) return false;
@@ -1171,7 +1174,7 @@ function realTurn(server: Server, who: string, real: RealTurn | undefined, prefe
   const movedTo = new Set<string>();
   for (const m of real?.moves ?? []) {
     if (!drain(server, prefer) || server.isGameOver() || ownerTurn(server) !== who) break;
-    const en = server.enumerateAutomatedActionsForCurrentActor();
+    const en = server.enumerateAutomatedActionsForCurrentActor(EVERY);
     if (en.actorId !== who) break;
     let fits = en.candidates.filter((x) => {
       const a = describe(server, x as never, "me");
@@ -1187,6 +1190,10 @@ function realTurn(server: Server, who: string, real: RealTurn | undefined, prefe
       if (m.family === "playCard") return m.with ? (a.via === "sing" || a.via === "singTogether") && m.with.every((n) => (a.with ?? []).some((w) => sameCard(w, n))) : a.via !== "sing" && a.via !== "singTogether";
       return true;
     });
+    // Two targets of one name (two Woolter & Jesse): the one with the damage it really had.
+    const meta = (server.getState() as unknown as RawState).ctx.zones.private.cardMeta;
+    const hurt = m.targetDamage == null ? [] : fits.filter((x) => Number(meta[describe(server, x as never, "me").target?.id ?? ""]?.damage ?? 0) === m.targetDamage);
+    if (hurt.length) fits = hurt;
     // Two locations of one name: the one nobody moved to this turn ("once during your turn").
     const unused = fits.filter((x) => !movedTo.has(String((x as { locationId?: string }).locationId)));
     if (m.family === "moveCharacterToLocation" && unused.length) fits = unused;
