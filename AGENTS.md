@@ -29,6 +29,8 @@ This file provides system instructions and context for AI agents working in this
 | `.claude/skills/` | Agent skills. `dojo-screenshots/` = the screenshot tool (see below) |
 | `tools/` | Node scripts for the repo, never loaded by the site. `refresh-landing.mjs` = keeps the landing page in step with the app, `help.mjs` = builds and checks the manual (see below), `app-checks.mjs` = headless checks of imports, challenges, session files and the device library |
 | `docs/samples/` | Sample Duels.ink logs and replays for testing imports |
+| `app/vendor/lorcana-engine/` | Feature 68 (beta): the Lorcana rules engine, built by `tools/build-engine.mjs` from a pinned tcg-engines commit. Never edit it by hand; change `tools/engine-adapter/` or the build's `PATCHES` and rebuild |
+| `app/lab/` | Feature 68 (beta): developer pages, such as `engine.html`, which times the engine in a browser |
 
 ## Screenshots
 To see a UI change or show the user what something looks like, use the screenshot tool in `.claude/skills/dojo-screenshots/` (Claude Code loads it as the `dojo-screenshots` skill). Don't write your own Playwright or http-server script. Read its `SKILL.md` for recipes; the common one is:
@@ -97,6 +99,16 @@ Every branch is named `<type>/<slug>`. Branches made by an AI agent put `claude/
 Examples: `feat/23-share-links`, `fix/landing-pin-05-position`, `design/multiverse-glass-notes`, `docs/branch-naming`, `claude/fix-lore-box-count`.
 
 If your session starts on a branch named for you (for example `claude/epic-meitner-blh8tb`), create the conventional branch from it before your first commit and push that instead. If the environment won't let you push to it, keep the assigned branch, give the PR a title in the form `type: what changes`, and tell the user the conventional name so they can rename the branch on GitHub.
+
+## Rules engine (Feature 68, beta)
+
+The Lorcana rules engine (rules assist, proposed plays, the bot opponent, the score lab, What-if; the vendored `tcg-engines` build and its worker) is on `main` since v3.22.0, as a beta: off by default, switched on in Tweaks → *Rules engine*. Its manual section is `app/help/articles/11-rules/`.
+
+- Work on it follows the usual branch and version rules above (for example `claude/fix-<slug>`, or `claude/feat-68-<slug>` for a new part of it). The old long-lived branch `feat/68-rules-engine` is retired: don't build on it, and don't delete it.
+- While it's a beta, the landing page doesn't describe it: no copy or pins about it in `index.html`. `node tools/refresh-landing.mjs` still runs after a version bump.
+- Never edit `app/vendor/lorcana-engine/` by hand: change `tools/engine-adapter/` or the build's `PATCHES`, then `node tools/build-engine.mjs`.
+- Record measured results in the study, `docs/RSC-lorcana-engine.md` (phase table §9, log §12).
+- Picking it up in a new session? Read `docs/HANDOVER-rules-engine.md` first: state, commands, gotchas and next steps. Keep it current when you stop.
 
 ## Keeping a dev guide
 - Whenever the user asks to `update the dev guide`, add a concise distillation of the session as a section in `docs/personal_dojo_dev_guide.md`.

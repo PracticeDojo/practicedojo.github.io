@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex">
+    <title>Engine lab</title>
+    <link rel="stylesheet" href="../css/field-unit.css">
+</head>
+<body>
+    <!-- Feature 68, Phase 0 (docs/RSC-lorcana-engine.md): times the rules engine in this browser.
+         ?main=1 loads the engine on the page instead of in a worker (for CPU-throttled runs). -->
+    <main>
+        <h1>Engine lab</h1>
+        <p>Times the Lorcana rules engine in this browser: worker start, bot games, the Set 14 demo's round trip, and a search node.</p>
+        <button id="run" type="button">Run</button>
+        <pre id="out">Not run yet.</pre>
+    </main>
+    <script src="../js/rules.js"></script>
+    <script src="engine.js"></script>
+</body>
+</html>

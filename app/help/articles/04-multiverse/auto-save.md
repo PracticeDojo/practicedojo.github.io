@@ -31,7 +31,7 @@ Open the ☰ menu. The **Auto-save every turn** switch is near the bottom, above
 When a turn starts (the player has readied and drawn), the Dojo saves the board as a node. Its name says the turn and the player: **Turn 5 - Player 2 Active** holds the board at the start of Player 2's turn 5. When that turn ends, the same node gets:
 
 - the note written for that turn (see [Turn notes](help:turn-notes)),
-- a **Turn recap** of that turn: what was drawn, inked, played, shifted, discarded, quested and banished,
+- a **Turn recap** of that turn: what was drawn, inked, played, shifted, discarded, quested, challenged and banished,
 - the cards behind the recap, in sections such as **Played**, **Inked** and **Drawn**.
 
 So a node is one turn: the board it starts from and what was done in it. Load it to play that turn again. The new node hangs off the node you were on, so the tree follows the line you're playing.

@@ -41,6 +41,11 @@
       "title": "Settings"
     },
     {
+      "id": "rules",
+      "dir": "11-rules",
+      "title": "Rules engine (beta)"
+    },
+    {
       "id": "faq",
       "dir": "09-faq",
       "title": "Help and fixes"

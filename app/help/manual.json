@@ -108,6 +108,18 @@
    ]
   },
   {
+   "id": "rules",
+   "title": "Rules engine (beta)",
+   "articles": [
+    "rules-engine",
+    "rules-assist",
+    "proposed-plays",
+    "bot-opponent",
+    "score-lab",
+    "what-if"
+   ]
+  },
+  {
    "id": "faq",
    "title": "Help and fixes",
    "articles": [
@@ -1652,7 +1664,7 @@
      "slug": "good-to-know"
     }
    ],
-   "body": "The Multiverse keeps every turn you've saved, so you can go back to any of them and play it another way.\n\nEach saved board is a **node**. Nodes link up turn by turn into a line: the game as you played it. Go back to an earlier node, play on from it, and the new turns grow a second line from that point: a branch. All the lines together make a tree, and that tree is the Multiverse. It's how you answer \"what if I had challenged instead of quested on turn 6?\": play both and compare.\n\n## Open the Multiverse\n\n:::desktop\nClick **Multiverse** in the top bar, or press {key:M}. Press {key:M} or {key:Esc} again, or the ✕, to go back to the board.\n:::\n\n:::phone\nTap the branch icon in the top bar. Tap ✕ to go back to the board.\n:::\n\n[Show me](show:multiverse)\n\n## What you see\n\n- **The canvas** draws the tree, the earliest turns on the left. The path from the start to the node you're on is highlighted; the other lines are grey.\n- **The panel** sits beside the canvas (under it on a phone). It shows the node you select, with **Play from here**, and holds **Save current unfinished turn**.\n\n[Show me](show:tree-panel)\n\n## Good to know\n\n- Nodes come from [auto-save](help:auto-save) at the start of each turn, from [saving the turn you're in](help:save-unfinished-turn), and from imported Duels.ink games. When a player reaches 20 lore, the Dojo also saves a **Game Over** node that closes the branch.\n- Selecting a node only shows it. Your board changes when you press **Play from here**.\n- Jumping never loses the board you leave: see [\"Left here\" snapshots](help:left-here).\n- The tree is part of the session: it's saved with it, and **Export** in the Multiverse header writes the session to a file, tree included.\n"
+   "body": "The Multiverse keeps every turn you've saved, so you can go back to any of them and play it another way.\n\nEach saved board is a **node**. Nodes link up turn by turn into a line: the game as you played it. Go back to an earlier node, play on from it, and the new turns grow a second line from that point: a branch. All the lines together make a tree, and that tree is the Multiverse. It's how you answer \"what if I had challenged instead of quested on turn 6?\": play both and compare.\n\n## Open the Multiverse\n\n:::desktop\nClick **Multiverse** in the top bar, or press {key:M}. Press {key:M} or {key:Esc} again, or the ✕, to go back to the board.\n:::\n\n:::phone\nTap the branch icon in the top bar. Tap ✕ to go back to the board.\n:::\n\n[Show me](show:multiverse)\n\n## What you see\n\n- **The canvas** draws the tree, the earliest turns on the left. The path from the start to the node you're on is highlighted; the other lines are grey.\n- **The panel** sits beside the canvas (under it on a phone). It shows the node you select, with **Play from here**, and holds **Save current unfinished turn**. With the rules engine on, **What-if** in the header opens [What-if](help:what-if) at the top of the panel.\n\n[Show me](show:tree-panel)\n\n## Good to know\n\n- Nodes come from [auto-save](help:auto-save) at the start of each turn, from [saving the turn you're in](help:save-unfinished-turn), and from imported Duels.ink games. When a player reaches 20 lore, the Dojo also saves a **Game Over** node that closes the branch.\n- Selecting a node only shows it. Your board changes when you press **Play from here**.\n- Jumping never loses the board you leave: see [\"Left here\" snapshots](help:left-here).\n- The tree is part of the session: it's saved with it, and **Export** in the Multiverse header writes the session to a file, tree included.\n"
   },
   {
    "id": "auto-save",
@@ -1698,7 +1710,7 @@
      "slug": "good-to-know"
     }
    ],
-   "body": "With **Auto-save every turn** on, every turn gets a node in the Multiverse, so the whole game is saved turn by turn without you doing anything.\n\n## Turn auto-save on or off\n\n:::desktop\nThe **Auto-save every turn** switch sits at the foot of the side rail, above **Quest** and **End turn**.\n\n[Show me](show:auto-save)\n:::\n\n:::phone\nOpen the ☰ menu. The **Auto-save every turn** switch is near the bottom, above **Quest** and **End turn**.\n\n[Show me](show:menu)\n:::\n\n## What an auto-save keeps\n\nWhen a turn starts (the player has readied and drawn), the Dojo saves the board as a node. Its name says the turn and the player: **Turn 5 - Player 2 Active** holds the board at the start of Player 2's turn 5. When that turn ends, the same node gets:\n\n- the note written for that turn (see [Turn notes](help:turn-notes)),\n- a **Turn recap** of that turn: what was drawn, inked, played, shifted, discarded, quested and banished,\n- the cards behind the recap, in sections such as **Played**, **Inked** and **Drawn**.\n\nSo a node is one turn: the board it starts from and what was done in it. Load it to play that turn again. The new node hangs off the node you were on, so the tree follows the line you're playing.\n\n## Good to know\n\n- With the switch off, ending a turn saves nothing. Save by hand with [Save current unfinished turn](help:save-unfinished-turn).\n- The switch is on each time you open the Dojo; turning it off lasts until you reload.\n- Each player's turn 1 node holds the dealt hand, before the mulligan. Load it to mulligan again or build a different opening hand.\n- Play a turn again from its node and end it, and the new line gets a node of its own beside the old one: the old node keeps its note and recap. See [Branching](help:branches).\n- When a player reaches 20 lore, the Dojo saves a **Game Over** node even with auto-save off.\n"
+   "body": "With **Auto-save every turn** on, every turn gets a node in the Multiverse, so the whole game is saved turn by turn without you doing anything.\n\n## Turn auto-save on or off\n\n:::desktop\nThe **Auto-save every turn** switch sits at the foot of the side rail, above **Quest** and **End turn**.\n\n[Show me](show:auto-save)\n:::\n\n:::phone\nOpen the ☰ menu. The **Auto-save every turn** switch is near the bottom, above **Quest** and **End turn**.\n\n[Show me](show:menu)\n:::\n\n## What an auto-save keeps\n\nWhen a turn starts (the player has readied and drawn), the Dojo saves the board as a node. Its name says the turn and the player: **Turn 5 - Player 2 Active** holds the board at the start of Player 2's turn 5. When that turn ends, the same node gets:\n\n- the note written for that turn (see [Turn notes](help:turn-notes)),\n- a **Turn recap** of that turn: what was drawn, inked, played, shifted, discarded, quested, challenged and banished,\n- the cards behind the recap, in sections such as **Played**, **Inked** and **Drawn**.\n\nSo a node is one turn: the board it starts from and what was done in it. Load it to play that turn again. The new node hangs off the node you were on, so the tree follows the line you're playing.\n\n## Good to know\n\n- With the switch off, ending a turn saves nothing. Save by hand with [Save current unfinished turn](help:save-unfinished-turn).\n- The switch is on each time you open the Dojo; turning it off lasts until you reload.\n- Each player's turn 1 node holds the dealt hand, before the mulligan. Load it to mulligan again or build a different opening hand.\n- Play a turn again from its node and end it, and the new line gets a node of its own beside the old one: the old node keeps its note and recap. See [Branching](help:branches).\n- When a player reaches 20 lore, the Dojo saves a **Game Over** node even with auto-save off.\n"
   },
   {
    "id": "save-unfinished-turn",
@@ -2829,9 +2841,10 @@
     "theme",
     "card-display",
     "palette",
-    "forecast"
+    "forecast",
+    "rules-engine"
    ],
-   "verified": "v3.11.0",
+   "verified": "v3.22.0",
    "todo": false,
    "headings": [
     {
@@ -2850,7 +2863,7 @@
      "slug": "good-to-know"
     }
    ],
-   "body": "Tweaks is where the Dojo's settings live: how it looks, how big the cards are, and how much it tells you about a challenge.\n\n## Open Tweaks\n\n:::desktop\nPress the sliders button at the right end of the top bar. Press it again, or **×**, to close.\n\n[Show me](show:tweaks)\n:::\n\n:::phone\nTap **⋯** in the top bar, then **Tweaks**. Tap **×** to close.\n:::\n\nTweaks opens from a match. On the home screen, only the theme can be changed (the **Auto / Day / Night** switch at the top).\n\n## What's in it\n\n- **Theme**: **Auto**, **Day** or **Night**. See [Day, night and accent](help:theme).\n- **Accent**: the colour of the main buttons and highlights. See [Day, night and accent](help:theme).\n- **Card size**: how big cards are. See [Card size and Art / Text](help:card-display).\n- **Card display**: **Art** or **Text** for every card. See [Card size and Art / Text](help:card-display).\n- **Challenge forecast**: **Off**, **Light** or **Full**. See [Challenge forecast](help:forecast).\n- **Player palette**: **Competition**, **Modern** or **Mono**. See [Player palette](help:palette).\n\n## Good to know\n\n- A change shows straight away; there's nothing to save.\n- Tweaks are kept in this browser. They don't go to your account, and clearing the site's data resets them.\n"
+   "body": "Tweaks is where the Dojo's settings live: how it looks, how big the cards are, and how much it tells you about a challenge.\n\n## Open Tweaks\n\n:::desktop\nPress the sliders button at the right end of the top bar. Press it again, or **×**, to close.\n\n[Show me](show:tweaks)\n:::\n\n:::phone\nTap **⋯** in the top bar, then **Tweaks**. Tap **×** to close.\n:::\n\nTweaks opens from a match. On the home screen, only the theme can be changed (the **Auto / Day / Night** switch at the top).\n\n## What's in it\n\n- **Theme**: **Auto**, **Day** or **Night**. See [Day, night and accent](help:theme).\n- **Accent**: the colour of the main buttons and highlights. See [Day, night and accent](help:theme).\n- **Card size**: how big cards are. See [Card size and Art / Text](help:card-display).\n- **Card display**: **Art** or **Text** for every card. See [Card size and Art / Text](help:card-display).\n- **Challenge forecast**: **Off**, **Light** or **Full**. See [Challenge forecast](help:forecast).\n- **Rules engine** (beta): **Off**, **Assist** or **Lab**. See [The rules engine](help:rules-engine).\n- **Player palette**: **Competition**, **Modern** or **Mono**. See [Player palette](help:palette).\n\n## Good to know\n\n- A change shows straight away; there's nothing to save.\n- Tweaks are kept in this browser. They don't go to your account, and clearing the site's data resets them.\n"
   },
   {
    "id": "theme",
@@ -3031,6 +3044,344 @@
     }
    ],
    "body": "**Challenge forecast** sets how much the Dojo tells you about a [challenge](help:challenge) before you make it: who would be banished and how much damage each card would have.\n\n## Choose how much\n\nIn [Tweaks](help:tweaks), **Challenge forecast** has three choices: **Off**, **Light** (the default) and **Full**.\n\n[Show me](show:tweak-forecast)\n\n:::mouse\nWhile you drag your character onto an opponent's card, or point at one in challenge mode:\n\n- **Off** shows only the arrow.\n- **Light** shows one line over the target: who gets banished, and the damage after.\n- **Full** shows a forecast card with each card's damage before and after, marked **BANISHED** or **SURVIVES**, and the extra damage on both cards. Once you pick an attacker in challenge mode, every opponent card also gets an outcome badge.\n\nThe challenge mode bar has the same **Off / Light / Full** switch, so you can change it mid-challenge.\n\n[Show me](show:challenge-banner)\n:::\n\n:::touch\nWith no pointer to hover, **Light** and **Full** both work the same way: once you pick your character in challenge mode, every opponent card gets an outcome badge. **Off** shows no badges.\n:::\n\n## Good to know\n\n- The forecast only predicts. The Dojo never stops a challenge: if your character is exerted or drying, it lets you and says so.\n- The setting is kept in this browser.\n"
+  },
+  {
+   "id": "rules-engine",
+   "section": "rules",
+   "title": "The rules engine (beta)",
+   "summary": "What the rules engine is, how to switch it on (Off, Assist, Lab), and what it never does.",
+   "devices": [
+    "desktop",
+    "phone"
+   ],
+   "aliases": [
+    "rules",
+    "rules mode",
+    "engine",
+    "beta",
+    "legal moves",
+    "ai",
+    "computer",
+    "assist",
+    "lab",
+    "rules engine off"
+   ],
+   "targets": [
+    "tweak-rules"
+   ],
+   "related": [
+    "rules-assist",
+    "proposed-plays",
+    "bot-opponent",
+    "score-lab",
+    "what-if",
+    "tweaks"
+   ],
+   "verified": "v3.22.0",
+   "todo": false,
+   "headings": [
+    {
+     "level": 2,
+     "text": "Switch it on",
+     "slug": "switch-it-on"
+    },
+    {
+     "level": 2,
+     "text": "What it does",
+     "slug": "what-it-does"
+    },
+    {
+     "level": 2,
+     "text": "Good to know",
+     "slug": "good-to-know"
+    }
+   ],
+   "body": "The rules engine is an optional helper that knows Lorcana's rules. It runs a Lorcana rules engine in your browser, next to the board, and reads the board as you play. It's in **beta**: it's useful already, but it misses some cards and situations, and it can change.\n\nThe board stays yours. The engine never blocks a move: you're still the referee, as in [You play both sides](help:you-play-both-sides). Switch it off and the Dojo is exactly as it was.\n\n## Switch it on\n\nIn [Tweaks](help:tweaks), **Rules engine** has three choices:\n\n- **Off** (the default): the sandbox, with no engine.\n- **Assist**: the engine marks what the rules allow, suggests plays, can play a seat as a bot, and runs What-if.\n- **Lab**: Assist, plus the score lab, where you see and change how plays are scored.\n\n[Show me](show:tweak-rules)\n\nThe first time you switch it on, the Dojo loads the engine and its card data (about 800 KB). After that it starts at once.\n\n## What it does\n\n- **Marks the legal moves** on the board and lists them in each card's menu. See [What the rules allow](help:rules-assist).\n- **Suggests plays** for the rest of the turn and can put one on the board. See [Proposed plays](help:proposed-plays).\n- **Plays a seat** as your opponent, one move at a time. See [Play against the bot](help:bot-opponent).\n- **Shows the score** behind the suggestions, and lets you change it (Lab). See [The score lab](help:score-lab).\n- **Looks for a win you missed** in a game you lost. See [What-if](help:what-if).\n\n## Good to know\n\n- It's a beta. When the engine and the board disagree, the board wins: fix the board by hand, as you always could.\n- The engine only knows what's on the board. It doesn't know which cards were played earlier this turn, apart from how many you inked, or an effect that's waiting to be resolved.\n- An effect that lasts into the next turn is dropped when the bot hands a turn back to the board.\n- On a phone, a tap on a card opens the card drawer, which has no rules list yet. The marks on the cards still show.\n- The setting is kept in this browser.\n"
+  },
+  {
+   "id": "rules-assist",
+   "section": "rules",
+   "title": "What the rules allow",
+   "summary": "The marks on cards that have a legal move, and the Rules list in a card's menu.",
+   "devices": [
+    "desktop",
+    "phone"
+   ],
+   "aliases": [
+    "legal moves",
+    "pips",
+    "rings",
+    "dots on cards",
+    "can i play this",
+    "why can't i play",
+    "needs ink",
+    "rules menu"
+   ],
+   "targets": [
+    "tweak-rules"
+   ],
+   "related": [
+    "rules-engine",
+    "card-actions",
+    "proposed-plays"
+   ],
+   "verified": "v3.22.0",
+   "todo": false,
+   "headings": [
+    {
+     "level": 2,
+     "text": "The marks on cards",
+     "slug": "the-marks-on-cards"
+    },
+    {
+     "level": 2,
+     "text": "The Rules list in a card's menu",
+     "slug": "the-rules-list-in-a-cards-menu"
+    },
+    {
+     "level": 2,
+     "text": "Good to know",
+     "slug": "good-to-know"
+    }
+   ],
+   "body": "With **Rules engine** on **Assist** or **Lab** (see [The rules engine](help:rules-engine)), the Dojo marks what the rules allow the player whose turn it is.\n\n## The marks on cards\n\nA card with a legal move gets a ring and a row of small dots under it, one per kind of move:\n\n- **Olive**: quest, or put it in the inkwell.\n- **Coral**: challenge.\n- **Bone** (pale): everything else, such as play it, sing a song with it, shift, move to a location or use an ability.\n\nA card with no legal move has no marks. The marks follow the board: change anything and they're read again.\n\n## The Rules list in a card's menu\n\n:::desktop\nOpen a card's menu (click or right-click it). With the engine on, the menu starts with **Rules**:\n\n- each legal move, with how many targets it has (**Challenge · 1 target**);\n- or, for a card in hand that can't be played, why not (**Needs 4 ink, 1 ready**).\n\nThe list only tells you. The menu's other items work as always, and nothing is blocked.\n:::\n\n:::phone\nA tap on a card opens the card drawer, which doesn't have the Rules list yet. The marks on the cards still show what's legal.\n:::\n\n## Good to know\n\n- The marks are for the player whose turn it is.\n- They're the engine's reading of the board. If a card does something the engine doesn't know, trust the card and play it by hand.\n"
+  },
+  {
+   "id": "proposed-plays",
+   "section": "rules",
+   "title": "Proposed plays (Suggest)",
+   "summary": "Ask the engine for the best ways to play the rest of the turn, read why, then play one or keep it as a branch.",
+   "devices": [
+    "desktop",
+    "phone"
+   ],
+   "aliases": [
+    "suggest",
+    "best move",
+    "best play",
+    "hint",
+    "what should i play",
+    "lines",
+    "plays tab",
+    "play it",
+    "save as branch",
+    "solver"
+   ],
+   "targets": [
+    "suggest",
+    "plays-tab",
+    "plays-sheet"
+   ],
+   "related": [
+    "rules-engine",
+    "score-lab",
+    "branches",
+    "undo"
+   ],
+   "verified": "v3.22.0",
+   "todo": false,
+   "headings": [
+    {
+     "level": 2,
+     "text": "Ask for plays",
+     "slug": "ask-for-plays"
+    },
+    {
+     "level": 2,
+     "text": "Read a line",
+     "slug": "read-a-line"
+    },
+    {
+     "level": 2,
+     "text": "Play it, or keep it",
+     "slug": "play-it-or-keep-it"
+    },
+    {
+     "level": 2,
+     "text": "Good to know",
+     "slug": "good-to-know"
+    }
+   ],
+   "body": "With the rules engine on, **Suggest** tries orders of play for the rest of the turn and shows the best lines: what to play, quest and challenge, the lore each gains, and why it scores.\n\n## Ask for plays\n\n:::desktop\nPress **Suggest** beside **Quest**, or the **Plays** tab at the top of the draw odds column. The lines appear in that tab after a few seconds.\n\n[Show me](show:suggest)\n:::\n\n:::phone\nTap **☰**, then **Suggest**. The lines open in a **Proposed plays** sheet at the bottom; **×** closes it.\n:::\n\nThe search plays the board for the player whose turn it is. If the board changes, the lines say so: press **Search again** (or **↻** at the top) to look again.\n\n## Read a line\n\nEach line has a row: its number, the lore it gains (**+2 lore**), the lore after it (**18–2**), and its score against ending the turn now (**+4.0**).\n\n- **Line 1 is open**: its steps in order (**Play**, **Quest**, **Ink**, …, with what an ability did under its move) and **Why**, the three reasons that moved its score most (**lore +2.0**, **exposed −1.0**).\n- **The others are closed** and say how they differ from line 1 (*Like line 1, but play Strength of a Raging Fire → Prince Phillip instead of play Elinor*). Click or tap a row to open it.\n- **Show 8 more lines** (or however many are left) shows the rest: the search keeps up to 12.\n- A red row at the top means ending the turn now loses: their characters can reach 20 next turn. It says whether the lines stop that.\n\n:::mouse\nPoint at a card in a step to see it, at an ability for its text, or at a reason or the score for what it means.\n:::\n\n## Play it, or keep it\n\n- **Play it** puts the end of the line on the board. It's one step: **Undo** takes it back. The turn's recap and log are written as if you'd played it.\n- **Save as branch** keeps the line as a new node in the [Multiverse](help:branches), without changing the board.\n\n## Good to know\n\n- The score is a guess at how good the board is for you, from lore, what's in play, what's exposed to a challenge and their best reply. [The score lab](help:score-lab) shows it and lets you change it.\n- The search has a time limit. On a busy board it may stop early and say so; the lines are still the best it found.\n"
+  },
+  {
+   "id": "bot-opponent",
+   "section": "rules",
+   "title": "Play against the bot",
+   "summary": "Let the rules engine play one seat, automatically or one move at a time, and take over whenever you like.",
+   "devices": [
+    "desktop",
+    "phone"
+   ],
+   "aliases": [
+    "bot",
+    "ai opponent",
+    "computer opponent",
+    "play against computer",
+    "solo",
+    "cpu",
+    "auto play",
+    "step",
+    "take over"
+   ],
+   "targets": [
+    "bot",
+    "bot-banner"
+   ],
+   "related": [
+    "rules-engine",
+    "you-play-both-sides",
+    "undo"
+   ],
+   "verified": "v3.22.0",
+   "todo": false,
+   "headings": [
+    {
+     "level": 2,
+     "text": "Start the bot",
+     "slug": "start-the-bot"
+    },
+    {
+     "level": 2,
+     "text": "While it plays",
+     "slug": "while-it-plays"
+    },
+    {
+     "level": 2,
+     "text": "Your turn",
+     "slug": "your-turn"
+    },
+    {
+     "level": 2,
+     "text": "Good to know",
+     "slug": "good-to-know"
+    }
+   ],
+   "body": "With the rules engine on, the bot can play one seat (P1 or P2) while you play the other. It plays one move at a time, and you can watch, step through or take over.\n\n## Start the bot\n\n:::desktop\nPress **Bot** in the top bar.\n:::\n\n:::phone\nTap the robot key in the top bar.\n:::\n\n[Show me](show:bot)\n\nIn the menu:\n\n- **Bot plays**: **Off**, **P1** or **P2**.\n- **Pace**: **Auto** plays its moves one after another; **Step** waits for you to ask for each one.\n- **Speed** (for Auto): **Slow**, **Normal** or **Fast**.\n\nThe top bar then says **Bot P2** (or P1). Your seat stays at the bottom of the board.\n\n## While it plays\n\nA banner under the top bar shows what the bot is doing (**Its turn**, **Thinking…**) and its last move, with:\n\n- **Auto** · **Step**: switch the pace;\n- **Pause** (in Auto) or **Next** (in Step): stop, or play its next move;\n- **Take over**: switch the bot off and play its seat yourself.\n\n[Show me](show:bot-banner)\n\nWhen the bot needs you to choose something during its turn (a card of yours an effect targets, say), the banner asks you.\n\n:::desktop\nKeys: {key:P} switches **Auto** and **Step**, {key:N} plays its next move.\n:::\n\n## Your turn\n\nPlay your turn as always, then press **End turn**: the engine runs the turn change (start- and end-of-turn effects) and the bot plays its turn.\n\n## Good to know\n\n- Each bot move is one **Undo** step, and the log says **Bot: …** for each.\n- Switch it off at any time; switch it on again and it carries on from the board as it is.\n- If the bot gets stuck, it pauses and the turn is yours to finish.\n- A new game, or one you load (library, file, demo or a Duels.ink import), starts with the bot off.\n"
+  },
+  {
+   "id": "score-lab",
+   "section": "rules",
+   "title": "The score lab",
+   "summary": "See how the engine scores a board, change the weights, keep profiles, and add your own terms.",
+   "devices": [
+    "desktop",
+    "phone"
+   ],
+   "aliases": [
+    "score",
+    "weights",
+    "lab",
+    "profile",
+    "evaluation",
+    "terms",
+    "my terms",
+    "new term",
+    "card numbers",
+    "tune"
+   ],
+   "targets": [
+    "tweak-rules",
+    "score-tab"
+   ],
+   "related": [
+    "proposed-plays",
+    "rules-engine"
+   ],
+   "verified": "v3.22.0",
+   "todo": false,
+   "headings": [
+    {
+     "level": 2,
+     "text": "The Score tab",
+     "slug": "the-score-tab"
+    },
+    {
+     "level": 2,
+     "text": "Card numbers",
+     "slug": "card-numbers"
+    },
+    {
+     "level": 2,
+     "text": "Profiles",
+     "slug": "profiles"
+    },
+    {
+     "level": 2,
+     "text": "Your own terms",
+     "slug": "your-own-terms"
+    },
+    {
+     "level": 2,
+     "text": "Good to know",
+     "slug": "good-to-know"
+    }
+   ],
+   "body": "[Proposed plays](help:proposed-plays) are ranked by a score: a number for how good the board is for the player whose turn it is. The score lab shows that score and lets you change it. Switch it on in [Tweaks](help:tweaks): **Rules engine** → **Lab** (Lab includes everything Assist does).\n\n## The Score tab\n\n:::desktop\nPress **Score** at the top of the draw odds column.\n\n[Show me](show:score-tab)\n\n- **Score now**: the score for the player to move.\n- **Terms**: each part of the score (**lore**, **lore on board** yours and theirs, **board**, **exposed**, **hand**, **ink**, **race to 20**, **their turn**), with a box to switch it on or off, its weight, and what it's worth on this board now. Type a weight, or click a term's name for a slider. Point at a term to see what it measures.\n:::\n\n:::phone\nThe Score tab is on desktop only (phones don't have the draw odds column). The card numbers below still show.\n:::\n\n## Card numbers\n\nIn Lab, each card in play shows its share of the score (**+1.5**, **−3.7**): what it adds through lore on board, board and exposed, and your terms that count cards in play. The numbers follow every change to the board.\n\n:::mouse\nPoint at a number for the sum behind it (*lore on board 2 × 0.6 = +1.20*).\n:::\n\n## Profiles\n\nA profile is a set of weights and terms, kept in this browser. The list at the top of the Score tab picks the one in use.\n\n- **Default** is the engine's own weights. It never changes: edit it and you get a draft (**Default · edited**) that you keep with **Save** as a new profile.\n- **⋯** has **Save as…**, **Rename**, **Delete**, **Undo edits**, **Export** (to a file) and **Import**.\n\nWith a profile other than Default, each proposed line shows **↑** or **↓** against where Default put it, and the open line lists **All terms** with what each changed. Changing the weights marks the lines as old: press **Search again**.\n\n## Your own terms\n\nUnder **Your terms**, **+ New term** adds a part of your own to the score:\n\n- **Whose** cards (mine or theirs) and **Where** (in play, hand, inkwell, discard);\n- filters: **Type**, **Keyword**, **Class**, **State** (ready, exerted, damaged), **Can** (quest, challenge), **Does** (what its abilities do: draw, removal, ramp, lore), **Cost** from–to, **Named**;\n- a **Measure** (how many, lore, strength, willpower left, cost), a **Weight**, and **When**: **Always**, or only when **Ahead** or **Behind** in the race.\n\nThe form shows what the term is worth on this board and rings the cards it counts. A term that looks at cards they hold or inked is marked **peeks**: it uses what the Dojo shows you, which the real game wouldn't.\n\n## Good to know\n\n- Profiles are kept in this browser. Export one to keep it or move it to another device.\n- The score is a guess, tuned by play against the engine's own bot. A higher score isn't a promise of a win.\n"
+  },
+  {
+   "id": "what-if",
+   "section": "rules",
+   "title": "What-if: find a win you missed",
+   "summary": "Play a lost game out again from your turns before the loss, looking for a line that would have won.",
+   "devices": [
+    "desktop",
+    "phone"
+   ],
+   "aliases": [
+    "what if",
+    "missed win",
+    "could i have won",
+    "replay analysis",
+    "review a game",
+    "post mortem",
+    "look for a win",
+    "keep going",
+    "alternate line"
+   ],
+   "targets": [
+    "what-if",
+    "what-if-panel",
+    "mini-what-if"
+   ],
+   "related": [
+    "rules-engine",
+    "import-replay",
+    "import-log",
+    "auto-save",
+    "branches",
+    "multiverse-panel"
+   ],
+   "verified": "v3.22.0",
+   "todo": false,
+   "headings": [
+    {
+     "level": 2,
+     "text": "Start it",
+     "slug": "start-it"
+    },
+    {
+     "level": 2,
+     "text": "What it does at each turn back",
+     "slug": "what-it-does-at-each-turn-back"
+    },
+    {
+     "level": 2,
+     "text": "Read the results",
+     "slug": "read-the-results"
+    },
+    {
+     "level": 2,
+     "text": "Games that fork, or aren't finished",
+     "slug": "games-that-fork-or-arent-finished"
+    },
+    {
+     "level": 2,
+     "text": "Good to know",
+     "slug": "good-to-know"
+    }
+   ],
+   "body": "What-if takes a game you lost and plays it out again from your turns before the loss, one turn back at a time, looking for a line that would have won. Each line it plays becomes a branch in the [Multiverse](help:multiverse), so you can open it and play from it.\n\nIt needs the rules engine (**Assist** or **Lab**, see [The rules engine](help:rules-engine)), and a game saved turn by turn: an [imported Duels.ink replay](help:import-replay) or [text log](help:import-log), or a game played here with [auto-save](help:auto-save) on.\n\n## Start it\n\nOpen the [Multiverse](help:multiverse) and press **What-if** in its header (on a phone, the key left of **Plot**). The What-if block opens at the top of the panel.\n\n[Show me](show:what-if)\n\n:::desktop\nThe **What-if** key in the mini Multiverse's header opens it too.\n:::\n\nPress **Look for a win**. It takes about half a minute a turn back; a dot pulses on **What-if** and on **Multiverse** while it runs, and **Stop** ends it.\n\n## What it does at each turn back\n\nStarting at your last turn before the loss, and going back one of your turns at a time (up to 5):\n\n1. **The real game, replayed**: both players' real moves from that turn. It must end as the real game did, or lines from there can't be trusted and What-if stops (*The real game replays as it ended*).\n2. **What you did**: your real move, with the search playing your later turns. It must still lose.\n3. **Lines 1–4**: the search's four best other ways to play that turn, each played out to the end.\n\nYour later turns are the search's best line. Their turns are what they really did, then the rest of their turn by the search, unless the search finds clearly better. It stops at the first turn back with a winning line.\n\n## Read the results\n\n[Show me](show:what-if-panel)\n\n- Each turn back has a row (**3 back · Turn 19**) and a badge: **Win**, **No win**, or **Can’t follow** when the replay no longer follows the real game. For an unfinished game: **Better** or **Not better**.\n- **What you did** and each line show the lore at the end (**19–20**), whether it **Wins** or **Loses** and on which turn, and its moves.\n- A win is in Olive; their lore reaching 20 is in Coral.\n- **Show** selects the line's last node in the Multiverse.\n- **Keep going** looks further back. **Remove 9 losing lines** (the count varies) takes the losing branches out of the Multiverse; the toast's **Undo** puts them back.\n\n## Games that fork, or aren't finished\n\n- A game with more than one line, or one that isn't finished, asks where to start: select a turn in the Multiverse, then press **Start from turn N**. **Pick another start** goes back.\n- An unfinished game is played to 2 turns past its last and compared on the lore race (your lore minus theirs), not on who wins. **Better** marks a line that beats What you did.\n- A game played here has no record of their moves: the real game isn't replayed, the search plays their turns, and What you did is the real board after your turn, played on.\n\n## Good to know\n\n- It's a beta, and their side is the weak point: a \"win\" can come from the search not using one of their cards the way a person would. Open the branch and check it.\n- The branches stay in the session. The results in the panel last while the page is open; a reload or another game starts What-if afresh.\n"
   },
   {
    "id": "offline",
@@ -3330,6 +3681,11 @@
     },
     {
      "level": 2,
+     "text": "With the bot playing",
+     "slug": "with-the-bot-playing"
+    },
+    {
+     "level": 2,
      "text": "Card drawer",
      "slug": "card-drawer"
     },
@@ -3359,7 +3715,7 @@
      "slug": "good-to-know"
     }
    ],
-   "body": "Every key the Dojo answers to, grouped by where it works. Keys are single presses: the Dojo leaves anything with Ctrl, Cmd or Alt to your browser. If a key does nothing, see [Shortcuts don't do anything](help:hotkeys-not-working).\n\n## Anywhere on the board\n\n| Key | What it does |\n|---|---|\n| {key:Space} | **End turn**. If a button has focus, Space presses that button instead |\n| {key:Q} | **Quest** with every ready character of the active player that has lore and isn't drying |\n| {key:M} | Open or close the **Multiverse** |\n| {key:T} | **Save current unfinished turn**: opens the Multiverse with the form, its name ready to type |\n| {key:C} | Turn **Challenge** mode on or off |\n| {key:Esc} | Close the innermost thing that's open (see below) |\n\n**Esc** closes one thing at a time, in this order: a card's menu, the card drawer, the inkwell sheet, a picked ink card, the picked challenger, challenge mode, the Multiverse, the Library, the home screen (back to your match, if one is on the board), a card you're looking at in the mulligan, then **Inspect deck**, **Inspect discard**, the log import window or the card search.\n\nThere's no key for **Undo**: press **Undo** in the top bar.\n\n## On a card under the pointer\n\nPoint at a card in play, on either side, and press:\n\n| Key | What it does |\n|---|---|\n| {key:+} or {key:=} | Add 1 damage |\n| {key:-} | Remove 1 damage |\n| {key:0} to {key:9} | Set the damage to that number |\n| {key:E} | Exert or ready |\n| {key:B} | Banish (to the discard) |\n| {key:C} | Challenge mode, with this character picked as the challenger (one of the active player's characters) |\n\nThese work only while no window is open over the board, and not in challenge mode. The card's menu shows the same keys beside **Exert**, **Challenge…** and **Banish**.\n\n## In challenge mode\n\n| Key | What it does |\n|---|---|\n| {key:←} {key:→} | The previous or next card on the side you're on. The first arrow picks your first ready character |\n| {key:↑} {key:↓} | The row above or below. {key:↑} off your top row moves to the opponent's cards, {key:↓} off theirs comes back |\n| {key:Enter} | Challenge the card you're aiming at |\n| {key:Esc} | Drop the picked challenger, then leave challenge mode |\n\n[Read more](help:challenge)\n\n## A card with keyboard focus\n\nPress {key:Tab} to move through the cards.\n\n| Key | What it does |\n|---|---|\n| {key:Enter} or {key:Space} | Open the card's menu. In challenge mode, pick the card or challenge it |\n| {key:↑} {key:↓} | Move through the menu's items |\n| {key:Enter} | Choose the item |\n| {key:Esc} | Close the menu |\n\nThe cards in the discard list beside the board open their menu the same way.\n\n## Card drawer\n\nOn a touch screen with a keyboard (a tablet), the card drawer takes:\n\n| Key | What it does |\n|---|---|\n| {key:←} {key:→} | The previous or next card: in the hand, or in play on that card's side |\n| {key:Esc} | Close the drawer |\n\n## Multiverse\n\n| Key | What it does |\n|---|---|\n| {key:←} | Select the turn before (the node's parent) |\n| {key:→} | Select the turn after (the node's first child) |\n| {key:↑} {key:↓} | Select the branch above or below: the next node that grows from the same parent |\n| {key:Enter} | **Play from here**: load the selected node |\n| {key:T} | **Save current unfinished turn** |\n| {key:M} or {key:Esc} | Close the Multiverse |\n\nWith the mouse: drag the canvas to pan, scroll to zoom, double-click a node to play from it.\n\n**Editing in the panel:**\n\n| Key | What it does |\n|---|---|\n| {key:Enter} or {key:Space} on the note | Start editing the note |\n| {key:Enter} in a node's name | Save the name |\n| {key:Ctrl+Enter} ({key:Cmd+Enter} on a Mac) in a note | Save the note. Clicking away saves too |\n| {key:Esc} in a name or note | Cancel the edit |\n| {key:Enter} in the save form's **Name** | **Save node** |\n| {key:Esc} in the save form | Close the form |\n\n[Show me](show:tree-canvas)\n\n## Mini multiverse\n\nClick the map or one of its step keys first, so it has focus. Then:\n\n| Key | What it does |\n|---|---|\n| {key:←} | Previous turn |\n| {key:→} | Next turn on this line |\n| {key:↑} {key:↓} | The line above or below |\n| {key:Home} | Back to the last branch point, or the start |\n| {key:End} | On to the next branch point, or the line's end |\n\nClick a dot to load it; drag or scroll the map to pan.\n\n[Show me](show:mini-multiverse-keys)\n\n## Menus and dialogs\n\n| Where | Key | What it does |\n|---|---|---|\n| Dialogs | {key:Enter} | Confirm (the main button) |\n| Dialogs | {key:Esc} | Cancel |\n| A note dialog, like **Turn N notes** | {key:Enter} | New line |\n| A note dialog | {key:Ctrl+Enter} or {key:Cmd+Enter} | Save |\n| Session title | {key:Enter} | Keep the new name |\n| Session title | {key:Esc} | Put the old name back |\n| Library tabs | {key:←} {key:→} | **Sessions**, **Decks**, **Links** |\n| A Library row's **⋯** menu | {key:↑} {key:↓} {key:Home} {key:End} | Move through the items |\n| A Library row's **⋯** menu | {key:Esc} or {key:Tab} | Close the menu (Esc closes the menu before the Library) |\n| Inkwell | {key:Esc} | Put down a picked ink card |\n| Mulligan | {key:Esc} | Put back a card you're looking at. The mulligan itself stays until you settle the hand |\n\nWhile a dialog is open, the board's keys do nothing.\n\n## Help\n\n| Key | What it does |\n|---|---|\n| {key:?} | Open or close help (not while you're typing) |\n| {key:/} | Jump to the help search |\n| {key:↑} {key:↓} | Move through the search results |\n| {key:Enter} | Open the result |\n| {key:Esc} | Clear the search, then go back from an article, then close help |\n| {key:Backspace} in an empty search | Back from an article to the contents |\n\n## Good to know\n\n- **Q** and **Space** still act on the board while the Multiverse is open: they quest and end the turn on the board behind it.\n- On a phone there are no shortcuts. See [Touch gestures](help:gestures).\n"
+   "body": "Every key the Dojo answers to, grouped by where it works. Keys are single presses: the Dojo leaves anything with Ctrl, Cmd or Alt to your browser. If a key does nothing, see [Shortcuts don't do anything](help:hotkeys-not-working).\n\n## Anywhere on the board\n\n| Key | What it does |\n|---|---|\n| {key:Space} | **End turn**. If a button has focus, Space presses that button instead |\n| {key:Q} | **Quest** with every ready character of the active player that has lore and isn't drying |\n| {key:M} | Open or close the **Multiverse** |\n| {key:T} | **Save current unfinished turn**: opens the Multiverse with the form, its name ready to type |\n| {key:C} | Turn **Challenge** mode on or off |\n| {key:Esc} | Close the innermost thing that's open (see below) |\n\n**Esc** closes one thing at a time, in this order: a card's menu, the card drawer, the inkwell sheet, a picked ink card, the picked challenger, challenge mode, the Multiverse, the Library, the home screen (back to your match, if one is on the board), a card you're looking at in the mulligan, then **Inspect deck**, **Inspect discard**, the log import window or the card search.\n\nThere's no key for **Undo**: press **Undo** in the top bar.\n\n## On a card under the pointer\n\nPoint at a card in play, on either side, and press:\n\n| Key | What it does |\n|---|---|\n| {key:+} or {key:=} | Add 1 damage |\n| {key:-} | Remove 1 damage |\n| {key:0} to {key:9} | Set the damage to that number |\n| {key:E} | Exert or ready |\n| {key:B} | Banish (to the discard) |\n| {key:C} | Challenge mode, with this character picked as the challenger (one of the active player's characters) |\n\nThese work only while no window is open over the board, and not in challenge mode. The card's menu shows the same keys beside **Exert**, **Challenge…** and **Banish**.\n\n## In challenge mode\n\n| Key | What it does |\n|---|---|\n| {key:←} {key:→} | The previous or next card on the side you're on. The first arrow picks your first ready character |\n| {key:↑} {key:↓} | The row above or below. {key:↑} off your top row moves to the opponent's cards, {key:↓} off theirs comes back |\n| {key:Enter} | Challenge the card you're aiming at |\n| {key:Esc} | Drop the picked challenger, then leave challenge mode |\n\n[Read more](help:challenge)\n\n## A card with keyboard focus\n\nPress {key:Tab} to move through the cards.\n\n| Key | What it does |\n|---|---|\n| {key:Enter} or {key:Space} | Open the card's menu. In challenge mode, pick the card or challenge it |\n| {key:↑} {key:↓} | Move through the menu's items |\n| {key:Enter} | Choose the item |\n| {key:Esc} | Close the menu |\n\nThe cards in the discard list beside the board open their menu the same way.\n\n## With the bot playing\n\nWith the [bot](help:bot-opponent) playing a seat:\n\n| Key | What it does |\n|---|---|\n| {key:P} | Switch the bot between **Auto** and **Step** |\n| {key:N} | The bot's next move |\n\n## Card drawer\n\nOn a touch screen with a keyboard (a tablet), the card drawer takes:\n\n| Key | What it does |\n|---|---|\n| {key:←} {key:→} | The previous or next card: in the hand, or in play on that card's side |\n| {key:Esc} | Close the drawer |\n\n## Multiverse\n\n| Key | What it does |\n|---|---|\n| {key:←} | Select the turn before (the node's parent) |\n| {key:→} | Select the turn after (the node's first child) |\n| {key:↑} {key:↓} | Select the branch above or below: the next node that grows from the same parent |\n| {key:Enter} | **Play from here**: load the selected node |\n| {key:T} | **Save current unfinished turn** |\n| {key:M} or {key:Esc} | Close the Multiverse |\n\nWith the mouse: drag the canvas to pan, scroll to zoom, double-click a node to play from it.\n\n**Editing in the panel:**\n\n| Key | What it does |\n|---|---|\n| {key:Enter} or {key:Space} on the note | Start editing the note |\n| {key:Enter} in a node's name | Save the name |\n| {key:Ctrl+Enter} ({key:Cmd+Enter} on a Mac) in a note | Save the note. Clicking away saves too |\n| {key:Esc} in a name or note | Cancel the edit |\n| {key:Enter} in the save form's **Name** | **Save node** |\n| {key:Esc} in the save form | Close the form |\n\n[Show me](show:tree-canvas)\n\n## Mini multiverse\n\nClick the map or one of its step keys first, so it has focus. Then:\n\n| Key | What it does |\n|---|---|\n| {key:←} | Previous turn |\n| {key:→} | Next turn on this line |\n| {key:↑} {key:↓} | The line above or below |\n| {key:Home} | Back to the last branch point, or the start |\n| {key:End} | On to the next branch point, or the line's end |\n\nClick a dot to load it; drag or scroll the map to pan.\n\n[Show me](show:mini-multiverse-keys)\n\n## Menus and dialogs\n\n| Where | Key | What it does |\n|---|---|---|\n| Dialogs | {key:Enter} | Confirm (the main button) |\n| Dialogs | {key:Esc} | Cancel |\n| A note dialog, like **Turn N notes** | {key:Enter} | New line |\n| A note dialog | {key:Ctrl+Enter} or {key:Cmd+Enter} | Save |\n| Session title | {key:Enter} | Keep the new name |\n| Session title | {key:Esc} | Put the old name back |\n| Library tabs | {key:←} {key:→} | **Sessions**, **Decks**, **Links** |\n| A Library row's **⋯** menu | {key:↑} {key:↓} {key:Home} {key:End} | Move through the items |\n| A Library row's **⋯** menu | {key:Esc} or {key:Tab} | Close the menu (Esc closes the menu before the Library) |\n| Inkwell | {key:Esc} | Put down a picked ink card |\n| Mulligan | {key:Esc} | Put back a card you're looking at. The mulligan itself stays until you settle the hand |\n\nWhile a dialog is open, the board's keys do nothing.\n\n## Help\n\n| Key | What it does |\n|---|---|\n| {key:?} | Open or close help (not while you're typing) |\n| {key:/} | Jump to the help search |\n| {key:↑} {key:↓} | Move through the search results |\n| {key:Enter} | Open the result |\n| {key:Esc} | Clear the search, then go back from an article, then close help |\n| {key:Backspace} in an empty search | Back from an article to the contents |\n\n## Good to know\n\n- **Q** and **Space** still act on the board while the Multiverse is open: they quest and end the turn on the board behind it.\n- On a phone there are no shortcuts. See [Touch gestures](help:gestures).\n"
   },
   {
    "id": "gestures",
@@ -3470,7 +3826,7 @@
      "slug": "lorcana-words"
     }
    ],
-   "body": "The words this manual uses: first the Dojo's own, then Lorcana's.\n\n## Dojo words\n\n- **Session.** One match and everything saved from it: the board, its Multiverse and its history. It saves itself as you play. [Sessions](help:sessions)\n- **Multiverse.** The tree of every saved turn in a session. [The Multiverse](help:multiverse)\n- **Node.** One saved board in the Multiverse: whose turn, the lore, a note and what happened. [Reading a node](help:nodes)\n- **Line.** A run of turns, one after another, from the start to where it ends.\n- **Branch.** A line that splits off an earlier node, when you play from there and do something different. [Branching](help:branches)\n- **The line you're on.** The line that leads to the board in front of you. The Dojo marks it, and the node you're on, in the signal colour.\n- **Auto-save.** With **Auto-save every turn** on, every turn gets a node: the board it starts from, and its note and recap once it ends. [Every turn is saved](help:auto-save)\n- **Left here.** A dashed snapshot of a board you jumped away from before saving it. [Left here snapshots](help:left-here)\n- **Library.** Your sessions, decks and links, on shelves by where they're kept: this device, your account, built in, public links. [The Library](help:library)\n- **Share link.** A short link to a frozen copy of a deck or a session. Anyone with it can open it. [Share a deck or a session](help:share-links)\n- **Practice board.** The board a guided tour runs on. Nothing on it is saved, and your own match is kept as it was. [Guided tours](help:tours)\n- **Unknown card.** A card an imported game never showed. It reads **Unknown card** until you fill it in. [Unknown cards](help:unknown-cards)\n\n## Lorcana words\n\n- **Ink, inkwell.** Cards put face down to pay for other cards. Each ink pays 1 once a turn. [Ink a card](help:ink-a-card)\n- **Ready, exert.** A ready card stands upright. Exerting turns it sideways, to quest, challenge or pay for an ability. [Act on a card](help:card-actions)\n- **Quest.** Exert a character to gain its lore. [Quest and lore](help:quest)\n- **Lore.** The score. The first player to 20 wins. [Winning](help:winning)\n- **Challenge.** Exert your character to fight an exerted opposing character (or a location); each deals damage equal to its strength. [Challenge](help:challenge)\n- **Banish.** Put a card from play into its owner's discard, for example when its damage reaches its willpower.\n- **Drying.** A character played this turn can't quest or challenge yet. The board marks it **NEW**.\n- **Shift.** Play a character on top of another version of it, for its shift cost. The card underneath stays under it. [Locations, shift and cards under](help:locations-and-stacks)\n- **Singer, song.** A character can exert to sing a song instead of paying its ink. The Dojo doesn't track singing: exert the singer and play the song yourself.\n- **Location.** A card your characters can move to. It has willpower and can give lore. [Locations](help:locations-and-stacks)\n\nThe Dojo doesn't enforce Lorcana's rules. You're the referee.\n"
+   "body": "The words this manual uses: first the Dojo's own, then Lorcana's.\n\n## Dojo words\n\n- **Session.** One match and everything saved from it: the board, its Multiverse and its history. It saves itself as you play. [Sessions](help:sessions)\n- **Multiverse.** The tree of every saved turn in a session. [The Multiverse](help:multiverse)\n- **Node.** One saved board in the Multiverse: whose turn, the lore, a note and what happened. [Reading a node](help:nodes)\n- **Line.** A run of turns, one after another, from the start to where it ends.\n- **Branch.** A line that splits off an earlier node, when you play from there and do something different. [Branching](help:branches)\n- **The line you're on.** The line that leads to the board in front of you. The Dojo marks it, and the node you're on, in the signal colour.\n- **Auto-save.** With **Auto-save every turn** on, every turn gets a node: the board it starts from, and its note and recap once it ends. [Every turn is saved](help:auto-save)\n- **Left here.** A dashed snapshot of a board you jumped away from before saving it. [Left here snapshots](help:left-here)\n- **Library.** Your sessions, decks and links, on shelves by where they're kept: this device, your account, built in, public links. [The Library](help:library)\n- **Share link.** A short link to a frozen copy of a deck or a session. Anyone with it can open it. [Share a deck or a session](help:share-links)\n- **Rules engine.** An optional helper (beta) that knows Lorcana's rules: it marks legal moves, suggests plays, plays a seat as a bot and runs What-if. It never blocks a move. [The rules engine](help:rules-engine)\n- **Proposed plays.** The best lines for the rest of the turn that **Suggest** finds, each with the lore it gains and why it scores. [Proposed plays](help:proposed-plays)\n- **What-if.** A lost game played out again from your turns before the loss, looking for a line that would have won. [What-if](help:what-if)\n- **Practice board.** The board a guided tour runs on. Nothing on it is saved, and your own match is kept as it was. [Guided tours](help:tours)\n- **Unknown card.** A card an imported game never showed. It reads **Unknown card** until you fill it in. [Unknown cards](help:unknown-cards)\n\n## Lorcana words\n\n- **Ink, inkwell.** Cards put face down to pay for other cards. Each ink pays 1 once a turn. [Ink a card](help:ink-a-card)\n- **Ready, exert.** A ready card stands upright. Exerting turns it sideways, to quest, challenge or pay for an ability. [Act on a card](help:card-actions)\n- **Quest.** Exert a character to gain its lore. [Quest and lore](help:quest)\n- **Lore.** The score. The first player to 20 wins. [Winning](help:winning)\n- **Challenge.** Exert your character to fight an exerted opposing character (or a location); each deals damage equal to its strength. [Challenge](help:challenge)\n- **Banish.** Put a card from play into its owner's discard, for example when its damage reaches its willpower.\n- **Drying.** A character played this turn can't quest or challenge yet. The board marks it **NEW**.\n- **Shift.** Play a character on top of another version of it, for its shift cost. The card underneath stays under it. [Locations, shift and cards under](help:locations-and-stacks)\n- **Singer, song.** A character can exert to sing a song instead of paying its ink. The Dojo doesn't track singing: exert the singer and play the song yourself.\n- **Location.** A card your characters can move to. It has willpower and can give lore. [Locations](help:locations-and-stacks)\n\nThe Dojo doesn't enforce Lorcana's rules. You're the referee.\n"
   }
  ],
  "targets": {
@@ -3978,6 +4334,57 @@
    "label": "Replay",
    "screen": "mulligan",
    "any": "#mull-mode-replay"
+  },
+  "tweak-rules": {
+   "label": "Rules engine",
+   "screen": "tweaks",
+   "any": "#tweak-rules"
+  },
+  "suggest": {
+   "label": "Suggest",
+   "screen": "board",
+   "desktop": "#btn-suggest",
+   "phone": "#mobile-menu-btn"
+  },
+  "plays-tab": {
+   "label": "the Plays tab",
+   "screen": "board",
+   "desktop": "#prob-tab-plays"
+  },
+  "plays-sheet": {
+   "label": "Proposed plays",
+   "screen": "board",
+   "phone": "#rules-plays"
+  },
+  "score-tab": {
+   "label": "the Score tab",
+   "screen": "board",
+   "desktop": "#prob-tab-score"
+  },
+  "bot": {
+   "label": "Bot",
+   "screen": "board",
+   "any": "#btn-bot"
+  },
+  "bot-banner": {
+   "label": "the bot's banner",
+   "screen": "board",
+   "any": "#bot-banner"
+  },
+  "what-if": {
+   "label": "What-if",
+   "screen": "multiverse",
+   "any": "#tree-whatif"
+  },
+  "what-if-panel": {
+   "label": "the What-if block",
+   "screen": "multiverse",
+   "any": "#tp-whatif"
+  },
+  "mini-what-if": {
+   "label": "What-if in the mini Multiverse",
+   "screen": "board",
+   "desktop": "#mmv-whatif"
   }
  },
  "synonyms": [

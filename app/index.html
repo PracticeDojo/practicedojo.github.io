@@ -56,6 +56,11 @@
     <!-- Card modifiers (Feature 61): +/- stats, Challenger / Resist, and when they end -->
     <script src="js/modifiers.js"></script>
 
+    <!-- Rules engine (Feature 68, experimental): what the rules allow, from the Lorcana engine in a worker -->
+    <script src="js/rules.js"></script>
+    <script src="js/lab.js"></script>
+    <script src="js/whatif.js"></script>
+
     <!-- Help (Features 57-58): manual search, the manual, "Show me", guided tours. app/help/ holds the content -->
     <script src="js/help-search.js"></script>
     <script src="js/help.js"></script>
@@ -164,6 +169,10 @@
                     title="Challenge mode (C) — drag or tap one of your characters, then an opponent"
                     aria-label="Challenge mode" aria-pressed="false"><i class="fa-solid fa-hand-fist"></i>
                     <span>Challenge</span></button>
+                <!-- Feature 68 (experimental): the bot opponent, while the rules engine is on -->
+                <button class="icon-btn" id="btn-bot" onclick="App.toggleBotMenu(event)" title="Bot opponent: the rules engine plays a seat"
+                    aria-label="Bot opponent" aria-haspopup="true" aria-expanded="false" aria-controls="bot-menu"><i
+                        class="fa-solid fa-robot"></i> <span id="btn-bot-label">Bot</span></button>
             </div>
         </div>
         <div class="topbar-right">
@@ -674,6 +683,10 @@
                     title="Import a Duels.ink log or replay"><i
                         class="fa-solid fa-file-lines"></i><span>Log</span></button>
                 <div class="divider-v tree-head-rule"></div>
+                <!-- Feature 68 (experimental): What-if, while the rules engine is on -->
+                <button class="tree-tool whatif-key" id="tree-whatif" onclick="App.toggleWhatIf()" aria-pressed="false"
+                    title="What-if: look for a line that would have won this game"><i
+                        class="fa-solid fa-route"></i><span>What-if</span></button>
                 <button class="tree-tool" id="tree-view-toggle" onclick="App.toggleTreeView()" aria-pressed="false"
                     title="Show the tree as a plot: every saved turn a dot"><i
                         class="fa-solid fa-braille"></i><span>Plot</span></button>
@@ -725,6 +738,8 @@
             <!-- The panel: save the turn you're in, then the selected node. It docks
                  on either side (the header toggle; a saved preference). -->
             <aside id="tree-panel" class="tree-panel custom-scrollbar" aria-label="Multiverse panel">
+                <!-- Feature 68 (experimental): What-if, while the rules engine is on -->
+                <section class="tp-block tp-whatif" id="tp-whatif" aria-live="polite" hidden></section>
                 <section class="tp-block tp-save">
                     <button class="btn btn-block tp-save-open" id="tp-save-open" onclick="App.openSaveTurn()"
                         title="Save the board as it is now (T)"><i class="fa-solid fa-bookmark"></i> Save current
@@ -783,6 +798,8 @@
                 <div class="section-head">
                     <h3>Multiverse</h3>
                     <span class="mmv-read" id="mmv-read" aria-live="polite"></span>
+                    <button class="icon-btn whatif-key" id="mmv-whatif" onclick="App.openWhatIf()" title="What-if: look for a line that would have won this game"
+                        aria-label="What-if"><i class="fa-solid fa-route"></i></button>
                     <button class="icon-btn mmv-open" onclick="App.openTreeModal()" title="Open the Multiverse (M)"
                         aria-label="Open the Multiverse"><i
                             class="fa-solid fa-up-right-and-down-left-from-center"></i></button>
@@ -857,6 +874,11 @@
                         title="Quest with all available characters">
                         <span class="gi gi-lore" aria-hidden="true"></span> Quest <span class="mono dim"
                             id="quest-count">0</span>
+                    </button>
+                    <!-- Feature 68 (experimental): proposed plays, while Tweaks → Rules engine is on -->
+                    <button class="btn" id="btn-suggest" onclick="App.suggestPlays()"
+                        title="Proposed plays: the rules engine tries orders of play for the rest of this turn">
+                        <i class="fa-solid fa-route" aria-hidden="true"></i> Suggest
                     </button>
                 </div>
                 <div class="action-row three">
@@ -1122,6 +1144,12 @@
         <aside class="prob-pane" id="prob-pane">
             <div class="prob-head">
                 <h3>Draw Odds <span class="mono dim" id="prob-deck-count"></span></h3>
+                <!-- Feature 68 (experimental): with the rules engine on, the column has two tabs -->
+                <div class="seg prob-tabs" role="group" aria-label="Draw odds or proposed plays">
+                    <button type="button" id="prob-tab-odds" aria-pressed="true" onclick="App.setProbTab('odds')">Odds <span class="prob-tab-n" id="prob-tab-odds-n"></span></button>
+                    <button type="button" id="prob-tab-plays" aria-pressed="false" onclick="App.setProbTab('plays')">Plays</button>
+                    <button type="button" id="prob-tab-score" aria-pressed="false" onclick="App.setProbTab('score')">Score</button>
+                </div>
                 <button type="button" class="help-q" data-help="draw-odds" aria-label="Help: draw odds">?</button>
                 <button class="prob-toggle" id="prob-toggle" onclick="App.toggleProbPane()"
                     title="Collapse / expand draw odds">
@@ -1139,11 +1167,29 @@
                     onchange="App.onProbWindowChange(2, this.value)" title="Draw window: chance within next N draws">
             </div>
             <div class="prob-list" id="prob-list"></div>
+            <div class="prob-plays" id="prob-plays"></div>
+            <div class="prob-lab" id="prob-lab"></div>
         </aside>
     </div>
 
     <!-- Context Menu -->
     <div id="context-menu"></div>
+
+    <!-- Feature 68 (experimental): proposed plays for the rest of the turn. On desktop they're the
+         odds column's Plays tab; on phones, where that column is hidden, this sheet. -->
+    <div id="rp-tip" class="rp-tip" hidden></div>
+    <section id="rules-plays" class="rules-plays" hidden aria-labelledby="rules-plays-title">
+        <div class="rp-head">
+            <span class="rp-title" id="rules-plays-title">Proposed plays</span>
+            <button class="icon-btn" onclick="App.closePlays()" title="Close" aria-label="Close proposed plays"><i
+                    class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div id="rules-plays-body"></div>
+    </section>
+
+    <!-- Feature 68 (experimental): the bot opponent's menu and banner -->
+    <div id="bot-menu" class="bot-menu" hidden role="dialog" aria-label="Bot opponent"></div>
+    <div id="bot-banner" class="bot-banner" hidden role="status" aria-live="polite"></div>
 
     <!-- Feature 37: challenge mode banner + forecast -->
     <div id="challenge-banner" class="chal-banner" role="status" aria-live="polite" onclick="event.stopPropagation()">
@@ -1235,6 +1281,17 @@
                 <div class="tweak-hint">Shown while dragging onto, or aiming at, an opponent.</div>
             </div>
             <div class="tweak">
+                <div class="tweak-label"><span>Rules engine</span></div>
+                <div class="tweak-radio" id="tweak-rules">
+                    <button data-val="off" class="is-active" title="The sandbox: you are the referee">Off</button>
+                    <button data-val="assist"
+                        title="Marks what the rules allow the player whose turn it is, and says why a card can't be played. Never blocks a move">Assist</button>
+                    <button data-val="lab"
+                        title="Assist, plus the score lab: the weights proposed plays are scored with, profiles, and each card's share of the score">Lab</button>
+                </div>
+                <div class="tweak-hint">Beta. Marks legal moves; it never blocks one.</div>
+            </div>
+            <div class="tweak">
                 <div class="tweak-label"><span>Player palette</span></div>
                 <div class="tweak-radio" id="tweak-palette">
                     <button data-val="competition" class="is-active"
@@ -1251,7 +1308,7 @@
     <script>
         let cardFuse = null;
 
-        const APP_VERSION = "v3.21.1"; // Centralized version string (v3: Field Unit)
+        const APP_VERSION = "v3.22.0"; // Centralized version string (v3: Field Unit)
 
         // Tweaks panel accent presets (hue values for the OKLCH accent ramp)
         // Tweaks → Accent: the approved Field Unit signals only (design.md ·
@@ -1680,6 +1737,8 @@
                 this.flushDeviceSave();
                 this.session = null;
                 this.endSharedView();
+                this.setBot(null, { quiet: true }); // Feature 68: a loaded game starts with the bot off
+                this.whatIfReset(); // and What-if afresh
                 this.state = nextState;
                 this.bookmarks = clean.bookmarks;
                 this.autoSaves = clean.autoSaves;
@@ -4762,6 +4821,11 @@
 
             undo() {
                 if (this.history.length === 0) return;
+                // Feature 68: Undo pauses the bot, or Auto would play the move straight back.
+                if (this.bot.seat != null) {
+                    this.botDrop();
+                    Object.assign(this.bot, { paused: true, ask: null });
+                }
                 const prevCompressed = JSON.parse(this.history.pop());
                 this.state = this.decompressState(prevCompressed, this.state.log);
                 if (window.Mods) Mods.closePicker(); // Feature 61
@@ -4773,7 +4837,7 @@
             },
 
             _emptyTurnActions() {
-                return { drawn: [], inked: [], played: [], shifted: [], discarded: [], banished: [], quested: [] };
+                return { drawn: [], inked: [], played: [], shifted: [], discarded: [], banished: [], quested: [], challenged: [] };
             },
 
             // A saved turn's actions, from a session file that may come from anyone
@@ -4782,6 +4846,9 @@
                 const out = this._emptyTurnActions();
                 if (!ta || typeof ta !== 'object') return out;
                 Object.keys(out).forEach(k => { if (Array.isArray(ta[k])) out[k] = ta[k].slice(); });
+                // A challenge: the attacker's and the defender's card ids.
+                const id = (v) => typeof v === 'string' || typeof v === 'number';
+                out.challenged = out.challenged.filter(e => e && id(e.id) && id(e.target)).map(e => ({ id: e.id, target: e.target }));
                 if (typeof ta.opening === 'string') out.opening = ta.opening;
                 return out;
             },
@@ -4835,6 +4902,7 @@
                     discarded: arr(ta.discarded),
                     banished: arr(ta.banished),
                     quested: arr(ta.quested),
+                    challenged: arr(ta.challenged), // { id, target }: attacker and defender
                     startingHand: this._buildStartingHandSection()
                 };
             },
@@ -4856,6 +4924,9 @@
                 const shifted = fmt(ta.shifted); if (shifted) lines.push(`- **Shifted:** ${shifted}`);
                 const discarded = fmt(ta.discarded); if (discarded) lines.push(`- **Discarded:** ${discarded}`);
                 const quested = fmt(ta.quested); if (quested) lines.push(`- **Quested:** ${quested}`);
+                const name = (id) => (this.cardDB[id] && this.cardDB[id].name) || 'Unknown card';
+                const challenged = (ta.challenged || []).map(e => `${name(e.target)} with ${name(e.id)}`).join(', ');
+                if (challenged) lines.push(`- **Challenged:** ${challenged}`);
                 const banished = fmt(ta.banished); if (banished) lines.push(`- **Banished:** ${banished}`);
                 if (!lines.length) return '';
                 return `\n\n**Turn recap**\n${lines.join('\n')}`;
@@ -4888,6 +4959,8 @@
                 this.flushDeviceSave();
                 this.session = null;
                 this.endSharedView();
+                this.setBot(null, { quiet: true }); // Feature 68: a new game starts with the bot off
+                this.whatIfReset(); // and What-if afresh
 
                 // Seat the same saved decks next time (pasted lists aren't kept).
                 DojoLibrary.setPref('lastDecks', {
@@ -4969,9 +5042,13 @@
                 this.render();
             },
 
-            endTurn() {
+            // opts.engine: the rules engine ran the turn change (the bot opponent, Feature 68): its board,
+            // already on this.state (saved for Undo before it went on), has the ready and draw steps and the
+            // start- and end-of-turn abilities, so they're skipped here. opts.dojo: the sandbox's own change.
+            endTurn(opts = {}) {
                 if (this.state.mulliganPending) return; // the opening hand comes first (Feature 54)
-                this.saveState();
+                if (!opts.engine && !opts.dojo && this.botRunsTurnChange()) return void this.botPassTurn(this.state.activePlayer === this.bot.seat ? 'bot' : 'you');
+                if (!opts.engine) this.saveState();
                 this._closeTurnNode();
 
                 this.expireModifiers('end'); // Feature 61: "this turn" ends with the turn
@@ -4998,23 +5075,29 @@
                 this.logAction(`--- Turn ${this.state.turn} Begins ---`, true);
                 // Feature 61: this player's "until my next turn" modifiers end now.
                 this.expireModifiers('start', this.state.activePlayer);
-                this.logAction(`Ready step: characters and items readied`, true);
+                if (!opts.engine) {
+                    this.logAction(`Ready step: characters and items readied`, true);
 
-                // Ready Characters and Items (Not Locations)
-                p.field.forEach(c => {
-                    const dbCard = this.cardDB[c.cardId];
-                    if (dbCard && dbCard.type !== 'Location') {
+                    // Ready Characters and Items (Not Locations)
+                    p.field.forEach(c => {
+                        const dbCard = this.cardDB[c.cardId];
+                        if (dbCard && dbCard.type !== 'Location') {
+                            c.exerted = false;
+                        }
+                        c.drying = false; // Remove drying state at the start of their turn
+                    });
+
+                    // Ready Inkwell and flip newly inked cards face down
+                    p.inkwell.forEach(c => {
                         c.exerted = false;
-                    }
-                    c.drying = false; // Remove drying state at the start of their turn
-                });
-
-                // Ready Inkwell and flip newly inked cards face down
-                p.inkwell.forEach(c => {
-                    c.exerted = false;
-                    c.faceUp = false;
-                });
-                p.inkReady = p.inkTotal;
+                        c.faceUp = false;
+                    });
+                    p.inkReady = p.inkTotal;
+                } else {
+                    // The engine readied the board; ink inked last turn still turns face down.
+                    p.inkwell.forEach(c => { c.faceUp = false; });
+                    this.logAction('Ready and draw steps (rules engine)', true);
+                }
 
                 // The new turn's buffers. Cleared whether or not auto-save is on, so a
                 // manual bookmark shows only this turn's cards.
@@ -5034,7 +5117,8 @@
                     return;
                 }
 
-                this._drawStep();
+                if (opts.engine) this._captureTurnStartHand(this.state.activePlayer);
+                else this._drawStep();
                 this._openTurnNode();
                 this.render();
             },
@@ -5341,7 +5425,13 @@
                     moveDmg: /^Moved (\d+) damage counters? from (.+?) to (.+)$/,
                     activate: re('WHO activated (.+?) on (.+)'),
                     setLore: re('Set step: .+ grants WHO \\+(\\d+) \\[LORE\\].*'),
-                    won: re('WHO won with (\\d+) \\[LORE\\]!?')
+                    won: re('WHO won with (\\d+) \\[LORE\\]!?'),
+                    // Choices, for What-if (Feature 68); the board ignores them.
+                    option: /^.+'s .+ chose "(.+)"$/,
+                    declined: re('WHO declined .+'),
+                    damaged: /^.+ dealt \d+ damage to (.+)$/,
+                    banishes: /^.+'s .+ banishes (.+)$/,
+                    exerts: /^.+'s .+ exerts a character$/
                 };
 
                 for (const line of lines) {
@@ -5376,9 +5466,11 @@
 
                     if ((m = RX.begins.exec(line))) { cur.activePlayerIndex = whose(m[1], 0); continue; }
                     if ((m = RX.undo.exec(line))) {
+                        // The player's last event; a decline goes with the action it declined in.
                         const p = who(m[1]);
                         for (let i = cur.events.length - 1; i >= 0; i--) {
-                            if (cur.events[i].p === p) { cur.events.splice(i, 1); break; }
+                            if (cur.events[i].p !== p) continue;
+                            if (cur.events.splice(i, 1)[0].t !== 'declined') break;
                         }
                         continue;
                     }
@@ -5410,12 +5502,17 @@
                     if ((m = RX.banish.exec(line))) { if (named(m[1])) ev({ t: 'banish', name: m[1].trim() }); continue; }
                     if ((m = RX.toDeck.exec(line))) { ev({ t: 'toDeck', owner: whose(m[2], -1), name: m[1].trim() }); continue; }
                     if ((m = RX.toHand.exec(line))) { ev({ t: 'toHand', name: m[1].trim() }); continue; }
-                    if ((m = RX.boost.exec(line))) { ev({ t: 'under', p: who(m[1]), name: m[2].trim(), n: parseInt(m[3], 10) }); continue; }
+                    if ((m = RX.boost.exec(line))) { ev({ t: 'under', p: who(m[1]), name: m[2].trim(), n: 1 }); continue; } // "(2 cards under)" is how many are under now: a boost adds one
                     if ((m = RX.under.exec(line))) { ev({ t: 'under', p: -1, name: m[1].trim(), n: 1 }); continue; }
                     if ((m = RX.moveDmg.exec(line))) { ev({ t: 'moveDmg', n: parseInt(m[1], 10), from: m[2].trim(), to: m[3].trim() }); continue; }
                     if ((m = RX.activate.exec(line))) { ev({ t: 'activate', p: who(m[1]), ability: m[2].trim(), name: m[3].trim() }); continue; }
                     if ((m = RX.setLore.exec(line))) { ev({ t: 'loreGain', p: who(m[1]), n: parseInt(m[2], 10) }); continue; }
                     if ((m = RX.won.exec(line))) { ev({ t: 'loreSet', p: who(m[1]), n: parseInt(m[2], 10) }); continue; }
+                    if ((m = RX.option.exec(line))) { ev({ t: 'option', text: m[1] }); continue; }
+                    if ((m = RX.declined.exec(line))) { ev({ t: 'declined', p: who(m[1]) }); continue; }
+                    if ((m = RX.damaged.exec(line))) { ev({ t: 'damaged', name: m[1].trim() }); continue; }
+                    if ((m = RX.banishes.exec(line))) { if (!/^a card$/i.test(m[1].trim())) ev({ t: 'banishes', name: m[1].trim() }); continue; }
+                    if (RX.exerts.test(line)) { ev({ t: 'exerts' }); continue; }
                 }
                 if (cur) turns.push(cur);
 
@@ -5448,10 +5545,12 @@
                 const willpower = (name) => { const c = resolve(name); return c && c.willpower != null ? c.willpower : Infinity; };
 
                 // Every card a player draws or reveals, in order, so a snapshot's deck
-                // can put the known future draws on top.
+                // can put the known future draws on top. A boost takes the top card first,
+                // facedown: a card the log never names.
                 const allDraws = [[], []];
                 for (const t of turns) for (const e of t.events) {
                     if ((e.t === 'draw' || e.t === 'reveal') && e.p >= 0 && e.p <= 1) allDraws[e.p].push(e.name);
+                    if (e.t === 'under' && e.p >= 0 && e.p <= 1) allDraws[e.p].push(null);
                 }
                 // Zones hold card names; null = a card the log never named.
                 let drawn, hands, fields, inkwells, discards, lore;
@@ -5610,6 +5709,7 @@
                             break;
                         }
                         case 'under': {
+                            if (p >= 0) drawn[p]++; // a boost: the top card of the deck
                             const hit = p >= 0 && fieldCard(p, e.name) ? { p } : locate(e.name, active);
                             const f = hit && fieldCard(hit.p, e.name);
                             if (f) f.under = (f.under || 0) + (e.n || 1);
@@ -5783,6 +5883,7 @@
                         timestamp: Date.now(),
                         isDeckEdit: false,
                         turnStart: true, turnPlayed: true, // a turn's start board and what was played from it
+                        real: window.DojoWhatIf ? DojoWhatIf.movesFromLog(t, p) : undefined, // Feature 68: the active player's moves, for What-if
                         cardsPlayedData,
                         sections: nodeSections
                     });
@@ -5879,6 +5980,7 @@
             // Returns a session object compatible with the loader (same shape as buildSessionFromLog).
             buildSessionFromReplay(replay) {
                 const persp = replay.perspective || 1;   // duels player number of the log owner (1 or 2)
+                const realMoves = window.DojoWhatIf ? DojoWhatIf.movesFromReplay(replay) : {}; // by turn, for What-if (Feature 68)
                 const myIdx = persp - 1;                  // dojo index of the perspective player
                 const oppIdx = 1 - myIdx;                 // dojo index of the opponent
                 const oppDuels = oppIdx + 1;              // duels player number of the opponent
@@ -5978,7 +6080,7 @@
                         hasMulliganed: true,
                         deck,
                         hand: (mp.hand || []).map(c => mapCard(c, false)),
-                        field: (mp.field || []).map(c => mapCard(c, false)),
+                        field: [...(mp.field || []), ...(mp.items || [])].map(c => mapCard(c, false)), // Duels.ink keeps items in play in their own zone
                         inkwell,
                         discard: (mp.discard || []).map(c => mapCard(c, false))
                     };
@@ -5992,7 +6094,7 @@
 
                     // Cards already visible on the opponent's board right now (don't re-infer these).
                     const visibleNow = new Set();
-                    (op.field || []).forEach(c => { if (c && c.instanceId) visibleNow.add(c.instanceId); });
+                    [...(op.field || []), ...(op.items || [])].forEach(c => { if (c && c.instanceId) visibleNow.add(c.instanceId); });
                     (op.discard || []).forEach(c => { if (c && c.instanceId) visibleNow.add(c.instanceId); });
                     (op.inkwell || []).forEach(e => { if (e && e.card && e.card.instanceId) visibleNow.add(e.card.instanceId); });
 
@@ -6026,7 +6128,7 @@
                         hasMulliganed: true,
                         deck,
                         hand,
-                        field: (op.field || []).map(c => mapCard(c, false)),
+                        field: [...(op.field || []), ...(op.items || [])].map(c => mapCard(c, false)),
                         inkwell,
                         discard: (op.discard || []).map(c => mapCard(c, false))
                     };
@@ -6116,6 +6218,7 @@
                         timestamp: Date.now(),
                         isDeckEdit: false,
                         turnStart: true, turnPlayed: true, // a turn's start board and what was played from it
+                        real: realMoves[segTurn] || { moves: [], choices: [] }, // Feature 68: both players' real moves, for What-if
                         cardsPlayedData: segPlayed.slice(),
                         // drawn/discarded: a replay has no semantic frame for either (draws
                         // ride inside the END_TURN patch, and the opponent's are hidden).
@@ -6637,12 +6740,1495 @@
             // Taken when the board is final, so a jump can tell an unsaved board.
             _boardSrc: null,
 
+            // Feature 68 (experimental): Tweaks → Rules engine. rulesView is what the engine
+            // allows on the board on screen (DojoRules.analyze), for the board whose sig is _rulesSig.
+            rulesOn: false,
+            rulesView: null,
+            _rulesSig: null,
+
             // The board as saved, minus where it sits in the tree.
             boardSig(state) {
                 const c = this.compressState(state, true);
                 delete c.activeBookmarkId;
                 delete c.activeTimelineColor;
                 return JSON.stringify(c);
+            },
+
+            // Feature 68: when the board changes, drop the old reading and ask the engine again.
+            // Read-only: cards get marks and the menu says why; nothing is blocked.
+            rulesRefresh() {
+                if (!this.rulesOn || !this.state || !this.state.players || this.state.mulliganPending) {
+                    this.rulesView = null;
+                    this._rulesSig = null;
+                    return;
+                }
+                const sig = this.boardSig(this.state);
+                if (sig === this._rulesSig) return;
+                this._rulesSig = sig;
+                this.rulesView = null;
+                DojoRules.analyze(this.state, id => this.cardKey(id)).then(view => {
+                    if (this._rulesSig !== sig || !this.rulesOn) return;
+                    this.rulesView = view;
+                    this.render();
+                }).catch(e => {
+                    console.warn('Rules engine:', e);
+                    if (this._rulesSig === sig) this.rulesView = { error: String(e && e.message || e), byIid: {}, moves: [] };
+                });
+            },
+
+            // How the rules engine is told which card this is: "<setCode>-<number>|<full name>". The name
+            // decides (the engine's promo printings reuse main-set numbers); the number is the fallback.
+            cardKey(cardId) {
+                const c = this.cardDB[cardId];
+                if (!c || !c.fullName) return null;
+                return `${c.setCode != null && c.number != null ? `${c.setCode}-${c.number}` : ''}|${c.fullName}`;
+            },
+
+            // Feature 68: one small key-coloured pip per kind of legal move, under the card.
+            rulesPips(moves) {
+                const box = this.el('div', 'rules-pips');
+                const seen = new Set();
+                moves.forEach(m => {
+                    const v = DojoRules.VERBS[m];
+                    if (!v || seen.has(v.key)) return;
+                    seen.add(v.key);
+                    box.appendChild(this.el('i', `rules-pip key-${v.key}`));
+                });
+                box.title = [...new Set(moves.map(m => (DojoRules.VERBS[m] || {}).label).filter(Boolean))].join(' · ');
+                return box;
+            },
+
+            // --- Feature 68 (experimental): the bot opponent (top bar → Bot) ---
+            // The rules engine plays one seat, one move at a time: Auto (a move every second or so) or Step
+            // (Next, or N); P switches between them. Switch it off to take over; switched on again, it carries
+            // on from the board as it is. The engine keeps the game through the bot's turn and runs the turn
+            // changes (DojoRules.bot*, study §12); each finished move is one Undo step. Your seat stays at the
+            // bottom. The bot never concedes: when it's stuck it pauses and the turn is yours to finish.
+            bot: { seat: null, pace: 'auto', speed: 1000, paused: false, busy: false, live: false, sig: null, ask: null, held: [], last: '', note: '', over: false, gen: 0 },
+
+            bottomSeat() {
+                return this.bot.seat != null ? 1 - this.bot.seat : this.state.activePlayer;
+            },
+
+            // quiet: no log line or render (a new game or a loaded one switches the bot off this way).
+            setBot(seat, opts = {}) {
+                clearTimeout(this._botT);
+                this.botDrop();
+                Object.assign(this.bot, { seat, paused: false, ask: null, note: '', last: '', over: false });
+                if (opts.quiet) return void (this.renderBotMenu(), this.renderBot());
+                if (this.state && this.state.players) this.logAction(seat != null ? `Bot plays P${seat + 1}.` : 'Bot off: you play both seats.', true);
+                this.renderBotMenu();
+                if (this.state && this.state.players) this.render();
+                else this.renderBot();
+            },
+
+            setBotPace(pace) {
+                Object.assign(this.bot, { pace, paused: false, note: '' });
+                this.renderBotMenu();
+                this.botKick();
+            },
+
+            toggleBotPace() {
+                if (this.bot.seat == null) return;
+                this.setBotPace(this.bot.pace === 'auto' ? 'step' : 'auto');
+                this.showToast(this.bot.pace === 'auto' ? 'Bot: Auto' : 'Bot: Step (N for its next move)');
+            },
+
+            setBotSpeed(ms) {
+                this.bot.speed = ms;
+                this.renderBotMenu();
+                this.botKick();
+            },
+
+            botTogglePause() {
+                Object.assign(this.bot, { paused: !this.bot.paused, note: '' });
+                this.botKick();
+            },
+
+            // With the bot on, the engine runs the turn change, except into the second player's first turn
+            // while their opening hand waits (that turn opens on the mulligan, before the draw).
+            botRunsTurnChange() {
+                if (this.bot.seat == null || !this.state || this.state.mulliganPending) return false;
+                return !(this.state.turn === 1 && !this.state.players[this.state.inactivePlayer].hasMulliganed);
+            },
+
+            // What the bot does next: now, after its pause, or nothing. Runs after every render.
+            botKick() {
+                clearTimeout(this._botT);
+                const b = this.bot;
+                if (b.seat == null || b.busy || b.ask || b.over || !this.state || !this.state.players) return this.renderBot();
+                if (this.state.mulliganPending) {
+                    if (this.state.activePlayer === b.seat) this._botT = setTimeout(() => { this._botT = null; this.botKeepHand(); }, 300);
+                } else if (this.state.activePlayer === b.seat && !b.paused && b.pace === 'auto') {
+                    this._botT = setTimeout(() => { this._botT = null; this.botNext(); }, b.speed);
+                }
+                this.renderBot();
+            },
+
+            // shortcut: the bot always keeps its opening hand; the engine's bot could choose its mulligan later.
+            botKeepHand() {
+                const p = this.state && this.state.players && this.state.players[this.state.activePlayer];
+                if (!p || !this.state.mulliganPending || this.state.activePlayer !== this.bot.seat || p.hasMulliganed) return;
+                if (this.openingMode === 'build' || this.openingMode === 'replay') return;
+                this.saveState();
+                p.hasMulliganed = true;
+                this.logAction('Bot kept its opening hand.');
+                this.closeMulligan();
+                this._finishMulligan();
+            },
+
+            // A reply that's still on its way belongs to a board that's gone: switching the bot, Take over and
+            // Undo drop it (a new generation), and the engine reads the board again before its next move.
+            botDrop() {
+                Object.assign(this.bot, { gen: this.bot.gen + 1, busy: false, live: false, held: [] });
+            },
+
+            // One call to the engine for the bot. Its reply is null (dropped) when the bot was switched, Take over
+            // or Undo happened, or the board changed (your edit, a Multiverse jump) while the engine worked.
+            async botCall(work) {
+                const b = this.bot, gen = b.gen, sig = this.boardSig(this.state);
+                Object.assign(b, { busy: true, note: '' });
+                this.renderBot();
+                try {
+                    const r = await work();
+                    if (gen !== b.gen) return null;
+                    if (this.boardSig(this.state) !== sig) {
+                        this.botDrop();
+                        this.botKick();
+                        return null;
+                    }
+                    return r;
+                } catch (e) {
+                    if (gen === b.gen) throw e;
+                    return null;
+                }
+            },
+
+            // The bot's next move (Next, N, or Auto's timer).
+            async botNext() {
+                clearTimeout(this._botT);
+                const b = this.bot;
+                if (b.seat == null || b.busy || b.ask || b.over || !this.state || !this.state.players || this.state.mulliganPending || this.state.activePlayer !== b.seat) return;
+                try {
+                    const r = await this.botCall(async () => {
+                        // A board changed since its last move (your edit, Undo, a loaded node): the engine reads it.
+                        if ((!b.live || b.sig !== this.boardSig(this.state)) && !await this.botRead()) return null;
+                        return DojoRules.botStep();
+                    });
+                    if (r) this.botApply(r);
+                } catch (e) {
+                    this.botTrouble("The rules engine couldn't play this board.", e);
+                }
+            },
+
+            // The engine starts its game from the board on screen. False if the bot was reset meanwhile.
+            async botRead() {
+                const b = this.bot, gen = b.gen, sig = this.boardSig(this.state);
+                await DojoRules.botStart(this.state, id => this.cardKey(id), b.seat);
+                if (gen !== b.gen) return false;
+                Object.assign(b, { live: true, sig });
+                return true;
+            },
+
+            botTrouble(note, e) {
+                if (e) console.warn('Bot:', e);
+                Object.assign(this.bot, { busy: false, live: false, paused: true, held: [], note });
+                this.showToast(`Bot paused: ${note}`);
+                this.renderBot();
+            },
+
+            // A reply from the engine: a finished move or the turn change goes onto the board (one Undo step);
+            // a choice of yours waits in the banner; trouble pauses the bot.
+            botApply(r) {
+                const b = this.bot;
+                b.busy = false;
+                if (!r || r.error) return this.botTrouble('The bot lost track of the game. Next lets it read the board again.');
+                // Moves made before a question wait for its answer: the board only changes when nothing resolves.
+                r.acts = b.held.concat(r.acts);
+                b.held = r.state ? [] : r.acts;
+                const plain = (a) => DojoRules.actText(Object.assign({}, a, { by: 'me' }));
+                const say = (a) => `${a.by === 'opp' ? 'You' : 'Bot'}: ${plain(a)}`;
+                const moves = DojoRules.groupActs(r.acts.filter(a => a.by === 'me'));
+                if (moves.length) b.last = DojoRules.stepText(moves[moves.length - 1]);
+                if (r.state) {
+                    const changed = r.owner !== this.state.activePlayer;
+                    if (r.acts.length || changed) {
+                        this.saveState();
+                        this._applyEngineMoves(r.acts, r.state.players, { say, noDrawFor: changed ? r.owner : undefined });
+                        if (changed) {
+                            b.last = '';
+                            this.endTurn({ engine: true });
+                            DojoRules.botRebase(this.state);
+                        }
+                    }
+                    b.sig = this.boardSig(this.state);
+                }
+                if (r.ask) {
+                    b.ask = r.ask;
+                    this.showToast('The bot needs your choice: see its banner.');
+                    return this.render();
+                }
+                if (r.over) {
+                    Object.assign(b, { over: true, note: r.winner === b.seat ? 'The bot reached the lore to win.' : 'You reached the lore to win.' });
+                    this.showToast(b.note);
+                }
+                else if (r.stuck) return this.botTrouble(`${r.stuck} Your call: play its turn out, or end it.`);
+                else if (r.done) return void this.botEndItsTurn();
+                this.render();
+            },
+
+            // The bot has nothing left to do, so its turn ends.
+            botEndItsTurn() {
+                if (this.botRunsTurnChange()) return void this.botPassTurn('bot');
+                this.bot.live = false;
+                this.endTurn({ dojo: true });
+            },
+
+            // The engine ends `who`'s turn ('bot' or 'you') and starts the other's.
+            async botPassTurn(who) {
+                const b = this.bot;
+                if (b.busy) this.botDrop(); // End turn while it was working out a move: that move is dropped
+                if (who === 'you') b.paused = false; // a pause (Undo makes one) lasts the bot's turn, not into its next
+                try {
+                    const r = await this.botCall(async () => {
+                        if ((who === 'you' || !b.live || b.sig !== this.boardSig(this.state)) && !await this.botRead()) return null;
+                        return DojoRules.botPass(who);
+                    });
+                    if (r) this.botApply(r);
+                } catch (e) {
+                    if (who === 'bot') return this.botTrouble("The rules engine couldn't end the bot's turn. End it yourself.", e);
+                    // Your End turn still happens, as the sandbox does it.
+                    console.warn('Bot:', e);
+                    Object.assign(b, { busy: false, live: false });
+                    this.endTurn({ dojo: true });
+                }
+            },
+
+            async botChoose(i) {
+                const b = this.bot;
+                if (!b.ask || b.busy) return;
+                b.ask = null;
+                try {
+                    const r = await this.botCall(() => DojoRules.botChoose(i));
+                    if (r) this.botApply(r);
+                } catch (e) {
+                    this.botTrouble("The rules engine couldn't take that choice.", e);
+                }
+            },
+
+            // The banner under the top bar: whose seat, what the bot just did (or your choice), and its keys.
+            renderBot() {
+                const b = this.bot, banner = this.$('bot-banner'), label = this.$('btn-bot-label');
+                document.body.classList.toggle('bot-on', b.seat != null);
+                if (label) label.textContent = b.seat != null ? `Bot P${b.seat + 1}` : 'Bot';
+                if (!banner) return;
+                if (b.seat == null || !this.state || !this.state.players) return void (banner.hidden = true);
+                banner.hidden = false;
+                banner.classList.toggle('is-asking', !!b.ask);
+                const esc = (t) => this._esc(String(t));
+                const its = this.state.activePlayer === b.seat;
+                // Your choice: one button per distinct option (the engine can list two with the same effect).
+                const options = b.ask ? b.ask.map((a, i) => [i, DojoRules.actText(Object.assign({}, a, { by: 'me' }))]).filter(([, t], k, all) => all.findIndex(o => o[1] === t) === k) : [];
+                const text = b.ask
+                    ? `<span class="bb-lbl">Your choice</span>${options.map(([i, t]) => `<button class="btn" onclick="App.botChoose(${i})">${esc(t)}</button>`).join('')}`
+                    : esc(b.note || (b.busy ? 'Thinking…' : this.state.mulliganPending ? (its ? 'Keeping its opening hand…' : 'Your opening hand first')
+                        : its && b.paused && b.pace === 'auto' ? `Paused${b.last ? ` after: ${b.last}` : ''}. Play lets it carry on.`
+                        : its ? (b.last || 'Its turn') : 'Your turn: End turn hands it over'));
+                const key = b.pace === 'auto'
+                    ? `<button class="btn" onclick="App.botTogglePause()" title="${b.paused ? 'Play' : 'Pause'}"><i class="fa-solid fa-${b.paused ? 'play' : 'pause'}"></i> ${b.paused ? 'Play' : 'Pause'}</button>`
+                    : `<button class="btn" onclick="App.botNext()" title="Its next move (N)"${its && !b.busy && !b.ask && !b.over ? '' : ' disabled'}>Next <span class="bb-kbd">N</span></button>`;
+                banner.innerHTML = `<span class="bb-key">Bot · P${b.seat + 1}</span>
+                    <span class="bb-text${b.note ? ' is-note' : ''}">${text}</span>
+                    <div class="seg" role="group" aria-label="Pace (P)" title="Auto or Step (P)">
+                        <button type="button" aria-pressed="${b.pace === 'auto'}" onclick="App.setBotPace('auto')">Auto</button>
+                        <button type="button" aria-pressed="${b.pace === 'step'}" onclick="App.setBotPace('step')">Step</button></div>
+                    ${key}
+                    <button class="btn" onclick="App.setBot(null)" title="Switch the bot off and play its seat yourself">Take over</button>`;
+            },
+
+            // The top bar's Bot menu: which seat it plays, its pace and its speed.
+            toggleBotMenu(e) {
+                if (e) e.stopPropagation();
+                const menu = this.$('bot-menu'), btn = this.$('btn-bot');
+                const open = menu.hidden;
+                menu.hidden = !open;
+                btn.setAttribute('aria-expanded', String(open));
+                if (!open) return;
+                this.renderBotMenu();
+                const r = btn.getBoundingClientRect();
+                menu.style.top = `${r.bottom + 6}px`;
+                menu.style.left = `${Math.max(8, Math.min(innerWidth - menu.offsetWidth - 8, r.left + r.width / 2 - menu.offsetWidth / 2))}px`;
+                const away = (ev) => {
+                    if (menu.contains(ev.target) || btn.contains(ev.target)) return;
+                    menu.hidden = true;
+                    btn.setAttribute('aria-expanded', 'false');
+                    document.removeEventListener('pointerdown', away, true);
+                };
+                document.addEventListener('pointerdown', away, true);
+            },
+
+            renderBotMenu() {
+                const menu = this.$('bot-menu');
+                if (!menu) return;
+                const b = this.bot;
+                const seg = (label, items, cur, fn) => `<div class="bm-row"><span class="rp-lbl">${label}</span><div class="seg" role="group" aria-label="${label}">${items
+                    .map(([v, t]) => `<button type="button" aria-pressed="${v === cur}" onclick="App.${fn}(${typeof v === 'string' ? `'${v}'` : v})">${t}</button>`).join('')}</div></div>`;
+                menu.innerHTML = seg('Bot plays', [[null, 'Off'], [0, 'P1'], [1, 'P2']], b.seat, 'setBot')
+                    + seg('Pace', [['auto', 'Auto'], ['step', 'Step']], b.pace, 'setBotPace')
+                    + seg('Speed', [[2000, 'Slow'], [1000, 'Normal'], [400, 'Fast']], b.speed, 'setBotSpeed')
+                    + '<p class="bm-hint">The rules engine plays that seat, one move at a time. P switches Auto and Step; N plays its next move. Switch it off to take over.</p>';
+            },
+
+            // --- Feature 68 (experimental): What-if (Multiverse → What-if) ---
+            // A game saved turn by turn, played out again from your turns before the loss, looking for a line that
+            // would have won (DojoWhatIf, app/js/whatif.js); an unfinished one, for a better lore race. A game with
+            // more than one line, or unfinished, starts where the player picks on the canvas. It lives in the
+            // Multiverse's panel, so each line's branch shows on the canvas as soon as it has been played. Results
+            // stay while the page is open.
+            _whatIf: null, // { key, line, game, levels, running, stopping, next, why, from, t0, branches }
+
+            openWhatIf() {
+                if (!this.rulesOn) return this.showToast('What-if needs the rules engine: Tweaks → Rules engine → Assist.');
+                const line = DojoWhatIf.lineOf(this.bookmarks, s => this.decompressState(s));
+                if (!this._whatIf || (this._whatIf.key !== line.key && !this._whatIf.running)) {
+                    this.whatIfReset();
+                    const game = line.branched || line.winner === null ? null : this.whatIfGame();
+                    this._whatIf = { key: line.key, line, game, levels: [], running: false, next: 1, from: 1, why: '', branches: {} };
+                }
+                if (document.getElementById('tree-modal').classList.contains('hidden')) this.openTreeModal();
+                this.$('tp-whatif').hidden = false;
+                this.$('tree-whatif').setAttribute('aria-pressed', 'true');
+                this.renderWhatIf();
+            },
+
+            // The game What-if plays: the line through the picked node (or the only line). A finished game is played
+            // for its loser, from their turn at or before the pick; an unfinished one for whoever's turn is picked.
+            whatIfGame(pickId) {
+                const line = DojoWhatIf.lineOf(this.bookmarks, s => this.decompressState(s), pickId);
+                const { turns, winner } = line;
+                if (turns.length < 2) return null;
+                const me = winner !== null ? 1 - winner : turns[line.at].active;
+                let start = line.at;
+                while (start >= 0 && (turns[start].active !== me || (winner !== null && start === turns.length - 1))) start--;
+                return start < 0 ? null : { turns, winner, me, start, label: line.label, picked: !!pickId, keyOf: id => this.cardKey(id), known: id => !!this.cardDB[id] };
+            },
+
+            // Start from the turn picked on the canvas; or back to picking (the branches made stay).
+            whatIfStart() {
+                const w = this._whatIf, game = w && !w.running && this.whatIfGame(this.treeNavActiveId);
+                if (!game) return;
+                Object.assign(w, { game, levels: [], why: '', next: 1, from: 1, done: false });
+                this.runWhatIf();
+            },
+
+            whatIfPickAgain() {
+                const w = this._whatIf;
+                if (!w || w.running) return;
+                Object.assign(w, { game: null, levels: [], why: '', next: 1, from: 1, done: false });
+                this.renderWhatIf();
+            },
+
+            closeWhatIf() {
+                this.$('tp-whatif').hidden = true;
+                this.$('tree-whatif').setAttribute('aria-pressed', 'false');
+            },
+
+            toggleWhatIf() {
+                if (this.$('tp-whatif').hidden) this.openWhatIf();
+                else this.closeWhatIf();
+            },
+
+            async runWhatIf() {
+                const w = this._whatIf;
+                if (!w || !w.game || w.running) return;
+                Object.assign(w, { running: true, stopping: false, why: '', from: w.next, t0: Date.now(), shown: false });
+                // A turn back that was stopped part-way runs again from its start.
+                w.levels = w.levels.filter(l => l.back < w.next);
+                this.renderWhatIf();
+                document.body.classList.add('whatif-running');
+                const tick = setInterval(() => this.renderWhatIfMeter(), 1000);
+                // A run belongs to its game: once another game is loaded (whatIfReset), what it still
+                // reports goes nowhere, and it stops at the next playout.
+                const live = () => this._whatIf === w;
+                let r;
+                try {
+                    r = await DojoWhatIf.run(w.game, w.next, {
+                        level: (l) => { if (live()) { w.levels.push(l); this.renderWhatIf(); } },
+                        line: (l, x) => { if (live()) this.whatIfBranch(l, x); },
+                        change: () => { if (live()) this.renderWhatIf(); }
+                    }, () => w.stopping || !live());
+                } catch (e) {
+                    console.warn('What-if:', e);
+                    r = { done: true, why: 'error' };
+                }
+                clearInterval(tick);
+                w.running = false;
+                if (!live()) return;
+                document.body.classList.remove('whatif-running');
+                Object.assign(w, { why: r.why, next: r.next || w.next, done: r.done });
+                this.renderWhatIf();
+                if (r.why === 'won') this.showToast(w.game.winner === null ? 'What-if found a better lore race.' : 'What-if found a line that wins.');
+            },
+
+            // A new or loaded game: What-if starts afresh, and a run for the old game stops.
+            whatIfReset() {
+                if (!this._whatIf) return;
+                this._whatIf.stopping = true;
+                this._whatIf = null;
+                document.body.classList.remove('whatif-running');
+                const host = this.$('tp-whatif');
+                if (host) { host.hidden = true; host.innerHTML = ''; }
+                const key = this.$('tree-whatif');
+                if (key) key.setAttribute('aria-pressed', 'false');
+            },
+
+            stopWhatIf() {
+                if (this._whatIf) this._whatIf.stopping = true;
+                this.renderWhatIf();
+            },
+
+            // A line played out, as a Multiverse branch laid out as the game's own: a node for the start of each
+            // turn, holding the board then and, as its note, the moves played from it. The branch starts beside
+            // the real turn it replays, on the same board, so both read from the same lore; a game-over node (a
+            // square in the plot) ends it where someone wins.
+            whatIfBranch(level, line) {
+                const w = this._whatIf, key = `${level.nodeId}:${line.index}`;
+                if (w.branches[key] && this.bookmarks.some(b => b.id === w.branches[key].first)) return Object.assign(line, w.branches[key]);
+                const realNode = this.bookmarks.find(b => b.id === level.nodeId);
+                const L = w.game.label, label = `What-if from turn ${L(level.turn)}, line ${line.index + 1}`;
+                const nameOf = (st, i) => st.players[i].name || `P${i + 1}`;
+                const notes = (st, t) => {
+                    if (!t) return '';
+                    const who = nameOf(st, t.who);
+                    const moves = (t.acts || []).filter(a => a.by === 'me').map(a => `- ${who}: ${DojoRules.actText(a)}${a.extra ? ' (beyond the real game)' : ''}`);
+                    if (t.how === 'better') moves.unshift(`- ${who}'s real turn scored lower than the search's line, so this is the search's.`);
+                    return moves.join('\n');
+                };
+                // Each node: the board at the start of a turn (the first is the real one's), then the end.
+                const boards = [{ turn: level.turn, active: line.turns[0].who, players: level.start.players, row: line.turns[0] }];
+                line.turns.forEach((t, k) => {
+                    const over = k === line.turns.length - 1 && line.winner !== null;
+                    boards.push(over ? { turn: t.turn, active: t.who, players: t.state.players, over: true, playedBy: t.who }
+                        : { turn: t.turn + 1, active: 1 - t.who, players: t.state.players, row: line.turns[k + 1], playedBy: t.who });
+                });
+                let parentId = realNode ? realNode.parentId || null : level.nodeId, prev = level.start, first = null, last = null;
+                const ids = [];
+                boards.forEach((b, k) => {
+                    const st = JSON.parse(JSON.stringify(level.start));
+                    Object.assign(st, { players: JSON.parse(JSON.stringify(b.players)), turn: L(b.turn), activePlayer: b.active, inactivePlayer: 1 - b.active,
+                        log: [], cardsPlayedThisTurn: [], mulliganPending: false, opponentHandRevealed: false, branchOverFlag: !!b.over });
+                    // Ink inked in the turn just played shows face up; the rest face down. The first board is the real one's.
+                    if (k) st.players.forEach((p, pi) => {
+                        const had = new Set(prev.players[pi].inkwell.map(c => c.instanceId));
+                        p.inkwell.forEach(c => { c.faceUp = pi === b.playedBy && !had.has(c.instanceId); });
+                    });
+                    const id = this.uuid();
+                    st.activeBookmarkId = id;
+                    const node = {
+                        id, parentId,
+                        name: `Turn ${st.turn} – P${b.active + 1} Active (${label})`,
+                        stats: `Turn ${st.turn} | P1: ${st.players[0].lore} - P2: ${st.players[1].lore}`,
+                        comment: notes(st, b.row),
+                        color: this.playerBookmarkColor(b.active), gradient: null,
+                        state: JSON.stringify(this.compressState(st, true)),
+                        timestamp: Date.now(), isDeckEdit: false, turnStart: true, cardsPlayedData: []
+                    };
+                    if (b.over) {
+                        // As the Dojo marks a game's end (checkBranchOver): the winner's deck colours, a victory node.
+                        const winner = line.winner, colours = this.getDeckGradient(this.getDeckColors(winner));
+                        Object.assign(node, {
+                            name: `Game Over - ${nameOf(st, winner)} Wins! (${label})`,
+                            comment: `${nameOf(st, winner)} reached 20 lore.`,
+                            color: typeof colours === 'string' && !colours.includes('gradient') ? colours : 'var(--accent)',
+                            gradient: colours.includes('gradient') ? colours : null,
+                            isVictory: true, playerIdx: winner, turnStart: false
+                        });
+                    }
+                    this.bookmarks.push(node);
+                    ids.push(id);
+                    if (!first) first = id;
+                    last = id;
+                    parentId = id;
+                    prev = st;
+                });
+                w.branches[key] = { first, last, ids };
+                Object.assign(line, w.branches[key]);
+                this.renderTree();
+                this.saveToDevice();
+                return line;
+            },
+
+            // Every line that didn't win comes out of the Multiverse, at once, with an Undo toast as for any
+            // delete. Their results stay in the panel, and Show plots one again. A node of yours saved after one
+            // of them moves to the turn the line branched from.
+            whatIfRemoveLosing() {
+                const w = this._whatIf;
+                if (!w || w.running) return;
+                const gone = new Map(), keys = [];
+                w.levels.forEach(l => l.lines.forEach(x => {
+                    const key = `${l.nodeId}:${x.index}`, b = w.branches[key];
+                    if (x.good || !b || !this.bookmarks.some(n => n.id === b.first)) return;
+                    keys.push(key);
+                    b.ids.forEach(id => gone.set(id, l.nodeId));
+                }));
+                if (!keys.length) return;
+                const snapshot = { bookmarks: this.bookmarks.map(b => ({ ...b })), branches: { ...w.branches }, active: this.state.activeBookmarkId, sel: this.treeNavActiveId };
+                const lines = () => w.levels.forEach(l => l.lines.forEach(x => {
+                    delete x.first; delete x.last; delete x.ids;
+                    Object.assign(x, w.branches[`${l.nodeId}:${x.index}`] || {});
+                }));
+                this.bookmarks.forEach(b => { if (!gone.has(b.id) && gone.has(b.parentId)) b.parentId = gone.get(b.parentId); });
+                this.bookmarks = this.bookmarks.filter(b => !gone.has(b.id));
+                if (gone.has(this.state.activeBookmarkId)) this.state.activeBookmarkId = gone.get(this.state.activeBookmarkId);
+                if (gone.has(this.treeNavActiveId)) this.treeNavActiveId = gone.get(this.treeNavActiveId);
+                keys.forEach(k => delete w.branches[k]);
+                lines();
+                this.renderTree();
+                this.saveToDevice();
+                this.renderWhatIf();
+                this.showToast(`Removed ${keys.length} line${keys.length > 1 ? 's' : ''} that ${w.game.winner === null ? 'weren’t better' : 'didn’t win'}`, {
+                    actionLabel: 'Undo',
+                    onAction: () => {
+                        this.bookmarks = snapshot.bookmarks;
+                        w.branches = snapshot.branches;
+                        this.state.activeBookmarkId = snapshot.active;
+                        this.treeNavActiveId = snapshot.sel;
+                        lines();
+                        this.renderTree();
+                        this.saveToDevice();
+                        this.renderWhatIf();
+                    }
+                });
+            },
+
+            // A line's last node (the game over, when there is one), picked and centred on the canvas.
+            whatIfShow(li, ii) {
+                const w = this._whatIf, level = w && w.levels[li], line = level && level.lines[ii];
+                if (!line) return;
+                this.whatIfBranch(level, line);
+                this.selectTreeNode(line.last, true);
+                this.renderWhatIf();
+            },
+
+            // The progress meter: one segment for each turn back this run may visit, filled as its playouts end.
+            whatIfMeter() {
+                const w = this._whatIf, levels = w.levels.filter(l => l.back >= w.from);
+                const segs = Array.from({ length: DojoWhatIf.BACK }, (_, i) => {
+                    const l = levels[i];
+                    const fill = l ? Math.round(100 * l.done / l.steps) : 0;
+                    return `<span class="wi-seg${l ? ` is-${l.state}` : ''}"><i style="width:${fill}%"></i></span>`;
+                }).join('');
+                const now = levels[levels.length - 1];
+                const cap = now ? `${this.whatIfBack(now)} · T${w.game.label(now.turn)} · ${this._esc(now.step)}` : 'Starting the rules engine';
+                return `<div class="wi-meter" role="progressbar" aria-label="What-if progress" aria-valuemin="0" aria-valuemax="${DojoWhatIf.BACK}" aria-valuenow="${levels.filter(l => l.state !== 'running').length}">${segs}</div>
+                    <div class="wi-meter-cap"><span>${w.stopping ? 'Stopping after this playout' : cap}</span><span class="wi-time">${this.whatIfClock()}</span></div>`;
+            },
+
+            // A turn back's label: from the end, or from the start picked.
+            whatIfBack(l) {
+                return !this._whatIf.game.picked ? `${l.back} back` : l.back === 1 ? 'Start' : `${l.back - 1} before`;
+            },
+
+            whatIfClock() {
+                const secs = Math.round((Date.now() - this._whatIf.t0) / 1000);
+                return `${Math.floor(secs / 60)}:${String(secs % 60).padStart(2, '0')}`;
+            },
+
+            // Each second, just the clock: the meter's sweep isn't redrawn, so it doesn't restart.
+            renderWhatIfMeter() {
+                const time = document.querySelector('#tp-whatif .wi-time');
+                if (time && this._whatIf && this._whatIf.running) time.textContent = this.whatIfClock();
+            },
+
+            // The game on glass: a lost one's result (their winning lore in Coral), or an unfinished one's last lore.
+            whatIfWell(g) {
+                const esc = (t) => this._esc(String(t)), me = g.me, end = g.turns[g.turns.length - 1];
+                const names = end.state.players.map((p, i) => esc(p.name || `P${i + 1}`));
+                const num = (v, hot) => `<b class="wi-num${hot ? ' is-hot' : ''}">${v}</b>`;
+                let score, cap;
+                if (g.winner === null) {
+                    const lore = end.state.players.map(p => p.lore);
+                    score = `<span class="wi-name">${names[me]}</span>${num(lore[me])}<span class="wi-dash">–</span>${num(lore[1 - me])}<span class="wi-name">${names[1 - me]}</span>`;
+                    cap = `Unfinished · turn ${end.label} · a better lore race for ${names[me]} by turn ${g.label(end.turn + DojoWhatIf.OPEN)}?`;
+                } else {
+                    const real = (this._whatIf.levels.find(l => l.exact && l.reproduced) || {}).exact;
+                    score = real ? `<span class="wi-name">${names[1 - me]}</span>${num(real.lore[1 - me], true)}<span class="wi-dash">–</span>${num(real.lore[me])}<span class="wi-name">${names[me]}</span>`
+                        : `<span class="wi-name">${names[1 - me]} won</span>`;
+                    cap = `Lost on turn ${end.label} · a win for ${names[me]}?`;
+                }
+                return `<div class="wi-well"><div class="wi-score">${score}</div><div class="wi-cap">${cap}</div></div>`;
+            },
+
+            // A game with more than one line, or unfinished: the player picks the turn to start from on the canvas.
+            whatIfPicker() {
+                const w = this._whatIf;
+                if (!w.line.branched && w.line.turns.length < 2) return '<p class="wi-intro">What-if needs a game saved turn by turn: a <b>Duels.ink replay or log</b> (Log or Import, above), or a game played here with <b>Auto-save every turn</b> on.</p>';
+                const g = this.whatIfGame(this.treeNavActiveId);
+                const intro = `<p class="wi-intro">${w.line.branched ? 'This game has more than one line' : 'This game isn’t finished'}, so pick where to start: select a turn in the Multiverse. What-if tries other lines from there, then goes back one turn at a time.${g && g.winner === null ? ` An unfinished line is played to two turns past its last and compared on the lore race: ${this._esc(g.turns[0].state.players[g.me].name || `P${g.me + 1}`)}’s lore minus the other’s.` : ''}</p>`;
+                if (!g) return intro;
+                return `${intro}${this.whatIfWell(g)}<div class="wi-actions"><button class="btn btn-primary" onclick="App.whatIfStart()">Start from turn ${g.turns[g.start].label}</button></div>`;
+            },
+
+            renderWhatIf() {
+                const host = this.$('tp-whatif'), w = this._whatIf;
+                if (!host || host.hidden || !w) return;
+                const esc = (t) => this._esc(String(t));
+                const head = `<div class="wi-top"><span class="tp-label">What-if</span>
+                    <button class="icon-btn" onclick="App.closeWhatIf()" title="Close What-if (a run carries on)" aria-label="Close What-if"><i class="fa-solid fa-xmark"></i></button></div>`;
+                if (!w.game) {
+                    host.innerHTML = head + this.whatIfPicker();
+                    return;
+                }
+                const g = w.game, me = g.me, unfinished = g.winner === null;
+                const well = this.whatIfWell(g);
+                const pip = (a) => `<i class="rules-pip key-${(DojoRules.VERBS[a.family] || { key: 'bone' }).key}"></i>`;
+                const moves = (x) => {
+                    const acts = ((x.turns[0] || {}).acts || []).filter(a => a.by === 'me' && DojoRules.VERBS[a.family]);
+                    return acts.length ? acts.map(a => `<span class="wi-mv">${pip(a)}${esc(DojoRules.actText(a))}</span>`).join('') : '<span class="wi-mv">End the turn</span>';
+                };
+                // A real move from the game's log, in the same words as the lines' moves.
+                const realMoves = (r) => {
+                    const n = (x) => esc(String(x || '').split(' - ')[0]);
+                    const say = { playCard: (m) => (m.with ? `Sing ${n(m.card)} with ${m.with.map(n).join(' and ')}` : `Play ${n(m.card)}`),
+                        quest: (m) => `Quest with ${n(m.card)}`, challenge: (m) => `Challenge ${n(m.target)} with ${n(m.card)}`,
+                        putCardIntoInkwell: (m) => `Ink ${n(m.card)}`, moveCharacterToLocation: (m) => `Move ${n(m.card)} to ${n(m.target)}`,
+                        activateAbility: (m) => `Use ${n(m.card)}` };
+                    const moves = (r && r.moves || []).filter(m => say[m.family]);
+                    return moves.length ? moves.map(m => `<span class="wi-mv">${pip(m)}${say[m.family](m)}</span>`).join('') : '<span class="wi-mv">End the turn</span>';
+                };
+                // A turn without a record of its moves: what its node's recap says was played.
+                const recap = (s) => {
+                    const n = (id) => (this.cardDB[id] || {}).name;
+                    const of = (ids, family) => (Array.isArray(ids) ? ids : []).map(id => ({ family, card: n(id) })).filter(m => m.card);
+                    const fights = (Array.isArray(s.challenged) ? s.challenged : []).map(e => ({ family: 'challenge', card: n(e && e.id), target: n(e && e.target) })).filter(m => m.card && m.target);
+                    return realMoves({ moves: [...of(s.inked, 'putCardIntoInkwell'), ...of(s.played, 'playCard'), ...of(s.quested, 'quest'), ...fights] });
+                };
+                const pair = (x) => `<b class="wi-num${x.winner === me || x.good ? ' is-win' : ''}">${x.lore[me]}</b><span class="wi-dash">–</span><b class="wi-num${x.winner === 1 - me ? ' is-hot' : ''}">${x.lore[1 - me]}</b>`;
+                const endOf = (x) => (x.turns.length ? g.label(x.turns[x.turns.length - 1].turn) : '?');
+                const ahead = (x) => x.lore[me] - x.lore[1 - me];
+                const outcome = (x) => (x.winner === me ? 'Wins' : x.winner !== null ? 'Loses' : !unfinished ? 'No winner'
+                    : ahead(x) > 0 ? `Ahead by ${ahead(x)}` : ahead(x) < 0 ? `Behind by ${-ahead(x)}` : 'Level');
+                const BADGE = { running: 'Searching', won: unfinished ? 'Better' : 'Win', none: unfinished ? 'Not better' : 'No win', drift: 'Can’t follow', stopped: 'Stopped' };
+                const levels = w.levels.map((l, li) => {
+                    const open = (l.open != null ? l.open : l.state === 'won' || l.state === 'running' || l.state === 'drift') ? ' open' : '';
+                    const sum = `<summary class="wi-sum" onclick="App._whatIf.levels[${li}].open = !this.parentNode.open"><span class="wi-back">${this.whatIfBack(l)}</span><span class="wi-turn">Turn ${g.label(l.turn)}</span><span class="wi-badge is-${l.state}">${BADGE[l.state]}</span></summary>`;
+                    const checks = [];
+                    if (l.exact) checks.push(l.reproduced
+                        ? `<li><i class="wi-dot is-ok"></i>The real game replays as it ended</li>`
+                        : `<li><i class="wi-dot is-bad"></i>Replayed with the real moves, the game ends differently, so lines from here can't be trusted</li>`);
+                    if (!l.recorded) checks.push('<li><i class="wi-dot"></i>Not every move from here is on record, so the real game isn’t replayed; the search plays the turns that aren’t</li>');
+                    if (!l.control && l.state !== 'running') checks.push('<li><i class="wi-dot"></i>Nothing was played after this turn, so the lines are compared with each other</li>');
+                    // What you really did that turn, as a row like the lines: the move, and how it ends with the search after.
+                    const realTurn = (g.turns.find(t => t.id === l.nodeId) || {}).real;
+                    const node = this.bookmarks.find(b => b.id === l.nodeId);
+                    const did = l.control ? `<li class="wi-line is-real">
+                        <div class="wi-line-top"><span class="wi-idx">What you did</span><span class="wi-pair">${pair(l.control)}</span><span class="wi-t">${outcome(l.control)} · T${endOf(l.control)}</span></div>
+                        <div class="wi-moves">${realTurn ? realMoves(realTurn) : node && node.sections ? recap(node.sections) : '<span class="wi-mv">As played</span>'}</div>${l.control.winner === me ? '<div class="wi-moves">With the search’s later turns this wins too, so the win is in a later turn.</div>' : ''}</li>` : '';
+                    const lines = did + l.lines.map((x, ii) => `<li class="wi-line is-${x.good ? 'win' : x.winner !== null && x.winner !== me ? 'loss' : 'open'}">
+                        <div class="wi-line-top"><span class="wi-idx">Line ${x.index + 1}</span><span class="wi-pair">${pair(x)}</span><span class="wi-t">${outcome(x)} · T${endOf(x)}</span>
+                        <button class="btn wi-show" onclick="App.whatIfShow(${li}, ${ii})" title="Pick this line's last node in the Multiverse">Show</button></div>
+                        <div class="wi-moves">${moves(x)}</div></li>`).join('');
+                    const pending = l.state === 'running' && w.running ? `<li class="wi-line is-pending"><span class="wi-idx">${esc(l.step)}</span></li>` : '';
+                    return `<details class="wi-level is-${l.state}"${open}>${sum}
+                        <ul class="wi-checks">${checks.join('')}</ul>${lines || pending ? `<ol class="wi-lines">${lines}${pending}</ol>` : ''}</details>`;
+                }).join('');
+                let foot;
+                if (w.running) foot = `<div id="wi-meter-host">${this.whatIfMeter()}</div><div class="wi-actions"><button class="btn" onclick="App.stopWhatIf()"${w.stopping ? ' disabled' : ''}>Stop</button></div>`;
+                else {
+                    const theirs = g.turns.some(t => t.real) ? 'Their turns are what they really did, unless the search finds clearly better.' : 'The search plays their turns.';
+                    const note = !w.why ? `Goes back one of your turns at a time, up to ${DojoWhatIf.BACK}, and stops at the first that wins. ${theirs} About half a minute a turn.`
+                        : w.why === 'error' ? 'The rules engine stopped with an error.'
+                        : w.why === 'stopped' ? 'Stopped.'
+                        : w.why === 'won' ? `Stopped at the first turn back with ${unfinished ? 'a better lore race' : 'a win'}.`
+                        : w.why === 'drift' ? (w.levels.length === 1 ? 'Replayed from this turn, the game doesn’t end as it did, so What-if can’t follow it.' : 'From here back the replay no longer follows the real game, so What-if stops.')
+                        : `No ${unfinished ? 'better lore race' : 'winning line'} ${w.levels.length} turn${w.levels.length > 1 ? 's' : ''} back.`;
+                    const go = !w.why ? 'Look for a win' : w.why === 'won' || w.why === 'none' ? 'Keep going' : w.why === 'stopped' ? 'Carry on' : '';
+                    const losing = w.levels.reduce((n, l) => n + l.lines.filter(x => !x.good && x.first && this.bookmarks.some(b => b.id === x.first)).length, 0);
+                    const remove = losing ? `<button class="btn" onclick="App.whatIfRemoveLosing()" title="Take these lines out of the Multiverse (Undo puts them back)">Remove ${losing} ${unfinished ? `line${losing > 1 ? 's' : ''} that aren’t better` : `losing line${losing > 1 ? 's' : ''}`}</button>` : '';
+                    const again = g.picked ? '<button class="btn" onclick="App.whatIfPickAgain()" title="Pick another turn to start from in the Multiverse">Pick another start</button>' : '';
+                    const keep = go && !w.done ? `<button class="btn btn-primary" onclick="App.runWhatIf()">${go}</button>` : '';
+                    foot = `<p class="wi-note">${note}</p>${remove || again || keep ? `<div class="wi-actions">${remove}${again}${keep}</div>` : ''}`;
+                }
+                host.innerHTML = `${head}${well}${levels ? `<div class="wi-levels">${levels}</div>` : ''}<div class="wi-foot">${foot}</div>`;
+                // The animations keep their phase across redraws (one cycle is 4.8 s, the length of each).
+                host.style.setProperty('--wi-phase', `-${Date.now() % 4800}ms`);
+                // A run that ends on a win brings that turn back into view, once.
+                const won = !w.running && w.why === 'won' && !w.shown && host.querySelector('.wi-level.is-won:last-of-type, .wi-level.is-won');
+                if (won) {
+                    w.shown = true;
+                    won.scrollIntoView({ block: 'start', behavior: 'smooth' });
+                }
+            },
+
+            // --- Feature 68 (experimental): the score lab (Tweaks → Rules engine → Lab) ---
+            // The weights proposed plays are scored with, as profiles kept on this device (DojoLab); the
+            // odds column's Score tab to change them; and each card in play's share of the score, on the card.
+            labOn: false,
+            labView: null, // DojoRules.score of the board on screen, with the weights in use
+            labDefaults: null, // the engine's own weights (the Default profile)
+            labSel: null, // the term whose slider is open
+            labMore: false, // the profile tools row is open
+            _labSig: null,
+            _lab: null,
+
+            labStore() {
+                return this._lab || (this._lab = DojoLab.load());
+            },
+
+            // The profile in use: its draft while it has unsaved edits. Default is the engine's own weights.
+            labProfile() {
+                const s = this.labStore();
+                if (s.draft) return s.draft;
+                if (s.active !== DojoLab.DEFAULT && s.profiles[s.active]) return s.profiles[s.active];
+                return { weights: Object.assign({}, this.labDefaults || {}), off: [], terms: [] };
+            },
+
+            // What the engine is sent: nothing outside the lab, so Assist always scores with Default.
+            labWeights() {
+                return this.labOn ? DojoLab.weightsFor(this.labProfile()) : undefined;
+            },
+
+            labTerms() {
+                return this.labOn ? DojoLab.termsFor(this.labProfile()) : undefined;
+            },
+
+            // The weights and terms in use, as one string: a reading or a search made with others is stale.
+            labSig() {
+                return JSON.stringify([this.labWeights(), this.labTerms()]);
+            },
+
+            labIsDefault() {
+                const w = this.labWeights(), d = this.labDefaults;
+                return !w || !d || (DojoLab.KEYS.every(k => w[k] === undefined || w[k] === d[k]) && !this.labTerms().length);
+            },
+
+            // Like rulesRefresh: a changed board or weights asks the engine for the score again.
+            labRefresh() {
+                if (!this.labOn || !this.state || !this.state.players || this.state.mulliganPending) {
+                    this.labView = null;
+                    this._labSig = null;
+                    return;
+                }
+                const weights = this.labWeights(), terms = this.labTerms();
+                const sig = this.boardSig(this.state) + this.labSig();
+                if (sig === this._labSig) return;
+                this._labSig = sig;
+                DojoRules.score(this.state, id => this.cardKey(id), weights, terms).then(v => {
+                    if (this._labSig !== sig || !this.labOn) return;
+                    this.labDefaults = v.defaults;
+                    v.sent = terms; // v.terms[i] is the value of sent[i]
+                    this.labView = v;
+                    this.render();
+                }).catch(e => console.warn('Score lab:', e));
+            },
+
+            // A card's share of the score, on its top-right corner; hover for the sum.
+            labChip(iid, shares) {
+                const total = shares.reduce((n, s) => n + s.v, 0);
+                const chip = this.el('span', 'lab-chip' + (total < 0 ? ' is-neg' : ''));
+                chip.textContent = (total > 0 ? '+' : total < 0 ? '−' : '±') + Math.abs(total).toFixed(1);
+                chip.dataset.tip = 'share';
+                chip.dataset.iid = iid;
+                chip.addEventListener('mouseenter', () => this.playsTip(chip));
+                chip.addEventListener('mouseleave', () => this.playsTip(null));
+                return chip;
+            },
+
+            renderLab() {
+                const host = this.$('prob-lab');
+                if (!host || !this.labOn || !this.state || !this.state.players) return;
+                this.playsTip(null);
+                this.bindPlaysTips(host);
+                if (this.labForm) return void (host.innerHTML = this.labFormHtml());
+                const s = this.labStore(), v = this.labView, prof = this.labProfile();
+                const esc = (t) => this._esc(String(t));
+                const sign = (n) => (n > 0 ? '+' : n < 0 ? '−' : '±') + Math.abs(n).toFixed(1);
+                const me = this.state.activePlayer;
+                const names = [DojoLab.DEFAULT, ...Object.keys(s.profiles)];
+                const options = names.map(n => `<option value="${esc(n)}"${n === s.active ? ' selected' : ''}>${esc(n)}${n === s.active && s.draft ? ' · edited' : ''}</option>`).join('');
+                // Each term's worth on this board, and the measure behind it (hover).
+                const r = v && v.raw, w = v && v.weights;
+                const now = (k) => (!v || k === 'reply' ? null : k === 'potential' ? w.potential * r.potential[0] : k === 'threat' ? -w.threat * r.potential[1] : v.parts[k]);
+                const raw = (k) => !r ? '' : {
+                    lore: `${r.lore[0]} against ${r.lore[1]}`, potential: `${r.potential[0]} lore`, threat: `${r.potential[1]} lore`,
+                    body: `${r.body[0]} against ${r.body[1]}`, exposed: `${+r.exposed.toFixed(2)} at risk`, hand: `${r.hand} cards`, ink: `${r.ink} cards`,
+                    race: `you ${r.race[0]} turns, them ${r.race[1]}`,
+                }[k] || '';
+                // A log slider: 0.01 to 3.16; type a weight for anything else (negative, bigger).
+                const slider = (x) => Math.round(100 * Math.log10(Math.max(0.01, Math.min(3.16, x))));
+                const rows = DojoLab.TERMS.map(t => {
+                    const off = prof.off.includes(t.key), x = prof.weights[t.key], val = now(t.key);
+                    const sel = this.labSel === t.key && t.key !== 'reply';
+                    const name = `${esc(t.label)}${t.side ? ` <em>${t.side}</em>` : ''}`;
+                    return `<div class="lab-term${off ? ' is-off' : ''}${sel ? ' is-sel' : ''}">
+                        <input type="checkbox"${off ? '' : ' checked'} aria-label="Use ${esc(t.label)}${t.side ? ' ' + t.side : ''}" onchange="App.labToggle('${t.key}', this.checked)">
+                        <button type="button" class="lab-n" data-tip="text" data-head="${esc(t.label + (t.side ? ' · ' + t.side : ''))}" data-val="${esc(raw(t.key))}" data-text="${esc(t.help)}"
+                            onclick="App.labSelect('${t.key}')">${name}</button>
+                        ${t.key === 'reply' ? '<span></span><span class="lab-v">—</span>'
+                            : `<input class="input lab-w" type="number" step="0.01" value="${x == null ? '' : +(+x).toFixed(3)}" aria-label="Weight of ${esc(t.label)}${t.side ? ' ' + t.side : ''}" onchange="App.labSetWeight('${t.key}', this.value)">
+                               <span class="lab-v${val < 0 ? ' is-neg' : ''}">${val == null ? '' : sign(val)}</span>`}
+                        ${sel ? `<div class="lab-slide"><span>0.01</span><input type="range" min="-200" max="50" value="${slider(x)}" aria-label="Weight of ${esc(t.label)}" oninput="App.labSlide('${t.key}', this.value)"><span>3</span></div>` : ''}
+                    </div>`;
+                }).join('');
+                // Your own terms: the value of each one that's on is in v.terms, in the order they were sent.
+                let sent = 0;
+                const yours = (prof.terms || []).map((t, i) => {
+                    const val = t.off ? null : v && v.terms ? (v.terms[sent++] || {}).value : null;
+                    return `<div class="lab-term${t.off ? ' is-off' : ''}">
+                        <input type="checkbox"${t.off ? '' : ' checked'} aria-label="Use ${esc(t.name || 'term ' + (i + 1))}" onchange="App.labTermToggle(${i}, this.checked)">
+                        <button type="button" class="lab-n" data-tip="text" data-head="${esc(t.name || 'term ' + (i + 1))}" data-val="${DojoLab.peeks(t) ? 'peeks' : ''}" data-text="${esc(DojoLab.describe(t) + ' Click to edit.')}"
+                            onclick="App.labOpenTerm(${i})">${esc(t.name || 'term ' + (i + 1))}${DojoLab.peeks(t) ? '<span class="lab-peek">peeks</span>' : ''}</button>
+                        <input class="input lab-w" type="number" step="0.05" value="${+(+t.weight).toFixed(3)}" aria-label="Weight of ${esc(t.name || 'term ' + (i + 1))}" onchange="App.labTermWeight(${i}, this.value)">
+                        <span class="lab-v${val < 0 ? ' is-neg' : ''}">${val == null ? '' : sign(val)}</span>
+                    </div>`;
+                }).join('');
+                const named = s.active !== DojoLab.DEFAULT;
+                host.innerHTML = `<div class="lab-head">
+                        <select class="select" aria-label="Profile" onchange="App.labUse(this.value)">${options}</select>
+                        <button class="btn" onclick="App.labSave()" ${s.draft ? '' : 'disabled'} title="${named ? 'Save the edits to this profile' : 'Default stays as it is: save the edits as a new profile'}">Save</button>
+                        <button class="icon-btn" onclick="App.labMore = !App.labMore; App.renderLab()" aria-expanded="${this.labMore}" title="Save as, rename, delete, export, import"><i class="fa-solid fa-ellipsis"></i></button>
+                    </div>
+                    ${this.labMore ? `<div class="lab-tools">
+                        <button class="btn" onclick="App.labSaveAs()">Save as…</button>
+                        ${named ? '<button class="btn" onclick="App.labRename()">Rename</button><button class="btn" onclick="App.labDelete()">Delete</button>' : ''}
+                        ${s.draft ? '<button class="btn" onclick="App.labDiscard()">Undo edits</button>' : ''}
+                        <button class="btn" onclick="App.labExport()" ${Object.keys(s.profiles).length ? '' : 'disabled'}>Export</button>
+                        <button class="btn" onclick="App.labImport()">Import</button></div>` : ''}
+                    <div class="lab-now"><span class="rp-lbl">Score now · P${me + 1} to play</span><b>${v ? sign(v.score) : '…'}</b></div>
+                    <div class="lab-sec"><span class="rp-lbl">Terms</span><span class="rp-lbl">Weight · now</span></div>
+                    ${rows}
+                    <div class="lab-sec"><span class="rp-lbl">Your terms</span><span class="rp-lbl">Weight · now</span></div>
+                    ${yours || '<p class="rp-note">Count any cards you like: my or their cards in a zone, filtered, measured, weighed.</p>'}
+                    ${(prof.terms || []).length < DojoLab.TERM_MAX ? '<button class="rp-more" onclick="App.labNewTerm()">+ New term</button>' : ''}
+                    <p class="rp-note lab-foot">The number on each card in play is its share of lore on board, board, exposed and your terms that count cards in play. Their turn only counts in proposed plays.</p>`;
+            },
+
+            // Edits go to the profile's draft, kept until saved, discarded or another profile is picked.
+            labEdit(change) {
+                const s = this.labStore();
+                const d = s.draft || JSON.parse(JSON.stringify(this.labProfile()));
+                change(d);
+                s.draft = d;
+                DojoLab.save(s);
+                this.labRefresh();
+                this.renderLab();
+            },
+
+            // --- Your own terms: a form of dropdowns (DojoLab's lists); the preview asks the engine. ---
+            labForm: null, // { at: its index in the profile's terms, or -1 for a new one; term } while a term is open
+            _labHits: null, // the cards the open term counts, ringed on the board
+
+            labNewTerm() {
+                this.labForm = { at: -1, term: { name: '', side: 'mine', zone: 'play', where: {}, measure: 'count', weight: 0.2, when: 'always' } };
+                this.renderLab();
+                this.labPreview();
+            },
+
+            labOpenTerm(i) {
+                const t = (this.labProfile().terms || [])[i];
+                if (!t) return;
+                this.labForm = { at: i, term: JSON.parse(JSON.stringify(t)) };
+                this.renderLab();
+                this.labPreview();
+            },
+
+            labCloseForm() {
+                this.labForm = null;
+                this._labHits = null;
+                this.renderLab();
+                this.render();
+            },
+
+            labFormHtml() {
+                const f = this.labForm, t = f.term, w = t.where || {};
+                const esc = (x) => this._esc(String(x));
+                const opts = (list, cur, any) => (any ? `<option value="">${any}</option>` : '') + list.map(([v, l]) => `<option value="${esc(v)}"${v === cur ? ' selected' : ''}>${esc(l)}</option>`).join('');
+                const sel = (field, list, cur, any, label) => `<select class="select" aria-label="${label}" onchange="App.labFormSet('${field}', this.value)">${opts(list, cur, any)}</select>`;
+                const num = (field, ph) => `<input class="input" type="number" min="0" max="20" placeholder="${ph}" aria-label="Cost ${ph}" value="${w[field] != null ? w[field] : ''}" oninput="App.labFormSet('${field}', this.value)">`;
+                const when = DojoLab.WHENS.map(([v, l]) => `<button type="button" aria-pressed="${t.when === v}" onclick="App.labFormSet('when', '${v}'); this.parentNode.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b === this)))">${l}</button>`).join('');
+                return `<div class="lab-head"><span class="rp-lbl">${f.at < 0 ? 'New term' : 'Edit term'}</span>
+                        <button class="icon-btn" style="margin-left:auto" onclick="App.labCloseForm()" aria-label="Close"><i class="fa-solid fa-xmark"></i></button></div>
+                    <div class="lab-form">
+                        <label class="rp-lbl" for="lab-f-name">Name</label>
+                        <input id="lab-f-name" class="input" maxlength="${DojoLab.NAME_MAX}" placeholder="Evasive pressure" value="${esc(t.name || '')}" oninput="App.labFormSet('name', this.value)">
+                        <span class="rp-lbl">Whose</span>${sel('side', DojoLab.SIDES, t.side, '', 'Whose cards')}
+                        <span class="rp-lbl">Where</span>${sel('zone', DojoLab.ZONES, t.zone, '', 'Where')}
+                        <span class="rp-lbl">Type</span>${sel('type', DojoLab.TYPES, w.type, 'any type', 'Type')}
+                        <span class="rp-lbl">Keyword</span>${sel('keyword', DojoLab.KEYWORDS, w.keyword, 'any', 'Keyword')}
+                        <span class="rp-lbl" title="Classification">Class</span>
+                        <input class="input" list="lab-classes" maxlength="30" placeholder="any (Hero, Princess…)" aria-label="Classification" value="${esc(w.classification || '')}" oninput="App.labFormSet('classification', this.value)">
+                        <datalist id="lab-classes">${DojoLab.CLASSES.map(c => `<option value="${esc(c)}">`).join('')}</datalist>
+                        <span class="rp-lbl">State</span>${sel('state', DojoLab.STATES, w.state, 'any', 'State')}
+                        <span class="rp-lbl">Can</span>${sel('can', DojoLab.CANS, w.can, 'anything', 'Can')}
+                        <span class="rp-lbl" title="What its abilities do">Does</span>${sel('effect', DojoLab.EFFECTS, w.effect, 'anything', 'What its abilities do')}
+                        <span class="rp-lbl">Cost</span><div class="lab-pair">${num('costMin', 'from')}${num('costMax', 'to')}</div>
+                        <span class="rp-lbl">Named</span>
+                        <input class="input" maxlength="${DojoLab.NAME_MAX}" placeholder="any name" aria-label="Name contains" value="${esc(w.name || '')}" oninput="App.labFormSet('name~', this.value)">
+                        <span class="rp-lbl">Measure</span>${sel('measure', DojoLab.MEASURES, t.measure, '', 'Measure')}
+                        <span class="rp-lbl">Weight</span>
+                        <input class="input lab-w" type="number" step="0.05" aria-label="Weight" value="${+(+t.weight).toFixed(3)}" oninput="App.labFormSet('weight', this.value)">
+                        <span class="rp-lbl">When</span><div class="seg">${when}</div>
+                        <div class="lab-preview" id="lab-preview">Looking at this board…</div>
+                        <div class="lab-btns"><button class="btn" onclick="App.labSaveTerm()">${f.at < 0 ? 'Add term' : 'Save term'}</button>
+                            ${f.at >= 0 ? '<button class="btn" onclick="App.labDeleteTerm()">Delete</button>' : ''}
+                            <button class="btn" onclick="App.labCloseForm()">Cancel</button></div>
+                    </div>`;
+            },
+
+            // A field of the open term changed: keep it, and ask for a preview once typing pauses.
+            labFormSet(field, value) {
+                const f = this.labForm;
+                if (!f) return;
+                const t = f.term, w = t.where = t.where || {};
+                if (field === 'name' || field === 'side' || field === 'zone' || field === 'measure' || field === 'when') t[field] = value;
+                else if (field === 'weight') t.weight = value === '' ? 0 : Number(value);
+                else {
+                    const key = field === 'name~' ? 'name' : field;
+                    if (value === '' || value == null) delete w[key];
+                    else w[key] = value;
+                }
+                clearTimeout(this._labPreviewT);
+                this._labPreviewT = setTimeout(() => this.labPreview(), 200);
+            },
+
+            // What the open term is worth on this board and which cards it counts (ringed on the board).
+            async labPreview() {
+                const f = this.labForm;
+                if (!f || !this.state || !this.state.players) return;
+                const t = DojoLab.termOf(f.term);
+                let v;
+                try { v = await DojoRules.score(this.state, id => this.cardKey(id), this.labWeights(), [t]); } catch (e) { return console.warn('Score lab:', e); }
+                if (this.labForm !== f) return;
+                const r = v.terms[0];
+                this._labHits = new Set(r.hits);
+                this.render();
+                const box = this.$('lab-preview');
+                if (!box) return;
+                const esc = (x) => this._esc(String(x));
+                const names = r.hits.map(iid => { const c = this.findCard(iid); return c ? (this.cardDB[c.card.cardId] || {}).name : null; }).filter(Boolean);
+                const ahead = v.raw.race[0] < v.raw.race[1];
+                const idle = (t.when === 'ahead' && !ahead) || (t.when === 'behind' && ahead);
+                const sign = (n) => (n > 0 ? '+' : n < 0 ? '−' : '±') + Math.abs(n).toFixed(2);
+                box.innerHTML = `${esc(DojoLab.describe(t))}<br>On this board: <b>${sign(r.value)}</b>, ${names.length
+                    ? `counting ${names.length} card${names.length === 1 ? '' : 's'}: ${esc(names.slice(0, 6).join(', '))}${names.length > 6 ? ` and ${names.length - 6} more` : ''}`
+                    : 'no card matches'}${idle ? `, but you're ${ahead ? 'ahead' : 'behind'}, so it adds nothing` : ''}.${t.zone === 'play' && names.length ? ' They are ringed on the board.' : ''}
+                    ${DojoLab.peeks(t) ? '<span class="lab-warn">Peeks: it looks at which cards they hold or inked, which you couldn\'t see in a real game.</span>' : ''}`;
+            },
+
+            labSaveTerm() {
+                const f = this.labForm;
+                if (!f) return;
+                const t = DojoLab.termOf(f.term);
+                t.off = false;
+                if (!t.name) t.name = `term ${(this.labProfile().terms || []).length + (f.at < 0 ? 1 : 0)}`;
+                this.labEdit(d => {
+                    d.terms = d.terms || [];
+                    if (f.at >= 0) d.terms[f.at] = t;
+                    else d.terms.push(t);
+                });
+                this.labCloseForm();
+            },
+
+            labDeleteTerm() {
+                const f = this.labForm;
+                if (!f || f.at < 0) return;
+                this.labEdit(d => { d.terms.splice(f.at, 1); });
+                this.labCloseForm();
+            },
+
+            labTermToggle(i, on) {
+                this.labEdit(d => { if (d.terms[i]) d.terms[i].off = !on; });
+            },
+
+            labTermWeight(i, value) {
+                const w = Number(value);
+                if (value === '' || !Number.isFinite(w)) return this.renderLab();
+                this.labEdit(d => { if (d.terms[i]) d.terms[i].weight = Math.max(-100, Math.min(100, w)); });
+            },
+
+            labSetWeight(k, value) {
+                const w = Number(value);
+                if (value === '' || !Number.isFinite(w)) return this.renderLab();
+                this.labEdit(d => { d.weights[k] = Math.max(-100, Math.min(100, w)); });
+            },
+
+            labSlide(k, s) {
+                const w = +Math.pow(10, s / 100).toPrecision(2);
+                const input = this.$('prob-lab').querySelector('.lab-term.is-sel .lab-w');
+                if (input) input.value = w;
+                clearTimeout(this._labSlideT);
+                this._labSlideT = setTimeout(() => this.labEdit(d => { d.weights[k] = w; }), 120);
+            },
+
+            labToggle(k, on) {
+                this.labEdit(d => { d.off = on ? d.off.filter(x => x !== k) : [...new Set([...d.off, k])]; });
+            },
+
+            labSelect(k) {
+                this.labSel = this.labSel === k ? null : k;
+                this.renderLab();
+            },
+
+            async labUse(name) {
+                const s = this.labStore();
+                if (s.draft && !await this.dialog({ title: 'Discard your edits?', message: `The edits to ${s.active} aren't saved.`, confirmText: 'Discard', cancelText: 'Keep editing', danger: true })) return this.renderLab();
+                s.active = name;
+                s.draft = null;
+                DojoLab.save(s);
+                this.labRefresh();
+                this.renderLab();
+            },
+
+            labSave() {
+                const s = this.labStore();
+                if (!s.draft) return;
+                if (s.active === DojoLab.DEFAULT) return this.labSaveAs();
+                s.profiles[s.active] = s.draft;
+                s.draft = null;
+                DojoLab.save(s);
+                this.renderLab();
+            },
+
+            async labAskName(title, value) {
+                const raw = await this.dialog({ title, prompt: true, value, placeholder: 'Control', maxLength: DojoLab.NAME_MAX, confirmText: 'Save', cancelText: 'Cancel' });
+                const name = DojoLab.nameOf(raw);
+                if (!name) return null;
+                if (name === DojoLab.DEFAULT) {
+                    this.dialogAlert("Default is the engine's own weights. Pick another name.", 'Name taken');
+                    return null;
+                }
+                const s = this.labStore();
+                if (s.profiles[name] && name !== s.active && !await this.dialog({ title: `Replace ${name}?`, message: 'A profile with that name is saved on this device.', confirmText: 'Replace', cancelText: 'Cancel', danger: true })) return null;
+                return name;
+            },
+
+            async labSaveAs() {
+                const s = this.labStore();
+                const name = await this.labAskName('Save profile as', s.active === DojoLab.DEFAULT ? '' : s.active);
+                if (!name) return;
+                s.profiles[name] = JSON.parse(JSON.stringify(this.labProfile()));
+                s.active = name;
+                s.draft = null;
+                this.labMore = false;
+                DojoLab.save(s);
+                this.renderLab();
+            },
+
+            async labRename() {
+                const s = this.labStore(), old = s.active;
+                const name = await this.labAskName('Rename profile', old);
+                if (!name || name === old) return;
+                s.profiles[name] = s.profiles[old];
+                delete s.profiles[old];
+                s.active = name;
+                DojoLab.save(s);
+                this.renderLab();
+            },
+
+            async labDelete() {
+                const s = this.labStore(), name = s.active;
+                if (!await this.dialog({ title: `Delete ${name}?`, message: 'It is removed from this device.', confirmText: 'Delete', cancelText: 'Cancel', danger: true })) return;
+                delete s.profiles[name];
+                s.active = DojoLab.DEFAULT;
+                s.draft = null;
+                this.labMore = false;
+                DojoLab.save(s);
+                this.labRefresh();
+                this.renderLab();
+            },
+
+            labDiscard() {
+                const s = this.labStore();
+                s.draft = null;
+                DojoLab.save(s);
+                this.labRefresh();
+                this.renderLab();
+            },
+
+            labExport() {
+                const blob = new Blob([DojoLab.exportText(this.labStore())], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'score-lab-profiles.json';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                setTimeout(() => URL.revokeObjectURL(url), 1000);
+            },
+
+            // An imported file is checked by DojoLab.parse; its profiles join this device's, replacing any
+            // with the same name once you agree.
+            labImport() {
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.accept = '.json,application/json';
+                input.onchange = async () => {
+                    const file = input.files && input.files[0];
+                    if (!file) return;
+                    let got;
+                    try {
+                        if (file.size > 200000) throw new Error("That file is too big to be a score lab file.");
+                        got = DojoLab.parse(await file.text());
+                    } catch (e) {
+                        return this.dialogAlert(e.message, "Couldn't import");
+                    }
+                    const s = this.labStore();
+                    const clash = Object.keys(got).filter(n => s.profiles[n]);
+                    if (clash.length && !await this.dialog({ title: 'Replace profiles?', message: `This file has profiles named ${clash.join(', ')}, which are saved on this device too.`, confirmText: 'Replace', cancelText: 'Cancel', danger: true })) return;
+                    Object.assign(s.profiles, got);
+                    DojoLab.save(s);
+                    this.showToast(`Imported ${Object.keys(got).length} profile${Object.keys(got).length === 1 ? '' : 's'}`);
+                    this.renderLab();
+                };
+                input.click();
+            },
+
+            // --- Feature 68 (experimental): proposed plays ---
+            // The rules engine searches the rest of this turn (DojoRules.explore). The best lines show in
+            // the odds column's Plays tab (on phones, a sheet): line 1 open, the others as how they differ
+            // from it, the rest behind Show more. Play it puts a line on the board as one Undo step; Save as
+            // branch keeps it in the Multiverse and leaves the board alone.
+            _plays: null, // { sig, result, error, open, showAll, refs } for the board the search started from
+            probTab: 'odds',
+            PLAYS_LINES: 4, // shown at first; the search returns up to 12
+            // A node budget, not the clock, ends the search, so a board gets the same lines every time and
+            // on every device (every demo board finishes under it). The clock is a safety net.
+            PLAYS_SEARCH: { nodes: 300, timeMs: 10000, lines: 12 },
+
+            setProbTab(tab) {
+                this.probTab = tab;
+                const pane = this.$('prob-pane');
+                pane.classList.toggle('is-plays', tab === 'plays');
+                pane.classList.toggle('is-score', tab === 'score');
+                ['odds', 'plays', 'score'].forEach(t => this.$('prob-tab-' + t).setAttribute('aria-pressed', String(tab === t)));
+                this.playsTip(null);
+                if (tab === 'odds') return;
+                if (pane.classList.contains('is-collapsed')) this.toggleProbPane();
+                if (tab === 'score') return this.renderLab();
+                if (this._plays) this.renderPlays();
+                else this.suggestPlays();
+            },
+
+            async suggestPlays() {
+                if (!this.rulesOn || !this.state || !this.state.players || this.state.mulliganPending) return;
+                const sig = this.boardSig(this.state);
+                const weights = this.labWeights(), terms = this.labTerms();
+                const p = this._plays = { sig, wsig: this.labSig(), terms, result: null, error: null, open: 0, profile: this.labOn ? this.labStore().active : null };
+                if (this.isPhoneUI()) this.$('rules-plays').hidden = false;
+                else if (this.probTab !== 'plays') this.setProbTab('plays');
+                this.renderPlays();
+                try {
+                    p.result = await DojoRules.explore(this.state, id => this.cardKey(id), Object.assign({}, this.PLAYS_SEARCH, { weights, terms }));
+                    // In the lab, Default's ranking too, for the ↑↓ against it.
+                    if (this.labOn && !this.labIsDefault() && this._plays === p) {
+                        const d = await DojoRules.explore(this.state, id => this.cardKey(id), this.PLAYS_SEARCH);
+                        p.defaultPlans = d.lines.map(l => this.playPlan(l));
+                    }
+                } catch (e) {
+                    console.warn('Proposed plays:', e);
+                    p.error = String(e && e.message || e);
+                }
+                if (this._plays === p) this.renderPlays();
+            },
+
+            // A line's plan, for matching lines across searches: its steps (inking aside) in any order.
+            playPlan(l) {
+                return DojoRules.groupActs(l.acts).filter(g => g.act.family !== 'putCardIntoInkwell').map(DojoRules.stepText).sort().join('|');
+            },
+
+            // The rest of the lines: the same search returned them.
+            morePlays() {
+                if (!this._plays) return;
+                this._plays.showAll = !this._plays.showAll;
+                this.renderPlays();
+            },
+
+            openPlay(i) {
+                if (!this._plays) return;
+                this._plays.open = this._plays.open === i ? -1 : i;
+                this.renderPlays();
+            },
+
+            closePlays() {
+                this._plays = null;
+                this.$('rules-plays').hidden = true;
+                this.renderPlays();
+            },
+
+            renderPlays() {
+                const host = this.isPhoneUI() ? this.$('rules-plays-body') : this.$('prob-plays');
+                this.playsTip(null);
+                if (!host || !this.state || !this.state.players) return;
+                this.bindPlaysTips(host);
+                const p = this._plays;
+                const esc = (t) => this._esc(String(t));
+                const me = this.state.activePlayer;
+                const again = (r) => `<button class="icon-btn rp-again" onclick="App.suggestPlays()" aria-label="Search again"
+                    title="Search again${r ? ` (${r.positions} positions in ${(r.ms / 1000).toFixed(1)} s${r.outOfTime ? ', out of time' : ''})` : ''}"><i class="fa-solid fa-rotate-right"></i></button>`;
+                const meta = (r) => `<div class="rp-meta"><span class="rp-lbl">Turn ${this.state.turn} · P${me + 1} to play${p && p.profile && p.profile !== DojoLab.DEFAULT ? ` · ${esc(p.profile)}` : ''}</span>${r && r.outOfTime
+                    ? '<span class="rp-lbl rp-early" title="The search ran out of time before it finished, so searching again may give other lines.">· stopped early</span>' : ''}${again(r)}</div>`;
+                const note = (t, btn) => `${meta()}<p class="rp-note">${t}</p>${btn ? `<button class="btn rp-find" onclick="App.suggestPlays()">${btn}</button>` : ''}`;
+                // rulesRefresh keeps _rulesSig on the board on screen.
+                if (!p) return void (host.innerHTML = note('The rules engine tries orders of play for the rest of this turn and proposes the best lines.', 'Find plays'));
+                if (this._rulesSig && this._rulesSig !== p.sig) return void (host.innerHTML = note('The board has changed since these lines were found.', 'Search again'));
+                if (p.wsig !== this.labSig()) return void (host.innerHTML = note('The weights or terms have changed since these lines were found.', 'Search again'));
+                if (p.error) return void (host.innerHTML = note("The rules engine couldn't search this board.", 'Try again'));
+                if (!p.result) return void (host.innerHTML = note('Trying orders of play…'));
+
+                const r = p.result;
+                const loreNow = this.state.players[me].lore;
+                const sign = (n) => (n > 0 ? '+' : n < 0 ? '−' : '±') + Math.abs(n).toFixed(1);
+                // Their win is −1000 in the score after their turn: it shows as an outcome, never in a number.
+                const theyWin = (parts) => (parts.reply || 0) < -500;
+                const part = (parts, k) => (parts[k] || 0) + (k === 'reply' && theyWin(parts) ? 1000 : 0);
+                const delta = (l) => l.delta + (theyWin(l.parts) ? 1000 : 0) - (theyWin(r.base.parts) ? 1000 : 0);
+                const refs = p.refs = [];
+                const card = (c) => (c ? `<span class="rp-card" data-tip="card" data-ref="${refs.push(c) - 1}">${esc(c.name)}</span>` : 'a card');
+                const to = (cs) => (cs && cs.length ? ` → ${cs.map(card).join(', ')}` : '');
+                const sub = (s) => `<span class="rp-sub${s.by === 'opp' ? ' is-opp' : ''}">${s.by === 'opp' ? '<span class="rp-them">Them</span>' : ''}${s.skipped ? 'Skip ' : ''}${s.ability
+                    ? `<span class="rp-ab" data-tip="ability" data-ref="${refs.push(s.card) - 1}" data-name="${esc(s.ability)}">${esc(s.ability)}</span>`
+                    : s.card ? card(s.card) : 'An effect'}${to(s.targets)}</span>`;
+                const step = ({ act: a, subs }) => {
+                    const with_ = (w) => ` <span class="rp-with">${w}</span> `;
+                    let verb, key = (DojoRules.VERBS[a.family] || { key: 'bone' }).key, what;
+                    if (a.by !== 'me') [verb, key, what] = ['Them', 'bone', sub(a)];
+                    else if (a.family === 'challenge') [verb, what] = ['Challenge', card(a.target) + with_('with') + card(a.card)];
+                    else if (a.family === 'playCard') {
+                        verb = a.via === 'shift' ? 'Shift' : a.via === 'sing' || a.via === 'singTogether' ? 'Sing' : 'Play';
+                        what = card(a.card) + (a.via === 'shift' ? with_('onto') + card(a.with[0]) : a.with && a.with.length ? with_('with') + a.with.map(card).join(', ') : '') + to(a.targets);
+                    } else if (a.family === 'moveCharacterToLocation') [verb, what] = ['Move', card(a.card) + to([a.target])];
+                    else if (a.family === 'activateAbility') [verb, what] = ['Use', card(a.card) + to(a.targets)];
+                    else [verb, what] = [(DojoRules.VERBS[a.family] || { label: 'Effect' }).label, card(a.card)];
+                    return `<li class="rp-step"><span class="rp-verb key-${key}">${verb}</span><span>${what}</span>${subs.map(sub).join('')}</li>`;
+                };
+                // The three reasons that moved most against ending the turn now; hover one for what it means.
+                const PARTS = { lore: 'lore', potential: 'lore on board', body: 'board', exposed: 'exposed', hand: 'hand', ink: 'ink', race: 'race to 20', reply: 'their turn' };
+                (p.terms || []).forEach((t, i) => { PARTS['t' + i] = t.name || `term ${i + 1}`; });
+                const why = (l) => Object.keys(PARTS)
+                    .map(k => [k, part(l.parts, k) - part(r.base.parts, k)])
+                    .filter(([, d]) => Math.abs(d) >= 0.05)
+                    .sort((a, b) => Math.abs(b[1]) - Math.abs(a[1])).slice(0, 3)
+                    .map(([k, d]) => `<span class="rp-chip${d < 0 ? ' is-neg' : ''}" data-tip="why" data-k="${k}" data-d="${d}">${PARTS[k]} <b>${sign(d)}</b></span>`).join('');
+                // The lab: where each line stood with Default, and every term for the open line.
+                const W = r.weights || {};
+                const sign2 = (n) => (n > 0 ? '+' : n < 0 ? '−' : '±') + Math.abs(n).toFixed(2);
+                const move = (l, i) => {
+                    if (!p.defaultPlans) return '';
+                    const d = p.defaultPlans.indexOf(this.playPlan(l));
+                    if (d === i) return '';
+                    return d < 0 ? '<span class="rp-move is-new" title="Not among Default\'s lines">new</span>'
+                        : `<span class="rp-move ${d > i ? 'is-up' : 'is-down'}" title="Line ${d + 1} with Default">${d > i ? '↑' : '↓'}${Math.abs(d - i)}</span>`;
+                };
+                const weightOf = (k) => (k === 'reply' ? (W.reply ? 'on' : 'off') : k === 'potential' ? `${+(+W.potential).toFixed(2)} / ${+(+W.threat).toFixed(2)}`
+                    : /^t\d+$/.test(k) ? +(+p.terms[+k.slice(1)].weight).toFixed(2) : +(+W[k]).toFixed(2));
+                const allTerms = (l) => `<div class="rp-all"><span class="rp-lbl">All terms</span><span class="rp-lbl">Weight</span><span class="rp-lbl">vs now</span>
+                    ${Object.keys(PARTS).map(k => `<span>${PARTS[k]}</span><span>${weightOf(k)}</span><span>${sign2(part(l.parts, k) - part(r.base.parts, k))}</span>`).join('')}</div>`;
+                const summary = (l, i) => {
+                    const diff = i ? DojoRules.lineDiff(l.acts, r.lines[0].acts) : null;
+                    return diff ? diff.map(([t, c]) => (c ? `<em>${esc(t)}</em>` : esc(t))).join('')
+                        : esc(DojoRules.groupActs(l.acts).map(DojoRules.stepText).join(' · ') || 'Nothing more: end the turn');
+                };
+                const shown = p.showAll ? r.lines : r.lines.slice(0, this.PLAYS_LINES);
+                const lines = shown.map((l, i) => {
+                    const open = i === p.open;
+                    const end = l.state.players;
+                    const gain = end[me].lore - loreNow;
+                    const steps = DojoRules.groupActs(l.acts).map(step).join('')
+                        || '<li class="rp-step"><span class="rp-verb key-bone">End</span><span>Nothing more: end the turn</span></li>';
+                    const reasons = why(l);
+                    return `<div class="rp-line${open ? ' is-open' : ''}">
+                        <button type="button" class="rp-lhead" onclick="App.openPlay(${i})" aria-expanded="${open}">
+                            <span class="rp-rank">${i + 1}</span>${move(l, i)}
+                            <span class="rp-gain">${l.parts.win > 0 ? 'Wins' : `${gain >= 0 ? '+' : '−'}${Math.abs(gain)} lore`}</span>
+                            ${theyWin(l.parts) ? '<span class="rp-flag">They win next</span>' : `<span class="rp-pair" title="Lore after this line: yours–theirs">${end[me].lore}–${end[1 - me].lore}</span>`}
+                            <span class="rp-score" data-tip="score">${sign(delta(l))}</span>
+                            <i class="fa-solid fa-chevron-${open ? 'down' : 'right'} rp-chev" aria-hidden="true"></i>
+                        </button>
+                        ${open ? `<div class="rp-lbody"><ol class="rp-steps">${steps}</ol>
+                            ${reasons ? `<div class="rp-why"><span class="rp-lbl">Why</span><span class="rp-chips">${reasons}</span></div>` : ''}
+                            ${this.labOn ? allTerms(l) : ''}
+                            <div class="rp-acts"><button class="btn" onclick="App.playLine(${i})">Play it</button>
+                                <button class="btn" onclick="App.saveLine(${i})">Save as branch</button></div></div>`
+                            : `<div class="rp-sum"><span>${summary(l, i)}</span></div>`}
+                    </div>`;
+                }).join('');
+                const stops = shown.filter(l => !theyWin(l.parts)).length;
+                const warn = theyWin(r.base.parts) ? `<div class="rp-warn"><span><b>Ending the turn now loses:</b> their characters in play can reach 20 next turn.
+                    ${stops === shown.length ? 'Every line here stops that.' : stops ? `${stops} of these lines stop${stops === 1 ? 's' : ''} that.` : 'None of these lines stops that.'}</span></div>` : '';
+                const extra = r.lines.length - this.PLAYS_LINES;
+                const more = extra > 0 ? `<button class="rp-more" onclick="App.morePlays()">${p.showAll ? 'Show fewer' : `Show ${extra} more line${extra === 1 ? '' : 's'}`}</button>` : '';
+                host.innerHTML = meta(r) + warn + (lines || '<p class="rp-note">Nothing to propose on this board.</p>') + more;
+            },
+
+            // The Dojo card behind a card in a line: by its instance (as before the line), else by name.
+            playsCardDb(c) {
+                if (!c) return null;
+                const f = c.iid && this.findCard(c.iid);
+                return (f && this.cardDB[f.card.cardId]) || this.cardDB[(c.version ? `${c.name} - ${c.version}` : c.name).toLowerCase()] || null;
+            },
+
+            bindPlaysTips(host) {
+                if (host.dataset.tips) return;
+                host.dataset.tips = '1';
+                host.addEventListener('mouseover', e => {
+                    const t = e.target.closest('[data-tip]');
+                    if (t && t !== this._tipEl) this.playsTip(t);
+                });
+                host.addEventListener('mouseout', e => {
+                    const t = e.target.closest('[data-tip]');
+                    if (t && !t.contains(e.relatedTarget)) this.playsTip(null);
+                });
+                host.addEventListener('scroll', () => this.playsTip(null));
+            },
+
+            // Hover help in the Plays tab, beside the column: a card's face, an ability's text, what a
+            // reason or the score means. Desktop only (phones have no hover).
+            playsTip(el) {
+                const tip = this.$('rp-tip');
+                this._tipEl = el;
+                if (!tip) return;
+                if (!el || this.isPhoneUI()) return void (tip.hidden = true);
+                const kind = el.dataset.tip;
+                const p = this._plays;
+                if (kind !== 'text' && kind !== 'share' && !(p && p.result)) return void (tip.hidden = true);
+                const W = (p && p.result && p.result.weights) || {};
+                const esc = (t) => this._esc(String(t));
+                const sign = (n) => (n > 0 ? '+' : n < 0 ? '−' : '±') + Math.abs(n).toFixed(1);
+                const head = (k, v) => `<div class="rp-tip-k">${esc(k)}<b>${esc(v)}</b></div>`;
+                tip.className = 'rp-tip';
+                tip.innerHTML = '';
+                if (kind === 'text') {
+                    tip.innerHTML = head(el.dataset.head, el.dataset.val || '') + esc(el.dataset.text);
+                } else if (kind === 'share') {
+                    // The lab: a card in play's share of the score, part by part.
+                    const v = this.labView, shares = v && v.cards[el.dataset.iid], f = this.findCard(el.dataset.iid);
+                    if (!shares || !f) return void (tip.hidden = true);
+                    const LBL = { potential: 'lore on board', threat: 'their lore on board', body: 'board', exposed: 'exposed' };
+                    (v.sent || []).forEach((t, i) => { LBL['t' + i] = t.name || `term ${i + 1}`; });
+                    const sign2 = (n) => (n > 0 ? '+' : n < 0 ? '−' : '±') + Math.abs(n).toFixed(2);
+                    tip.innerHTML = head((this.cardDB[f.card.cardId] || {}).name || '', sign(shares.reduce((n, x) => n + x.v, 0)))
+                        + shares.map(x => `<div class="rp-tip-row"><span>${esc(LBL[x.k])}</span><span>${+x.x.toFixed(2)} × ${+(+(/^t\d+$/.test(x.k) ? v.sent[+x.k.slice(1)].weight : v.weights[x.k])).toFixed(2)}</span><span>${sign2(x.v)}</span></div>`).join('')
+                        + '<div class="rp-tip-n">Change or swap the card and the numbers follow.</div>';
+                } else if (kind === 'card') {
+                    const db = this.playsCardDb(p.refs[+el.dataset.ref]);
+                    if (!db) return void (tip.hidden = true);
+                    tip.classList.add('is-card');
+                    tip.appendChild(this.isTextCardMode() ? this.buildCardTextView(db) : this.makeCardImg(db, { lazy: false }));
+                    tip.insertAdjacentHTML('beforeend', head(db.fullName || db.name, db.cost != null ? db.cost : ''));
+                    this.showPreview(db); // the rail's preview follows, as for draw-odds rows
+                } else if (kind === 'ability') {
+                    const c = p.refs[+el.dataset.ref];
+                    const db = this.playsCardDb(c);
+                    const name = el.dataset.name;
+                    const ab = db && (db.abilities || []).find(a => a.name && a.name.toLowerCase() === name.toLowerCase());
+                    tip.innerHTML = head(c ? c.name : '', 'Ability') + `<span class="rp-tip-ab">${esc(ab ? ab.name : name)}</span>`;
+                    if (ab) this.appendSymbolized(tip.appendChild(document.createElement('span')), ab.effect || ab.fullText || '');
+                } else if (kind === 'why') {
+                    const k = el.dataset.k, d = +el.dataset.d;
+                    const yours = /^t\d+$/.test(k) && p.terms && p.terms[+k.slice(1)];
+                    const turns = W.race ? Math.round(Math.abs(d) / W.race) : 0;
+                    const EXPLAIN = {
+                        lore: 'Lore gained this turn.',
+                        potential: `Lore your characters in play can quest for next turn, against what theirs can. Theirs counts ${W.potential ? +(W.threat / W.potential).toFixed(1) : 1}× yours: lore you deny is worth more than lore you gain.`,
+                        body: 'Strength and willpower left of the characters in play, yours against theirs.',
+                        exposed: 'Your exerted characters that one of theirs could banish in a challenge next turn.',
+                        hand: 'Cards kept in your hand.',
+                        ink: 'Cards in your inkwell.',
+                        race: `Turns each side needs to reach 20 at the lore now in play. This line moves the race ${turns} turn${turns === 1 ? '' : 's'} ${d > 0 ? 'your way' : 'their way'}.`,
+                        reply: `Their next turn, played by the engine with the cards they have in play: their quests and challenges. Their hand is left out, since you can't see it. This line holds up ${d > 0 ? 'better' : 'worse'} against it than ending the turn now.`,
+                    };
+                    tip.innerHTML = head(el.firstChild.textContent.trim(), sign(d)) + esc(yours ? 'Your term: ' + DojoLab.describe(yours) : EXPLAIN[k] || '') + '<div class="rp-tip-n">Against ending the turn now.</div>';
+                } else {
+                    tip.innerHTML = head('Score', el.textContent) + 'How much better this line leaves the game than ending the turn now. Hover a reason under the line to see where it comes from.';
+                }
+                tip.hidden = false;
+                // Beside the column; a card's share beside its card, to the right when there's room.
+                const card = kind === 'share' && el.closest('.card-wrap');
+                const b = (card || el).getBoundingClientRect(), col = (el.closest('.prob-pane, .rules-plays') || card || el).getBoundingClientRect();
+                const t = tip.getBoundingClientRect();
+                const top = Math.max(8, Math.min(innerHeight - t.height - 8, b.top + b.height / 2 - t.height / 2));
+                const right = card && b.right + 10 + t.width < innerWidth - 8;
+                tip.classList.toggle('is-right', !!right);
+                tip.style.left = `${right ? b.right + 10 : Math.max(8, col.left - t.width - 10)}px`;
+                tip.style.top = `${top}px`;
+                tip.style.setProperty('--nub', `${b.top + b.height / 2 - top}px`);
+            },
+
+            // Put a line on the board as one Undo step, and record it the way the sandbox's own
+            // moves are recorded (turn recap, played-this-turn, log).
+            playLine(i) {
+                const l = this._plays && this._plays.result && this._plays.result.lines[i];
+                if (!l) return;
+                this.saveState();
+                this._applyEngineMoves(l.acts, l.state.players);
+                this.logAction(`Played proposed line ${i + 1} (rules engine).`, true);
+                this.closePlays();
+                this.render();
+                this.saveToDevice();
+            },
+
+            // The engine's board goes onto the Dojo's, and its moves are recorded as the sandbox records its
+            // own (turn recap, played-this-turn, log). opts.noDrawFor: a player whose draws belong to the turn
+            // that starts next, not this one. opts.say(act): the log line for a step.
+            _applyEngineMoves(acts, players, opts = {}) {
+                const was = {};
+                const cardId = {};
+                this.state.players.forEach(p => ['deck', 'hand', 'field', 'inkwell', 'discard'].forEach(z => p[z].forEach(c => {
+                    was[c.instanceId] = z;
+                    cardId[c.instanceId] = c.cardId;
+                })));
+                this.state.players = players;
+                const played = new Set();
+                acts.filter(a => a.by === 'me' && a.card && a.card.iid).forEach(a => {
+                    const id = cardId[a.card.iid];
+                    if (a.family === 'putCardIntoInkwell' || a.family === 'playCard') {
+                        if (!this.state.cardsPlayedThisTurn) this.state.cardsPlayedThisTurn = [];
+                        this.state.cardsPlayedThisTurn.push(id);
+                    }
+                    if (a.family === 'putCardIntoInkwell') this._trackAction('inked', id);
+                    if (a.family === 'playCard') {
+                        played.add(a.card.iid);
+                        this._trackAction(a.via === 'shift' ? 'shifted' : 'played', id);
+                    }
+                    if (a.family === 'quest') this._trackAction('quested', id);
+                    if (a.family === 'challenge' && a.target && cardId[a.target.iid] != null) this._trackAction('challenged', { id, target: cardId[a.target.iid] });
+                });
+                // Draws, banishes and discards the effects made, from where each card went.
+                this.state.players.forEach((p, pi) => ['hand', 'discard'].forEach(z => p[z].forEach(c => {
+                    const from = was[c.instanceId];
+                    if (z === 'hand' && from === 'deck' && pi !== opts.noDrawFor) this._trackAction('drawn', c.cardId);
+                    if (z === 'discard' && from === 'field') this._trackAction('banished', c.cardId);
+                    if (z === 'discard' && from === 'hand' && !played.has(c.instanceId)) this._trackAction('discarded', c.cardId);
+                })));
+                acts.forEach(a => this.logAction(opts.say ? opts.say(a) : DojoRules.actText(a)));
+            },
+
+            // Keep a line as a Multiverse node beside the board, which stays as it is.
+            saveLine(i) {
+                const l = this._plays && this._plays.result && this._plays.result.lines[i];
+                if (!l) return;
+                const ap = this.state.players[this.state.activePlayer];
+                const st = Object.assign({}, this.state, { players: l.state.players });
+                const [p1, p2] = st.players;
+                const name = `Turn ${this.state.turn} - ${ap.name} (proposed line ${i + 1})`;
+                const played = l.acts.filter(a => a.by === 'me' && a.family === 'playCard' && a.card && a.card.iid)
+                    .map(a => { const f = this.findCard(a.card.iid); return f ? f.card.cardId : null; }).filter(x => x !== null);
+                this.bookmarks.push({
+                    id: this.uuid(),
+                    parentId: this.state.activeBookmarkId || null,
+                    name,
+                    stats: `Turn ${st.turn} | P1: ${p1.lore} - P2: ${p2.lore}`,
+                    comment: l.acts.map(a => `- ${DojoRules.actText(a)}`).join('\n'),
+                    color: this.playerBookmarkColor(this.state.activePlayer),
+                    cardsPlayedData: [...(this.state.cardsPlayedThisTurn || []), ...played],
+                    state: JSON.stringify(this.compressState(st, true)),
+                    timestamp: Date.now(),
+                    isDeckEdit: false
+                });
+                this.renderTree();
+                this.saveToDevice();
+                this.showToast(`Saved “${name}” in the Multiverse.`);
             },
 
             markBoardKept(id) {
@@ -7662,6 +9248,7 @@
                 this.placeTreeCursor();
                 this.renderTreePanel();
                 this.updateTreeKeys();
+                if (this._whatIf && !this._whatIf.game) this.renderWhatIf(); // Feature 68: What-if's start is the node picked
                 if (center) this.centerTreeOnNode(id);
             },
 
@@ -9101,7 +10688,7 @@
             },
 
             dragStartTopCard(ev, position) {
-                const playerIndex = position === 'bottom' ? this.state.activePlayer : this.state.inactivePlayer;
+                const playerIndex = position === 'bottom' ? this.bottomSeat() : 1 - this.bottomSeat();
                 const p = this.state.players[playerIndex];
                 if (p.deck.length > 0) {
                     const topCard = p.deck[0];
@@ -9132,7 +10719,7 @@
                 let found = this.findCard(instanceId);
                 if (!found) return;
 
-                const targetPlayerIndex = position === 'bottom' ? this.state.activePlayer : this.state.inactivePlayer;
+                const targetPlayerIndex = position === 'bottom' ? this.bottomSeat() : 1 - this.bottomSeat();
                 const targetPlayer = this.state.players[targetPlayerIndex];
 
                 // Deduct ink automatically if dropping from hand to field
@@ -9645,6 +11232,7 @@
                 const { toDef: dmgToDefender, toAtt: dmgToChallenger } = this.challengeOutcome(challengerInstanceId, defenderInstanceId);
 
                 this.saveState();
+                this._trackAction('challenged', { id: cf.card.cardId, target: df.card.cardId });
 
                 cf.card.damage = (cf.card.damage || 0) + dmgToChallenger;
                 df.card.damage = (df.card.damage || 0) + dmgToDefender;
@@ -11410,6 +12998,16 @@
                     }
                 }
                 if (opts.loc === 'hand') wrap.dataset.handIid = c.instanceId;
+                // Feature 68: what the rules engine allows this card (Tweaks → Rules engine).
+                const rv = this.rulesView && this.rulesView.byIid[c.instanceId];
+                if (rv && rv.moves.length) {
+                    wrap.classList.add('rules-legal');
+                    wrap.appendChild(this.rulesPips(rv.moves));
+                }
+                // Feature 68: in the score lab, the card's share of the score.
+                const lv = this.labOn && this.labView && this.labView.cards[c.instanceId];
+                if (lv) wrap.appendChild(this.labChip(c.instanceId, lv));
+                if (this._labHits && this._labHits.has(c.instanceId)) wrap.classList.add('lab-hit');
                 const fx = this.takeFx(c.instanceId);
                 if (fx) this.applyFx(wrap, el, fx);
 
@@ -11863,6 +13461,35 @@
                 if (dbCard && window.matchMedia && window.matchMedia('(pointer: coarse)').matches) {
                     addOption('Preview Card', () => { this.showPreview(dbCard); this.toggleSidebar(true); });
                     addDivider();
+                }
+
+                // Feature 68 (experimental): what the rules engine allows this card. Read-only.
+                if (this.rulesOn && isActivePlayerOwned) {
+                    const rv = this.rulesView && this.rulesView.byIid[instanceId];
+                    const rows = [];
+                    if (!this.rulesView) rows.push(['Checking the rules…']);
+                    else if (this.rulesView.error) rows.push(['Rules engine unavailable']);
+                    else if (!this.cardKey(found.card.cardId)) rows.push(["Not in the rules engine: it's yours to resolve"]);
+                    else {
+                        (rv ? rv.moves : []).forEach(m => {
+                            const v = DojoRules.VERBS[m];
+                            if (!v) return;
+                            const n = rv.targets[m] ? rv.targets[m].length : 0;
+                            rows.push([n ? `${v.label} · ${n} ${n === 1 ? 'target' : 'targets'}` : v.label, v.key]);
+                        });
+                        if (rv && rv.why) rows.push([DojoRules.whyText(rv.why)]);
+                        if (!rows.length && (found.loc === 'hand' || found.loc === 'field')) rows.push(['Nothing it can do right now']);
+                    }
+                    if (rows.length) {
+                        addSection('Rules');
+                        rows.forEach(([text, key]) => {
+                            const row = this.el('div', 'ctx-rule' + (key ? '' : ' is-note'));
+                            if (key) row.appendChild(this.el('i', `rules-pip key-${key}`));
+                            row.appendChild(document.createTextNode(text));
+                            menu.appendChild(row);
+                        });
+                        addDivider();
+                    }
                 }
 
                 // Build menu based on location
@@ -12791,6 +14418,7 @@
                 const p = this.state.players[this.state.activePlayer];
                 const N = p.deck.length;
                 document.getElementById('prob-deck-count').innerText = N ? `· ${N}` : '';
+                document.getElementById('prob-tab-odds-n').innerText = N || '';
                 list.innerHTML = '';
                 if (!N) {
                     const empty = document.createElement('div');
@@ -12917,6 +14545,10 @@
                 const ap = this.state.players[this.state.activePlayer];
                 const ip = this.state.players[this.state.inactivePlayer];
 
+                // Feature 68: a changed board drops the old rules reading before the cards are built.
+                this.rulesRefresh();
+                this.labRefresh();
+
                 // Feature 61: the modifier picker closes when its card is no longer in play.
                 if (window.Mods && Mods.isOpen()) {
                     const mf = this.findCard(this._modPickIid);
@@ -12985,24 +14617,29 @@
                 const divider = document.getElementById('board-divider');
                 if (divider) divider.classList.toggle('is-live', !!this.state.activeTimelineColor);
 
+                // Feature 68: with the bot on, your seat stays at the bottom; otherwise whoever's turn it is.
+                const bp = this.state.players[this.bottomSeat()];
+                const tp = this.state.players[1 - this.bottomSeat()];
+                document.body.classList.toggle('top-to-play', this.bottomSeat() !== this.state.activePlayer);
+
                 // Apply Player Identity Colors dynamically to Top and Bottom Boards
                 // P1 (id=0) -> .is-p1 (amber), P2 (id=1) -> .is-p2 (cyan). Color follows identity (Feature 16).
                 const topBoard = document.getElementById('top-board');
                 const bottomBoard = document.getElementById('bottom-board');
                 topBoard.classList.remove('is-p1', 'is-p2');
                 bottomBoard.classList.remove('is-p1', 'is-p2');
-                topBoard.classList.add(ip.id === 0 ? 'is-p1' : 'is-p2');
-                bottomBoard.classList.add(ap.id === 0 ? 'is-p1' : 'is-p2');
+                topBoard.classList.add(tp.id === 0 ? 'is-p1' : 'is-p2');
+                bottomBoard.classList.add(bp.id === 0 ? 'is-p1' : 'is-p2');
 
-                // --- TOP BOARD (Inactive Player) ---
-                document.getElementById('top-player-bg-text').innerHTML = `<span class="deck-icon is-p${ip.id + 1}"></span>P${ip.id + 1}`;
-                document.getElementById('top-lore').innerText = ip.lore;
-                document.getElementById('top-lore-chip').innerText = ip.lore;
+                // --- TOP BOARD (the inactive player; with the bot on, the bot's seat) ---
+                document.getElementById('top-player-bg-text').innerHTML = `<span class="deck-icon is-p${tp.id + 1}"></span>P${tp.id + 1}`;
+                document.getElementById('top-lore').innerText = tp.lore;
+                document.getElementById('top-lore-chip').innerText = tp.lore;
                 document.body.classList.toggle('ink-drops-on', this.inkDropsInPlay());
-                document.getElementById('top-ink-drops').innerText = ip.inkDrops || 0;
-                document.getElementById('top-ink').innerText = `${ip.inkReady}/${ip.inkTotal}`;
-                document.getElementById('top-deck-count').innerText = ip.deck.length;
-                document.getElementById('top-discard-count').innerText = ip.discard.length;
+                document.getElementById('top-ink-drops').innerText = tp.inkDrops || 0;
+                document.getElementById('top-ink').innerText = `${tp.inkReady}/${tp.inkTotal}`;
+                document.getElementById('top-deck-count').innerText = tp.deck.length;
+                document.getElementById('top-discard-count').innerText = tp.discard.length;
 
                 // Note: Reveal button state is handled dynamically by setHandReveal to prevent animation stuttering
                 // Top Hand (Hidden by default unless currently held down)
@@ -13018,15 +14655,15 @@
                     th.classList.remove('translate-y-[120px]', 'scale-[1.1]', 'z-50');
                     th.classList.add('scale-[0.85]');
                 }
-                th.style.setProperty('--hand-overlap', this.calcHandOverlap(ip.hand.length));
-                ip.hand.forEach(c => th.appendChild(this.createCardElement(c, !this.state.opponentHandRevealed)));
+                th.style.setProperty('--hand-overlap', this.calcHandOverlap(tp.hand.length));
+                tp.hand.forEach(c => th.appendChild(this.createCardElement(c, !this.state.opponentHandRevealed)));
 
                 // Top Field (opponent — Feature 19: isOpponent=true for challenge targeting)
                 const tf = document.getElementById('top-field');
-                this.buildField(ip, tf, true);
+                this.buildField(tp, tf, true);
 
                 // Top Inkwell — Feature 37: a ready/total counter with one pip per ink
-                this.renderInkCounter(ip, document.getElementById('top-inkwell-cards'), document.getElementById('top-ink-new'));
+                this.renderInkCounter(tp, document.getElementById('top-inkwell-cards'), document.getElementById('top-ink-new'));
 
                 // Top Discard
                 const td = document.getElementById('top-discard');
@@ -13034,7 +14671,7 @@
                 // .pile-label and the .pile-inspect touch button (mobile's only path
                 // to Inspect Discard), so the button vanished after the first render.
                 td.querySelectorAll(':scope > .card-wrap').forEach(el => el.remove());
-                ip.discard.forEach((c, i) => {
+                tp.discard.forEach((c, i) => {
                     const el = this.createCardElement(c);
                     el.style.position = 'absolute';
                     el.style.left = Math.min(i * 2, 10) + 'px';
@@ -13042,16 +14679,16 @@
                     el.style.zIndex = i;
                     td.appendChild(el);
                 });
-                this.renderDiscardList(ip, document.getElementById('top-discard-list'));
+                this.renderDiscardList(tp, document.getElementById('top-discard-list'));
 
-                // --- BOTTOM BOARD (Active Player) ---
-                document.getElementById('bottom-player-bg-text').innerHTML = `<span class="deck-icon is-p${ap.id + 1}"></span>P${ap.id + 1}`;
-                document.getElementById('bottom-lore').innerText = ap.lore;
-                document.getElementById('bottom-lore-chip').innerText = ap.lore;
-                document.getElementById('bottom-ink-drops').innerText = ap.inkDrops || 0;
-                document.getElementById('bottom-ink').innerText = `${ap.inkReady}/${ap.inkTotal}`;
-                document.getElementById('bottom-deck-count').innerText = ap.deck.length;
-                document.getElementById('bottom-discard-count').innerText = ap.discard.length;
+                // --- BOTTOM BOARD (the active player; with the bot on, your seat) ---
+                document.getElementById('bottom-player-bg-text').innerHTML = `<span class="deck-icon is-p${bp.id + 1}"></span>P${bp.id + 1}`;
+                document.getElementById('bottom-lore').innerText = bp.lore;
+                document.getElementById('bottom-lore-chip').innerText = bp.lore;
+                document.getElementById('bottom-ink-drops').innerText = bp.inkDrops || 0;
+                document.getElementById('bottom-ink').innerText = `${bp.inkReady}/${bp.inkTotal}`;
+                document.getElementById('bottom-deck-count').innerText = bp.deck.length;
+                document.getElementById('bottom-discard-count').innerText = bp.discard.length;
 
                 // Turn Comment Box Update
                 document.getElementById('turn-comment-header-num').innerText = this.state.turn;
@@ -13069,26 +14706,26 @@
                 // Bottom Hand (Visible)
                 const bh = document.getElementById('bottom-hand');
                 bh.innerHTML = '';
-                bh.style.setProperty('--hand-overlap', this.calcHandOverlap(ap.hand.length));
-                ap.hand.forEach(c => bh.appendChild(this.createCardElement(c, false, false, { chips: true, loc: 'hand' })));
+                bh.style.setProperty('--hand-overlap', this.calcHandOverlap(bp.hand.length));
+                bp.hand.forEach(c => bh.appendChild(this.createCardElement(c, false, false, { chips: true, loc: 'hand' })));
                 // Feature 37: phone hand fan (geometry vars + the count label)
-                this.layoutHandFan(bh, ap.hand.length);
+                this.layoutHandFan(bh, bp.hand.length);
                 const bhWrap = bh.closest('.hand-wrap');
-                if (bhWrap) bhWrap.dataset.count = String(ap.hand.length);
-                if (!ap.hand.length) this.setHandFan(false);
+                if (bhWrap) bhWrap.dataset.count = String(bp.hand.length);
+                if (!bp.hand.length) this.setHandFan(false);
 
                 // Bottom Field
                 const bf = document.getElementById('bottom-field');
-                this.buildField(ap, bf);
+                this.buildField(bp, bf);
 
                 // Bottom Inkwell — Feature 37: counter (manage it from the inkwell panel)
-                this.renderInkCounter(ap, document.getElementById('bottom-inkwell-cards'), document.getElementById('bottom-ink-new'));
+                this.renderInkCounter(bp, document.getElementById('bottom-inkwell-cards'), document.getElementById('bottom-ink-new'));
 
                 // Bottom Discard
                 const bd = document.getElementById('bottom-discard');
                 // Keep .pile-label + .pile-inspect alive (see top-discard note above).
                 bd.querySelectorAll(':scope > .card-wrap').forEach(el => el.remove());
-                ap.discard.forEach((c, i) => {
+                bp.discard.forEach((c, i) => {
                     const el = this.createCardElement(c);
                     el.style.position = 'absolute';
                     el.style.left = Math.min(i * 2, 10) + 'px';
@@ -13096,10 +14733,15 @@
                     el.style.zIndex = i;
                     bd.appendChild(el);
                 });
-                this.renderDiscardList(ap, document.getElementById('bottom-discard-list'));
+                this.renderDiscardList(bp, document.getElementById('bottom-discard-list'));
 
                 // Feature 37: keep the open overlays in step with the new state.
                 this.renderFeature37Overlays();
+                // Feature 68: proposed plays say so when the board has moved on; the score lab follows it;
+                // the bot takes its next step.
+                if (this._plays) this.renderPlays();
+                if (this.probTab === 'score' && !this.labForm) this.renderLab();
+                this.botKick();
 
                 // Guided tours (Feature 58): a step waiting on the player checks here.
                 if (window.DojoTour && DojoTour.onRender) DojoTour.onRender();
@@ -13198,6 +14840,16 @@
                 const cm = this.$('tweak-card-mode');
                 if (cm) cm.querySelectorAll('button').forEach(b => b.classList.toggle('is-active', b.dataset.val === this.cardMode));
 
+                // Feature 68 (experimental): the rules engine reads the board, or stays asleep.
+                this.rulesOn = t.rules === 'assist' || t.rules === 'lab';
+                this.labOn = t.rules === 'lab';
+                document.body.classList.toggle('rules-on', this.rulesOn);
+                document.body.classList.toggle('lab-on', this.labOn);
+                if (!this.rulesOn && this._plays) this.closePlays();
+                if ((!this.rulesOn && this.probTab === 'plays') || (!this.labOn && this.probTab === 'score')) this.setProbTab('odds');
+                const ru = this.$('tweak-rules');
+                if (ru) ru.querySelectorAll('button').forEach(b => b.classList.toggle('is-active', b.dataset.val === (this.labOn ? 'lab' : this.rulesOn ? 'assist' : 'off')));
+
                 // Redraw whatever is on the pane so the switch is visible immediately.
                 if (this._lastPreviewCard) this.showPreview(this._lastPreviewCard);
             },
@@ -13261,6 +14913,13 @@
                     // Card faces are built in render(); rebuild the board and the tree.
                     if (this.state && this.state.players) this.render();
                     if (this.bookmarks) this.renderTree();
+                }));
+                const ru = this.$('tweak-rules');
+                if (ru) ru.querySelectorAll('button').forEach(b => b.addEventListener('click', () => {
+                    t.rules = b.dataset.val;
+                    this.saveTweaks(t);
+                    this.applyTweaks(t);
+                    if (this.state && this.state.players) this.render();
                 }));
                 const cf = this.$('tweak-chal-forecast');
                 if (cf) cf.querySelectorAll('button').forEach(b => b.addEventListener('click', () => {
@@ -13599,6 +15258,15 @@
             }
             if (keyStr === 'q') {
                 App.questWithAll();
+                return;
+            }
+            // Feature 68: the bot opponent's pace (Auto or Step) and its next move.
+            if (keyStr === 'p' && App.bot.seat != null) {
+                App.toggleBotPace();
+                return;
+            }
+            if (keyStr === 'n' && App.bot.seat != null) {
+                App.botNext();
                 return;
             }
             if (e.key === ' ' || e.code === 'Space') {

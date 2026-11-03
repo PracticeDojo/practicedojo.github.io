@@ -518,6 +518,54 @@
     {
       "q": "ipad",
       "article": "browsers"
+    },
+    {
+      "q": "rules engine",
+      "article": "rules-engine"
+    },
+    {
+      "q": "turn on rules",
+      "article": "rules-engine"
+    },
+    {
+      "q": "legal moves",
+      "article": "rules-assist"
+    },
+    {
+      "q": "dots under cards",
+      "article": "rules-assist"
+    },
+    {
+      "q": "best move",
+      "article": "proposed-plays"
+    },
+    {
+      "q": "suggest",
+      "article": "proposed-plays"
+    },
+    {
+      "q": "play against the computer",
+      "article": "bot-opponent"
+    },
+    {
+      "q": "bot",
+      "article": "bot-opponent"
+    },
+    {
+      "q": "score weights",
+      "article": "score-lab"
+    },
+    {
+      "q": "new term",
+      "article": "score-lab"
+    },
+    {
+      "q": "could i have won",
+      "article": "what-if"
+    },
+    {
+      "q": "what if",
+      "article": "what-if"
     }
   ]
 }

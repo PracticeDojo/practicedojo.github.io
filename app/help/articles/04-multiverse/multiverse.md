@@ -29,7 +29,7 @@ Tap the branch icon in the top bar. Tap ✕ to go back to the board.
 ## What you see
 
 - **The canvas** draws the tree, the earliest turns on the left. The path from the start to the node you're on is highlighted; the other lines are grey.
-- **The panel** sits beside the canvas (under it on a phone). It shows the node you select, with **Play from here**, and holds **Save current unfinished turn**.
+- **The panel** sits beside the canvas (under it on a phone). It shows the node you select, with **Play from here**, and holds **Save current unfinished turn**. With the rules engine on, **What-if** in the header opens [What-if](help:what-if) at the top of the panel.
 
 [Show me](show:tree-panel)
 
