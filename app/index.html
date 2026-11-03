@@ -1308,7 +1308,7 @@
     <script>
         let cardFuse = null;
 
-        const APP_VERSION = "v3.22.0"; // Centralized version string (v3: Field Unit)
+        const APP_VERSION = "v3.22.1"; // Centralized version string (v3: Field Unit)
 
         // Tweaks panel accent presets (hue values for the OKLCH accent ramp)
         // Tweaks → Accent: the approved Field Unit signals only (design.md ·
@@ -7044,6 +7044,8 @@
                         <button type="button" aria-pressed="${b.pace === 'step'}" onclick="App.setBotPace('step')">Step</button></div>
                     ${key}
                     <button class="btn" onclick="App.setBot(null)" title="Switch the bot off and play its seat yourself">Take over</button>`;
+                // Phones: the banner sits at the bottom, so the board and hand tray move up by its height.
+                document.body.style.setProperty('--bot-h', `${banner.offsetHeight}px`);
             },
 
             // The top bar's Bot menu: which seat it plays, its pace and its speed.

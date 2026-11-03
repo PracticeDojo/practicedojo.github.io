@@ -11122,6 +11122,15 @@ body.bot-on #btn-bot {
         bottom: calc(8px + env(safe-area-inset-bottom));
         max-width: calc(100vw - 16px);
     }
+
+    /* Make room for it: the well and the hand tray (Quest, End turn) sit above the banner. */
+    body.bot-on .play {
+        margin-bottom: calc(16px + var(--bot-h, 0px) + env(safe-area-inset-bottom, 0px));
+    }
+
+    body.bot-on #bottom-board .hand-wrap {
+        bottom: calc(16px + var(--bot-h, 0px) + env(safe-area-inset-bottom, 0px));
+    }
 }
 
 /* ----- Feature 68 (experimental): What-if (Multiverse → What-if) -----

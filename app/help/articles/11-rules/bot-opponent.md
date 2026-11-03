@@ -7,7 +7,7 @@ aliases: [bot, ai opponent, computer opponent, play against computer, solo, cpu,
 targets: [bot, bot-banner]
 related: [rules-engine, you-play-both-sides, undo]
 order: 40
-verified: v3.22.0
+verified: v3.22.1
 ---
 
 With the rules engine on, the bot can play one seat (P1 or P2) while you play the other. It plays one move at a time, and you can watch, step through or take over.
@@ -34,7 +34,7 @@ The top bar then says **Bot P2** (or P1). Your seat stays at the bottom of the b
 
 ## While it plays
 
-A banner under the top bar shows what the bot is doing (**Its turn**, **Thinking…**) and its last move, with:
+A banner under the top bar (at the bottom of the screen on a phone, above your Quest and End turn) shows what the bot is doing (**Its turn**, **Thinking…**) and its last move, with:
 
 - **Auto** · **Step**: switch the pace;
 - **Pause** (in Auto) or **Next** (in Step): stop, or play its next move;
