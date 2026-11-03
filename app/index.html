@@ -1308,7 +1308,7 @@
     <script>
         let cardFuse = null;
 
-        const APP_VERSION = "v3.22.1"; // Centralized version string (v3: Field Unit)
+        const APP_VERSION = "v3.22.2"; // Centralized version string (v3: Field Unit)
 
         // Tweaks panel accent presets (hue values for the OKLCH accent ramp)
         // Tweaks → Accent: the approved Field Unit signals only (design.md ·
@@ -5994,12 +5994,13 @@
 
                 // --- Pre-scan: collect every opponent card revealed across the whole replay ---
                 // The opponent's draws are hidden, but every card they play/ink/quest/challenge is
-                // revealed. We record each (instanceId -> {cardId, seq}) at its FIRST reveal so we can
+                // revealed. We record every time each card is seen (instanceId -> {cardId, seqs}) so we can
                 // back-fill these known cards into the opponent's hidden hand/deck in earlier snapshots.
-                const oppRevealSeq = new Map(); // instanceId -> { cardId, seq }
+                const oppRevealSeq = new Map(); // instanceId -> { cardId, seqs }, seqs in frame order
                 const noteReveal = (instanceId, cardId, seq) => {
                     if (!instanceId || !cardId) return;
-                    if (!oppRevealSeq.has(instanceId)) oppRevealSeq.set(instanceId, { cardId, seq });
+                    if (!oppRevealSeq.has(instanceId)) oppRevealSeq.set(instanceId, { cardId, seqs: [] });
+                    oppRevealSeq.get(instanceId).seqs.push(seq);
                 };
                 // Recursively find { instanceId, id } card objects inside a patch value.
                 const scanValueForCards = (val, seq) => {
@@ -6075,6 +6076,7 @@
                         id: myIdx,
                         name: (replay.playerNames && replay.playerNames[String(persp)]) || `Player ${myIdx + 1}`,
                         lore: mp.lore || 0,
+                        inkDrops: mp.inkDrops || 0,
                         inkTotal: inkwell.length,
                         inkReady: inkwell.filter(c => !c.exerted).length,
                         hasMulliganed: true,
@@ -6094,17 +6096,21 @@
 
                     // Cards already visible on the opponent's board right now (don't re-infer these).
                     const visibleNow = new Set();
-                    [...(op.field || []), ...(op.items || [])].forEach(c => { if (c && c.instanceId) visibleNow.add(c.instanceId); });
+                    [...(op.field || []), ...(op.items || [])].forEach(c => {
+                        if (c && c.instanceId) visibleNow.add(c.instanceId);
+                        (c && Array.isArray(c.cardsUnder) ? c.cardsUnder : []).forEach(u => { if (u && u.instanceId) visibleNow.add(u.instanceId); });
+                    });
                     (op.discard || []).forEach(c => { if (c && c.instanceId) visibleNow.add(c.instanceId); });
                     (op.inkwell || []).forEach(e => { if (e && e.card && e.card.instanceId) visibleNow.add(e.card.instanceId); });
 
-                    // Known-but-hidden cards: revealed LATER in the replay, so currently in hand/deck.
-                    // Soonest-revealed first — surface the imminent ones in hand, the rest in deck.
+                    // Known-but-hidden cards: seen again LATER in the replay, so currently in hand/deck.
+                    // A card seen before now can still be hidden (Ursula looked at the hand; FIND A FRIEND
+                    // put it there). Soonest-seen first — surface the imminent ones in hand, the rest in deck.
                     const hiddenKnown = [];
                     for (const [iid, info] of oppRevealSeq) {
                         if (visibleNow.has(iid)) continue;
-                        if (info.seq <= currentSeq) continue;
-                        hiddenKnown.push(info);
+                        const seq = info.seqs.find(s => s > currentSeq);
+                        if (seq !== undefined) hiddenKnown.push({ cardId: info.cardId, seq });
                     }
                     hiddenKnown.sort((a, b) => a.seq - b.seq);
 
@@ -6123,6 +6129,7 @@
                         id: oppIdx,
                         name: (replay.playerNames && replay.playerNames[String(oppDuels)]) || `Player ${oppIdx + 1}`,
                         lore: op.lore || 0,
+                        inkDrops: op.inkDrops || 0,
                         inkTotal: inkwell.length,
                         inkReady: inkwell.filter(c => !c.exerted).length,
                         hasMulliganed: true,
@@ -7419,7 +7426,7 @@
                         ? `<li><i class="wi-dot is-ok"></i>The real game replays as it ended</li>`
                         : `<li><i class="wi-dot is-bad"></i>Replayed with the real moves, the game ends differently, so lines from here can't be trusted</li>`);
                     if (!l.recorded) checks.push('<li><i class="wi-dot"></i>Not every move from here is on record, so the real game isn’t replayed; the search plays the turns that aren’t</li>');
-                    if (!l.control && l.state !== 'running') checks.push('<li><i class="wi-dot"></i>Nothing was played after this turn, so the lines are compared with each other</li>');
+                    if (!l.control && l.state !== 'running' && l.state !== 'drift') checks.push('<li><i class="wi-dot"></i>Nothing was played after this turn, so the lines are compared with each other</li>');
                     // What you really did that turn, as a row like the lines: the move, and how it ends with the search after.
                     const realTurn = (g.turns.find(t => t.id === l.nodeId) || {}).real;
                     const node = this.bookmarks.find(b => b.id === l.nodeId);

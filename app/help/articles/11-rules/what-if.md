@@ -7,7 +7,7 @@ aliases: [what if, missed win, could i have won, replay analysis, review a game,
 targets: [what-if, what-if-panel, mini-what-if]
 related: [rules-engine, import-replay, import-log, auto-save, branches, multiverse-panel]
 order: 60
-verified: v3.22.0
+verified: v3.22.2
 ---
 
 What-if takes a game you lost and plays it out again from your turns before the loss, one turn back at a time, looking for a line that would have won. Each line it plays becomes a branch in the [Multiverse](help:multiverse), so you can open it and play from it.
