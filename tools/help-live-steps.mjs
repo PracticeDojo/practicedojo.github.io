@@ -41,7 +41,10 @@ const SKIP = {
 const STATEFUL = {
     'opponent-hand': 'empty when that player holds no cards (the demo\'s P1)',
     'tree-legend': 'shown in plot view only (desktop opens on cards)',
-    readout: 'shows once something is pasted or chosen'
+    readout: 'shows once something is pasted or chosen',
+    'bot-banner': 'shows while the bot plays a seat',
+    'what-if-panel': 'shows once What-if is opened',
+    'plays-sheet': 'shows once Suggest has run'
 };
 
 export default async (page, { wait, phone, width }) => {
@@ -50,6 +53,9 @@ export default async (page, { wait, phone, width }) => {
     const device = phone ? 'phone' : 'desktop';
     const rows = [];
     await page.evaluate(async (t) => { DojoSpotlight.setTargets(t); }, targets);
+    // The rules engine's controls (Feature 68) show only while it's on: Lab shows them all.
+    await page.evaluate(async () => { document.querySelector('#tweak-rules [data-val="lab"]').click(); });
+    await wait(1500);
 
     // The spotlight's own test: right selector for this device, visible element.
     const check = (name) => page.evaluate(async (n) => ({ ok: !!DojoSpotlight.resolve(n) }), name);

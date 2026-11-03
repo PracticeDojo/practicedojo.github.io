@@ -1,15 +1,13 @@
 # Handover: rules engine (Feature 68)
 
-For the next agent picking up Feature 68. Read this first, then `AGENTS.md` and `docs/RSC-lorcana-engine.md`. The study is the plan; its §12 is the log of what was built and measured, newest first. Written 2026-10-27, last updated 2026-11-02 (items in a replay's board, and an ability by its name: §8, What-if).
+For the next agent picking up Feature 68. Read this first, then `AGENTS.md` and `docs/RSC-lorcana-engine.md`. The study is the plan; its §12 is the log of what was built and measured, newest first. Written 2026-10-27, last updated 2026-11-03 (shipped to `main` as a beta in v3.22.0, with its manual section).
 
 ## 1. Ground rules
 
-- **Branch:** all of this lives on the long-lived branch **`feat/68-rules-engine`**. Commit and push to it directly. Never open a PR from it into `main`; it ships only when the owner says so. Merge `main` into it when `main` moves (no rebase, no force-push). There are no version bumps, landing-page refreshes or manual articles until it ships (AGENTS.md, *Long-lived branch*).
-- **Branches now (2026-11-02):**
-  - `feat/68-rules-engine`: everything, What-if included (merged 2026-11-01 at the owner's word). New work starts here, or on a `claude/feat-68-<slug>` cut from it.
-  - `claude/feat-68-what-if`, `claude/feat-68-score-lab` and `claude/feat-68-bot-opponent` are merged into it. The owner said to **leave merged branches alone**: don't delete them.
-- **The AGENTS.md rule isn't on `main` yet.** It's on `claude/docs-lorcana-engine-feasibility` (head `2c10864`, docs only: the study, the Feature 68 entry, the AGENTS.md section). Until it's merged, a session that starts from `main` won't see it. The owner was asked whether to open that PR and hasn't answered; ask again.
-- **The sandbox comes first.** The Dojo is a sandbox where the player is the referee. Rules mode is opt-in (Tweaks → *Rules engine: Off · Assist*), never blocks a move, and Off must leave today's Dojo untouched.
+- **On `main` since v3.22.0 (2026-11-03), as a beta.** The owner asked for the docs, then the merge: `feat/68-rules-engine` went into `main` by a PR, with the version bump and the manual section (`app/help/articles/11-rules/`, six articles). Work now follows the usual AGENTS.md branch and version rules (*Rules engine (Feature 68, beta)*): `claude/fix-<slug>` or `claude/feat-68-<slug>` from `main`, a PR into `main`.
+- **Branches:** `feat/68-rules-engine` is retired (don't build on it). It and the branches merged into it (`claude/feat-68-what-if`, `claude/feat-68-score-lab`, `claude/feat-68-bot-opponent`, `claude/docs-lorcana-engine-feasibility`) stay: the owner said to **leave merged branches alone**, don't delete them.
+- **Beta, and off the landing page.** The Tweaks hint says *Beta*; the manual calls it a beta. While it's one, the landing page doesn't describe it (no copy or pins in `index.html`); `refresh-landing.mjs` still runs for the version.
+- **The sandbox comes first.** The Dojo is a sandbox where the player is the referee. Rules mode is opt-in (Tweaks → *Rules engine: Off · Assist · Lab*), never blocks a move, and Off must leave today's Dojo untouched.
 - **Owner preferences this session:**
   - they asked for the `ponytail` skill (smallest complete change) and the `caveman` skill (short answers) at the start;
   - they want work measured, not guessed: numbers, game-by-game comparisons, screenshots;
@@ -116,7 +114,7 @@ Worked example (the owner's board, line 1 = +7.23, scored before race, threat an
 ## 5. Build, run, test
 
 ```bash
-cd practicedojo.github.io && git checkout feat/68-rules-engine
+cd practicedojo.github.io && git checkout main        # then your own branch (AGENTS.md)
 export DOJO_ENGINE_CACHE=<scratch>/engine-cache       # anywhere outside the repo
 node tools/build-engine.mjs                           # after any change to tools/engine-adapter/*
 node tools/engine-spike.mjs --games 1                 # bridge check, bot games, demo round trips, search cost
@@ -199,10 +197,9 @@ Other open work:
 - **Phase 1b:** make the menu's *Rules* rows actionable, with effects and target prompts run by the engine (§6 of the study).
 - **Bot opponent, next:** the stronger bot (the Proposed plays search finds its line, then it plays it one move at a time; the search's lines would have to keep their engine candidates to be replayed); its mulligan from the engine (it keeps its hand now); "What would the bot do?" for your own side (§7); effects that last into your turn are dropped at the Dojo board (you're the referee there).
 - **Upstream reports:** the scry bug, the speed fix, and the bot gaps (Taran, Meilin Lee, Remember Me v Retro Leviathan decking out, no candidates for plays from the discard or Bodyguard's exerted entry); to check: Merlin's Shop and Smithy's move trigger. Re-pin and rebuild when upstream fixes them; a `PATCHES` entry that stops matching tells you.
-- **When it ships:** a manual article and tour step, `targets.json` ids, a version bump, and a landing refresh.
+- Done 2026-11-03 (shipped as a beta): the manual section, `targets.json` ids (`tweak-rules`, `suggest`, `plays-tab`, `plays-sheet`, `score-tab`, `bot`, `bot-banner`, `what-if`, `what-if-panel`, `mini-what-if`), the version bump (v3.22.0) and the landing refresh (version only). Left: a tour step, and the landing page once it's out of beta. Keep the articles current: after a visible change, `grep -rl` the control's label in `app/help/articles/11-rules`.
 
 ## 9. Open questions for the owner
 
-- Should the docs PR (`claude/docs-lorcana-engine-feasibility` → `main`) be opened, so every session sees the branch rule?
 - What next: more scoring (§8), Phase 1b (playing moves through the engine), or the bot opponent?
 - From the study §11: phones or desktop first, Assist or the bot first, and whether to contact upstream.

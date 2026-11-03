@@ -354,6 +354,8 @@ Each phase is one or more entries in `docs/features.md` and ends in a decision.
 | **3 · Explorer**. **First cut 2026-10-26: proposed plays** (§12), ahead of 1b at the owner's call | Search, scoring, ghost branches | §8 done |
 | **Upkeep** | Re-pin when upstream fixes card bugs or adds a set. Contract tests guard each re-pin. | — |
 
+**On `main` as a beta since v3.22.0 (2026-11-03):** 1a, 2 and 3 as first cuts, the score lab and What-if. 1b (playing moves through the engine) isn't built.
+
 Tiers 2 and 3 only need the read side of tier 1 (hydrate and project) plus the engine's own moves. **If tier 1 Assist ends up looking less valuable than the bot, phase 2 can come straight after 1a.**
 
 ---
@@ -382,7 +384,15 @@ Tiers 2 and 3 only need the read side of tier 1 (hydrate and project) plus the e
 
 ## 12. Spike log
 
-Measured results, newest first. The work itself lives on `feat/68-rules-engine` (AGENTS.md, *Long-lived branch*).
+Measured results, newest first. Built on `feat/68-rules-engine`; on `main` as a beta since v3.22.0 (AGENTS.md, *Rules engine (Feature 68, beta)*).
+
+### 2026-11-03 · Shipped to `main` as a beta (v3.22.0)
+
+Asked (the owner): write the docs for everything in Feature 68, keep it off the landing page while it's a beta, then merge it into `main`.
+
+- **Manual:** a new section, *Rules engine (beta)* (`app/help/articles/11-rules/`): *The rules engine* (Off · Assist · Lab, what it never does, its limits), *What the rules allow*, *Proposed plays*, *Play against the bot*, *The score lab*, *What-if*. Tweaks, the Multiverse, the shortcuts (P, N) and the glossary link to it. 10 new targets (the mini Multiverse's What-if key got the id `mmv-whatif`); every *Show me* finds its control where the device has it. 12 golden queries: 140 / 140 in the top 3. Each article checked against the app at 1440 and 390 wide, day and night.
+- **App:** the Tweaks hint says *Beta* (was *Experimental*); no other visible change. Version v3.22.0; the landing page takes the version only.
+- **Branches:** `feat/68-rules-engine` merged into `main` by a PR and retired; work follows the usual branch rules (AGENTS.md).
 
 ### 2026-11-02 · Items in play reach a replay's board; an item's ability, the one the real game used
 

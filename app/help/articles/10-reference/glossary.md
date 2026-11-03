@@ -24,6 +24,9 @@ The words this manual uses: first the Dojo's own, then Lorcana's.
 - **Left here.** A dashed snapshot of a board you jumped away from before saving it. [Left here snapshots](help:left-here)
 - **Library.** Your sessions, decks and links, on shelves by where they're kept: this device, your account, built in, public links. [The Library](help:library)
 - **Share link.** A short link to a frozen copy of a deck or a session. Anyone with it can open it. [Share a deck or a session](help:share-links)
+- **Rules engine.** An optional helper (beta) that knows Lorcana's rules: it marks legal moves, suggests plays, plays a seat as a bot and runs What-if. It never blocks a move. [The rules engine](help:rules-engine)
+- **Proposed plays.** The best lines for the rest of the turn that **Suggest** finds, each with the lore it gains and why it scores. [Proposed plays](help:proposed-plays)
+- **What-if.** A lost game played out again from your turns before the loss, looking for a line that would have won. [What-if](help:what-if)
 - **Practice board.** The board a guided tour runs on. Nothing on it is saved, and your own match is kept as it was. [Guided tours](help:tours)
 - **Unknown card.** A card an imported game never showed. It reads **Unknown card** until you fill it in. [Unknown cards](help:unknown-cards)
 

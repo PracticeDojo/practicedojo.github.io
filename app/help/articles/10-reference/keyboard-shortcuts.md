@@ -66,6 +66,15 @@ Press {key:Tab} to move through the cards.
 
 The cards in the discard list beside the board open their menu the same way.
 
+## With the bot playing
+
+With the [bot](help:bot-opponent) playing a seat:
+
+| Key | What it does |
+|---|---|
+| {key:P} | Switch the bot between **Auto** and **Step** |
+| {key:N} | The bot's next move |
+
 ## Card drawer
 
 On a touch screen with a keyboard (a tablet), the card drawer takes:

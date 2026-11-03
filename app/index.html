@@ -798,7 +798,7 @@
                 <div class="section-head">
                     <h3>Multiverse</h3>
                     <span class="mmv-read" id="mmv-read" aria-live="polite"></span>
-                    <button class="icon-btn whatif-key" onclick="App.openWhatIf()" title="What-if: look for a line that would have won this game"
+                    <button class="icon-btn whatif-key" id="mmv-whatif" onclick="App.openWhatIf()" title="What-if: look for a line that would have won this game"
                         aria-label="What-if"><i class="fa-solid fa-route"></i></button>
                     <button class="icon-btn mmv-open" onclick="App.openTreeModal()" title="Open the Multiverse (M)"
                         aria-label="Open the Multiverse"><i
@@ -1289,7 +1289,7 @@
                     <button data-val="lab"
                         title="Assist, plus the score lab: the weights proposed plays are scored with, profiles, and each card's share of the score">Lab</button>
                 </div>
-                <div class="tweak-hint">Experimental. Marks legal moves; it never blocks one.</div>
+                <div class="tweak-hint">Beta. Marks legal moves; it never blocks one.</div>
             </div>
             <div class="tweak">
                 <div class="tweak-label"><span>Player palette</span></div>
@@ -1308,7 +1308,7 @@
     <script>
         let cardFuse = null;
 
-        const APP_VERSION = "v3.21.1"; // Centralized version string (v3: Field Unit)
+        const APP_VERSION = "v3.22.0"; // Centralized version string (v3: Field Unit)
 
         // Tweaks panel accent presets (hue values for the OKLCH accent ramp)
         // Tweaks → Accent: the approved Field Unit signals only (design.md ·
