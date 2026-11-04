@@ -12023,13 +12023,29 @@
             // Feature 69: 1–9 opens the menu of that card in your hand (left to right);
             // B, then 1–9, a card on your battlefield. With a card's menu open, 1–9
             // picks its option. A card in play under the pointer keeps its own keys.
+            // ← → step to the next card in that row; ↑ ↓ walk the menu.
             handlePickHotkey(e) {
                 const k = e.key;
                 const menu = document.getElementById('context-menu');
-                if (menu.style.display === 'block' && /^[1-9]$/.test(k)) {
+                const open = menu.style.display === 'block';
+                if (open && /^[1-9]$/.test(k)) {
                     const opt = menu.querySelector(`button.ctx-item[data-num="${k}"]`);
                     if (opt) opt.click();
                     return !!opt;
+                }
+                if (open && (k === 'ArrowUp' || k === 'ArrowDown')) {
+                    // The menu's own handler takes these once it has focus; this gives it focus.
+                    const items = menu.querySelectorAll('button.ctx-item');
+                    const it = items[k === 'ArrowDown' ? 0 : items.length - 1];
+                    if (it) it.focus();
+                    return !!it;
+                }
+                if (open && (k === 'ArrowLeft' || k === 'ArrowRight')) {
+                    const row = ['hand', 'field'].map(z => this.pickRow(z)).find(r => r.some(x => x.iid === this._menuIid));
+                    if (!row) return false;
+                    const i = row.findIndex(x => x.iid === this._menuIid);
+                    this.openPickMenu(row[(i + (k === 'ArrowRight' ? 1 : -1) + row.length) % row.length]);
+                    return true;
                 }
                 const field = this._kbField;
                 this._kbField = false;
@@ -12042,23 +12058,24 @@
                     return true;
                 }
                 if (!/^[1-9]$/.test(k)) return false;
-                const n = Number(k) - 1;
+                const pick = this.pickRow(field ? 'field' : 'hand')[Number(k) - 1];
+                if (!pick) return false;
+                this.openPickMenu(pick);
+                return true;
+            },
+            // Your hand or battlefield as [{ wrap, iid }], in the order on screen.
+            pickRow(zone) {
                 const p = this.state.players[this.bottomSeat()];
-                let wrap, iid;
-                if (field) {
-                    // DOM order is the order on screen; skip the cards stacked underneath.
-                    const ids = new Set(p.field.map(c => c.instanceId));
-                    wrap = [...document.querySelectorAll('#bottom-field .card-wrap[data-iid]')]
-                        .filter(w => ids.has(w.dataset.iid))[n];
-                    iid = wrap && wrap.dataset.iid;
-                } else {
-                    iid = p.hand[n] && p.hand[n].instanceId;
-                    wrap = document.querySelectorAll('#bottom-hand .card-wrap[data-hand-iid]')[n];
-                }
-                if (!wrap || !iid) return false;
+                if (zone === 'hand') return [...document.querySelectorAll('#bottom-hand .card-wrap[data-hand-iid]')]
+                    .map(w => ({ wrap: w, iid: w.dataset.handIid }));
+                // Skip the cards stacked underneath (not in the field array).
+                const ids = new Set(p.field.map(c => c.instanceId));
+                return [...document.querySelectorAll('#bottom-field .card-wrap[data-iid]')]
+                    .filter(w => ids.has(w.dataset.iid)).map(w => ({ wrap: w, iid: w.dataset.iid }));
+            },
+            openPickMenu({ wrap, iid }) {
                 const r = wrap.getBoundingClientRect();
                 this.showContextMenu({ clientX: r.left + r.width / 2, clientY: r.top + r.height / 2, stopPropagation: () => { } }, iid, true);
-                return true;
             },
 
             // --- Challenge mode ----------------------------------------------------
@@ -13409,6 +13426,7 @@
 
                 let found = this.findCard(instanceId);
                 if (!found) return;
+                this._menuIid = instanceId; // Feature 69: ← → step from this card
 
                 const dbCard = this.cardDB[found.card.cardId];
                 const isActivePlayerOwned = found.player.id === this.state.activePlayer;

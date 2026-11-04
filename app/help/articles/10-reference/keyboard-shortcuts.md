@@ -46,7 +46,14 @@ These work only while no window is open over the board, and not in challenge mod
 
 ## In a card's menu
 
-The first nine options are numbered. Press {key:1} to {key:9} to choose one.
+The first nine options are numbered.
+
+| Key | What it does |
+|---|---|
+| {key:1} to {key:9} | Choose that option |
+| {key:↑} {key:↓} | Move through the options |
+| {key:←} {key:→} | The previous or next card's menu, in your hand or on your battlefield |
+| {key:Esc} | Close the menu |
 
 ## In challenge mode
 
