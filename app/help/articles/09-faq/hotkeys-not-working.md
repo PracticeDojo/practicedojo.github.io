@@ -26,7 +26,7 @@ While the cursor is in a text field (the session title, the turn notes box, the 
 
 {key:E}, {key:B}, {key:0}–{key:9} and the damage keys need the pointer over a card in play, and nothing open over the board (the Multiverse, **Inspect deck**, a card search). They also rest while challenge mode is on: press {key:Esc} or **Done** to leave it.
 
-{key:1}–{key:9} on their own pick a card in your hand, and {key:B} then a number a card on your battlefield. Move the pointer off the cards in play first, or those keys go to the card under it.
+With **Number keys** on in [Tweaks](help:tweaks), {key:1}–{key:9} on their own pick a card in your hand, and {key:B} then a number a card on your battlefield. Move the pointer off the cards in play first, or those keys go to the card under it.
 
 ## Space pressed a button
 

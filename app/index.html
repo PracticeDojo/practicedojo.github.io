@@ -1281,6 +1281,15 @@
                 <div class="tweak-hint">Shown while dragging onto, or aiming at, an opponent.</div>
             </div>
             <div class="tweak">
+                <div class="tweak-label"><span>Number keys</span></div>
+                <div class="tweak-radio" id="tweak-card-keys">
+                    <button data-val="off" class="is-active" title="Number keys only set damage on the card under the pointer">Off</button>
+                    <button data-val="on"
+                        title="1–9 opens a hand card's menu, B then 1–9 a battlefield card's, H back to the hand; 1–9 picks a menu option, arrows step">On</button>
+                </div>
+                <div class="tweak-hint">Pick cards and their menu options from the keyboard.</div>
+            </div>
+            <div class="tweak">
                 <div class="tweak-label"><span>Rules engine</span></div>
                 <div class="tweak-radio" id="tweak-rules">
                     <button data-val="off" class="is-active" title="The sandbox: you are the referee">Off</button>
@@ -12025,6 +12034,7 @@
             // picks its option. A card in play under the pointer keeps its own keys.
             // ← → step to the next card in that row; ↑ ↓ walk the menu.
             handlePickHotkey(e) {
+                if (!this.cardKeysOn) return false; // the Number keys tweak
                 const k = e.key;
                 const menu = document.getElementById('context-menu');
                 const open = menu.style.display === 'block';
@@ -13448,7 +13458,7 @@
                     item.className = 'ctx-item' + (cls ? ' ' + cls : '');
                     item.setAttribute('role', 'menuitem');
                     const label = document.createElement('span');
-                    if (++optNum <= 9) {
+                    if (this.cardKeysOn && ++optNum <= 9) {
                         item.dataset.num = String(optNum);
                         label.appendChild(this.el('span', 'ctx-num', String(optNum)));
                     }
@@ -14908,6 +14918,11 @@
                 const ru = this.$('tweak-rules');
                 if (ru) ru.querySelectorAll('button').forEach(b => b.classList.toggle('is-active', b.dataset.val === (this.labOn ? 'lab' : this.rulesOn ? 'assist' : 'off')));
 
+                // Feature 69: number keys pick cards and menu options. Off by default.
+                this.cardKeysOn = t.cardKeys === 'on';
+                const ck = this.$('tweak-card-keys');
+                if (ck) ck.querySelectorAll('button').forEach(b => b.classList.toggle('is-active', b.dataset.val === (this.cardKeysOn ? 'on' : 'off')));
+
                 // Redraw whatever is on the pane so the switch is visible immediately.
                 if (this._lastPreviewCard) this.showPreview(this._lastPreviewCard);
             },
@@ -14978,6 +14993,10 @@
                     this.saveTweaks(t);
                     this.applyTweaks(t);
                     if (this.state && this.state.players) this.render();
+                }));
+                const ck = this.$('tweak-card-keys');
+                if (ck) ck.querySelectorAll('button').forEach(b => b.addEventListener('click', () => {
+                    t.cardKeys = b.dataset.val; this.saveTweaks(t); this.applyTweaks(t);
                 }));
                 const cf = this.$('tweak-chal-forecast');
                 if (cf) cf.querySelectorAll('button').forEach(b => b.addEventListener('click', () => {

@@ -39,7 +39,7 @@ With the pointer over a card in play:
 :::desktop
 Right-click (or click) a card in play for its menu. **Card**: **Exert** / **Ready**, **Quest (+2 Lore)**, **Challenge…**, **Leave Location**, and a **Damage** stepper that stays open while you click it. **Modifiers**: **Add Modifier…**, and **Remove …** for each one the card has. **Move**: **Banish (To Discard)**, **Return to Hand**, **Put on Top of Deck**, **Put on Bottom of Deck**. **Stack**: **Put Top Card of Deck Under**, **Separate Stacked Cards**. Only what applies to that card shows.
 
-No mouse? Press {key:B} then a number to open the menu of that card on your battlefield, counting from the left. In the menu, the first nine options are numbered: press {key:1}–{key:9} to choose one. See [Keyboard shortcuts](help:keyboard-shortcuts).
+No mouse? Turn on **Number keys** in [Tweaks](help:tweaks), then press {key:B} then a number to open the menu of that card on your battlefield, counting from the left. In the menu, the first nine options are numbered: press {key:1}–{key:9} to choose one. See [Keyboard shortcuts](help:keyboard-shortcuts).
 :::
 
 ## The card drawer
