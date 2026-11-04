@@ -714,6 +714,21 @@ Duels.ink exports a deck with the printing at the end of each line, `4 Ursula - 
 - **Challenge banner (desktop):** redrawn in the top bar's tool language: a paper module (12px radius) with a coral spine and a coral **Challenge mode** label (Coral is Challenge's key colour), the text, the Forecast switch and **Done** with an `Esc` key cap. Every control is 28px tall with an 8px radius, on a grid, so they line up at any width. It was centred with `left: 50%`, so it could only grow to half the screen and squeezed its text into a column; it now centres across the whole width. Under about 1060px, Forecast and Done move under the text, on the right. Phones are unchanged (no key cap).
 - **Leaving the mulligan:** the dialog gates the board, so there was no way out. **×** at the top right, or Esc, now leaves for the home screen. The match stays saved on its mulligan; Back to match or Resume opens the dialog again.
 
+## Feature 69: Pick a card and its menu option with number keys (v3.23.0)
+
+### User Story
+- As a player at a keyboard, I want to open a card's menu and choose from it with number keys, so I can play a turn without the mouse.
+
+### Details
+- **Hand:** 1–9 opens the menu of that card in your hand (the bottom hand), counting from the left.
+- **Battlefield:** B, then 1–9, opens the menu of that card on your battlefield, in the order on screen. A toast says the battlefield is picked; any other key or Esc drops it. **H** goes back to the hand. B and H close an open menu, so the next 1–9 picks a card.
+- **Menu:** the first nine options of a card's menu are numbered; 1–9 chooses one. The hover keys (E, B, C) still show and work.
+- **Step:** with the menu of a card in your hand or on your battlefield open, ← → open the previous or next card's menu in that row (it wraps round); ↑ ↓ move through the menu, even one opened with the mouse.
+- **Inspector:** the card a key picks (or steps to) shows in the card inspector, as a hovered card does.
+- **U** undoes, like **Undo** in the top bar (always on, not part of the tweak).
+- **Tweak:** **Number keys** (Off / On) in Tweaks, off by default (`cardKeys`). Off, none of this runs and the menu has no numbers.
+- A card in play under the pointer keeps its own keys (0–9 damage, B banish) unless a menu is open. Nothing in challenge mode, the mulligan or behind a window.
+
 ## Feature 68: Rules engine — rules assist, bot opponent, turn explorer (beta, v3.22.0)
 
 **Status:** beta, on `main` since v3.22.0 (2026-11-03). Off by default: Tweaks → *Rules engine* → **Assist** or **Lab** (the Tweaks hint says *Beta*). Not described on the landing page while it's a beta. Built on the long-lived branch `feat/68-rules-engine` (now retired). Plan, findings and phases: `docs/RSC-lorcana-engine.md`; state and next steps: `docs/HANDOVER-rules-engine.md`.
@@ -1239,3 +1254,4 @@ The public page (`index.html`) follows Field Unit too, as `docs/DESIGN-field-uni
 - [x] Feature 67: Find a session or a deck in the Library and in Pick up again
 - [x] Patch: Challenge banner on narrower screens, and a way out of the mulligan
 - [x] Feature 68: Rules engine — rules assist, bot opponent, turn explorer (beta)
+- [x] Feature 69: Pick a card and its menu option with number keys

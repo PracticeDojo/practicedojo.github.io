@@ -7,7 +7,7 @@ aliases: [hotkeys, keys, keyboard, key bindings, space, esc, escape, enter, arro
 targets: [mini-multiverse-keys]
 related: [hotkeys-not-working, card-actions, multiverse-navigate, gestures]
 order: 10
-verified: v3.16.0
+verified: v3.23.0
 ---
 
 Every key the Dojo answers to, grouped by where it works. Keys are single presses: the Dojo leaves anything with Ctrl, Cmd or Alt to your browser. If a key does nothing, see [Shortcuts don't do anything](help:hotkeys-not-working).
@@ -17,6 +17,7 @@ Every key the Dojo answers to, grouped by where it works. Keys are single presse
 | Key | What it does |
 |---|---|
 | {key:Space} | **End turn**. If a button has focus, Space presses that button instead |
+| {key:U} | **Undo** the last action, like **Undo** in the top bar |
 | {key:Q} | **Quest** with every ready character of the active player that has lore and isn't drying |
 | {key:M} | Open or close the **Multiverse** |
 | {key:T} | **Save current unfinished turn**: opens the Multiverse with the form, its name ready to type |
@@ -25,7 +26,17 @@ Every key the Dojo answers to, grouped by where it works. Keys are single presse
 
 **Esc** closes one thing at a time, in this order: a card's menu, the card drawer, the inkwell sheet, a picked ink card, the picked challenger, challenge mode, the Multiverse, the Library, the home screen (back to your match, if one is on the board), a card you're looking at in the mulligan, then **Inspect deck**, **Inspect discard**, the log import window or the card search.
 
-There's no key for **Undo**: press **Undo** in the top bar.
+## Number keys
+
+Turn on **Number keys** in [Tweaks](help:tweaks) first (it's off at first). Then:
+
+| Key | What it does |
+|---|---|
+| {key:1} to {key:9} | Open the menu of that card in your hand, counting from the left |
+| {key:B} then {key:1} to {key:9} | Open the menu of that card on your battlefield, in the order on screen |
+| {key:H} | Back to your hand: the next {key:1} to {key:9} picks a card in it. {key:B} and {key:H} close a card's open menu |
+
+The picked card shows in the card inspector.
 
 ## On a card under the pointer
 
@@ -40,7 +51,18 @@ Point at a card in play, on either side, and press:
 | {key:B} | Banish (to the discard) |
 | {key:C} | Challenge mode, with this character picked as the challenger (one of the active player's characters) |
 
-These work only while no window is open over the board, and not in challenge mode. The card's menu shows the same keys beside **Exert**, **Challenge…** and **Banish**.
+These work only while no window is open over the board, and not in challenge mode. The card's menu shows the same keys beside **Exert**, **Challenge…** and **Banish**. With the pointer over a card in play, {key:0}–{key:9} and {key:B} act on that card instead of picking one.
+
+## In a card's menu
+
+With **Number keys** on, the first nine options are numbered.
+
+| Key | What it does |
+|---|---|
+| {key:1} to {key:9} | Choose that option |
+| {key:↑} {key:↓} | Move through the options |
+| {key:←} {key:→} | The previous or next card's menu, in your hand or on your battlefield |
+| {key:Esc} | Close the menu |
 
 ## In challenge mode
 
