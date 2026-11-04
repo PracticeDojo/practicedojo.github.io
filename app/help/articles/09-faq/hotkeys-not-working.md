@@ -34,6 +34,6 @@ If you just clicked a button, it keeps the focus and {key:Space} presses it agai
 
 ## Good to know
 
-- The Dojo leaves Ctrl, Cmd and Alt combinations to the browser, so {key:Ctrl+Z} doesn't undo. Use **Undo** in the top bar.
+- The Dojo leaves Ctrl, Cmd and Alt combinations to the browser, so {key:Ctrl+Z} doesn't undo. Press {key:U} or **Undo** in the top bar.
 - The mini multiverse's arrow keys need the map to have focus: click it first.
 - Phones have no shortcuts; see [Touch gestures](help:gestures).

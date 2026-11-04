@@ -745,6 +745,7 @@ Duels.ink exports a deck with the printing at the end of each line, `4 Ursula - 
 - **Menu:** the first nine options of a card's menu are numbered; 1–9 chooses one. The hover keys (E, B, C) still show and work.
 - **Step:** with the menu of a card in your hand or on your battlefield open, ← → open the previous or next card's menu in that row (it wraps round); ↑ ↓ move through the menu, even one opened with the mouse.
 - **Inspector:** the card a key picks (or steps to) shows in the card inspector, as a hovered card does.
+- **U** undoes, like **Undo** in the top bar (always on, not part of the tweak).
 - **Tweak:** **Number keys** (Off / On) in Tweaks, off by default (`cardKeys`). Off, none of this runs and the menu has no numbers.
 - A card in play under the pointer keeps its own keys (0–9 damage, B banish) unless a menu is open. Nothing in challenge mode, the mulligan or behind a window.
 

@@ -157,7 +157,7 @@
         </div>
         <div class="topbar-center">
             <div class="turn-ctl" role="group" aria-label="Turn">
-                <button class="icon-btn" id="btn-undo" onclick="App.undo()" title="Undo last action"
+                <button class="icon-btn" id="btn-undo" onclick="App.undo()" title="Undo last action (U)"
                     aria-label="Undo"><i class="fa-solid fa-arrow-rotate-left"></i> <span>Undo</span></button>
                 <div class="turn-pill" id="turn-pill">
                     <span class="mono">TURN</span>
@@ -884,7 +884,7 @@
                 <div class="action-row three">
                     <button class="icon-btn" onclick="App.openTreeModal()" title="Multiverse (M)"
                         aria-label="Multiverse"><i class="fa-solid fa-code-branch"></i></button>
-                    <button class="icon-btn" onclick="App.undo()" title="Undo last action"><i
+                    <button class="icon-btn" onclick="App.undo()" title="Undo last action (U)"><i
                             class="fa-solid fa-rotate-left"></i></button>
                     <button class="btn btn-p1 btn-block" id="btn-end-turn" onclick="App.endTurn()">End turn
                         &rarr;</button>
@@ -15339,6 +15339,11 @@
             }
             if (keyStr === 'q') {
                 App.questWithAll();
+                return;
+            }
+            if (keyStr === 'u') {
+                document.getElementById('context-menu').style.display = 'none';
+                App.undo();
                 return;
             }
             // Feature 68: the bot opponent's pace (Auto or Step) and its next move.

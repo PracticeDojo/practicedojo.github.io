@@ -17,6 +17,7 @@ Every key the Dojo answers to, grouped by where it works. Keys are single presse
 | Key | What it does |
 |---|---|
 | {key:Space} | **End turn**. If a button has focus, Space presses that button instead |
+| {key:U} | **Undo** the last action, like **Undo** in the top bar |
 | {key:Q} | **Quest** with every ready character of the active player that has lore and isn't drying |
 | {key:M} | Open or close the **Multiverse** |
 | {key:T} | **Save current unfinished turn**: opens the Multiverse with the form, its name ready to type |
@@ -24,8 +25,6 @@ Every key the Dojo answers to, grouped by where it works. Keys are single presse
 | {key:Esc} | Close the innermost thing that's open (see below) |
 
 **Esc** closes one thing at a time, in this order: a card's menu, the card drawer, the inkwell sheet, a picked ink card, the picked challenger, challenge mode, the Multiverse, the Library, the home screen (back to your match, if one is on the board), a card you're looking at in the mulligan, then **Inspect deck**, **Inspect discard**, the log import window or the card search.
-
-There's no key for **Undo**: press **Undo** in the top bar.
 
 ## Number keys
 

@@ -7,7 +7,7 @@ aliases: [undo, take back, go back, rewind, oops, mistake, revert]
 targets: [undo]
 related: [branches, end-turn]
 order: 130
-verified: v3.11.0
+verified: v3.22.0
 ---
 
 **Undo** takes back your last action. Press it again to keep going back, one action at a time.
@@ -35,4 +35,4 @@ It goes back up to 250 actions, and the history is kept with the session, so it 
 - There's no redo. To try both versions of a turn, save the turn first and branch in the Multiverse. See [Branching](help:branches).
 - Undo doesn't touch the Multiverse: a node saved when you ended a turn stays. Ending the turn again saves a new node beside it.
 - **Play from here** in the Multiverse, or a jump on the mini multiverse, starts a fresh undo history.
-- **Undo** has no keyboard shortcut.
+- {key:U} undoes too, while you're not typing in a field.
