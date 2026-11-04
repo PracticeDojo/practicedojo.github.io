@@ -12021,7 +12021,7 @@
             },
 
             // Feature 69: 1–9 opens the menu of that card in your hand (left to right);
-            // B, then 1–9, a card on your battlefield. With a card's menu open, 1–9
+            // B, then 1–9, a card on your battlefield; H back to the hand. With a card's menu open, 1–9
             // picks its option. A card in play under the pointer keeps its own keys.
             // ← → step to the next card in that row; ↑ ↓ walk the menu.
             handlePickHotkey(e) {
@@ -12050,9 +12050,16 @@
                 const field = this._kbField;
                 this._kbField = false;
                 if (this.challengeMode) return false;
+                // H back to the hand, B to the battlefield: closes a menu so 1–9 picks a card.
+                if (k === 'h' || k === 'H') {
+                    menu.style.display = 'none';
+                    this.showToast('Hand: press 1–9 to pick a card');
+                    return true;
+                }
                 const hov = this._hoverIid && this.findCard(this._hoverIid);
                 if (hov && hov.loc === 'field') return false;
                 if (k === 'b' || k === 'B') {
+                    menu.style.display = 'none';
                     this._kbField = true;
                     this.showToast('Battlefield: press 1–9 to pick a card');
                     return true;
@@ -12074,6 +12081,8 @@
                     .filter(w => ids.has(w.dataset.iid)).map(w => ({ wrap: w, iid: w.dataset.iid }));
             },
             openPickMenu({ wrap, iid }) {
+                const f = this.findCard(iid), db = f && this.cardDB[f.card.cardId];
+                if (db) this.showPreview(db); // the inspector follows the picked card, as on hover
                 const r = wrap.getBoundingClientRect();
                 this.showContextMenu({ clientX: r.left + r.width / 2, clientY: r.top + r.height / 2, stopPropagation: () => { } }, iid, true);
             },

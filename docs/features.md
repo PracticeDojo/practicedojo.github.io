@@ -741,9 +741,10 @@ Duels.ink exports a deck with the printing at the end of each line, `4 Ursula - 
 
 ### Details
 - **Hand:** 1–9 opens the menu of that card in your hand (the bottom hand), counting from the left.
-- **Battlefield:** B, then 1–9, opens the menu of that card on your battlefield, in the order on screen. A toast says the battlefield is picked; any other key or Esc drops it.
+- **Battlefield:** B, then 1–9, opens the menu of that card on your battlefield, in the order on screen. A toast says the battlefield is picked; any other key or Esc drops it. **H** goes back to the hand. B and H close an open menu, so the next 1–9 picks a card.
 - **Menu:** the first nine options of a card's menu are numbered; 1–9 chooses one. The hover keys (E, B, C) still show and work.
 - **Step:** with the menu of a card in your hand or on your battlefield open, ← → open the previous or next card's menu in that row (it wraps round); ↑ ↓ move through the menu, even one opened with the mouse.
+- **Inspector:** the card a key picks (or steps to) shows in the card inspector, as a hovered card does.
 - A card in play under the pointer keeps its own keys (0–9 damage, B banish) unless a menu is open. Nothing in challenge mode, the mulligan or behind a window.
 
 ## Feature 67: Find a session or a deck in the Library and in Pick up again (v3.21.0)

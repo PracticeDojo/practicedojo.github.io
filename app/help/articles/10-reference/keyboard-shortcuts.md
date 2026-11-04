@@ -23,6 +23,7 @@ Every key the Dojo answers to, grouped by where it works. Keys are single presse
 | {key:C} | Turn **Challenge** mode on or off |
 | {key:1} to {key:9} | Open the menu of that card in your hand, counting from the left |
 | {key:B} then {key:1} to {key:9} | Open the menu of that card on your battlefield, in the order on screen |
+| {key:H} | Back to your hand: the next {key:1} to {key:9} picks a card in it. {key:B} and {key:H} close a card's open menu |
 | {key:Esc} | Close the innermost thing that's open (see below) |
 
 **Esc** closes one thing at a time, in this order: a card's menu, the card drawer, the inkwell sheet, a picked ink card, the picked challenger, challenge mode, the Multiverse, the Library, the home screen (back to your match, if one is on the board), a card you're looking at in the mulligan, then **Inspect deck**, **Inspect discard**, the log import window or the card search.
