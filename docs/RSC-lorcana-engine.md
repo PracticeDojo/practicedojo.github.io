@@ -354,6 +354,8 @@ Each phase is one or more entries in `docs/features.md` and ends in a decision.
 | **3 · Explorer**. **First cut 2026-10-26: proposed plays** (§12), ahead of 1b at the owner's call | Search, scoring, ghost branches | §8 done |
 | **Upkeep** | Re-pin when upstream fixes card bugs or adds a set. Contract tests guard each re-pin. | — |
 
+**On `main` as a beta since v3.22.0 (2026-11-03):** 1a, 2 and 3 as first cuts, the score lab and What-if. 1b (playing moves through the engine) isn't built.
+
 Tiers 2 and 3 only need the read side of tier 1 (hydrate and project) plus the engine's own moves. **If tier 1 Assist ends up looking less valuable than the bot, phase 2 can come straight after 1a.**
 
 ---
@@ -382,7 +384,107 @@ Tiers 2 and 3 only need the read side of tier 1 (hydrate and project) plus the e
 
 ## 12. Spike log
 
-Measured results, newest first. The work itself lives on `feat/68-rules-engine` (AGENTS.md, *Long-lived branch*).
+Measured results, newest first. Built on `feat/68-rules-engine`; on `main` as a beta since v3.22.0 (AGENTS.md, *Rules engine (Feature 68, beta)*).
+
+### 2026-11-03 · Shipped to `main` as a beta (v3.22.0)
+
+Asked (the owner): write the docs for everything in Feature 68, keep it off the landing page while it's a beta, then merge it into `main`.
+
+- **Manual:** a new section, *Rules engine (beta)* (`app/help/articles/11-rules/`): *The rules engine* (Off · Assist · Lab, what it never does, its limits), *What the rules allow*, *Proposed plays*, *Play against the bot*, *The score lab*, *What-if*. Tweaks, the Multiverse, the shortcuts (P, N) and the glossary link to it. 10 new targets (the mini Multiverse's What-if key got the id `mmv-whatif`); every *Show me* finds its control where the device has it. 12 golden queries: 140 / 140 in the top 3. Each article checked against the app at 1440 and 390 wide, day and night.
+- **App:** the Tweaks hint says *Beta* (was *Experimental*); no other visible change. Version v3.22.0; the landing page takes the version only.
+- **Branches:** `feat/68-rules-engine` merged into `main` by a PR and retired; work follows the usual branch rules (AGENTS.md).
+
+### 2026-11-02 · Items in play reach a replay's board; an item's ability, the one the real game used
+
+Asked (the owner): why `01a08b6d…`'s replay drifts replayed from turns 9–10 when its text log doesn't. Fixed on `feat/68-rules-engine` (the owner's choice; the import bug is on `main` too).
+
+- **Items in play were lost by the replay import.** Duels.ink's state keeps items in their own zone (`myPlayer.items`, `opponent.items`), beside `field`. `buildSessionFromReplay` read only `field`, so the turn-10 board had no Junior Woodchuck Guidebook (played on turn 8) and the owner's turn 10 couldn't use its THE BOOK KNOWS EVERYTHING ("draw 2": Cheshire Cat and Agustin, played next). Items now join the field on both sides, exerted or ready as Duels.ink has them. Two of the three sample replays have items: `01a08b6d` (the owner's Guidebook, twice) and `019ea30a` (the opponent's Lantern and Gyro-Evac, both lost until now). Game A has none.
+- **Then a card with two abilities.** With Gyro-Evac on the board, `019ea30a` replayed from turns 5–8 and 10 used CRASH LANDING (banish it: each player loses 2 lore) where the real game used TAKE HER UP (a character gains Evasive): the owner ended 2 lore short, 18–14. The real move said only `activateAbility: Gyro-Evac`. It now keeps the ability's name, from a replay (`ABILITY_ACTIVATED`'s `abilityName`) and a text log ("activated TAKE HER UP on …"), and the worker plays the candidate whose ability has that name (the engine numbers a card's printed activated abilities, then granted ones; those have no name here and still fit).
+
+**Measured**: the real game replayed exactly from every turn from 5 on, in each sample (ends as it did / turns tried; misses = real moves missed, from turn 5 · from the last turn tried):
+
+| Game | Before | Items only | Both fixes |
+|---|---|---|---|
+| Game A (`01a15b0a`, no items) | 14 / 20 | 14 / 20, the same | 14 / 20, the same |
+| `019ea30a` (their Lantern, Gyro-Evac) | 13 / 15, misses 17 · 0 | 10 / 15, misses 8 · 0 | 15 / 15, misses 8 · 0 |
+| `01a08b6d` replay (your Guidebook) | 20 / 22, not 9, 10 | 22 / 22 | 22 / 22 |
+| Its text log | 22 / 22 | 22 / 22, the same | 22 / 22, the same |
+
+All four: 69 / 79 to 73 / 79. `019ea30a` "ended as it did" before by luck: its opponent's Lantern moves missed every turn (17 moves missed from turn 5) and it ended 20–15. Now it ends exactly 20–18, as the real game did, from turn 9 and from 11 on (before, from 15 on), and 20–16 from the rest. `01a08b6d`'s replay now gives the same results as its text log from every turn.
+
+The import fingerprint of `019ea30a` changes (their field at the end: 2 to 4, the two items); no other. `app-checks` 56/56 (new: turn 10's board keeps the Guidebook; turn 14's Gyro-Evac uses TAKE HER UP). The worker is rebuilt (the build's only change).
+
+### 2026-11-02 · What-if reads a text log's choices
+
+Asked (the owner): read the choices from text logs. Until now a text log gave What-if its moves only, and the bot made every choice.
+
+**What the lines say.** Set against the replay of the same game (`01a08b6d…`), the choices it records turn by turn mostly have a text-log line:
+- read before as board events, now also choices: a card revealed into the hand ("You revealed Luisa … put into hand"), discarded, sent back to a deck ("Dumbo … was returned to your deck") or a hand ("SPLENDERIFFIC BOUNCE returns Minnie Mouse … to hand"), damage moved between two cards, a card played in the other player's ability ("You played Cheshire Cat (cost 3 → 0)" on their turn);
+- read now (the parser's new events; the board ignores them): an option (`DARK DANCE chose "Play a character"`; "Yes" and "Decline" answer a "may"), a decline ("Opponent declined … DARK DANCE"), a damage target ("Three Arrows dealt 2 damage to Lumiere …"), a named banish target ("LEAVES NO TRACE banishes Cinderella …");
+- "exerts a character" names no card (Alma's PROTECTING THE FAMILY): it's taken to be the one the same player challenges next that turn, which is why you'd exert it; where that doesn't fit, the bot chooses.
+
+Who chose: the active player, unless the line says (a discard, a reveal, a decline, a play in the other's ability); an option is for whoever is asked. A take-back ("took back their action") now also removes the decline that went with the action it takes back. On that game the text log's choices match the replay's on every turn but turn 17's unnamed exert (by the other player) and one extra on turn 25.
+
+**Measured** (the real game replayed exactly from every turn from 5 on; ends as it did / turns tried):
+- the text log of `01a08b6d…`: 22 / 22, from 9 / 22 (from 12 on, 20–14 with 1 move missed, as its replay; it now does better than the replay, which still drifts from 9–10). The exert guess took turn 6 from 2–5 to the real result.
+- game A, `019ea30a` and the replay of `01a08b6d…`: the same. Every text log's import fingerprint is unchanged.
+
+`app-checks` 54/54 (new: a text log's choices; the text log replayed through both DARK DANCEs).
+
+### 2026-11-01 · What-if keeps the real draws after a shuffle
+
+Asked (the owner): keep the real draws after a shuffle, as without one.
+
+**How.** At the end of each turn of a playout, a deck the engine shuffled that turn (a card joined it, or the order of the cards it kept changed) is put in the real game's order (`realDecks` in the worker). The Dojo passes each turn's real decks and hands (card keys, `?` for a hidden card). The deck takes the order the real game's next turn has:
+- cards the real deck no longer has but the real hand does (drawn first) stay on top;
+- a card the real game hasn't named takes a hidden card's place;
+- a card that joined and the real game never had there goes to the bottom;
+- past the end of the real game, a shuffled deck keeps the order it had when the turn began.
+It applies to every playout, so *What you did* and the lines get the real draws too, and only to decks the playout shuffled: a line that doesn't shuffle keeps the deck as it was.
+
+Two things on the way:
+- **A replay's deck is the real order; a text log's is "the next draws first".** The first try (keep the order the deck had when the turn began, put the new card where the real next turn has it) helped the text log and not the replay: there the real shuffle had put Demona, not Gaston, on top. Ordering by the real next turn works for both.
+- **The text-log import didn't know Boost takes the top card.** It put the next draws on top, so the engine's turn-16 boost took Demona, the next real draw. A boost now takes an unnamed card off the top in its place among the draws. Its "(2 cards under)" is how many are under now, not how many were added: the import added 2 for a second boost (no sample has one in a text log; `019ea30a`'s replay does).
+
+**Measured**: the real game replayed exactly from every turn from 5 on, in each sample (✓ ends as it did; turns that do / turns tried):
+
+| Game | Before | After |
+|---|---|---|
+| Game A (`01a15b0a`, no shuffle) | 14 / 20 | 14 / 20, the same |
+| `019ea30a` (no shuffle) | 13 / 15 | 13 / 15, the same |
+| `01a08b6d` replay (DARK DANCE turns 13, 17) | 9 / 22 (from 18) | 20 / 22 (all but 9, 10), 1 move missed from 12–23 |
+| Its text log | 9 / 22 | 9 / 22, but much closer: from 14–17, 18–14 or 19–14 and 5 missed, before 9–14 and 15–18 |
+
+A full What-if run on that game (for the opponent; the owner won): from the replay, the real game now replays at all 5 turns back (before, the run stopped at 2 back: "Can't follow"), no winning line for them, 326 s; from the text log, at 4 back, then it stops at turn 17, 186 s.
+
+The text log still falls a lore or two short there: it names no choices, so the bot makes DARK DANCE's (it shuffles Agustin away where the real game chose Ursula, and plays Hamm from the discard where the owner played Alma). `app-checks` 52/52 (new: after a shuffle, the real draws).
+
+### 2026-11-01 · Why the other sample replay drifted: Boost, then shuffles
+
+Asked: why `01a08b6d…` (the owner won; What-if for the opponent) drifted replayed from turns 9–15, with misses on turns 16 and 20. Measured by replaying the real game from turns 13, 14 and 15 and, after every turn, comparing the engine's board with the real next node (lore, cards in play, hands, discards, ink, the top of each deck).
+
+- **Boost wasn't replayed.** "You boosted Cheshire Cat (1 card under)" on turn 14 and "You boosted Ursula" on turn 16: Boost puts the top card of your deck facedown under the character. The log line (`CARD_BOOSTED`) wasn't read as a move, so the replay never boosted: the deck stayed a card behind (turn 16 drew Gaston, not Agustin) and Ursula quested for 2, not 3 (a lore short). Boost is an activated ability in the engine, so a boost is now an `activateAbility` move on that card, from a replay and from a text log ("You boosted …"). Replayed from turn 14 or 15, turns 14–16 now match the real game exactly; turn 17 starts 6–7 with Gaston, Dumbo, Hades on top of the owner's deck, as in the real game. Boosts are in two of the three sample replays (5 in `019ea30a`, 3 here) and in the text log (3).
+- **Then a shuffle.** On turn 17 (theirs), DARK DANCE shuffles the owner's Ursula into their deck. The engine shuffles with its own random order, so the owner's next draw is Hades, not the real Demona, and Demona is missed on turn 20. Replayed from turn 13 back, it's turn 13's DARK DANCE (Dumbo shuffled in): the turn 14 draw is Sven, not Agustin. Fixed next (the entry above): What-if now keeps the real draws after a shuffle.
+- Smaller: the card under a boosted character is unknown in the import until it's revealed (Gaston, in the discard when Cheshire Cat is banished on turn 17), so the replay's discard shows an unknown card there.
+
+`app-checks` 51/51 (new: turn 16's boost replayed; the text log's counts now include its boosts and still match the replay's).
+
+### 2026-11-03 · Why a replay stopped following the real game: their hidden hand, the bot's 8-target cap
+
+**Asked:** the owner's game v alex elliott (Steel/Emerald v Amber/Sapphire, lost 13–20 on turn 21) showed *Can't follow* from 1 turn back, so What-if found nothing. Find out why.
+
+Each turn was replayed alone from its imported board with the real moves and compared with the next board, then the game from each of the owner's turns. Before: turns 4, 5, 7, 11, 13, 17, 19 didn't replay, and the game drifted from every turn tried (from turn 20: 13–19, one short). Four causes:
+- **Their hidden hand** (handover gotcha 17). The import fills it with the cards seen later in the replay, but counted only each card's first sighting. The owner's Ursula - Deceiver looked at their hand on turn 6 (Duels.ink's `revealedHand`: two Judy Hopps - Day Camp Instructor, two Nick Wilde - Toy Drive Officer), FIND A FRIEND and Besties, Assemble! revealed cards into it, and Ursula looked again on turn 18 (Lionheart). Each of those then dropped out of their hand until played, so their real plays on turns 7, 11, 13, 17 and 21 weren't in hand. Now a card counts from its next sighting after the board; cards under a shifted card are on the board.
+- **The bot's 8-target cap** (gotcha 18). Turn 21: their Nick Wilde's Support went on the owner's Woolter & Jesse so Judy Hopps - Always Vigilant could banish it (5 {S} or more). With 7 of their own characters and the owner's Mushu in the list, Woolter was past the cut; the fallback put Support on their own Darkwing Duck and GOT YOU NOW banished it. `realTurn` and `drain` now ask for every target.
+- **Two targets of one name.** Turn 17: Judy Hopps - Lead Detective challenged the undamaged Woolter & Jesse, Nick the one with 3 damage; the replay picked the first. A challenge's detail line gives the target's damage (`defenderTotalDamage − actualDamageToDefender`); `movesFromReplay` keeps it as `targetDamage` and `realTurn` prefers that target.
+- **Ink drops** (gotcha 19): not imported, and the engine pays them only through the move's `inkDrops` arg, which the bot's candidates never carry. Imports now carry them; the engine side is open (turns 4 and 5 still don't replay).
+
+**Measured** (exact replay; winner, lore, real moves missed):
+- The owner's game, on `main` (with `realDecks`): every turn from 6 to 20 replays alone except 19 (TO THE RESCUE heals the first of three Nick Wildes, not the damaged one: no change to the result). From turns 12 to 20 the game ends 13–20 as it did (before: from none; `main` alone still turns 7, 11, 13, 17 and 21 wrong). From 10 back it drifts (9–14): not looked at yet. Measured first on the old What-if branch, without `realDecks`, it drifted from 14: Besties, Assemble! on turn 15 put 3 cards on the bottom, burying the known cards they really drew later.
+- Measured on the old What-if branch: game A (`01a15b0a…`) exact from turn 9 (was 11); `01a08b6d…` unchanged.
+- A turn that can't follow no longer also lists "Nothing was played after this turn" (it has no control because the run stopped there).
+
+`app-checks` 50/50.
 
 ### 2026-11-01 · Moves taken back in a replay; challenges in the turn recap
 

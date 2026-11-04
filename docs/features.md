@@ -714,9 +714,24 @@ Duels.ink exports a deck with the printing at the end of each line, `4 Ursula - 
 - **Challenge banner (desktop):** redrawn in the top bar's tool language: a paper module (12px radius) with a coral spine and a coral **Challenge mode** label (Coral is Challenge's key colour), the text, the Forecast switch and **Done** with an `Esc` key cap. Every control is 28px tall with an 8px radius, on a grid, so they line up at any width. It was centred with `left: 50%`, so it could only grow to half the screen and squeezed its text into a column; it now centres across the whole width. Under about 1060px, Forecast and Done move under the text, on the right. Phones are unchanged (no key cap).
 - **Leaving the mulligan:** the dialog gates the board, so there was no way out. **×** at the top right, or Esc, now leaves for the home screen. The match stays saved on its mulligan; Back to match or Resume opens the dialog again.
 
-## Feature 68: Rules engine — rules assist, bot opponent, turn explorer (experimental)
+## Feature 69: Pick a card and its menu option with number keys (v3.23.0)
 
-**Status:** experimental. Built on the long-lived branch `feat/68-rules-engine`, never merged into `main` until the owner says it ships. Plan, findings and phases: `docs/RSC-lorcana-engine.md`.
+### User Story
+- As a player at a keyboard, I want to open a card's menu and choose from it with number keys, so I can play a turn without the mouse.
+
+### Details
+- **Hand:** 1–9 opens the menu of that card in your hand (the bottom hand), counting from the left.
+- **Battlefield:** B, then 1–9, opens the menu of that card on your battlefield, in the order on screen. A toast says the battlefield is picked; any other key or Esc drops it. **H** goes back to the hand. B and H close an open menu, so the next 1–9 picks a card.
+- **Menu:** the first nine options of a card's menu are numbered; 1–9 chooses one. The hover keys (E, B, C) still show and work.
+- **Step:** with the menu of a card in your hand or on your battlefield open, ← → open the previous or next card's menu in that row (it wraps round); ↑ ↓ move through the menu, even one opened with the mouse.
+- **Inspector:** the card a key picks (or steps to) shows in the card inspector, as a hovered card does.
+- **U** undoes, like **Undo** in the top bar (always on, not part of the tweak).
+- **Tweak:** **Number keys** (Off / On) in Tweaks, off by default (`cardKeys`). Off, none of this runs and the menu has no numbers.
+- A card in play under the pointer keeps its own keys (0–9 damage, B banish) unless a menu is open. Nothing in challenge mode, the mulligan or behind a window.
+
+## Feature 68: Rules engine — rules assist, bot opponent, turn explorer (beta, v3.22.0)
+
+**Status:** beta, on `main` since v3.22.0 (2026-11-03). Off by default: Tweaks → *Rules engine* → **Assist** or **Lab** (the Tweaks hint says *Beta*). Not described on the landing page while it's a beta. Built on the long-lived branch `feat/68-rules-engine` (now retired). Plan, findings and phases: `docs/RSC-lorcana-engine.md`; state and next steps: `docs/HANDOVER-rules-engine.md`.
 
 ### User Story
 - As a player, I want an optional rules mode where the Dojo knows what actions require (targets, lore, draws, triggered abilities) and does that bookkeeping for me, and I can switch it off to get today's sandbox back.
@@ -732,22 +747,11 @@ Duels.ink exports a deck with the printing at the end of each line, `4 Ursula - 
 - **Phase 1a, first cut:** Tweaks → *Rules engine: Assist* marks the cards with legal moves (pips in their function-key colours). Each card's menu says what the rules allow, or why a card in hand can't be played. It never blocks a move. Desktop menu only, so far.
 - **Proposed plays (tier 3, first cut):** with Assist on, **Suggest** searches the rest of the turn and shows up to three lines with their steps, the lore they gain and why they score. **Play it** puts a line on the board (one Undo step); **Save as branch** keeps it in the Multiverse.
 - **Proposed plays count modifiers and keywords** (Feature 61 modifiers reach the engine; Evasive, Alert, Bodyguard, Resist, Challenger and Reckless change who is exposed and who brings lore), **the bot finishes each line**, and the score's weights were **tuned by play** against the engine's bot (59% → 64% wins on 256 fresh games). Cards go to the engine by name, so a promo printing that shares a number can't stand in for another card.
-- **What-if (first cut, branch `claude/feat-68-what-if`):** with Assist on, **Multiverse → What-if** takes a game imported from a Duels.ink replay and plays it out again from your turns before the loss, up to five back. At each it checks that the real game, replayed, still ends as it did; tries the search's four best lines other than your real move; and stops at the first turn back with a winning line (**Keep going** looks further). Their turns are what they really did unless the search finds clearly better. It runs in the Multiverse's panel: each line becomes a branch on the canvas as soon as it has been played (one node per turn, a game-over square where someone wins), a meter shows the progress, and the results read in Field Unit's key colours (Olive a win, Coral their lore reaching 20, Trace the meter). On the owner's lost game it found a win three turns back in about 85 s. Since then it also takes Duels.ink text logs (their moves are read the same way) and games played in the Dojo with auto-save on (no record of the moves: the search plays their turns, and *What you did* is the real board after your turn, played on). An unfinished game is played to two turns past its last and looks for a better lore race (your lore minus theirs). A game with more than one line, or unfinished, asks where to start: select a turn in the Multiverse, then **Start from turn N**. A turn's recap now records challenges too (*Challenged: Max Goof with Vixey*), so *What you did* lists them for games played here; moves taken back in a Duels.ink replay are no longer replayed.
-
-## Feature 69: Pick a card and its menu option with number keys (v3.22.0)
-
-### User Story
-- As a player at a keyboard, I want to open a card's menu and choose from it with number keys, so I can play a turn without the mouse.
-
-### Details
-- **Hand:** 1–9 opens the menu of that card in your hand (the bottom hand), counting from the left.
-- **Battlefield:** B, then 1–9, opens the menu of that card on your battlefield, in the order on screen. A toast says the battlefield is picked; any other key or Esc drops it. **H** goes back to the hand. B and H close an open menu, so the next 1–9 picks a card.
-- **Menu:** the first nine options of a card's menu are numbered; 1–9 chooses one. The hover keys (E, B, C) still show and work.
-- **Step:** with the menu of a card in your hand or on your battlefield open, ← → open the previous or next card's menu in that row (it wraps round); ↑ ↓ move through the menu, even one opened with the mouse.
-- **Inspector:** the card a key picks (or steps to) shows in the card inspector, as a hovered card does.
-- **U** undoes, like **Undo** in the top bar (always on, not part of the tweak).
-- **Tweak:** **Number keys** (Off / On) in Tweaks, off by default (`cardKeys`). Off, none of this runs and the menu has no numbers.
-- A card in play under the pointer keeps its own keys (0–9 damage, B banish) unless a menu is open. Nothing in challenge mode, the mulligan or behind a window.
+- **What-if (first cut, branch `claude/feat-68-what-if`):** with Assist on, **Multiverse → What-if** takes a game imported from a Duels.ink replay and plays it out again from your turns before the loss, up to five back. At each it checks that the real game, replayed, still ends as it did; tries the search's four best lines other than your real move; and stops at the first turn back with a winning line (**Keep going** looks further). Their turns are what they really did unless the search finds clearly better. It runs in the Multiverse's panel: each line becomes a branch on the canvas as soon as it has been played (one node per turn, a game-over square where someone wins), a meter shows the progress, and the results read in Field Unit's key colours (Olive a win, Coral their lore reaching 20, Trace the meter). On the owner's lost game it found a win three turns back in about 85 s. Since then it also takes Duels.ink text logs (their moves, and the choices their lines show, are read the same way) and games played in the Dojo with auto-save on (no record of the moves: the search plays their turns, and *What you did* is the real board after your turn, played on). An unfinished game is played to two turns past its last and looks for a better lore race (your lore minus theirs). A game with more than one line, or unfinished, asks where to start: select a turn in the Multiverse, then **Start from turn N**. A turn's recap now records challenges too (*Challenged: Max Goof with Vixey*), so *What you did* lists them for games played here; moves taken back in a Duels.ink replay are no longer replayed.
+- **Bot opponent (first cut):** top bar → **Bot** plays P1 or P2 one move at a time, **Auto** or **Step** (P switches, N plays its next move), with a banner (its last move, Pause / Next, **Take over**). Each move is one Undo step and a *Bot: …* log line; the engine runs the turn changes. A new or loaded game starts with it off.
+- **Score lab:** Tweaks → *Rules engine* → **Lab**: a **Score** tab in the odds column (the score now, every term with its weight and worth), profiles kept on the device (Default never changes; Save, Save as…, Rename, Delete, Undo edits, Export, Import), each card in play's share of the score, Plays ranked with the profile in use (↑↓ against Default, All terms), and your own terms (whose cards, where, filters, a measure, a weight, always / ahead / behind).
+- **Replay import keeps items in play** (2026-11-02): Duels.ink keeps items in their own zone beside the field, and the import read only the field, so items never reached a board imported from a replay. A real move that uses an ability now names it, so a card with two (Gyro-Evac) uses the one the real game did. The sample replays end as the real games did from 73 of 79 turns tried (69 before).
+- **Manual (v3.22.0):** a new section, *Rules engine (beta)*: *The rules engine*, *What the rules allow*, *Proposed plays*, *Play against the bot*, *The score lab*, *What-if*; Tweaks, the Multiverse, the shortcuts and the glossary link to it. No tour step yet.
 
 ## Feature 67: Find a session or a deck in the Library and in Pick up again (v3.21.0)
 
@@ -1249,5 +1253,5 @@ The public page (`index.html`) follows Field Unit too, as `docs/DESIGN-field-uni
 - [x] Feature 66: Find a deck — search by name or card, ink filter, your decks apart from the defaults
 - [x] Feature 67: Find a session or a deck in the Library and in Pick up again
 - [x] Patch: Challenge banner on narrower screens, and a way out of the mulligan
+- [x] Feature 68: Rules engine — rules assist, bot opponent, turn explorer (beta)
 - [x] Feature 69: Pick a card and its menu option with number keys
-- [ ] Feature 68: Rules engine — rules assist, bot opponent, turn explorer (experimental, on `feat/68-rules-engine`)

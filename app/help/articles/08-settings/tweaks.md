@@ -5,9 +5,9 @@ summary: Where the settings are and what each one changes.
 devices: [desktop, phone]
 aliases: [settings, options, preferences, customise, customize]
 targets: [tweaks, tweaks-panel]
-related: [theme, card-display, palette, forecast]
+related: [theme, card-display, palette, forecast, rules-engine]
 order: 10
-verified: v3.22.0
+verified: v3.23.0
 ---
 
 Tweaks is where the Dojo's settings live: how it looks, how big the cards are, and how much it tells you about a challenge.
@@ -34,6 +34,7 @@ Tweaks opens from a match. On the home screen, only the theme can be changed (th
 - **Card display**: **Art** or **Text** for every card. See [Card size and Art / Text](help:card-display).
 - **Challenge forecast**: **Off**, **Light** or **Full**. See [Challenge forecast](help:forecast).
 - **Number keys**: **Off** (the default) or **On**. On, number keys pick cards and their menu options. See [Keyboard shortcuts](help:keyboard-shortcuts).
+- **Rules engine** (beta): **Off**, **Assist** or **Lab**. See [The rules engine](help:rules-engine).
 - **Player palette**: **Competition**, **Modern** or **Mono**. See [Player palette](help:palette).
 
 ## Good to know

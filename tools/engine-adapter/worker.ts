@@ -1118,7 +1118,7 @@ function searchCost(args: { deck1: string; deck2: string; seed?: string; turn?: 
 // The game's log gives both players' real moves per turn, by card name. The replay matches them to the
 // engine's candidates: a sung card and its singers, a target and whose card it is, the other player's
 // choices, Bodyguard's exerted entry, a second move to the other copy of a location, plays from the discard.
-type RealMove = { family: string; card: string; target?: string; with?: string[]; exerted?: boolean };
+type RealMove = { family: string; card: string; target?: string; targetDamage?: number; with?: string[]; exerted?: boolean; ability?: string };
 type Choice = { name?: string; option?: string; owner?: number; by?: number };
 type RealTurn = { moves: RealMove[]; choices: Choice[] };
 type Prefer = { choices: Choice[] };
@@ -1129,6 +1129,9 @@ const ownerOf = (server: Server, id: string) => {
 const fullName = (a?: ActCard) => (a ? (a.version ? `${a.name} - ${a.version}` : a.name) : "");
 const sameCard = (a: ActCard | undefined, name?: string) => !!a && !!name && (fullName(a) === name || a.name === name);
 const ownerTurn = (server: Server) => (server.getState() as unknown as RawState).ctx.status.turnOwnerId as string;
+// The bot's candidates stop at 8 targets a prompt (searchCaps): on a busy board the real target can be past
+// them (their Support on your character). Replaying the real game asks for all of them.
+const EVERY = { searchCaps: { targetPool: 64, targetCombinationsPerFamily: 512 } };
 
 // The candidate that is the actor's next real choice (used up when found): a target (whose card it is,
 // when known), yes / no for a "may" ability, or another named option. The two choices after the next one
@@ -1156,7 +1159,7 @@ function pickChoice(server: Server, actor: string, candidates: unknown[], prefer
 function drain(server: Server, prefer?: Prefer) {
   for (let i = 0; i < 60 && !server.isGameOver(); i++) {
     if (!server.getBagCount() && !server.getPendingEffects().length) return true;
-    const en = server.enumerateAutomatedActionsForCurrentActor();
+    const en = server.enumerateAutomatedActionsForCurrentActor(EVERY);
     if (!en.actorId || !en.candidates.length) return false;
     const c = (prefer && pickChoice(server, en.actorId, en.candidates, prefer)) || en.candidates[0];
     if (!applyCandidate(server, en.actorId, c).success) return false;
@@ -1171,15 +1174,26 @@ function realTurn(server: Server, who: string, real: RealTurn | undefined, prefe
   const movedTo = new Set<string>();
   for (const m of real?.moves ?? []) {
     if (!drain(server, prefer) || server.isGameOver() || ownerTurn(server) !== who) break;
-    const en = server.enumerateAutomatedActionsForCurrentActor();
+    const en = server.enumerateAutomatedActionsForCurrentActor(EVERY);
     if (en.actorId !== who) break;
     let fits = en.candidates.filter((x) => {
       const a = describe(server, x as never, "me");
       if (a.family !== m.family || !sameCard(a.card, m.card) || (m.target && !sameCard(a.target, m.target))) return false;
       // Sung, and by whom; or paid for.
+      // Which of the card's abilities (Gyro-Evac has two): the one the real game used. The engine counts the
+      // printed activated abilities, then granted ones (unnamed here, so they still fit).
+      if (m.ability) {
+        const d = server.getCardDefinitionByInstanceId((x as { cardId?: unknown }).cardId as never) as { abilities?: { type?: string; name?: string }[] } | undefined;
+        const name = (d?.abilities ?? []).filter((b) => b.type === "activated")[(x as { abilityIndex?: number }).abilityIndex ?? -1]?.name;
+        if (name && name.toUpperCase() !== m.ability.toUpperCase()) return false;
+      }
       if (m.family === "playCard") return m.with ? (a.via === "sing" || a.via === "singTogether") && m.with.every((n) => (a.with ?? []).some((w) => sameCard(w, n))) : a.via !== "sing" && a.via !== "singTogether";
       return true;
     });
+    // Two targets of one name (two Woolter & Jesse): the one with the damage it really had.
+    const meta = (server.getState() as unknown as RawState).ctx.zones.private.cardMeta;
+    const hurt = m.targetDamage == null ? [] : fits.filter((x) => Number(meta[describe(server, x as never, "me").target?.id ?? ""]?.damage ?? 0) === m.targetDamage);
+    if (hurt.length) fits = hurt;
     // Two locations of one name: the one nobody moved to this turn ("once during your turn").
     const unused = fits.filter((x) => !movedTo.has(String((x as { locationId?: string }).locationId)));
     if (m.family === "moveCharacterToLocation" && unused.length) fits = unused;
@@ -1208,6 +1222,44 @@ function realTurn(server: Server, who: string, real: RealTurn | undefined, prefe
   return { acts, matched: acts.length, missed };
 }
 
+// A shuffle (DARK DANCE shuffles a character into its player's deck) gets the engine's own order, so the draws after
+// it wouldn't be the real game's. They come back: a deck shuffled this turn takes the order the real game's next
+// turn has (its hidden cards are places for the cards it didn't name), cards it no longer had there (it drew or
+// used them first) on top, cards it never had at the bottom.
+// before: each deck when the turn began (engine order, top last); next: each deck's keys at the real next turn
+// (Dojo order, top first; "?" a hidden card), hands: each hand's keys there. Past the real game, a shuffled deck keeps
+// the order it had when the turn began.
+function realDecks(server: Server, keys: Map<string, string>, before: string[][], next?: string[][], hands?: string[][]) {
+  const st = structuredClone(server.getState()) as unknown as RawState;
+  const zc = st.ctx.zones.private.zoneCards;
+  let shuffled = false;
+  PIDS.forEach((p, pi) => {
+    const top = [...(zc[`deck:${p}`] ?? [])].reverse();
+    const kept = [...before[pi]].reverse().filter((id) => top.includes(id));
+    const joined = top.filter((id) => !before[pi].includes(id));
+    if (!joined.length && kept.every((id, i) => top[i] === id)) return; // only drawn from the top
+    shuffled = true;
+    const real = [...(next?.[pi] ?? [])];
+    const at = new Map<string, number>(); // each card's place in the real deck: the first unused copy of its key
+    const match = (id: string, key: string) => {
+      const j = real.indexOf(key);
+      if (j >= 0) { real[j] = ""; at.set(id, j); }
+    };
+    for (const id of [...kept, ...joined]) match(id, keys.get(id) ?? "");
+    // A card the real next turn has in hand was drawn first (stays on top); one it hasn't named takes a hidden card's place.
+    const hand = [...(hands?.[pi] ?? [])];
+    for (const id of kept) {
+      if (at.has(id)) continue;
+      const h = hand.indexOf(keys.get(id) ?? "");
+      if (h >= 0) hand[h] = "";
+      else match(id, "?");
+    }
+    const placed = [...kept, ...joined].filter((id) => at.has(id)).sort((a, b) => at.get(a)! - at.get(b)!);
+    zc[`deck:${p}`] = [...kept.filter((id) => !at.has(id)), ...placed, ...joined.filter((id) => !at.has(id))].reverse();
+  });
+  if (shuffled) freshLoad(server, st);
+}
+
 // A line's score as the search scores its lines: the board, then their reply.
 function lineScore(server: Server, who: string, other: string, W: Weights) {
   const st = structuredClone(server.getState());
@@ -1230,10 +1282,11 @@ const realPlan = (real?: RealTurn) => (real?.moves ?? []).filter((m) => PLAN.has
 //          the search finds a line scoring more than `margin` above them.
 // Each turn: who played it and how, the moves, and `end`, the board the next turn starts on (or the game's
 // end). `lines`: how many lines the first turn had to choose from.
-function whatIf(args: SearchOpts & { board: Board; me: 0 | 1; first: number | "real"; exact?: boolean; real: Record<string, RealTurn>; margin?: number; horizon: number; laterNodes?: number }) {
+function whatIf(args: SearchOpts & { board: Board; me: 0 | 1; first: number | "real"; exact?: boolean; real: Record<string, RealTurn>; decks?: Record<string, string[][]>; hands?: Record<string, string[][]>; margin?: number; horizon: number; laterNodes?: number }) {
   const t0 = now();
   const { match, pos } = hydrate(args.board);
   const server = bareServer(match);
+  const keys = keysOf.get(match) ?? new Map<string, string>();
   const W = { ...WEIGHTS, ...args.weights };
   const me = PIDS[args.me];
   let turn = args.board.turn;
@@ -1247,6 +1300,7 @@ function whatIf(args: SearchOpts & { board: Board; me: 0 | 1; first: number | "r
     const row: Record<string, unknown> = { turn, who: PIDS.indexOf(who as (typeof PIDS)[number]) };
     let realChoices = true;
     drain(server, prefer);
+    const decks0 = PIDS.map((p) => [...((server.getState() as unknown as RawState).ctx.zones.private.zoneCards[`deck:${p}`] ?? [])]);
     if (args.exact || (who === me && turn === args.board.turn && args.first === "real")) {
       Object.assign(row, { how: "real" }, realTurn(server, who, real, prefer));
     } else if (who === me) {
@@ -1283,6 +1337,7 @@ function whatIf(args: SearchOpts & { board: Board; me: 0 | 1; first: number | "r
       realChoices = !better;
     }
     if (!server.isGameOver()) {
+      realDecks(server, keys, decks0, args.decks?.[String(turn + 1)], args.hands?.[String(turn + 1)]);
       if (!server.passTurn(who).success) break;
       drain(server, realChoices ? prefer : undefined);
     }

@@ -7,7 +7,7 @@ aliases: [hotkeys, keys, keyboard, key bindings, space, esc, escape, enter, arro
 targets: [mini-multiverse-keys]
 related: [hotkeys-not-working, card-actions, multiverse-navigate, gestures]
 order: 10
-verified: v3.22.0
+verified: v3.23.0
 ---
 
 Every key the Dojo answers to, grouped by where it works. Keys are single presses: the Dojo leaves anything with Ctrl, Cmd or Alt to your browser. If a key does nothing, see [Shortcuts don't do anything](help:hotkeys-not-working).
@@ -87,6 +87,15 @@ Press {key:Tab} to move through the cards.
 | {key:Esc} | Close the menu |
 
 The cards in the discard list beside the board open their menu the same way.
+
+## With the bot playing
+
+With the [bot](help:bot-opponent) playing a seat:
+
+| Key | What it does |
+|---|---|
+| {key:P} | Switch the bot between **Auto** and **Step** |
+| {key:N} | The bot's next move |
 
 ## Card drawer
 

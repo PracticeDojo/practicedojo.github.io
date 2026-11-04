@@ -1466,3 +1466,23 @@ Plan, formats and decisions: `docs/ARCH-help-and-tour.md` (§5.7 is the as-built
 * `App.CARD_DB_VERSION` (in `app/index.html`) is a hand-bumped stamp stored beside the cached copy. Same stamp: boot from IndexedDB with no network. Different stamp: download once with `cache: 'no-cache'` and store it. No periodic checking.
 * Sources: `raw.githubusercontent.com` first (5 min cache, CORS on), jsDelivr as fallback. If the download fails, the old copy is used.
 * **When similcana changes:** push it, wait a few minutes, change `CARD_DB_VERSION` to a new string, deploy. Everyone gets the new file on their next load.
+
+## 28. Feature 68: the rules engine (beta, v3.22.0)
+
+The plan, measurements and decisions are in `docs/RSC-lorcana-engine.md` (its §12 is the log); state, commands and gotchas in `docs/HANDOVER-rules-engine.md`. Built on a long-lived branch, merged into `main` as a beta.
+
+### 28.1 The engine is a shadow, the board is the truth
+* The engine is TheCardGoat's MIT Lorcana engine (`tcg-engines`), bundled by `tools/build-engine.mjs` from a pinned commit into `app/vendor/lorcana-engine/` (`engine.worker.js`, `cards.json`). It runs in a Web Worker; nothing runs on a server.
+* Each time it's asked, the worker rebuilds a game from the Dojo's board (`DojoRules.boardFromState`), cards matched by name. Its answers map back to instance ids. The board is never changed by the engine except through a move the player asked for (Play it, the bot's move), and each is one Undo step.
+* Off (the default) starts no worker and changes nothing: the sandbox comes first.
+
+### 28.2 Pieces, one global each
+* `tools/engine-adapter/worker.ts`: the worker's ops (`analyze`, `explore`, `bot*`, `score`, `whatIf`, …). Upstream fixes we need are `PATCHES` in the build, which fails if one stops applying.
+* `app/js/rules.js` (`DojoRules`): the bridge and worker client, and the copy for moves (`actText`, `stepText`, `lineDiff`).
+* `app/js/lab.js` (`DojoLab`): the score's terms, profiles (`localStorage`) and your own terms.
+* `app/js/whatif.js` (`DojoWhatIf`): a game's real moves from a replay or a text log, its line of turns, and the What-if run.
+* In `app/index.html`, search "Feature 68": Assist marks and the menu's Rules section, Suggest and the Plays tab, the bot menu and banner, the Score tab, the What-if block.
+
+### 28.3 Measuring
+* `node tools/engine-spike.mjs` (bridge, bot games, round trips, search cost) and `node tools/engine-tune.mjs` (the explorer against the engine's bot; `--compare` is a sign test on the same deals).
+* `node tools/app-checks.mjs` covers imports, the bot and What-if replays of the sample games. A change to the score or the search is kept only if it wins on fresh games (study §8.1).

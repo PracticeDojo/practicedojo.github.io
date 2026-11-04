@@ -510,6 +510,57 @@
       "label": "Replay",
       "screen": "mulligan",
       "any": "#mull-mode-replay"
+    },
+    "tweak-rules": {
+      "label": "Rules engine",
+      "screen": "tweaks",
+      "any": "#tweak-rules"
+    },
+    "suggest": {
+      "label": "Suggest",
+      "screen": "board",
+      "desktop": "#btn-suggest",
+      "phone": "#mobile-menu-btn"
+    },
+    "plays-tab": {
+      "label": "the Plays tab",
+      "screen": "board",
+      "desktop": "#prob-tab-plays"
+    },
+    "plays-sheet": {
+      "label": "Proposed plays",
+      "screen": "board",
+      "phone": "#rules-plays"
+    },
+    "score-tab": {
+      "label": "the Score tab",
+      "screen": "board",
+      "desktop": "#prob-tab-score"
+    },
+    "bot": {
+      "label": "Bot",
+      "screen": "board",
+      "any": "#btn-bot"
+    },
+    "bot-banner": {
+      "label": "the bot's banner",
+      "screen": "board",
+      "any": "#bot-banner"
+    },
+    "what-if": {
+      "label": "What-if",
+      "screen": "multiverse",
+      "any": "#tree-whatif"
+    },
+    "what-if-panel": {
+      "label": "the What-if block",
+      "screen": "multiverse",
+      "any": "#tp-whatif"
+    },
+    "mini-what-if": {
+      "label": "What-if in the mini Multiverse",
+      "screen": "board",
+      "desktop": "#mmv-whatif"
     }
   }
 }

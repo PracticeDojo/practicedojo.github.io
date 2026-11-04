@@ -80,6 +80,7 @@ into the right milestone, or into *Parked* if it's outside the plan.
 - [ ] M3c · 04 The Multiverse
 - [ ] M3d · 06 Library and sharing, 07 Account, 08 Settings
 - [ ] M3e · 09 Help and fixes, 10 Reference (shortcuts and gestures complete, read from the code)
+- [ ] M3f · 11 Rules engine (beta), Feature 68: six articles (`rules-engine`, `rules-assist`, `proposed-plays`, `bot-opponent`, `score-lab`, `what-if`), 10 targets, links from Tweaks, Multiverse, shortcuts and glossary, 12 golden queries. Claimed 2026-11-03 on `feat/68-rules-engine`. No tour step yet (beta)
 - [ ] Screenshots for *The screen at a glance*, *Reading a node*, *Cards and plot* (`tools/help.mjs shots`)
 - [ ] Every article: `verified` set, checked on both devices; golden queries added for it
 

@@ -18,7 +18,8 @@ window.DojoWhatIf = (() => {
     const PAST = 4;      // turns played past the real game's end before calling it
     const OPEN = 2;      // an unfinished game: turns played past its last one, then the lore race compared
 
-    const FAMILIES = { CARD_INKED: 'putCardIntoInkwell', CARD_PLAYED: 'playCard', CARD_QUEST: 'quest', CARD_ATTACK: 'challenge', CARD_MOVED: 'moveCharacterToLocation', ABILITY_ACTIVATED: 'activateAbility' };
+    // Boost ("put the top card of your deck facedown under this character") is an activated ability in the engine.
+    const FAMILIES = { CARD_INKED: 'putCardIntoInkwell', CARD_PLAYED: 'playCard', CARD_QUEST: 'quest', CARD_ATTACK: 'challenge', CARD_MOVED: 'moveCharacterToLocation', ABILITY_ACTIVATED: 'activateAbility', CARD_BOOSTED: 'activateAbility' };
     const KNOWN = new Set(Object.values(FAMILIES));
 
     // Each turn's real moves and choices, from a replay's log, keyed by turn as the Dojo counts them (each
@@ -51,11 +52,17 @@ window.DojoWhatIf = (() => {
                 return;
             }
             const family = FAMILIES[l.type];
-            if (!family || (family === 'challenge' && String(l.message).includes('|'))) return; // the detail line repeats it
+            if (!family) return;
+            if (family === 'challenge' && String(l.message).includes('|')) { // the detail line repeats it, with the damage the target had
+                const last = T().moves[T().moves.length - 1], d = l.data || {};
+                if (last && last.family === 'challenge' && Number.isInteger(d.defenderTotalDamage)) last.targetDamage = d.defenderTotalDamage - (d.actualDamageToDefender || 0);
+                return;
+            }
             if (active !== undefined && by !== undefined && by !== active) return; // made by an ability on the other's turn (DARK DANCE's free play): its choices make it
             const move = { family, card: refs[0].name };
             if ((family === 'challenge' || family === 'moveCharacterToLocation') && refs[1]) move.target = refs[1].name;
             if (family === 'playCard' && l.data && l.data.isSung) move.with = refs.slice(1).map(r => r.name);
+            if (l.type === 'ABILITY_ACTIVATED' && l.data && l.data.abilityName) move.ability = l.data.abilityName; // which one, for a card with two
             if (family === 'playCard' && exert[by] != null) { move.exerted = exert[by]; delete exert[by]; }
             (marks[turn] = marks[turn] || []).push(T().choices.length);
             T().moves.push(move);
@@ -65,22 +72,39 @@ window.DojoWhatIf = (() => {
         return real;
     }
 
-    // The same from a turn of a Duels.ink text log (parseDojoLog): the active player's moves, by name. A text
-    // log names no choices, so the bot makes them.
-    const LOG = { ink: 'putCardIntoInkwell', play: 'playCard', sing: 'playCard', quest: 'quest', challenge: 'challenge', activate: 'activateAbility' };
+    // The same from a turn of a Duels.ink text log (parseDojoLog): the active player's moves, by name, and the
+    // choices the log shows, as the replay's are: a card revealed, discarded, sent back to a deck or a hand,
+    // damaged, banished or moved damage between, by an ability; a card played for free in the other's ability
+    // (DARK DANCE); an option ("chose "Put on bottom""); a "may" declined. Who chose: the active player, unless
+    // the line says. "Exerts a character" names none: it's taken to be the one the player challenges next that turn
+    // (why you'd exert it); if that doesn't fit the prompt, the bot chooses.
+    const LOG = { ink: 'putCardIntoInkwell', play: 'playCard', sing: 'playCard', quest: 'quest', challenge: 'challenge', activate: 'activateAbility', under: 'activateAbility' }; // under: a boost (or, with no player, a card an effect put under)
+    const OPTION = { yes: 'yes', decline: 'no', no: 'no' };
     function movesFromLog(t, p) {
         const real = { moves: [], choices: [] };
-        for (const e of t.events) {
+        const choose = (c) => real.choices.push(c);
+        t.events.forEach((e, i) => {
             if (e.t === 'loreSet') real.won = e.p; // "… won with 20 [LORE]!"
+            if (e.t === 'reveal' || e.t === 'discard') return e.name && choose({ name: e.name, owner: e.t === 'discard' ? e.p : undefined, by: e.p });
+            if (e.t === 'toDeck' || e.t === 'toHand' || e.t === 'damaged' || e.t === 'banishes') return choose({ name: e.name, owner: e.owner >= 0 ? e.owner : undefined, by: p });
+            if (e.t === 'moveDmg') { choose({ name: e.from, by: p }); choose({ name: e.to, by: p }); return; }
+            if (e.t === 'option') return choose({ option: OPTION[e.text.toLowerCase()] || e.text.replace(/[^A-Za-z0-9]/g, '') });
+            if (e.t === 'declined') return choose({ option: 'no', by: e.p });
+            if (e.t === 'exerts') {
+                const next = t.events.slice(i + 1).find(x => x.t === 'challenge' && x.p === p);
+                return next && choose({ name: next.target, by: p });
+            }
+            if (e.t === 'play' && e.p !== p && e.p >= 0) return choose({ name: e.name, by: e.p }); // played inside the other's ability
             const card = e.t === 'challenge' ? e.attacker : e.name, last = real.moves[real.moves.length - 1];
-            if (e.p !== p || !LOG[e.t] || !card) continue;
+            if (e.p !== p || !LOG[e.t] || !card) return;
             // A challenge's detail line ("… | dealt 2 dmg") repeats the line before it.
-            if ('targetDamage' in e && last && last.family === 'challenge' && last.card === card && last.target === e.target) continue;
+            if ('targetDamage' in e && last && last.family === 'challenge' && last.card === card && last.target === e.target) return;
             const move = { family: LOG[e.t], card };
             if (e.t === 'challenge') move.target = e.target;
             if (e.t === 'sing') move.with = e.singers;
+            if (e.t === 'activate' && e.ability) move.ability = e.ability;
             real.moves.push(move);
-        }
+        });
         return real;
     }
 
@@ -94,8 +118,9 @@ window.DojoWhatIf = (() => {
         return {
             moves: r.moves.filter(m => m && KNOWN.has(m.family) && name(m.card)).slice(0, 100).map(m => ({
                 family: m.family, card: name(m.card), target: name(m.target),
+                targetDamage: Number.isInteger(m.targetDamage) && m.targetDamage >= 0 ? m.targetDamage : undefined,
                 with: Array.isArray(m.with) ? m.with.map(name).filter(Boolean).slice(0, 8) : undefined,
-                exerted: typeof m.exerted === 'boolean' ? m.exerted : undefined
+                exerted: typeof m.exerted === 'boolean' ? m.exerted : undefined, ability: name(m.ability)
             })),
             choices: (Array.isArray(r.choices) ? r.choices : []).slice(0, 100)
                 .map(c => ({ name: name(c && c.name), option: name(c && c.option), owner: seat(c && c.owner), by: seat(c && c.by) }))
@@ -216,7 +241,10 @@ window.DojoWhatIf = (() => {
         const horizon = end + (winner === null ? OPEN : PAST);
         const lastLore = turns[turns.length - 1].state.players.map(p => p.lore);
         const race = (x) => (x.winner === me ? 1000 : x.winner !== null ? -1000 : x.lore[me] - x.lore[1 - me]);
-        const play = (board, opts) => DojoRules.whatIf(board, keyOf, { me, real, nodes: 300, laterNodes: 120, margin: 1, ...opts });
+        // Each turn's decks as the real game had them, so a shuffle keeps the real draws (the worker's realDecks).
+        const zone = (z) => Object.fromEntries(turns.map(t => [t.turn, t.state.players.map(p => p[z].map(c => keyOf(c.cardId) || '?'))])); // ?: a hidden card
+        const decks = zone('deck'), hands = zone('hand');
+        const play = (board, opts) => DojoRules.whatIf(board, keyOf, { me, real, decks, hands, nodes: 300, laterNodes: 120, margin: 1, ...opts });
         const last = Math.min(from + BACK - 1, mine.length);
         for (let back = from; back <= last; back++) {
             const at = mine[back - 1], t = turns[at], after = turns[at + 1];

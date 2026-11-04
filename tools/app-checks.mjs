@@ -22,7 +22,7 @@ const IMPORTS = {
     'app/defaults/examples/duels-ink-log.txt': 'turns 34 · nodes 34 · P1 deck 31 hand 1 field 2 ink 11 discard 15 lore 21 · P2 deck 32 hand 1 field 3 ink 11 discard 13 lore 12 · unknown 63',
     'docs/samples/log_example_v01.md': 'turns 34 · nodes 34 · P1 deck 31 hand 1 field 2 ink 11 discard 15 lore 21 · P2 deck 32 hand 1 field 3 ink 11 discard 13 lore 12 · unknown 63',
     'docs/samples/new_log_20261004.txt': 'turns 26 · nodes 26 · P1 deck 33 hand 1 field 4 ink 10 discard 11 lore 20 · P2 deck 36 hand 0 field 5 ink 8 discard 10 lore 14 · unknown 72',
-    'docs/samples/019ea30a-6bbf-7518-8736-fd4db478b072_p1.json': 'turns 19 · nodes 19 · P1 deck 39 hand 2 field 6 ink 5 discard 5 lore 20 · P2 deck 42 hand 1 field 2 ink 4 discard 9 lore 18 · unknown 43',
+    'docs/samples/019ea30a-6bbf-7518-8736-fd4db478b072_p1.json': 'turns 19 · nodes 19 · P1 deck 39 hand 2 field 6 ink 5 discard 5 lore 20 · P2 deck 42 hand 1 field 4 ink 4 discard 9 lore 18 · unknown 43',
     'docs/samples/01a08b6d-cb54-743f-9bfd-debe26bb528a_p1.replay.gz': 'turns 26 · nodes 26 · P1 deck 33 hand 1 field 4 ink 10 discard 11 lore 20 · P2 deck 36 hand 0 field 5 ink 8 discard 10 lore 14 · unknown 38',
     // Ends turns with "end of turn" prompts: the turn passes on a later frame, not on END_TURN.
     'docs/samples/01a15b0a-313b-73d3-846f-37752210870b_p1.replay.gz': 'turns 24 · nodes 24 · P1 deck 38 hand 0 field 4 ink 5 discard 13 lore 19 · P2 deck 37 hand 0 field 8 ink 6 discard 9 lore 20 · unknown 37'
@@ -233,16 +233,48 @@ export default async (page) => {
         check('what-if: the import keeps each turn\'s real moves', wiTurns.map(t => t.real.moves.length).join(' '), '2 2 3 2 3 3 4 4 4 2 2 4 3 4 3 2 4 3 4 3 4 5 4 8');
         // A text log keeps them too (each challenge once), and who won; the same game's replay (01a08b6d) the same
         // moves: without the play taken back on turn 13, or DARK DANCE's free plays on turns 13 and 17 (made by
-        // the other player inside the ability, so not moves of the turn).
+        // the other player inside the ability, so not moves of the turn), with the boosts on turns 14, 16 and 24.
         const wiText = DojoWhatIf.lineOf(App.buildSessionFromLog(App.parseDojoLog(await (await fetch('/docs/samples/new_log_20261004.txt')).text())).bookmarks, wiDec);
         const wiDance = DojoWhatIf.lineOf(App.buildSessionFromReplay(JSON.parse(await App.decodeMaybeGzip(await (await fetch('/docs/samples/01a08b6d-cb54-743f-9bfd-debe26bb528a_p1.replay.gz')).arrayBuffer()))).bookmarks, wiDec);
+        // A replay keeps items in play in their own zone: turn 10's board has the Guidebook played on turn 8.
+        check('import: a replay keeps items in play', wiDance.turns.find(t => t.turn === 10).state.players[0].field.map(c => (App.cardDB[c.cardId] || {}).name).join(', '),
+            'Alma Madrigal, Hamm, Junior Woodchuck Guidebook');
         const wiCounts = (l) => l.turns.map(t => t.real.moves.length).join(' ');
         check('what-if: a text log keeps each turn\'s moves, and who won', `${wiText.winner} ${wiCounts(wiText)} | replay ${wiCounts(wiDance) === wiCounts(wiText) ? 'the same' : wiCounts(wiDance)}`,
-            '0 1 2 2 2 2 3 2 4 3 5 2 7 2 3 2 4 2 4 2 3 4 5 4 5 3 1 | replay the same');
+            '0 1 2 2 2 2 3 2 4 3 5 2 7 2 4 2 5 2 4 2 3 4 5 4 6 3 1 | replay the same');
         // Replayed, turn 13's DARK DANCE has P1 (whose Dumbo it shuffles away) play Cheshire Cat from the discard.
         const wiK13 = wiDance.turns.findIndex(t => t.turn === 13);
         const wiT13 = (await DojoRules.whatIf(DojoWhatIf.filled(wiDance.turns, wiK13, id => !!App.cardDB[id]), id => App.cardKey(id),
             { me: 1, real: Object.fromEntries(wiDance.turns.map(t => [t.turn, t.real])), first: 'real', exact: true, horizon: 13, nodes: 300, laterNodes: 120, margin: 1 })).turns[0];
+        // Boost puts the top card of the deck under a character: replayed from turn 15, turn 16's boost (Ursula) leaves
+        // the deck and the lore as the real turn 17 has them (it was a lore short, the deck a card behind).
+        const wiK15 = wiDance.turns.findIndex(t => t.turn === 15), wiReal17 = wiDance.turns.find(t => t.turn === 17).state;
+        const wiT16 = (await DojoRules.whatIf(DojoWhatIf.filled(wiDance.turns, wiK15, id => !!App.cardDB[id]), id => App.cardKey(id),
+            { me: 0, real: Object.fromEntries(wiDance.turns.map(t => [t.turn, t.real])), first: 'real', exact: true, horizon: 16, nodes: 300, laterNodes: 120, margin: 1 })).turns.at(-1).state;
+        const wiTop = (st) => st.players[0].deck.slice(0, 3).map(c => App.cardDB[c.cardId].name).join(', ');
+        check('what-if: a boost is replayed', `${wiT16.players.map(p => p.lore).join('-')} ${wiTop(wiT16)} | real ${wiReal17.players.map(p => p.lore).join('-')} ${wiTop(wiReal17)}`, '6-7 Gaston, Dumbo, Hades | real 6-7 Gaston, Dumbo, Hades');
+        // A card with two abilities uses the one the real game did: 019ea30a's Gyro-Evac (an item) gives Evasive on
+        // turn 14 (TAKE HER UP). Replayed from turn 10 it banished itself instead (CRASH LANDING: each player loses 2).
+        const wiMia = DojoWhatIf.lineOf(App.buildSessionFromReplay(await (await fetch('/docs/samples/019ea30a-6bbf-7518-8736-fd4db478b072_p1.json')).json()).bookmarks, wiDec);
+        const wiT14 = (await DojoRules.whatIf(DojoWhatIf.filled(wiMia.turns, wiMia.turns.findIndex(t => t.turn === 10), id => !!App.cardDB[id]), id => App.cardKey(id),
+            { me: 1, real: Object.fromEntries(wiMia.turns.map(t => [t.turn, t.real])), first: 'real', exact: true, horizon: 14, nodes: 300, laterNodes: 120, margin: 1 })).turns.at(-1).state;
+        check('what-if: an item\'s ability, the one the real game used', `${wiT14.players.map(p => p.lore).join('-')} | real ${wiMia.turns.find(t => t.turn === 15).state.players.map(p => p.lore).join('-')}`, '9-14 | real 9-14');
+        // After a shuffle (turn 17's DARK DANCE shuffles the owner's Ursula into their deck), the real draws: replayed
+        // from turn 15 it ends as the real game did, 20-14 (with the engine's own shuffle, 9-14 and 15 moves missed).
+        const wiZone = (z) => Object.fromEntries(wiDance.turns.map(t => [t.turn, t.state.players.map(p => p[z].map(c => App.cardKey(c.cardId) || '?'))]));
+        const wiShuffled = await DojoRules.whatIf(DojoWhatIf.filled(wiDance.turns, wiK15, id => !!App.cardDB[id]), id => App.cardKey(id),
+            { me: 0, real: Object.fromEntries(wiDance.turns.map(t => [t.turn, t.real])), decks: wiZone('deck'), hands: wiZone('hand'), first: 'real', exact: true, horizon: 26, nodes: 300, laterNodes: 120, margin: 1 });
+        check('what-if: after a shuffle, the real draws', `${wiShuffled.winner} ${wiShuffled.lore.join('-')} | missed ${wiShuffled.turns.reduce((n, t) => n + (t.missed || []).length, 0)}`, '0 20-14 | missed 1');
+        // A text log's choices, from its lines: an option ("chose "Play a character""), a card sent back to a deck, a card
+        // played inside the other's ability, an unnamed "exerts a character" taken as the next challenge's target.
+        const wiSay = (turn) => wiText.turns.find(t => t.turn === turn).real.choices.map(c => (c.name ? c.name.split(' - ')[0] : `"${c.option}"`) + (c.by != null ? `@${c.by}` : '')).join(', ');
+        check('what-if: a text log\'s choices', `T6 ${wiSay(6)} | T13 ${wiSay(13)} | T22 ${wiSay(22)}`, 'T6 Mickey Mouse@0 | T13 "Playacharacter", Dumbo@1, Cheshire Cat@0 | T22 "Putonbottom", Mickey Mouse & Minnie Mouse@0');
+        // With them (and the real draws after both DARK DANCEs), the text log replays from turn 13 as its replay does.
+        const wiTextZone = (z) => Object.fromEntries(wiText.turns.map(t => [t.turn, t.state.players.map(p => p[z].map(c => App.cardKey(c.cardId) || '?'))]));
+        const wiK13t = wiText.turns.findIndex(t => t.turn === 13);
+        const wiFromText = await DojoRules.whatIf(DojoWhatIf.filled(wiText.turns, wiK13t, id => !!App.cardDB[id]), id => App.cardKey(id),
+            { me: 1, real: Object.fromEntries(wiText.turns.map(t => [t.turn, t.real])), decks: wiTextZone('deck'), hands: wiTextZone('hand'), first: 'real', exact: true, horizon: 26, nodes: 300, laterNodes: 120, margin: 1 });
+        check('what-if: a text log replays through DARK DANCE', `${wiFromText.winner} ${wiFromText.lore.join('-')} | missed ${wiFromText.turns.reduce((n, t) => n + (t.missed || []).length, 0)}`, '0 20-14 | missed 1');
         check('what-if: a free play inside the other\'s ability is the ability\'s', `${wiT13.state.players[0].field.map(c => App.cardDB[c.cardId].name).join(', ')} | missed ${wiT13.missed.length}`, 'Hamm, Cheshire Cat | missed 0');
         // The game's line: the replay alone (lost, one line; What-if's own branches don't count), cut short
         // (unfinished), with a turn played again by hand that wins (forked: no line until one is picked), that
