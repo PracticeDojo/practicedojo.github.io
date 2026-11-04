@@ -6811,7 +6811,7 @@
             // on from the board as it is. The engine keeps the game through the bot's turn and runs the turn
             // changes (DojoRules.bot*, study §12); each finished move is one Undo step. Your seat stays at the
             // bottom. The bot never concedes: when it's stuck it pauses and the turn is yours to finish.
-            bot: { seat: null, pace: 'auto', speed: 1000, paused: false, busy: false, live: false, sig: null, ask: null, held: [], last: '', note: '', over: false, gen: 0 },
+            bot: { seat: null, pace: 'auto', speed: 1000, paused: false, busy: false, live: false, sig: null, ask: null, held: [], last: '', note: '', over: false, gen: 0, plan: '' },
 
             bottomSeat() {
                 return this.bot.seat != null ? 1 - this.bot.seat : this.state.activePlayer;
@@ -6821,7 +6821,7 @@
             setBot(seat, opts = {}) {
                 clearTimeout(this._botT);
                 this.botDrop();
-                Object.assign(this.bot, { seat, paused: false, ask: null, note: '', last: '', over: false });
+                Object.assign(this.bot, { seat, paused: false, ask: null, note: '', last: '', over: false, plan: '' });
                 if (opts.quiet) return void (this.renderBotMenu(), this.renderBot());
                 if (this.state && this.state.players) this.logAction(seat != null ? `Bot plays P${seat + 1}.` : 'Bot off: you play both seats.', true);
                 this.renderBotMenu();
@@ -6872,14 +6872,29 @@
                 this.renderBot();
             },
 
-            // shortcut: the bot always keeps its opening hand; the engine's bot could choose its mulligan later.
-            botKeepHand() {
-                const p = this.state && this.state.players && this.state.players[this.state.activePlayer];
-                if (!p || !this.state.mulliganPending || this.state.activePlayer !== this.bot.seat || p.hasMulliganed) return;
+            // The bot's opening hand: a deck plan's mulligan (the cards it sends back go to the bottom, as many are
+            // drawn, the deck is shuffled), else it keeps it. On the play when the other seat hasn't chosen yet.
+            async botKeepHand() {
+                const seat = this.bot.seat, p = this.state && this.state.players && this.state.players[seat];
+                if (!p || !this.state.mulliganPending || this.state.activePlayer !== seat || p.hasMulliganed) return;
                 if (this.openingMode === 'build' || this.openingMode === 'replay') return;
+                const keyOf = id => this.cardKey(id), name = c => String(keyOf(c.cardId) || '').split('|')[1] || '';
+                const r = await this.botCall(async () => {
+                    const plan = await DojoRules.planFor(this.state, keyOf, seat);
+                    return { stay: plan ? await DojoRules.mulligan(plan, p.hand.map(name), !this.state.players[1 - seat].hasMulliganed) : null };
+                });
+                this.bot.busy = false;
+                if (!r || p.hasMulliganed || !this.state.mulliganPending) return this.renderBot();
                 this.saveState();
                 p.hasMulliganed = true;
-                this.logAction('Bot kept its opening hand.');
+                const out = r.stay ? p.hand.filter((c, i) => !r.stay[i]) : [];
+                if (out.length) {
+                    p.hand = p.hand.filter(c => !out.includes(c));
+                    p.deck.push(...out);
+                    out.forEach(() => this._internalDraw(seat));
+                    this.shuffle(p.deck);
+                    this.logAction(`Bot mulliganed ${out.length} card${out.length === 1 ? '' : 's'} (deck plan).`);
+                } else this.logAction('Bot kept its opening hand.');
                 this.closeMulligan();
                 this._finishMulligan();
             },
@@ -6929,11 +6944,13 @@
             },
 
             // The engine starts its game from the board on screen. False if the bot was reset meanwhile.
+            // With a deck plan for the deck it plays, it plays each turn to the plan.
             async botRead() {
-                const b = this.bot, gen = b.gen, sig = this.boardSig(this.state);
-                await DojoRules.botStart(this.state, id => this.cardKey(id), b.seat);
+                const b = this.bot, gen = b.gen, sig = this.boardSig(this.state), keyOf = id => this.cardKey(id);
+                const plan = await DojoRules.planFor(this.state, keyOf, b.seat);
+                await DojoRules.botStart(this.state, keyOf, b.seat, plan);
                 if (gen !== b.gen) return false;
-                Object.assign(b, { live: true, sig });
+                Object.assign(b, { live: true, sig, plan: plan ? plan.name : '' });
                 return true;
             },
 
@@ -7044,7 +7061,7 @@
                 const key = b.pace === 'auto'
                     ? `<button class="btn" onclick="App.botTogglePause()" title="${b.paused ? 'Play' : 'Pause'}"><i class="fa-solid fa-${b.paused ? 'play' : 'pause'}"></i> ${b.paused ? 'Play' : 'Pause'}</button>`
                     : `<button class="btn" onclick="App.botNext()" title="Its next move (N)"${its && !b.busy && !b.ask && !b.over ? '' : ' disabled'}>Next <span class="bb-kbd">N</span></button>`;
-                banner.innerHTML = `<span class="bb-key">Bot · P${b.seat + 1}</span>
+                banner.innerHTML = `<span class="bb-key"${b.plan ? ` title="Plays to its deck plan: ${esc(b.plan)}"` : ''}>Bot · P${b.seat + 1}${b.plan ? ' · Plan' : ''}</span>
                     <span class="bb-text${b.note ? ' is-note' : ''}">${text}</span>
                     <div class="seg" role="group" aria-label="Pace (P)" title="Auto or Step (P)">
                         <button type="button" aria-pressed="${b.pace === 'auto'}" onclick="App.setBotPace('auto')">Auto</button>

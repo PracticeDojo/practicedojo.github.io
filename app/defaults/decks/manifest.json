@@ -50,6 +50,12 @@
           "name": "S14 - RG - Retro Leviathan",
           "file": "set-14/retro-leviathan.txt",
           "notes": "Ruby/Emerald control deck"
+        },
+        {
+          "id": "s14-gs-go-wide",
+          "name": "S14 - GS - Go Wide",
+          "file": "set-14/gs-go-wide.txt",
+          "notes": "Emerald/Steel go wide (the Quest Coast IV list). The bot plays it to a deck plan."
         }
       ]
     }

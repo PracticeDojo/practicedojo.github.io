@@ -8,6 +8,10 @@
 //   node tools/engine-tune.mjs --compare '{"ink":0.5}' [--holdout 256] [--tag check]
 //                              the start against those weights on the same fresh games, game by game;
 //                              a list ('[{"ink":0.5},{"hand":0.2}]') compares each against the start
+//   node tools/engine-tune.mjs --deck my.txt --compare '{"plan":"plan.json"}'
+//                              the explorer always plays that deck, against each Set 14 deck from both
+//                              seats; "plan" is a deck plan file ("only": ["ink", "mulligan", …] keeps those
+//                              parts of it)
 //
 // Coordinate search: each round tries every weight ×step and ÷step, keeping a change that wins more
 // often than the best so far on the same games (same decks, seeds and seats: less noise). Then the
@@ -53,12 +57,23 @@ if (!isMainThread) {
     const decks = manifest.groups.find(g => g.title === 'Set 14').decks
         .map(d => ({ id: d.id, text: readFileSync(join(ROOT, 'app/defaults/decks', d.file), 'utf8') }));
     const pairs = [];
-    for (let i = 0; i < decks.length; i++) for (let j = i + 1; j < decks.length; j++) pairs.push([decks[i], decks[j]]);
-    // n games over every pairing, each pairing from both seats, seeds from `tag`.
+    const DECK = arg('--deck', null);
+    const mine = DECK && { id: 'mine', text: readFileSync(DECK, 'utf8') };
+    if (mine) decks.forEach(d => pairs.push([mine, d]));
+    else for (let i = 0; i < decks.length; i++) for (let j = i + 1; j < decks.length; j++) pairs.push([decks[i], decks[j]]);
+    // n games over every pairing, each pairing from both seats, seeds from `tag`. With --deck, the
+    // explorer is always that deck.
     const games = (n, tag) => Array.from({ length: n }, (_, k) => {
         const [a, b] = pairs[Math.floor(k / 2) % pairs.length];
-        return { deck1: a.text, deck2: b.text, explorer: k % 2, seed: `${tag}-${Math.floor(k / (2 * pairs.length))}-${Math.floor(k / 2) % pairs.length}` };
+        const seed = `${tag}-${Math.floor(k / (2 * pairs.length))}-${Math.floor(k / 2) % pairs.length}`;
+        if (mine) return k % 2 ? { deck1: b.text, deck2: a.text, explorer: 1, seed } : { deck1: a.text, deck2: b.text, explorer: 0, seed };
+        return { deck1: a.text, deck2: b.text, explorer: k % 2, seed };
     });
+    // A deck plan file, all of it or the parts named.
+    const planOf = (file, only) => {
+        const p = JSON.parse(readFileSync(file, 'utf8'));
+        return only ? Object.fromEntries(Object.entries(p).filter(([k]) => only.includes(k))) : p;
+    };
 
     const threads = Math.max(1, availableParallelism() - 0);
     const pool = Array.from({ length: threads }, () => new Worker(fileURLToPath(import.meta.url)));
@@ -96,7 +111,7 @@ if (!isMainThread) {
 
     say(`## Weight tuning (${new Date().toISOString().slice(0, 10)}, ${threads} threads)`);
     say('');
-    say(`Explorer (search ${JSON.stringify(SEARCH)}) against the engine's default bot. Set 14 default decks, every pairing from both seats. ${GAMES} games per try, ${ROUNDS} rounds, step ×${STEP}.`);
+    say(`Explorer (search ${JSON.stringify(SEARCH)}) against the engine's default bot. ${mine ? `The explorer plays ${DECK} against each Set 14 default deck` : 'Set 14 default decks, every pairing'} from both seats. ${GAMES} games per try, ${ROUNDS} rounds, step ×${STEP}.`);
     say('');
     // Game by game on the same deals: of the games one set wins and the other loses, how lopsided
     // is the split? (Sign test on the discordant games.)
@@ -119,10 +134,11 @@ if (!isMainThread) {
         const a = await evaluate(START, fresh);
         say(`### Against ${show(START)}, ${HOLDOUT} fresh games each`);
         say(`- Start: ${res(a)}`);
-        // A change's "search" key changes the search instead of the weights ({"search":{"replyLines":6}}).
-        for (const { search, ...change } of [JSON.parse(compareArg)].flat()) {
-            const b = await evaluate({ ...START, ...change }, fresh, search);
-            say(`- ${JSON.stringify(search ? { ...change, search } : change)}: ${res(b)}. ${paired(a, b)}`);
+        // A change's "search" key changes the search instead of the weights ({"search":{"replyLines":6}});
+        // "plan" plays a deck plan file.
+        for (const { search, plan, only, ...change } of [JSON.parse(compareArg)].flat()) {
+            const b = await evaluate({ ...START, ...change }, fresh, { ...search, ...(plan ? { plan: planOf(plan, only) } : {}) });
+            say(`- ${JSON.stringify({ ...change, ...(search ? { search } : {}), ...(plan ? { plan, ...(only ? { only } : {}) } : {}) })}: ${res(b)}. ${paired(a, b)}`);
         }
         say(`- ${((Date.now() - t0) / 60000).toFixed(1)} min in all.`);
         await Promise.all(pool.map(w => w.terminate()));

@@ -11,9 +11,12 @@
 //                                   { lines: [{ score, delta, parts, acts, state }], base, weights, ms, nodes, outOfTime }
 //                                   Each line's `state` is the Dojo state it ends on. opts go to the
 //                                   worker's search (beam, perNode, depth, nodes, timeMs, lines, replyLines).
-//   botStart(state, keyOf, seat)  the bot opponent (Tier 2): the engine starts a game from this board and plays
-//                                   `seat`. botStep() plays its next move and what that sets off; botChoose(i)
-//                                   answers a choice it asked you; botPass('bot' | 'you') runs the turn change.
+//   botStart(state, keyOf, seat, plan)  the bot opponent (Tier 2): the engine starts a game from this board and
+//                                   plays `seat`. botStep() plays its next move and what that sets off; botChoose(i)
+//                                   answers a choice it asked you; botPass('bot' | 'you') runs the turn change. With a
+//                                   deck plan, each of its turns is the search's best line, played a move at a time.
+//   planFor(state, keyOf, seat)   the deck plan (app/defaults/plans) whose list is the deck `seat` plays, or null.
+//   mulligan(plan, names, onPlay) which cards of an opening hand the plan keeps: [true | false] by card.
 //                                   Each → Promise of { acts, state, ask, stuck, done, owner, over, winner }:
 //                                   state is the Dojo board, or null while something is resolving; ask lists your
 //                                   choices; owner is whose turn it is now (0 or 1). botRebase(state): after the app's
@@ -115,9 +118,9 @@ window.DojoRules = (function () {
     // The bot opponent. The engine's ids are of the board the game started from (bot.from), so every reply's
     // board and cards are read against it.
     let bot = null;
-    async function botStart(state, keyOf, seat) {
+    async function botStart(state, keyOf, seat, plan) {
         await engine();
-        const r = await call('botStart', { board: boardFromState(state, keyOf), seat });
+        const r = await call('botStart', { board: boardFromState(state, keyOf), seat, plan: plan || undefined });
         bot = { from: JSON.parse(JSON.stringify(state)), ids: r.ids, place: placesOf(state) };
     }
     // After a turn change the app changes what the engine doesn't track (ink turned face down, modifiers
@@ -139,6 +142,37 @@ window.DojoRules = (function () {
         return r;
     }
     const botStep = async () => botRead(await call('botStep', {}));
+
+    // Deck plans (study §12, 2026-11-04): how a deck wants to be played, from a deck guide. A plan applies
+    // when 90% of its list is the deck: every card of the seat, wherever it is.
+    const PLANS = 'defaults/plans/';
+    let plans = null;
+    async function planFor(state, keyOf, seat) {
+        if (!plans) plans = fetch(PLANS + 'manifest.json').then(r => r.json())
+            .then(m => Promise.all((m.plans || []).map(f => fetch(PLANS + f).then(r => r.json()))))
+            .catch(() => []);
+        const p = state && state.players && state.players[seat];
+        if (!p) return null;
+        const have = {};
+        [...p.deck, ...p.hand, ...p.field.flatMap(c => [c, ...(c.stackedCards || [])]), ...p.inkwell, ...p.discard].forEach(c => {
+            const n = String(keyOf(c.cardId) || '').split('|')[1];
+            if (n) have[n.toLowerCase()] = (have[n.toLowerCase()] || 0) + 1;
+        });
+        return (await plans).find(plan => {
+            let all = 0, same = 0;
+            (plan.deck || []).forEach(line => {
+                const m = /^(\d+)\s+(.+)$/.exec(line);
+                if (!m) return;
+                all += +m[1];
+                same += Math.min(+m[1], have[m[2].toLowerCase()] || 0);
+            });
+            return all > 0 && same >= 0.9 * all;
+        }) || null;
+    }
+    async function mulligan(plan, names, onPlay) {
+        await engine();
+        return call('mulligan', { plan, hand: names, onPlay });
+    }
     const botChoose = async (index) => botRead(await call('botChoose', { index }));
     const botPass = async (who) => botRead(await call('botPass', { who }));
 
@@ -371,5 +405,5 @@ window.DojoRules = (function () {
         };
     }
 
-    return { UNKNOWN, VERBS, whyText, actText, groupActs, stepText, lineDiff, boardFromState, analyze, explore, botStart, botStep, botChoose, botPass, botRebase, score, whatIf, stateForLine, start, call };
+    return { UNKNOWN, VERBS, whyText, actText, groupActs, stepText, lineDiff, boardFromState, analyze, explore, botStart, botStep, botChoose, botPass, botRebase, planFor, mulligan, score, whatIf, stateForLine, start, call };
 })();

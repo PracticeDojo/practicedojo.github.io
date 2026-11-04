@@ -52,6 +52,16 @@ Keys: {key:P} switches **Auto** and **Step**, {key:N} plays its next move.
 
 Play your turn as always, then press **End turn**: the engine runs the turn change (start- and end-of-turn effects) and the bot plays its turn.
 
+## Decks with a plan
+
+Some built-in decks come with a deck plan: how the deck wants to be played, written from a deck guide. When the bot plays one of them (today **S14 - GS - Go Wide**), the banner reads **Bot · P2 · Plan** and the bot:
+
+- chooses its opening hand by the plan (the log says **Bot mulliganed 2 cards (deck plan)**, say);
+- inks in the plan's order, and keeps the cards the plan holds on to;
+- plays each of its turns as the best line the search finds for it, so it thinks a moment before its first move.
+
+Without a plan, it keeps its opening hand and plays move by move.
+
 ## Good to know
 
 - Each bot move is one **Undo** step, and the log says **Bot: …** for each.

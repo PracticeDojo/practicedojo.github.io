@@ -481,6 +481,69 @@ type Projected = {
 type TermWhere = { type?: string; keyword?: string; classification?: string; state?: string; costMin?: number; costMax?: number; can?: string; effect?: string; name?: string };
 type Term = { side?: string; zone?: string; where?: TermWhere; measure?: string; weight?: number; when?: string };
 
+// A deck plan (study §12, 2026-11-04): how one deck wants to be played, from a deck guide. Data, never
+// code. The bot reads it for its mulligan, the order it inks in, going first and a few score terms; the
+// search still picks every move. Cards by full name.
+type Plan = {
+  goFirst?: boolean;
+  mulligan?: {
+    keep?: string[]; // every copy
+    keepOne?: string[]; // one copy
+    keepOnDraw?: string[]; // on the draw; on the play, as withCurve
+    withCurve?: string[]; // next to another character costing 2 or less
+    filler?: string[]; // one of them, when 4 other cards stay
+    late?: string[]; // best first: one, when 4 other cards stay
+    send?: string[];
+  };
+  ink?: { first?: string[]; never?: string[]; keepOne?: string[] };
+  engines?: { card: string; exerted: number; value: number }[]; // "at the end of your turn, with N exerted"
+  terms?: Term[];
+};
+type PlanCard = { name: string; cost: number; inkable: boolean; character: boolean };
+const named = (list: string[] | undefined, name: string) => !!list?.some((n) => norm(n) === norm(name));
+
+// An opening hand by the plan: whether each card stays. Cards no list names stay.
+function planMulligan(plan: Plan, hand: PlanCard[], onPlay: boolean) {
+  const m = plan.mulligan ?? {};
+  const curve = (list?: string[]) => [...(list ?? []), ...(onPlay ? (m.keepOnDraw ?? []) : [])];
+  const kind = (c: PlanCard) =>
+    named(m.send, c.name) ? "send" : named(m.keepOne, c.name) ? "one" : named(m.filler, c.name) ? "filler" : named(m.late, c.name) ? "late"
+      : named(curve(m.withCurve), c.name) ? "curve" : "keep";
+  const kinds = hand.map(kind);
+  const stay = kinds.map((k) => k === "keep");
+  kinds.forEach((k, i) => {
+    if (k === "one") stay[i] = !hand.some((c, j) => j < i && kinds[j] === "one" && norm(c.name) === norm(hand[i].name));
+    // A curve card stays next to another cheap character the hand doesn't send back.
+    if (k === "curve") stay[i] = hand.some((c, j) => j !== i && kinds[j] !== "send" && c.character && c.cost <= 2);
+  });
+  const others = (skip: string) => stay.filter((s, j) => s && kinds[j] !== skip).length;
+  // One filler, and one late card (the plan's first), each only when 4 other cards stay.
+  for (const k of ["filler", "late"]) {
+    const list = k === "late" ? m.late ?? [] : m.filler ?? [];
+    const rank = (i: number) => list.findIndex((n) => norm(n) === norm(hand[i].name));
+    const best = kinds.map((x, i) => i).filter((i) => kinds[i] === k).sort((a, b) => rank(a) - rank(b))[0];
+    if (best !== undefined && others(k) >= 4) stay[best] = true;
+  }
+  // No more uninkable cards than inkable ones: late cards go first, then second copies, then the last one.
+  const count = (ink: boolean) => hand.filter((c, i) => stay[i] && c.inkable === ink).length;
+  while (count(false) > count(true)) {
+    const cands = hand.map((c, i) => i).filter((i) => stay[i] && !hand[i].inkable);
+    const dup = (i: number) => hand.some((c, j) => j < i && stay[j] && norm(c.name) === norm(hand[i].name));
+    const pick = cands.find((i) => kinds[i] === "late") ?? cands.find(dup) ?? cands[cands.length - 1];
+    stay[pick] = false;
+  }
+  return stay;
+}
+
+// The same with the cards' definitions (for checks): names in, which stay out.
+function mulligan(args: { plan: Plan; hand: string[]; onPlay: boolean }) {
+  const cards = args.hand.map((n) => {
+    const d = byName(n);
+    return { name: n, cost: Number(d?.cost ?? 9), inkable: !!d?.inkable, character: d?.cardType === "character" };
+  });
+  return planMulligan(args.plan, cards, args.onPlay);
+}
+
 // What a card's abilities do, from the effect types in its definition. An approximation: who an
 // effect hits isn't checked (a banish is removal whoever it banishes).
 const EFFECTS: Record<string, string[]> = {
@@ -714,12 +777,15 @@ function settle(server: Server, me: string): Act[] | null {
 // Their next turn on a line's end, as their bot would play it with the cards they have in play
 // (quests, challenges, abilities, moves), not their hand, which the player can't see. The score from
 // my side after it, without `exposed`: their challenges have happened.
-function replyScore(server: Server, me: string, opp: string, W: Weights, terms?: Term[]) {
+// reveal: their hand cards that were revealed (Ursula - Deceiver) can be played too: the player saw them.
+function replyScore(server: Server, me: string, opp: string, W: Weights, terms?: Term[], reveal?: boolean) {
   if (!server.isGameOver() && server.passTurn(me).success) {
     for (let i = 0; i < 30 && !server.isGameOver(); i++) {
-      if ((server.getState() as unknown as RawState).ctx.status.turnOwnerId !== opp) break;
+      const st = server.getState() as unknown as RawState;
+      if (st.ctx.status.turnOwnerId !== opp) break;
+      const seen = (x: { family?: string; cardId?: unknown }) => !!reveal && x.family === "playCard" && st.ctx.zones.private.cardMeta[String(x.cardId)]?.revealed === true;
       const en = server.enumerateAutomatedActionsForCurrentActor();
-      const c = en.actorId === opp ? en.candidates.find((x) => x.family !== "playCard" && x.family !== "putCardIntoInkwell") : en.candidates[0];
+      const c = en.actorId === opp ? en.candidates.find((x) => (x.family !== "playCard" && x.family !== "putCardIntoInkwell") || seen(x as never)) : en.candidates[0];
       if (!c || !applyCandidate(server, en.actorId, c).success) break;
     }
   }
@@ -744,8 +810,53 @@ function endOf(st: RawState) {
 // the same lines on any machine; the clock (timeMs) is then a safety net, and outOfTime says it tripped.
 // replyLines: how many distinct plans their reply re-ranks. `lines` only cuts the list, so asking for
 // more lines never reorders the first ones.
-type SearchOpts = { beam?: number; perNode?: number; depth?: number; timeMs?: number; nodes?: number; lines?: number; replyLines?: number; weights?: Partial<Weights>; terms?: Term[]; finish?: boolean };
-type Line = { state: unknown; acts: Act[]; score: number; parts: Record<string, number>; quiet: boolean };
+type SearchOpts = { beam?: number; perNode?: number; depth?: number; timeMs?: number; nodes?: number; lines?: number; replyLines?: number; weights?: Partial<Weights>; terms?: Term[]; finish?: boolean; plan?: Plan; reveal?: boolean; bodyguard?: boolean };
+
+// The moves the search tries, from the bot's candidates. A Bodyguard may also enter exerted (the
+// candidates only have the ready way: handover gotcha 13). With a plan, inks go in its order, and the
+// cards it never inks (or keeps one of in hand) aren't inked.
+function options(server: Server, me: string, candidates: Record<string, unknown>[], plan?: Plan, bodyguard = true) {
+  const nameOf = (id: unknown) => fullName(describe(server, { family: "quest", cardId: id }, "me").card);
+  const out: Record<string, unknown>[] = [];
+  for (const c of candidates) {
+    out.push(c);
+    if (!bodyguard || c.family !== "playCard" || c.resolveOptional !== undefined || typeof c.cost !== "string") continue;
+    const def = server.getCardDefinitionByInstanceId(c.cardId as never) as { abilities?: { keyword?: string }[] } | undefined;
+    if (def?.abilities?.some((a) => a.keyword === "Bodyguard")) out.push({ ...c, resolveOptional: true, enterPlayExerted: true });
+  }
+  const ink = plan?.ink;
+  if (!ink) return out;
+  const hand = ((server.getState() as unknown as RawState).ctx.zones.private.zoneCards[`hand:${me}`] ?? []).map(nameOf);
+  const copies = (n: string) => hand.filter((h) => norm(h) === norm(n)).length;
+  const inks = out.filter((c) => c.family === "putCardIntoInkwell").filter((c) => {
+    const n = nameOf(c.cardId);
+    return !named(ink.never, n) && !(named(ink.keepOne, n) && copies(n) <= 1);
+  });
+  const rank = (c: Record<string, unknown>) => {
+    const i = (ink.first ?? []).findIndex((n) => norm(n) === norm(nameOf(c.cardId)));
+    return i < 0 ? 1000 + inks.indexOf(c) : i;
+  };
+  inks.sort((a, b) => rank(a) - rank(b));
+  // The inks take the places inks had, in the plan's order.
+  let k = 0;
+  return out.flatMap((c) => (c.family !== "putCardIntoInkwell" ? [c] : k < inks.length ? [inks[k++]] : []));
+}
+
+// A plan's engines on the board at the end of a line: "at the end of your turn, if you have N exerted
+// characters" (Elinor). The trigger itself only happens when the turn passes, after the search has ranked
+// the line; this tells the search a line sets it up. Each copy in play counts.
+function engineBonus(server: Server, me: string, plan?: Plan) {
+  if (!plan?.engines?.length) return 0;
+  const play = ((server.getState() as unknown as RawState).ctx.zones.private.zoneCards[`play:${me}`] ?? []);
+  const exerted = play.map((id) => unitOf(server, id)).filter((u) => u.char && u.exerted).length;
+  let bonus = 0;
+  for (const e of plan.engines) {
+    if (exerted < e.exerted) continue;
+    bonus += e.value * play.filter((id) => norm(fullName(describe(server, { family: "quest", cardId: id }, "me").card)) === norm(e.card)).length;
+  }
+  return bonus;
+}
+type Line = { state: unknown; acts: Act[]; moves: unknown[]; score: number; parts: Record<string, number>; quiet: boolean };
 
 // The search itself, from the position `server` is on, for `me` (whose turn it is).
 function search(server: Server, me: string, opp: string, opts: SearchOpts) {
@@ -757,9 +868,12 @@ function search(server: Server, me: string, opp: string, opts: SearchOpts) {
   const load = (st: unknown) => freshLoad(server, st);
   const owner = () => (server.getState() as unknown as RawState).ctx.status.turnOwnerId;
   // A turn can only end with nothing left to resolve.
-  const line = (acts: Act[]): Line => {
-    const e = evaluate(server, me, opp, W, undefined, opts.terms);
-    return { state: structuredClone(server.getState()), acts, score: e.score, parts: e.parts, quiet: !server.getBagCount() && !server.getPendingEffects().length };
+  const terms = [...(opts.terms ?? []), ...(opts.plan?.terms ?? [])];
+  // moves: the line's own engine candidates, in order (the bot plays them one at a time).
+  const line = (acts: Act[], moves: unknown[] = []): Line => {
+    const e = evaluate(server, me, opp, W, undefined, terms);
+    const engine = engineBonus(server, me, opts.plan);
+    return { state: structuredClone(server.getState()), acts, moves, score: e.score + engine, parts: engine ? { ...e.parts, engine } : e.parts, quiet: !server.getBagCount() && !server.getPendingEffects().length };
   };
 
   const root = line(settle(server, me) ?? []);
@@ -777,7 +891,7 @@ function search(server: Server, me: string, opp: string, opts: SearchOpts) {
       if (en.actorId !== me) continue;
       // Inking one card or another rarely changes the plan: the strategy's two favourites will do.
       let inks = 0;
-      const picks = en.candidates.filter((c) => c.family !== "putCardIntoInkwell" || ++inks <= 2).slice(0, perNode);
+      const picks = options(server, me, en.candidates as Record<string, unknown>[], opts.plan, opts.bodyguard !== false).filter((c) => c.family !== "putCardIntoInkwell" || ++inks <= 2).slice(0, perNode);
       for (const c of picks) {
         if (now() - t0 > budget || nodes >= (opts.nodes ?? Infinity)) {
           outOfTime = true;
@@ -792,7 +906,7 @@ function search(server: Server, me: string, opp: string, opts: SearchOpts) {
         const key = positionKey(server);
         if (seen.has(key)) continue;
         seen.add(key);
-        const l = line([...from.acts, act, ...after]);
+        const l = line([...from.acts, act, ...after], [...from.moves, c]);
         next.push(l);
         if (l.quiet) ends.push(l);
       }
@@ -809,9 +923,10 @@ function search(server: Server, me: string, opp: string, opts: SearchOpts) {
     for (const from of [root, ...top.filter((l) => l !== root)]) {
       load(from.state);
       const acts = [...from.acts];
+      const moves = [...from.moves];
       for (let i = 0; i < 12 && !server.isGameOver() && owner() === me; i++) {
         const en = server.enumerateAutomatedActionsForCurrentActor();
-        const c = en.actorId === me ? en.candidates[0] : undefined;
+        const c = en.actorId === me ? options(server, me, en.candidates as Record<string, unknown>[], opts.plan, opts.bodyguard !== false)[0] : undefined;
         if (!c) break; // the bot would pass
         const act = describe(server, c as never, "me");
         nodes++;
@@ -819,12 +934,13 @@ function search(server: Server, me: string, opp: string, opts: SearchOpts) {
         const after = settle(server, me);
         if (!after) break;
         acts.push(act, ...after);
+        moves.push(c);
       }
       if (acts.length === from.acts.length) continue;
       const key = positionKey(server);
       if (seen.has(key)) continue;
       seen.add(key);
-      const l = line(acts);
+      const l = line(acts, moves);
       if (l.quiet) ends.push(l);
     }
   }
@@ -851,7 +967,7 @@ function search(server: Server, me: string, opp: string, opts: SearchOpts) {
   if (W.reply) {
     for (const l of new Set([root, ...best])) {
       load(l.state);
-      const reply = W.reply * (replyScore(server, me, opp, W, opts.terms) - l.score);
+      const reply = W.reply * (replyScore(server, me, opp, W, terms, opts.reveal) - l.score);
       l.score += reply;
       l.parts = { ...l.parts, reply };
     }
@@ -882,17 +998,22 @@ function explore(args: SearchOpts & { board: Board }) {
 // before each move changed the bot's play. The engine also runs the turn changes, so start- and
 // end-of-turn abilities happen. The app shows each finished move on the Dojo board; when you change the
 // board, it starts a new game here from it. The bot plans from its own view (it doesn't see your hand).
-type BotLive = { server: Server; seat: string; other: string };
+// With a deck plan, the bot plays the search's best line for its turn (the plan's ink order, its terms),
+// one move at a time; a move that no longer applies (you answered a prompt otherwise) ends the line, and
+// the engine's bot plays the rest of the turn.
+type BotLive = { server: Server; seat: string; other: string; plan?: Plan; queue?: unknown[] | null; turn?: number };
+const BOT_SEARCH: SearchOpts = { nodes: 300, timeMs: 10000, lines: 1 };
 let botLive: BotLive | null = null;
 
 // A new game from a Dojo board; `seat` (0 or 1) is the bot's. Returns the engine ids of the board's cards.
-function botStart(args: { board: Board; seat: 0 | 1 }) {
+function botStart(args: { board: Board; seat: 0 | 1; plan?: Plan }) {
   const { match, pos } = hydrate(args.board);
-  botLive = { server: bareServer(match), seat: PIDS[args.seat], other: PIDS[1 - args.seat] };
+  botLive = { server: bareServer(match), seat: PIDS[args.seat], other: PIDS[1 - args.seat], plan: args.plan };
   return { ids: Object.fromEntries(pos) };
 }
 
 // Whatever is pending gets resolved: the bot answers for itself; a choice that's yours stops and asks.
+// While the bot is on its line, its own choices are the line's next moves, not the engine's first pick.
 function botResolve(g: BotLive, acts: Act[]): { ask?: Act[]; stuck?: string } {
   const { server } = g;
   for (let i = 0; i < 60; i++) {
@@ -900,6 +1021,7 @@ function botResolve(g: BotLive, acts: Act[]): { ask?: Act[]; stuck?: string } {
     const en = server.enumerateAutomatedActionsForCurrentActor();
     if (!en.actorId) return { stuck: "Nothing can resolve what is waiting." };
     if (en.actorId !== g.seat) return { ask: en.candidates.map((c) => describe(server, c as never, "opp")) };
+    if (g.queue?.length) return {};
     const c = en.candidates[0];
     if (!c) return { stuck: "The bot can't answer what is waiting." };
     acts.push(describe(server, c as never, "me"));
@@ -934,6 +1056,24 @@ function botStep() {
   if (first.ask || first.stuck) return botReply(g, acts, first);
   const owner = (server.getState() as unknown as RawState).ctx.status.turnOwnerId;
   if (server.isGameOver() || owner !== g.seat) return botReply(g, acts);
+  // With a plan: the search's line for this turn, worked out on its first move. An empty line, or the
+  // end of one, ends the turn.
+  if (g.plan && g.turn !== server.getTurnNumber()) {
+    g.turn = server.getTurnNumber();
+    const start = structuredClone(server.getState());
+    g.queue = [...(search(server, g.seat, g.other, { ...BOT_SEARCH, plan: g.plan }).best[0]?.moves ?? [])];
+    freshLoad(server, start); // the search leaves the engine on the last position it looked at (gotcha 11)
+  }
+  if (g.queue) {
+    if (!g.queue.length) return botReply(g, acts, { done: true });
+    const c = g.queue.shift();
+    const act = describe(server, c as never, "me");
+    if (applyCandidate(server, g.seat, c).success) {
+      acts.push(act);
+      return botReply(g, acts, botResolve(g, acts));
+    }
+    g.queue = null; // off the line: the engine's bot plays the rest of the turn
+  }
   const en = server.enumerateAutomatedActionsForCurrentActor();
   const c = en.actorId === g.seat ? en.candidates[0] : undefined;
   if (!c) return botReply(g, acts, { done: true });
@@ -1023,6 +1163,7 @@ function selfPlay(args: SearchOpts & { deck1: string; deck2: string; seed: strin
       continue;
     }
     if (myTurn && !server.getBagCount() && !server.getPendingEffects().length && server.passTurn(me).success) continue;
+    if (args.plan && server.getCurrentActorId() === me && planPregame(server, me, args.plan)) continue;
     server.takeAutomatedActionForCurrentActor();
   }
   const status = (server.getState() as unknown as { ctx: { status: { reason?: string } } }).ctx.status;
@@ -1037,6 +1178,21 @@ function selfPlay(args: SearchOpts & { deck1: string; deck2: string; seed: strin
     ms: now() - t0,
     ...(args.trace ? { trace } : {}),
   };
+}
+
+// Before the game, by the plan: go first, and the mulligan. False when neither is being asked.
+function planPregame(server: Server, me: string, plan: Plan) {
+  const en = server.enumerateAutomatedActionsForCurrentActor();
+  if (plan.goFirst && en.candidates.some((c) => c.family === "chooseWhoGoesFirst")) return applyCandidate(server, me, { family: "chooseWhoGoesFirst", firstPlayerId: me }).success;
+  if (!en.candidates.some((c) => c.family === "alterHand")) return false;
+  const st = server.getState() as unknown as RawState & { ctx: { status: { otp?: string } } };
+  const hand = st.ctx.zones.private.zoneCards[`hand:${me}`] ?? [];
+  const cards = hand.map((id) => {
+    const d = server.getCardDefinitionByInstanceId(id as never) as Def | undefined;
+    return { name: d ? (d.version ? `${d.name} - ${d.version}` : d.name) : "", cost: Number(d?.cost ?? 9), inkable: !!d?.inkable, character: d?.cardType === "character" };
+  });
+  const stay = planMulligan(plan, cards, st.ctx.status.otp === me);
+  return applyCandidate(server, me, { family: "alterHand", cardsToMulligan: hand.filter((_, i) => !stay[i]) }).success;
 }
 
 // A LorcanaServer on the harness's current state, without the two mirroring clients: what search uses.
@@ -1356,7 +1512,7 @@ function whatIf(args: SearchOpts & { board: Board; me: 0 | 1; first: number | "r
   };
 }
 
-const ops: Record<string, (args: never) => unknown> = { init, names, analyze, explore, botStart, botStep, botChoose, botPass, score, whatIf, selfPlay, botGame, roundTrip, searchCost };
+const ops: Record<string, (args: never) => unknown> = { init, names, analyze, explore, botStart, botStep, botChoose, botPass, score, whatIf, selfPlay, botGame, roundTrip, searchCost, mulligan };
 (globalThis as Record<string, unknown>).DojoEngine = ops;
 
 const scope = globalThis as unknown as { WorkerGlobalScope?: unknown; onmessage: unknown; postMessage(m: unknown): void };

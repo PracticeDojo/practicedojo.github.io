@@ -1,0 +1,79 @@
+{
+  "id": "gs-emerald-steel",
+  "name": "Emerald/Steel go wide",
+  "source": "GS deck guide (the Quest Coast IV list), Set 14",
+  "deck": [
+    "2 Bobby Zimuruski - Spray Cheese Kid",
+    "4 Don Karnage - Khan's Courier",
+    "2 Pegasus - Gift for Hercules",
+    "4 Tod - All Alone",
+    "4 Flash - Efficient Clerk",
+    "3 Toulouse - Rough and Tumble",
+    "4 White Rabbit - Late Again",
+    "4 Ursula - Deceiver",
+    "4 Vixey - Forest Friend",
+    "4 Mushu - Stealthy Dragon",
+    "4 Max Goof - Rebellious Teen",
+    "4 Angela - Night Warrior",
+    "4 Woolter & Jesse - Bellwether's Henchmen",
+    "4 Strength of a Raging Fire",
+    "4 Elinor - Renowned Diplomat",
+    "3 The Queen - Devious Disguise",
+    "2 Angel - Experiment 624"
+  ],
+  "goFirst": true,
+  "mulligan": {
+    "keep": [
+      "Tod - All Alone",
+      "Vixey - Forest Friend",
+      "Flash - Efficient Clerk",
+      "Woolter & Jesse - Bellwether's Henchmen",
+      "Don Karnage - Khan's Courier"
+    ],
+    "keepOne": [
+      "Strength of a Raging Fire"
+    ],
+    "keepOnDraw": [
+      "White Rabbit - Late Again"
+    ],
+    "withCurve": [
+      "Mushu - Stealthy Dragon",
+      "Ursula - Deceiver",
+      "Angela - Night Warrior"
+    ],
+    "filler": [
+      "Pegasus - Gift for Hercules",
+      "Bobby Zimuruski - Spray Cheese Kid"
+    ],
+    "late": [
+      "Elinor - Renowned Diplomat",
+      "The Queen - Devious Disguise",
+      "Angel - Experiment 624"
+    ],
+    "send": [
+      "Toulouse - Rough and Tumble",
+      "Max Goof - Rebellious Teen"
+    ]
+  },
+  "ink": {
+    "first": [
+      "Pegasus - Gift for Hercules",
+      "Bobby Zimuruski - Spray Cheese Kid",
+      "Toulouse - Rough and Tumble",
+      "Angel - Experiment 624",
+      "The Queen - Devious Disguise",
+      "Max Goof - Rebellious Teen"
+    ],
+    "keepOne": [
+      "Strength of a Raging Fire"
+    ]
+  },
+  "engines": [
+    {
+      "card": "Elinor - Renowned Diplomat",
+      "exerted": 3,
+      "value": 1.5
+    }
+  ],
+  "terms": []
+}
