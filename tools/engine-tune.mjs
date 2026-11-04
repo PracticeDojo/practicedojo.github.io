@@ -8,10 +8,11 @@
 //   node tools/engine-tune.mjs --compare '{"ink":0.5}' [--holdout 256] [--tag check]
 //                              the start against those weights on the same fresh games, game by game;
 //                              a list ('[{"ink":0.5},{"hand":0.2}]') compares each against the start
-//   node tools/engine-tune.mjs --deck my.txt --compare '{"plan":"plan.json"}'
+//   node tools/engine-tune.mjs --deck my.txt --compare '{"plan":"plan.json"}' [--rival '{}']
 //                              the explorer always plays that deck, against each Set 14 deck from both
 //                              seats; "plan" is a deck plan file ("only": ["ink", "mulligan", …] keeps those
-//                              parts of it)
+//                              parts of it). --rival: the other deck's turns are the search's too (those
+//                              settings over the tuning search), not the engine's bot
 //
 // Coordinate search: each round tries every weight ×step and ÷step, keeping a change that wins more
 // often than the best so far on the same games (same decks, seeds and seats: less noise). Then the
@@ -47,6 +48,7 @@ if (!isMainThread) {
     // Search settings while tuning: cheaper than the app's, so a game takes seconds. A node cap, not the
     // clock, ends a search (about what 600 ms covers), so the same weights replay the same game.
     const SEARCH = { nodes: 60, timeMs: 10000, beam: 4, perNode: 6, ...JSON.parse(arg('--search', '{}')) };
+    const RIVAL = arg('--rival', null);
     // The adapter's WEIGHTS: tuned 2026-10-27, the scoring plan's terms added 2026-10-28 (study §8.1).
     // reply is a switch (0 or 1), so it isn't tuned.
     const START = { lore: 1, potential: 0.6, body: 0.08, exposed: 0.4, hand: 0.11, ink: 0.525, win: 1000,
@@ -95,7 +97,7 @@ if (!isMainThread) {
 
     const t0 = Date.now();
     async function evaluate(weights, list, search = {}) {
-        const rs = await Promise.all(list.map(g => play({ ...g, ...SEARCH, ...search, weights })));
+        const rs = await Promise.all(list.map(g => play({ ...g, ...SEARCH, ...search, weights, ...(RIVAL ? { rival: { ...SEARCH, ...JSON.parse(RIVAL) } } : {}) })));
         const ok = rs.filter(r => !r.error);
         const wins = ok.filter(r => r.explorerWon).length;
         const margin = ok.reduce((n, r) => n + Math.max(-20, Math.min(20, r.lore[0] - r.lore[1])), 0) / Math.max(1, ok.length);
@@ -111,7 +113,7 @@ if (!isMainThread) {
 
     say(`## Weight tuning (${new Date().toISOString().slice(0, 10)}, ${threads} threads)`);
     say('');
-    say(`Explorer (search ${JSON.stringify(SEARCH)}) against the engine's default bot. ${mine ? `The explorer plays ${DECK} against each Set 14 default deck` : 'Set 14 default decks, every pairing'} from both seats. ${GAMES} games per try, ${ROUNDS} rounds, step ×${STEP}.`);
+    say(`Explorer (search ${JSON.stringify(SEARCH)}) against ${RIVAL ? `the same search (${RIVAL})` : "the engine's default bot"}. ${mine ? `The explorer plays ${DECK} against each Set 14 default deck` : 'Set 14 default decks, every pairing'} from both seats. ${GAMES} games per try, ${ROUNDS} rounds, step ×${STEP}.`);
     say('');
     // Game by game on the same deals: of the games one set wins and the other loses, how lopsided
     // is the split? (Sign test on the discordant games.)

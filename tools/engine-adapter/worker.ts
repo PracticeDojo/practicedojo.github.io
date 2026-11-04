@@ -1131,8 +1131,9 @@ function score(args: { board: Board; weights?: Partial<Weights>; terms?: Term[] 
 
 // One game for tools/engine-tune.mjs: on its own turns, player `explorer` plays the best line the
 // search finds with `weights`; every other choice (both mulligans, the other player's whole game,
-// answers to prompts) is the engine's default bot.
-function selfPlay(args: SearchOpts & { deck1: string; deck2: string; seed: string; explorer: 0 | 1; maxActions?: number; trace?: boolean }) {
+// answers to prompts) is the engine's default bot. rival: the other player's turns are the search's too,
+// with those settings (no plan).
+function selfPlay(args: SearchOpts & { deck1: string; deck2: string; seed: string; explorer: 0 | 1; maxActions?: number; trace?: boolean; rival?: SearchOpts }) {
   const t0 = now();
   const d1 = resolveDeck(args.deck1);
   const d2 = resolveDeck(args.deck2);
@@ -1146,6 +1147,7 @@ function selfPlay(args: SearchOpts & { deck1: string; deck2: string; seed: strin
   const me = PIDS[args.explorer];
   const opp = PIDS[1 - args.explorer];
   let searched = -1;
+  let rivalSearched = -1;
   const trace: unknown[] = [];
   let searches = 0;
   let searchMs = 0;
@@ -1163,6 +1165,14 @@ function selfPlay(args: SearchOpts & { deck1: string; deck2: string; seed: strin
       continue;
     }
     if (myTurn && !server.getBagCount() && !server.getPendingEffects().length && server.passTurn(me).success) continue;
+    const rivalTurn = !!args.rival && server.getGameSegment() === "mainGame" && st.ctx.status.turnOwnerId === opp && server.getCurrentActorId() === opp;
+    if (rivalTurn && rivalSearched !== server.getTurnNumber()) {
+      rivalSearched = server.getTurnNumber();
+      const pick = search(bareServer(match), opp, me, args.rival!).best[0];
+      if (pick) freshLoad(match, pick.state);
+      continue;
+    }
+    if (rivalTurn && !server.getBagCount() && !server.getPendingEffects().length && server.passTurn(opp).success) continue;
     if (args.plan && server.getCurrentActorId() === me && planPregame(server, me, args.plan)) continue;
     server.takeAutomatedActionForCurrentActor();
   }
