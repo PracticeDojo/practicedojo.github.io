@@ -157,7 +157,7 @@
         </div>
         <div class="topbar-center">
             <div class="turn-ctl" role="group" aria-label="Turn">
-                <button class="icon-btn" id="btn-undo" onclick="App.undo()" title="Undo last action"
+                <button class="icon-btn" id="btn-undo" onclick="App.undo()" title="Undo last action (U)"
                     aria-label="Undo"><i class="fa-solid fa-arrow-rotate-left"></i> <span>Undo</span></button>
                 <div class="turn-pill" id="turn-pill">
                     <span class="mono">TURN</span>
@@ -884,7 +884,7 @@
                 <div class="action-row three">
                     <button class="icon-btn" onclick="App.openTreeModal()" title="Multiverse (M)"
                         aria-label="Multiverse"><i class="fa-solid fa-code-branch"></i></button>
-                    <button class="icon-btn" onclick="App.undo()" title="Undo last action"><i
+                    <button class="icon-btn" onclick="App.undo()" title="Undo last action (U)"><i
                             class="fa-solid fa-rotate-left"></i></button>
                     <button class="btn btn-p1 btn-block" id="btn-end-turn" onclick="App.endTurn()">End turn
                         &rarr;</button>
@@ -1279,6 +1279,15 @@
                         title="Forecast card, striped ghost damage and outcome badges on every opponent">Full</button>
                 </div>
                 <div class="tweak-hint">Shown while dragging onto, or aiming at, an opponent.</div>
+            </div>
+            <div class="tweak">
+                <div class="tweak-label"><span>Number keys</span></div>
+                <div class="tweak-radio" id="tweak-card-keys">
+                    <button data-val="off" class="is-active" title="Number keys only set damage on the card under the pointer">Off</button>
+                    <button data-val="on"
+                        title="1–9 opens a hand card's menu, B then 1–9 a battlefield card's, H back to the hand; 1–9 picks a menu option, arrows step">On</button>
+                </div>
+                <div class="tweak-hint">Pick cards and their menu options from the keyboard.</div>
             </div>
             <div class="tweak">
                 <div class="tweak-label"><span>Rules engine</span></div>
@@ -12062,6 +12071,74 @@
                 return true;
             },
 
+            // Feature 69: 1–9 opens the menu of that card in your hand (left to right);
+            // B, then 1–9, a card on your battlefield; H back to the hand. With a card's menu open, 1–9
+            // picks its option. A card in play under the pointer keeps its own keys.
+            // ← → step to the next card in that row; ↑ ↓ walk the menu.
+            handlePickHotkey(e) {
+                if (!this.cardKeysOn) return false; // the Number keys tweak
+                const k = e.key;
+                const menu = document.getElementById('context-menu');
+                const open = menu.style.display === 'block';
+                if (open && /^[1-9]$/.test(k)) {
+                    const opt = menu.querySelector(`button.ctx-item[data-num="${k}"]`);
+                    if (opt) opt.click();
+                    return !!opt;
+                }
+                if (open && (k === 'ArrowUp' || k === 'ArrowDown')) {
+                    // The menu's own handler takes these once it has focus; this gives it focus.
+                    const items = menu.querySelectorAll('button.ctx-item');
+                    const it = items[k === 'ArrowDown' ? 0 : items.length - 1];
+                    if (it) it.focus();
+                    return !!it;
+                }
+                if (open && (k === 'ArrowLeft' || k === 'ArrowRight')) {
+                    const row = ['hand', 'field'].map(z => this.pickRow(z)).find(r => r.some(x => x.iid === this._menuIid));
+                    if (!row) return false;
+                    const i = row.findIndex(x => x.iid === this._menuIid);
+                    this.openPickMenu(row[(i + (k === 'ArrowRight' ? 1 : -1) + row.length) % row.length]);
+                    return true;
+                }
+                const field = this._kbField;
+                this._kbField = false;
+                if (this.challengeMode) return false;
+                // H back to the hand, B to the battlefield: closes a menu so 1–9 picks a card.
+                if (k === 'h' || k === 'H') {
+                    menu.style.display = 'none';
+                    this.showToast('Hand: press 1–9 to pick a card');
+                    return true;
+                }
+                const hov = this._hoverIid && this.findCard(this._hoverIid);
+                if (hov && hov.loc === 'field') return false;
+                if (k === 'b' || k === 'B') {
+                    menu.style.display = 'none';
+                    this._kbField = true;
+                    this.showToast('Battlefield: press 1–9 to pick a card');
+                    return true;
+                }
+                if (!/^[1-9]$/.test(k)) return false;
+                const pick = this.pickRow(field ? 'field' : 'hand')[Number(k) - 1];
+                if (!pick) return false;
+                this.openPickMenu(pick);
+                return true;
+            },
+            // Your hand or battlefield as [{ wrap, iid }], in the order on screen.
+            pickRow(zone) {
+                const p = this.state.players[this.bottomSeat()];
+                if (zone === 'hand') return [...document.querySelectorAll('#bottom-hand .card-wrap[data-hand-iid]')]
+                    .map(w => ({ wrap: w, iid: w.dataset.handIid }));
+                // Skip the cards stacked underneath (not in the field array).
+                const ids = new Set(p.field.map(c => c.instanceId));
+                return [...document.querySelectorAll('#bottom-field .card-wrap[data-iid]')]
+                    .filter(w => ids.has(w.dataset.iid)).map(w => ({ wrap: w, iid: w.dataset.iid }));
+            },
+            openPickMenu({ wrap, iid }) {
+                const f = this.findCard(iid), db = f && this.cardDB[f.card.cardId];
+                if (db) this.showPreview(db); // the inspector follows the picked card, as on hover
+                const r = wrap.getBoundingClientRect();
+                this.showContextMenu({ clientX: r.left + r.width / 2, clientY: r.top + r.height / 2, stopPropagation: () => { } }, iid, true);
+            },
+
             // --- Challenge mode ----------------------------------------------------
             getChallengeForecast() {
                 if (!this._chalForecast) {
@@ -13410,17 +13487,24 @@
 
                 let found = this.findCard(instanceId);
                 if (!found) return;
+                this._menuIid = instanceId; // Feature 69: ← → step from this card
 
                 const dbCard = this.cardDB[found.card.cardId];
                 const isActivePlayerOwned = found.player.id === this.state.activePlayer;
 
                 // `key` shows a hover-hotkey hint; `cls` e.g. 'is-danger' (Feature 37).
+                // Feature 69: the first nine options are numbered; 1–9 picks one.
+                let optNum = 0;
                 const addOption = (text, onClick, key, cls) => {
                     const item = document.createElement('button');
                     item.className = 'ctx-item' + (cls ? ' ' + cls : '');
                     item.setAttribute('role', 'menuitem');
                     const label = document.createElement('span');
-                    label.textContent = text;
+                    if (this.cardKeysOn && ++optNum <= 9) {
+                        item.dataset.num = String(optNum);
+                        label.appendChild(this.el('span', 'ctx-num', String(optNum)));
+                    }
+                    label.appendChild(document.createTextNode(text));
                     item.appendChild(label);
                     if (key) {
                         const k = document.createElement('span');
@@ -14876,6 +14960,11 @@
                 const ru = this.$('tweak-rules');
                 if (ru) ru.querySelectorAll('button').forEach(b => b.classList.toggle('is-active', b.dataset.val === (this.labOn ? 'lab' : this.rulesOn ? 'assist' : 'off')));
 
+                // Feature 69: number keys pick cards and menu options. Off by default.
+                this.cardKeysOn = t.cardKeys === 'on';
+                const ck = this.$('tweak-card-keys');
+                if (ck) ck.querySelectorAll('button').forEach(b => b.classList.toggle('is-active', b.dataset.val === (this.cardKeysOn ? 'on' : 'off')));
+
                 // Redraw whatever is on the pane so the switch is visible immediately.
                 if (this._lastPreviewCard) this.showPreview(this._lastPreviewCard);
             },
@@ -14946,6 +15035,10 @@
                     this.saveTweaks(t);
                     this.applyTweaks(t);
                     if (this.state && this.state.players) this.render();
+                }));
+                const ck = this.$('tweak-card-keys');
+                if (ck) ck.querySelectorAll('button').forEach(b => b.addEventListener('click', () => {
+                    t.cardKeys = b.dataset.val; this.saveTweaks(t); this.applyTweaks(t);
                 }));
                 const cf = this.$('tweak-chal-forecast');
                 if (cf) cf.querySelectorAll('button').forEach(b => b.addEventListener('click', () => {
@@ -15191,6 +15284,7 @@
 
             // Escape: close the context menu first, then whichever modal is open
             if (e.key === 'Escape') {
+                App._kbField = false;
                 const menu = document.getElementById('context-menu');
                 if (menu.style.display === 'block') {
                     menu.style.display = 'none';
@@ -15258,7 +15352,10 @@
             const anyModal = ['tree-modal', 'setup-modal', 'inspect-deck-modal', 'inspect-discard-modal',
                 'import-log-modal', 'card-search-modal', 'mulligan-modal']
                 .some(id => { const m = document.getElementById(id); return m && !m.classList.contains('hidden'); });
-            if (!anyModal && App.state && App.state.players && App.handleCardHotkey(e)) {
+            // Feature 69: number keys pick a card in your hand (B: on your battlefield),
+            // then an option in its menu. Not during the mulligan.
+            if (!anyModal && App.state && App.state.players
+                && (App.handlePickHotkey(e) || App.handleCardHotkey(e))) {
                 e.preventDefault();
                 return;
             }
@@ -15284,6 +15381,11 @@
             }
             if (keyStr === 'q') {
                 App.questWithAll();
+                return;
+            }
+            if (keyStr === 'u') {
+                document.getElementById('context-menu').style.display = 'none';
+                App.undo();
                 return;
             }
             // Feature 68: the bot opponent's pace (Auto or Step) and its next move.

@@ -491,6 +491,11 @@
       "screen": "tweaks",
       "any": "#tweak-chal-forecast"
     },
+    "tweak-card-keys": {
+      "label": "Number keys",
+      "screen": "tweaks",
+      "any": "#tweak-card-keys"
+    },
     "tweak-palette": {
       "label": "Player palette",
       "screen": "tweaks",

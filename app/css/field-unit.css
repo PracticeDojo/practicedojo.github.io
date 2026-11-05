@@ -11621,3 +11621,13 @@ body.whatif-running #btn-multiverse::after {
         animation: none;
     }
 }
+
+/* Feature 69: the number key that picks a card-menu option. */
+.ctx-item .ctx-num {
+    display: inline-block;
+    min-width: 1.6em;
+    margin-right: 6px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--text-dim);
+}

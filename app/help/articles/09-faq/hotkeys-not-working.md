@@ -7,7 +7,7 @@ aliases: [hotkeys not working, keys not working, space does nothing, keyboard br
 targets: []
 related: [keyboard-shortcuts]
 order: 30
-verified: v3.11.0
+verified: v3.23.0
 ---
 
 The Dojo ignores its shortcuts whenever a key could mean something else. Check these, in order.
@@ -26,12 +26,14 @@ While the cursor is in a text field (the session title, the turn notes box, the 
 
 {key:E}, {key:B}, {key:0}–{key:9} and the damage keys need the pointer over a card in play, and nothing open over the board (the Multiverse, **Inspect deck**, a card search). They also rest while challenge mode is on: press {key:Esc} or **Done** to leave it.
 
+With **Number keys** on in [Tweaks](help:tweaks), {key:1}–{key:9} on their own pick a card in your hand, and {key:B} then a number a card on your battlefield. Move the pointer off the cards in play first, or those keys go to the card under it.
+
 ## Space pressed a button
 
 If you just clicked a button, it keeps the focus and {key:Space} presses it again instead of ending the turn. Click an empty part of the board first.
 
 ## Good to know
 
-- The Dojo leaves Ctrl, Cmd and Alt combinations to the browser, so {key:Ctrl+Z} doesn't undo. Use **Undo** in the top bar.
+- The Dojo leaves Ctrl, Cmd and Alt combinations to the browser, so {key:Ctrl+Z} doesn't undo. Press {key:U} or **Undo** in the top bar.
 - The mini multiverse's arrow keys need the map to have focus: click it first.
 - Phones have no shortcuts; see [Touch gestures](help:gestures).
