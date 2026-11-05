@@ -55,25 +55,15 @@
       "Max Goof - Rebellious Teen"
     ]
   },
-  "ink": {
-    "first": [
-      "Pegasus - Gift for Hercules",
-      "Bobby Zimuruski - Spray Cheese Kid",
-      "Toulouse - Rough and Tumble",
-      "Angel - Experiment 624",
-      "The Queen - Devious Disguise",
-      "Max Goof - Rebellious Teen"
-    ],
-    "keepOne": [
-      "Strength of a Raging Fire"
-    ]
-  },
-  "engines": [
+  "terms": [
     {
-      "card": "Elinor - Renowned Diplomat",
-      "exerted": 3,
-      "value": 1.5
+      "side": "mine",
+      "zone": "hand",
+      "where": {
+        "name": "Strength of a Raging Fire"
+      },
+      "measure": "count",
+      "weight": 0.5
     }
-  ],
-  "terms": []
+  ]
 }

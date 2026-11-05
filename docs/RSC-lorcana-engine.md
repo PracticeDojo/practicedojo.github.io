@@ -350,7 +350,7 @@ Each phase is one or more entries in `docs/features.md` and ends in a decision.
 | **0 · Spike** (days). **Done 2026-10-26: go** (§12) | `tools/build-engine.mjs` at a pinned SHA. A worker that hydrates the Set 14 demo and lists legal moves. A bot-vs-bot game in the worker. A timing page. | Bundle gzip ≤ 600 KB and cards gzip ≤ 1.5 MB, or split by set. Cold start ≤ 1.5 s desktop and ≤ 4 s mid-range phone. `getAvailableMoves` ≤ 20 ms. A bot turn ≤ 300 ms. One search node ≤ 10 ms. The demo's hydrate → project is lossless. **If any gate fails badly, stop and rethink.** |
 | **1a · Bridge, read-only**. **First cut 2026-10-26** (§12) | Card and state bridge, highlights, "why not" | The demos round-trip |
 | **1b · Assist** | Execute, effects, prompts, translation, persistence | §6 done |
-| **2 · Bot**. **First cut 2026-10-30** (§12), merged from `claude/feat-68-bot-opponent` | Seats, loop, Step mode, perspective, hint | §7 done |
+| **2 · Bot**. **First cut 2026-10-30** (§12), merged from `claude/feat-68-bot-opponent`. **Deck plans 2026-11-04** (§12): with a plan for its deck, it plays the search's line | Seats, loop, Step mode, perspective, hint | §7 done |
 | **3 · Explorer**. **First cut 2026-10-26: proposed plays** (§12), ahead of 1b at the owner's call | Search, scoring, ghost branches | §8 done |
 | **Upkeep** | Re-pin when upstream fixes card bugs or adds a set. Contract tests guard each re-pin. | — |
 
@@ -385,6 +385,47 @@ Tiers 2 and 3 only need the read side of tier 1 (hydrate and project) plus the e
 ## 12. Spike log
 
 Measured results, newest first. Built on `feat/68-rules-engine`; on `main` as a beta since v3.22.0 (AGENTS.md, *Rules engine (Feature 68, beta)*).
+
+### 2026-11-04 · Deck plans: the bot plays a deck from its guide
+
+**Asked:** make the bot play one deck well, from a deck guide the owner gave (the GS Emerald/Steel go-wide guide, the Quest Coast IV list): fix the engine gaps the guide surfaced, then a plan system that turns a guide into rules for the bot (and, later, for the bot facing that deck).
+
+**Gaps, checked first:**
+- **Bodyguard's exerted entry** wasn't among the search's moves (the bot's candidates only have the ready way; handover gotcha 13). `options` now adds it. On a test board with Flash and Elinor questing, the search now plays Woolter & Jesse exerted (5.6 v 1.9 before).
+- **End-of-turn triggers** (Elinor - Renowned Diplomat: "at the end of your turn, with 3 exerted") counted only in the reply re-rank, after the beam had picked its lines. A plan's `engines` add their worth while lines are ranked.
+- **A hand Ursula revealed** is marked on the cards (`cardMeta.revealed`); the reply can now play those (`reveal`).
+- **The bot's mulligan** kept every hand; **its inks** were the engine's two favourites.
+
+**The plan** (`app/defaults/plans/gs-emerald-steel.json`, the list shipped as **S14 - GS - Go Wide**): a mulligan from the guide's rules (keep, keep one, keep on the draw, with a curve, one filler, one late card, no more uninkable than inkable cards), an ink order, going first, Elinor's engine, score terms. The mulligan keeps 6 of the guide's 9 example hands as it does; the other 3 are where the guide's own examples disagree (Angela on the play), a matchup (Toulouse v Circle of Life), or both fillers kept.
+
+**The Dojo bot** uses a plan when 90% of its list is the deck it plays: its mulligan, then each turn the search's best line (300 nodes), played a move at a time from the line's own engine candidates. The banner reads *Bot · P2 · Plan*. A move that no longer applies ends the line and the engine's bot plays on.
+
+**Measured** (`engine-tune.mjs --deck`, the list against each Set 14 deck from both seats, fresh games, sign test on the games only one side won):
+
+| Opponent | Change | Wins | Only start / only change | z |
+|---|---|---|---|---|
+| Engine's bot, 256 games | none | 220 (86%) | | |
+| | first-cut plan | 233 (91%) | 5 / 18 | 2.71 |
+| | Bodyguard exerted entry off | 220 | 0 / 0 | 0 |
+| | revealed hand on | 220 | 2 / 2 | 0 |
+| Same search (`--rival`), 192 games, round 2 | none | 132 (69%) | | |
+| | first-cut plan | 135 | 14 / 17 | 0.54 |
+| | + Strength in hand 0.5 | 138 | 12 / 18 | 1.10 |
+| | + more bodies when behind | 132 | 16 / 16 | 0 |
+| | + revealed hand | 132 | 14 / 14 | 0 |
+| round 3 (fresh) | none | 133 (69%) | | |
+| | first-cut plan + Strength | 144 (75%) | 11 / 22 | 1.91 |
+| | mulligan + going first only | 147 (77%) | 8 / 22 | 2.56 |
+| | ink order only | 138 | 11 / 16 | 0.96 |
+| | Bodyguard exerted entry off | 130 | 3 / 0 | −1.73 |
+| round 4 (fresh) | none | 133 (69%) | | |
+| | mulligan, going first, Strength | 141 (73%) | 13 / 21 | 1.37 |
+| | + ink order | 137 | 17 / 21 | 0.65 |
+| | + ink order + Elinor's engine | 136 | 17 / 20 | 0.49 |
+
+Against the engine's bot the list already wins 86%, so `--rival` was added. The mulligan is most of the gain. The plan keeps the mulligan, going first and Strength in hand (0.5); the ink order, Elinor's engine, more bodies when behind and the revealed hand didn't win, so they're out of this plan (the format keeps them). The Bodyguard exerted entry stays on.
+
+`app-checks` 56/56.
 
 ### 2026-11-03 · Shipped to `main` as a beta (v3.22.0)
 

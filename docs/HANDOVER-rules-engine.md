@@ -1,6 +1,6 @@
 # Handover: rules engine (Feature 68)
 
-For the next agent picking up Feature 68. Read this first, then `AGENTS.md` and `docs/RSC-lorcana-engine.md`. The study is the plan; its §12 is the log of what was built and measured, newest first. Written 2026-10-27, last updated 2026-11-03 (shipped to `main` as a beta in v3.22.0, with its manual section; then why a replay stopped following the real game: gotchas 17–19).
+For the next agent picking up Feature 68. Read this first, then `AGENTS.md` and `docs/RSC-lorcana-engine.md`. The study is the plan; its §12 is the log of what was built and measured, newest first. Written 2026-10-27, last updated 2026-11-05 (deck plans for the bot: §2 item 6, gotchas 20–23; before that, shipped to `main` as a beta in v3.22.0, with its manual section; then why a replay stopped following the real game: gotchas 17–19).
 
 ## 1. Ground rules
 
@@ -71,6 +71,8 @@ For the next agent picking up Feature 68. Read this first, then `AGENTS.md` and 
    - `goFirst`;
    - `engines`: "at the end of your turn, with N exerted characters" (Elinor), worth `value` while the search ranks lines; the real trigger happens when the turn passes (`engineBonus`);
    - `terms`: score-lab terms the search adds.
+
+   The GS plan uses `goFirst`, `mulligan` and one term (a Strength of a Raging Fire in hand, 0.5). Measured against the same search on fresh games (study §12, 2026-11-04): 69% → 73–77% wins, the mulligan most of it. The ink order, the Elinor engine, "more bodies when behind" and the revealed hand made no difference, so they're out of this plan; the format keeps them for other guides.
 
    With a plan, the Dojo bot chooses its opening hand by it (`botKeepHand`; the log says *Bot mulliganed N cards (deck plan)*), and each of its turns is the search's best line (`BOT_SEARCH`: 300 nodes), worked out on its first move and played one move at a time (`botStep`'s queue; the line keeps its own engine candidates, `Line.moves`). A move that no longer applies (you answered a prompt otherwise) ends the line and the engine's bot plays on. The banner reads **Bot · P2 · Plan**. Without a plan the bot is unchanged.
 
@@ -153,6 +155,7 @@ node tools/engine-tune.mjs --deck app/defaults/decks/set-14/gs-go-wide.txt --riv
 - Explorer against the engine's bot: 34% before bot finishing, about 52–59% after, 64% with the tuned weights. On 256 fresh games each, tuned v starting weights: 163 v 150 wins; games only one side won, 18 v 5; z = 2.71.
 - The scoring plan (2026-10-28, tuner at 60 nodes a search): reply, race and threat took it from 65% to 70% on 512 fresh games; games only one side won, 41 v 15; z = 3.47. A full re-tune afterwards fitted its 64 games and lost on 256 fresh ones (176 v 181), so the weights stayed.
 
+- **Deck plans** (study §12, 2026-11-04): the GS go-wide list against each Set 14 deck, both seats. Against the engine's bot: 86% without a plan, 91% with the first cut (18 v 5, z = 2.71). Against the same search: 69% without; mulligan and going first 77% (22 v 8, z = 2.56); with Strength held 73–75% on two sets of fresh games (pooled 40 v 23, z = 2.14). The Bodyguard exerted entry: off loses 3 v 0.
 - **What-if** on the owner's three lost games: the real game replays exactly from every turn back tried in game A (vs Thomas Remmer) and from 1–3 back in game B (vs Dunkz), and reproduces the loss from 4–5. Wins found: game A 3 turns back (quest with Vixey instead of challenging Angela: 21–9 on turn 21); game C (vs The Lorcana Rogue) 2 turns back (quest with both Vixeys instead of singing Strength of a Raging Fire: 20–17 on turn 19); none in game B. A full run is 1.5–3.5 min on desktop. The sample replay in `docs/samples/01a15b0a-…_p1.replay.gz` is game A, and `app-checks` uses it.
 - **What-if without a replay** (study §12, 2026-10-31): the text log and the replay of the same game (`new_log_20261004.txt`, `01a08b6d…`) give identical runs (replays from 1 back, drifts from 2 back, 19 s). Game A cut at turn 18 (unfinished): a line one better on the race, 20 s. The demo's shortest lost line (played here, no record): no win 5 turns back, 158 s.
 
@@ -183,6 +186,7 @@ node tools/engine-tune.mjs --deck app/defaults/decks/set-14/gs-go-wide.txt --riv
 20. **A revealed hand is marked on the cards**: Ursula - Deceiver's reveal sets `cardMeta[id].revealed = true` on each card in their hand. The search's reply can play those (`reveal: true`, off by default: it made no difference measured, study §12).
 21. **Who went first is `status.otp`**, set before the mulligans are asked (`planPregame` reads it for on the play / on the draw). The pre-game asks are `chooseWhoGoesFirst` (`firstPlayerId`) and `alterHand` (`cardsToMulligan`) candidates; both can be built by hand.
 22. **While the bot plays its line, its own choices are the line's next moves**: `botResolve` stops at the bot's own pending choice while the queue has moves, so the line's `resolveBag` (a target it picked) isn't replaced by the engine's first pick.
+23. **Against the engine's bot, a good deck hides a plan's worth.** The GS list wins 86% against it without a plan, so a gain barely shows; `--rival '{}'` (the other deck's turns are the search's too) brings it to 69% and leaves room. A game takes about 40 s then, so 192 games are about 35 min on 4 cores.
 
 ## 8. Next steps (owner to choose)
 
@@ -216,7 +220,8 @@ Other open work:
 - **Phones:** a tap opens the card drawer (`renderCardSheet`), which has no *Rules* section yet. *Suggest* is inside the ☰ drawer.
 - **Not passed to the engine yet:** cards played this turn (only the count of inked cards is). There is no mid-turn bag or pending state in the Dojo.
 - **Phase 1b:** make the menu's *Rules* rows actionable, with effects and target prompts run by the engine (§6 of the study).
-- **Bot opponent, next:** the stronger bot (the Proposed plays search finds its line, then it plays it one move at a time; the search's lines would have to keep their engine candidates to be replayed); its mulligan from the engine (it keeps its hand now); "What would the bot do?" for your own side (§7); effects that last into your turn are dropped at the Dojo board (you're the referee there).
+- **Bot opponent, next:** with a deck plan it now plays the search's line and the plan's mulligan (2026-11-04); without one it's still the engine's bot, move by move, keeping its hand. Open: the search's line for every deck (not only planned ones), "What would the bot do?" for your own side (§7); effects that last into your turn are dropped at the Dojo board (you're the referee there).
+- **Deck plans, next:** more plans from the owner's guides (one JSON each, A/B'd with `--rival`); the bot facing a planned deck reading its plan (expect its free Strength from turn 3, its Ursula on turn 2: not built); the mulligan by matchup (the guide's matchup notes need the opponent's inks before the mulligan); ink drops for the bot (gotcha 19).
 - **Upstream reports:** the scry bug, the speed fix, and the bot gaps (Taran, Meilin Lee, Remember Me v Retro Leviathan decking out, no candidates for plays from the discard or Bodyguard's exerted entry); to check: Merlin's Shop and Smithy's move trigger. Re-pin and rebuild when upstream fixes them; a `PATCHES` entry that stops matching tells you.
 - Done 2026-11-03 (shipped as a beta): the manual section, `targets.json` ids (`tweak-rules`, `suggest`, `plays-tab`, `plays-sheet`, `score-tab`, `bot`, `bot-banner`, `what-if`, `what-if-panel`, `mini-what-if`), the version bump (v3.22.0) and the landing refresh (version only). Left: a tour step, and the landing page once it's out of beta. Keep the articles current: after a visible change, `grep -rl` the control's label in `app/help/articles/11-rules`.
 

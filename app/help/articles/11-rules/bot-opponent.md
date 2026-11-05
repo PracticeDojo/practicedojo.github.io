@@ -7,7 +7,7 @@ aliases: [bot, ai opponent, computer opponent, play against computer, solo, cpu,
 targets: [bot, bot-banner]
 related: [rules-engine, you-play-both-sides, undo]
 order: 40
-verified: v3.22.1
+verified: v3.23.0
 ---
 
 With the rules engine on, the bot can play one seat (P1 or P2) while you play the other. It plays one move at a time, and you can watch, step through or take over.
@@ -57,7 +57,7 @@ Play your turn as always, then press **End turn**: the engine runs the turn chan
 Some built-in decks come with a deck plan: how the deck wants to be played, written from a deck guide. When the bot plays one of them (today **S14 - GS - Go Wide**), the banner reads **Bot · P2 · Plan** and the bot:
 
 - chooses its opening hand by the plan (the log says **Bot mulliganed 2 cards (deck plan)**, say);
-- inks in the plan's order, and keeps the cards the plan holds on to;
+- weighs what the plan says is worth keeping (the Go Wide plan holds on to a Strength of a Raging Fire for the right target);
 - plays each of its turns as the best line the search finds for it, so it thinks a moment before its first move.
 
 Without a plan, it keeps its opening hand and plays move by move.
