@@ -76,6 +76,8 @@ For the next agent picking up Feature 68. Read this first, then `AGENTS.md` and 
 
    With a plan, the Dojo bot chooses its opening hand by it (`botKeepHand`; the log says *Bot mulliganed N cards (deck plan)*), and each of its turns is the search's best line (`BOT_SEARCH`: 300 nodes), worked out on its first move and played one move at a time (`botStep`'s queue; the line keeps its own engine candidates, `Line.moves`). A move that no longer applies (you answered a prompt otherwise) ends the line and the engine's bot plays on. The banner reads **Bot · P2 · Plan**. Without a plan the bot is unchanged.
 
+   **Testing it and carrying on: `docs/HANDOVER-deck-plans.md`** (the owner's test steps, what to watch, the plan format, measuring, next steps).
+
    To add a plan: write the JSON from the guide (cards by full name), add it to `manifest.json`, ship its list as a default deck, run the guide's example hands through `DojoEngine.mulligan`, and A/B it: `node tools/engine-tune.mjs --deck <list> --rival '{}' --compare '[{"plan":"<plan.json>"}]'`. Keep a part only if it wins.
 
 Phase 1b (playing moves through the engine) is **not built**.
