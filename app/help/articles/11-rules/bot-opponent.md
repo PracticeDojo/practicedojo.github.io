@@ -7,7 +7,7 @@ aliases: [bot, ai opponent, computer opponent, play against computer, solo, cpu,
 targets: [bot, bot-banner]
 related: [rules-engine, you-play-both-sides, undo]
 order: 40
-verified: v3.23.0
+verified: v3.24.0
 ---
 
 With the rules engine on, the bot can play one seat (P1 or P2) while you play the other. It plays one move at a time, and you can watch, step through or take over.
