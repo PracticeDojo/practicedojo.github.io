@@ -1317,7 +1317,7 @@
     <script>
         let cardFuse = null;
 
-        const APP_VERSION = "v3.23.0"; // Centralized version string (v3: Field Unit)
+        const APP_VERSION = "v3.23.1"; // Centralized version string (v3: Field Unit)
 
         // Tweaks panel accent presets (hue values for the OKLCH accent ramp)
         // Tweaks → Accent: the approved Field Unit signals only (design.md ·
@@ -10692,13 +10692,20 @@
                 const zone = ev.target.closest('.drop-zone');
                 if (zone) zone.classList.remove('drop-target-active');
 
-                const instanceId = ev.dataTransfer.getData("text/plain");
+                const instanceId = this.dragData(ev);
                 if (instanceId) {
                     this.moveCard(instanceId, targetZone, position, 'top');
                 }
             },
 
+            // What's being dragged. Brave can hand drop handlers an empty
+            // dataTransfer, so the drag's own copy (_dragData) stands in for it.
+            dragData(ev) {
+                return (ev.dataTransfer && ev.dataTransfer.getData('text/plain')) || this._dragData || '';
+            },
+
             dragStart(ev, instanceId) {
+                this._dragData = instanceId;
                 ev.dataTransfer.setData("text/plain", instanceId);
                 ev.dataTransfer.effectAllowed = "move";
                 this._draggingEl = ev.target;
@@ -10710,6 +10717,7 @@
                 const p = this.state.players[playerIndex];
                 if (p.deck.length > 0) {
                     const topCard = p.deck[0];
+                    this._dragData = topCard.instanceId;
                     ev.dataTransfer.setData("text/plain", topCard.instanceId);
                     ev.dataTransfer.effectAllowed = "move";
                 } else {
@@ -11359,7 +11367,7 @@
             dropToLocation(ev, locInstanceId) {
                 ev.preventDefault();
                 ev.stopPropagation(); // Stop normal field drop logic
-                const instanceId = ev.dataTransfer.getData("text/plain");
+                const instanceId = this.dragData(ev);
                 if (instanceId) {
                     this.moveToLocation(instanceId, locInstanceId);
                 }
@@ -11409,7 +11417,7 @@
             dropToStack(ev, targetInstanceId) {
                 ev.preventDefault();
                 ev.stopPropagation();
-                const draggedInstanceId = ev.dataTransfer.getData("text/plain");
+                const draggedInstanceId = this.dragData(ev);
                 if (!draggedInstanceId || draggedInstanceId === targetInstanceId) return;
 
                 const draggedFound = this.findCard(draggedInstanceId);
@@ -12387,6 +12395,7 @@
             },
             endCardDrag() {
                 this._dragIid = null;
+                this._dragData = null;
                 this.hideForecast();
             },
             // Outcome badge on every opponent card once an attacker is picked
@@ -13754,13 +13763,14 @@
             },
 
             inspectDragStart(e, index) {
+                this._dragData = index.toString();
                 e.dataTransfer.setData("text/plain", index.toString());
                 e.dataTransfer.effectAllowed = "move";
             },
 
             inspectDrop(e, targetIndex) {
                 e.preventDefault();
-                const sourceIndexStr = e.dataTransfer.getData("text/plain");
+                const sourceIndexStr = this.dragData(e);
                 if (!sourceIndexStr) return;
 
                 const sourceIndex = parseInt(sourceIndexStr, 10);
@@ -14346,7 +14356,7 @@
                     el.classList.remove('drop-target-challenge');
                     if (!isChallenge()) return; // the Location group handles it
                     e.preventDefault(); e.stopPropagation();
-                    const aIid = e.dataTransfer.getData('text/plain') || this._dragIid;
+                    const aIid = this.dragData(e) || this._dragIid;
                     const tf = this.findCard(targetIid);
                     if (!tf || tf.player.id !== this.state.inactivePlayer) { this.dropToLocation(e, locIid); return; }
                     const startRect = this._draggingEl ? this._draggingEl.getBoundingClientRect() : null;

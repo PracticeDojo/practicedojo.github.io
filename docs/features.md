@@ -1255,3 +1255,4 @@ The public page (`index.html`) follows Field Unit too, as `docs/DESIGN-field-uni
 - [x] Patch: Challenge banner on narrower screens, and a way out of the mulligan
 - [x] Feature 68: Rules engine — rules assist, bot opponent, turn explorer (beta)
 - [x] Feature 69: Pick a card and its menu option with number keys
+- [x] Patch: Drag and drop works in Brave (drops no longer rely on the browser's drag data)
