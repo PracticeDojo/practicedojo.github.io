@@ -7,7 +7,7 @@ aliases: [what if, missed win, could i have won, replay analysis, review a game,
 targets: [what-if, what-if-panel, mini-what-if]
 related: [rules-engine, import-replay, import-log, auto-save, branches, multiverse-panel]
 order: 60
-verified: v3.22.2
+verified: v3.23.1
 ---
 
 What-if takes a game you lost and plays it out again from your turns before the loss, one turn back at a time, looking for a line that would have won. Each line it plays becomes a branch in the [Multiverse](help:multiverse), so you can open it and play from it.
@@ -30,7 +30,7 @@ Press **Look for a win**. It takes about half a minute a turn back; a dot pulses
 
 Starting at your last turn before the loss, and going back one of your turns at a time (up to 5):
 
-1. **The real game, replayed**: both players' real moves from that turn. It must end as the real game did, or lines from there can't be trusted and What-if stops (*The real game replays as it ended*).
+1. **The real game, replayed**: both players' real moves from that turn, which should end as the real game did (*The real game replays as it ended*). When it doesn't (a card it can't see, a move the engine can't make), What-if still tries that turn and compares the lines with What you did as the engine plays it, not with the real game.
 2. **What you did**: your real move, with the search playing your later turns. It must still lose.
 3. **Lines 1–4**: the search's four best other ways to play that turn, each played out to the end.
 
@@ -40,7 +40,7 @@ Your later turns are the search's best line. Their turns are what they really di
 
 [Show me](show:what-if-panel)
 
-- Each turn back has a row (**3 back · Turn 19**) and a badge: **Win**, **No win**, or **Can’t follow** when the replay no longer follows the real game. For an unfinished game: **Better** or **Not better**.
+- Each turn back has a row (**3 back · Turn 19**) and a badge: **Win** or **No win**. For an unfinished game: **Better** or **Not better**.
 - **What you did** and each line show the lore at the end (**19–20**), whether it **Wins** or **Loses** and on which turn, and its moves.
 - A win is in Olive; their lore reaching 20 is in Coral.
 - **Show** selects the line's last node in the Multiverse.

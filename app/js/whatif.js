@@ -1,8 +1,9 @@
 // Feature 68 (experimental): What-if. A game played out again from one of your turns, to find a line that
 // would have won it (a lost game) or ended with a better lore race (an unfinished one: your lore minus theirs,
 // OPEN turns past its last turn). It goes back one of your turns at a time, up to five. At each:
-//   1. the real game, replayed from there with both players' real moves, must still end as it did; where it
-//      doesn't, the replay can't follow the game that far back and the run stops;
+//   1. the real game, replayed from there with both players' real moves, should still end as it did; where it
+//      doesn't (a hidden card, a move the engine can't make), the turn is still tried: the lines are then
+//      compared with the control as the engine plays it, not with the real game;
 //   2. the control: your real move, then the search plays your later turns. If that wins, the win is in a
 //      later turn, not this one;
 //   3. the search's best lines other than your real move, each played out: your later turns are the
@@ -40,7 +41,9 @@ window.DojoWhatIf = (() => {
             if (l.type === 'CHOICE_UNDO' && real[turn]) { const i = real[turn].choices.map(c => c.by).lastIndexOf(by); if (i >= 0) real[turn].choices.splice(i, 1); return; }
             const opt = l.type === 'CHOICE_RESOLVED' && !refs.length && (String(l.message).match(/chose (option\w+)/) || [])[1];
             if (opt === 'optionEnterExerted' || opt === 'optionEnterReady') { exert[by] = opt === 'optionEnterExerted'; return; }
-            if (opt) { T().choices.push({ option: opt === 'optionYes' ? 'yes' : opt.replace(/^option/, ''), by }); return; }
+            // "Choose one" of two comes as a yes / no prompt: yes is the first option (the engine's choiceIndex 0).
+            const ch = (l.data && l.data.choice) || {}, pick = ch.message === 'chooseOne' && typeof ch.value === 'boolean' ? (ch.value ? 0 : 1) : undefined;
+            if (opt) { T().choices.push({ option: opt === 'optionYes' ? 'yes' : opt.replace(/^option/, ''), pick, by }); return; }
             if (l.type === 'ABILITY_DECLINED') { T().choices.push({ option: 'no', by }); return; }
             if (!refs.length) return;
             if (l.type === 'CHOICE_RESOLVED') {
@@ -123,7 +126,7 @@ window.DojoWhatIf = (() => {
                 exerted: typeof m.exerted === 'boolean' ? m.exerted : undefined, ability: name(m.ability)
             })),
             choices: (Array.isArray(r.choices) ? r.choices : []).slice(0, 100)
-                .map(c => ({ name: name(c && c.name), option: name(c && c.option), owner: seat(c && c.owner), by: seat(c && c.by) }))
+                .map(c => ({ name: name(c && c.name), option: name(c && c.option), pick: c && Number.isInteger(c.pick) && c.pick >= 0 && c.pick < 8 ? c.pick : undefined, owner: seat(c && c.owner), by: seat(c && c.by) }))
                 .filter(c => c.name || c.option),
             won: seat(r.won)
         };
@@ -231,8 +234,8 @@ window.DojoWhatIf = (() => {
     //   on.change()       anything else moved on (done, step, state, the checks)
     // A line is good when it wins a lost game, or ends an unfinished one with a better lore race than the
     // control (any, when nothing was played after that turn). A level's state: 'running', then 'won' (a good
-    // line, and a control that doesn't win), 'none', 'drift' (the replay no longer follows the real game) or
-    // 'stopped'. stop(): true to stop between playouts.
+    // line, and a control that doesn't win), 'none' or 'stopped'; `reproduced` false when the real game,
+    // replayed, ends differently. stop(): true to stop between playouts.
     async function run(game, from, on, stop) {
         const { turns, keyOf, known, me, winner, start } = game;
         const end = turns[turns.length - 1].turn;
@@ -265,11 +268,6 @@ window.DojoWhatIf = (() => {
                 const before = exact.turns.find(x => x.turn === end - 1);
                 level.reproduced = winner !== null ? exact.winner === winner
                     : exact.winner === null && (!before || before.state.players.every((p, k) => p.lore === lastLore[k]));
-                if (!level.reproduced) {
-                    level.state = 'drift';
-                    on.change();
-                    return { done: true, why: 'drift' };
-                }
                 if (stop()) return halt();
                 level.step = 'Your real move, then the search';
                 on.change();

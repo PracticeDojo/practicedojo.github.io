@@ -1119,7 +1119,7 @@ function searchCost(args: { deck1: string; deck2: string; seed?: string; turn?: 
 // engine's candidates: a sung card and its singers, a target and whose card it is, the other player's
 // choices, Bodyguard's exerted entry, a second move to the other copy of a location, plays from the discard.
 type RealMove = { family: string; card: string; target?: string; targetDamage?: number; with?: string[]; exerted?: boolean; ability?: string };
-type Choice = { name?: string; option?: string; owner?: number; by?: number };
+type Choice = { name?: string; option?: string; pick?: number; owner?: number; by?: number }; // pick: a "choose one" option, from 0
 type RealTurn = { moves: RealMove[]; choices: Choice[] };
 type Prefer = { choices: Choice[] };
 const ownerOf = (server: Server, id: string) => {
@@ -1138,7 +1138,8 @@ const EVERY = { searchCaps: { targetPool: 64, targetCombinationsPerFamily: 512 }
 // are tried too, so a choice meant for a later prompt doesn't block the rest.
 function pickChoice(server: Server, actor: string, candidates: unknown[], prefer: Prefer) {
   const fits = (want: Choice) => (x: unknown) => {
-    const c = x as { resolveOptional?: boolean };
+    const c = x as { resolveOptional?: boolean; choiceIndex?: number };
+    if (want.pick != null && typeof c.choiceIndex === "number") return c.choiceIndex === want.pick;
     if (want.option === "yes") return c.resolveOptional === true;
     if (want.option === "no") return c.resolveOptional === false;
     if (want.option) return JSON.stringify(x).toLowerCase().includes(want.option.toLowerCase());

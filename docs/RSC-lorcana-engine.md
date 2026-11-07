@@ -386,6 +386,19 @@ Tiers 2 and 3 only need the read side of tier 1 (hydrate and project) plus the e
 
 Measured results, newest first. Built on `feat/68-rules-engine`; on `main` as a beta since v3.22.0 (AGENTS.md, *Rules engine (Feature 68, beta)*).
 
+### 2026-11-07 · What-if keeps going where the replay can't follow (v3.23.1)
+
+**Asked (the owner):** two new replays (`01a1b6f7…`, `01a1b69d…`, now in `docs/samples/`) gave nothing from What-if. Find another way when the replay can't follow, rather than stopping (perhaps start further back).
+
+Starting further back wouldn't help: a turn back replays every later turn, so a drift near the end shows from every turn. Instead a turn that doesn't replay as it ended is tried anyway, its lines compared with *What you did* as the engine plays it (same engine, same opponent model, only your move differs), and the run goes on back. *What you did* must still lose, as before, so a weak engine opponent shows as "the win is in a later turn", not as a win. Causes of the two drifts, fixed (handover gotchas 20, 21):
+- `01a1b6f7…` drifted from 1 back: their Rivera Family Photo's "choose one" took the first option (mill 2) where the real game gained 1 lore, twice on the last turn (18 instead of 20).
+- `01a1b69d…` drifted from 2 back: the engine stalled on their Cinderella - Unintentional Icon's end-of-turn look at 2 (the bot's plan left no card for the inkwell).
+
+**Measured** (full runs, from 1 back):
+- `01a1b6f7…`: exact from 1–3 back (was none); 4 back (turn 12) drifts (their turn 13 misses The Leviathan, after Retro Evolution Device) and is tried anyway: line 1 wins 20–12, *What you did* loses 15–22. 302 s.
+- `01a1b69d…`: exact from 1–4 back (was 1); no win in 5 (at 4 and 5 back *What you did* wins with the search's later turns). 105 s.
+- `app-checks` 57/57 (one new: both games end as they did, from turns 18 and 16).
+
 ### 2026-11-03 · Shipped to `main` as a beta (v3.22.0)
 
 Asked (the owner): write the docs for everything in Feature 68, keep it off the landing page while it's a beta, then merge it into `main`.

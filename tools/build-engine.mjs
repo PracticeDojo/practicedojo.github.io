@@ -92,6 +92,12 @@ const PATCHES = [
         why: 'the bot\'s scry fallback looks at the bottom of the deck (the top is the end of the array), so its pick is rejected and it concedes. To report upstream',
         find: 'return deckCards.slice(0, amount);', replace: 'return deckCards.slice(-amount).reverse();'
     },
+    {
+        file: 'lorcana-engine/src/automation/planner.ts',
+        why: 'the bot\'s scry plan fills each destination up to its max, leaving none for a later one\'s min (Cinderella - Unintentional Icon: top, bottom, then nothing for the inkwell), so it offers no move and the game stalls. To report upstream',
+        find: ': [...matchingCards].sort(sortCards).slice(0, max);',
+        replace: ': [...matchingCards].sort(sortCards).slice(0, Math.max(0, Math.min(max, remaining.length - destinationRules.slice(destinationRules.indexOf(destination) + 1).reduce((n, d) => n + Math.max(0, Math.floor(d.min ?? 0)), 0))));'
+    },
     // Speed only. Both list the players by walking every card's owner through mutative proxies, once
     // per static-effect check, so a move costs O(cards²). G.lore and ctx.playerIds already hold every
     // player. Halves a busy board's move (spike log, §12). To report upstream.
@@ -111,13 +117,17 @@ const PATCHES = [
 const patchUpstream = {
     name: 'patch-upstream',
     setup(build) {
-        for (const p of PATCHES) {
-            const filter = new RegExp(p.file.replace(/[.]/g, '\\.').replace(/\//g, '[\\\\/]') + '$');
+        // One loader per file (esbuild uses only the first that answers), applying each of its patches.
+        for (const file of new Set(PATCHES.map(p => p.file))) {
+            const filter = new RegExp(file.replace(/[.]/g, '\\.').replace(/\//g, '[\\\\/]') + '$');
             build.onLoad({ filter }, ({ path }) => {
-                const code = readFileSync(path, 'utf8');
-                const out = code.replace(p.find, p.replace);
-                if (out === code) throw new Error(`patch for ${p.file} no longer applies (${p.why})`);
-                return { contents: out, loader: 'ts' };
+                let code = readFileSync(path, 'utf8');
+                for (const p of PATCHES.filter(x => x.file === file)) {
+                    const out = code.replace(p.find, p.replace);
+                    if (out === code) throw new Error(`patch for ${p.file} no longer applies (${p.why})`);
+                    code = out;
+                }
+                return { contents: code, loader: 'ts' };
             });
         }
     }
