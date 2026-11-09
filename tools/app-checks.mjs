@@ -265,6 +265,17 @@ export default async (page) => {
         const wiShuffled = await DojoRules.whatIf(DojoWhatIf.filled(wiDance.turns, wiK15, id => !!App.cardDB[id]), id => App.cardKey(id),
             { me: 0, real: Object.fromEntries(wiDance.turns.map(t => [t.turn, t.real])), decks: wiZone('deck'), hands: wiZone('hand'), first: 'real', exact: true, horizon: 26, nodes: 300, laterNodes: 120, margin: 1 });
         check('what-if: after a shuffle, the real draws', `${wiShuffled.winner} ${wiShuffled.lore.join('-')} | missed ${wiShuffled.turns.reduce((n, t) => n + (t.missed || []).length, 0)}`, '0 20-14 | missed 1');
+        // Two games that drifted from 1 and 2 back: 01a1b6f7's Rivera Family Photo "choose one" (its second option, gain 1
+        // lore, came out as the first: mill 2), and 01a1b69d's Cinderella - Unintentional Icon looking at 2 at the end of
+        // turn 17 (the engine's plan left no card for the inkwell and the game stalled). Each ends as the real game did.
+        const wiExactFrom = async (file, turn) => {
+            const l = DojoWhatIf.lineOf(App.buildSessionFromReplay(JSON.parse(await App.decodeMaybeGzip(await (await fetch('/docs/samples/' + file)).arrayBuffer()))).bookmarks, wiDec);
+            const zone = (z) => Object.fromEntries(l.turns.map(t => [t.turn, t.state.players.map(p => p[z].map(c => App.cardKey(c.cardId) || '?'))]));
+            const r = await DojoRules.whatIf(DojoWhatIf.filled(l.turns, l.turns.findIndex(t => t.turn === turn), id => !!App.cardDB[id]), id => App.cardKey(id),
+                { me: 1, real: Object.fromEntries(l.turns.map(t => [t.turn, t.real])), decks: zone('deck'), hands: zone('hand'), first: 'real', exact: true, horizon: l.turns.at(-1).turn, nodes: 300, laterNodes: 120, margin: 1 });
+            return `${r.winner} ${r.lore.join('-')}`;
+        };
+        check('what-if: a "choose one" takes the real option; a look at 2 fills the inkwell', `${await wiExactFrom('01a1b6f7-6d87-7574-8cee-19d659589d32_p2.replay.gz', 18)} | ${await wiExactFrom('01a1b69d-b853-745e-ae65-395778cd2428_p2.replay.gz', 16)}`, '0 20-16 | 0 20-13');
         // A text log's choices, from its lines: an option ("chose "Play a character""), a card sent back to a deck, a card
         // played inside the other's ability, an unnamed "exerts a character" taken as the next challenge's target.
         const wiSay = (turn) => wiText.turns.find(t => t.turn === turn).real.choices.map(c => (c.name ? c.name.split(' - ')[0] : `"${c.option}"`) + (c.by != null ? `@${c.by}` : '')).join(', ');

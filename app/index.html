@@ -1317,7 +1317,7 @@
     <script>
         let cardFuse = null;
 
-        const APP_VERSION = "v3.23.0"; // Centralized version string (v3: Field Unit)
+        const APP_VERSION = "v3.23.1"; // Centralized version string (v3: Field Unit)
 
         // Tweaks panel accent presets (hue values for the OKLCH accent ramp)
         // Tweaks → Accent: the approved Field Unit signals only (design.md ·
@@ -7426,16 +7426,16 @@
                 const ahead = (x) => x.lore[me] - x.lore[1 - me];
                 const outcome = (x) => (x.winner === me ? 'Wins' : x.winner !== null ? 'Loses' : !unfinished ? 'No winner'
                     : ahead(x) > 0 ? `Ahead by ${ahead(x)}` : ahead(x) < 0 ? `Behind by ${-ahead(x)}` : 'Level');
-                const BADGE = { running: 'Searching', won: unfinished ? 'Better' : 'Win', none: unfinished ? 'Not better' : 'No win', drift: 'Can’t follow', stopped: 'Stopped' };
+                const BADGE = { running: 'Searching', won: unfinished ? 'Better' : 'Win', none: unfinished ? 'Not better' : 'No win', stopped: 'Stopped' };
                 const levels = w.levels.map((l, li) => {
-                    const open = (l.open != null ? l.open : l.state === 'won' || l.state === 'running' || l.state === 'drift') ? ' open' : '';
+                    const open = (l.open != null ? l.open : l.state === 'won' || l.state === 'running') ? ' open' : '';
                     const sum = `<summary class="wi-sum" onclick="App._whatIf.levels[${li}].open = !this.parentNode.open"><span class="wi-back">${this.whatIfBack(l)}</span><span class="wi-turn">Turn ${g.label(l.turn)}</span><span class="wi-badge is-${l.state}">${BADGE[l.state]}</span></summary>`;
                     const checks = [];
                     if (l.exact) checks.push(l.reproduced
                         ? `<li><i class="wi-dot is-ok"></i>The real game replays as it ended</li>`
-                        : `<li><i class="wi-dot is-bad"></i>Replayed with the real moves, the game ends differently, so lines from here can't be trusted</li>`);
+                        : `<li><i class="wi-dot is-bad"></i>Replayed with the real moves, the game ends differently, so the lines are compared with What you did as the engine plays it</li>`);
                     if (!l.recorded) checks.push('<li><i class="wi-dot"></i>Not every move from here is on record, so the real game isn’t replayed; the search plays the turns that aren’t</li>');
-                    if (!l.control && l.state !== 'running' && l.state !== 'drift') checks.push('<li><i class="wi-dot"></i>Nothing was played after this turn, so the lines are compared with each other</li>');
+                    if (!l.control && l.state !== 'running') checks.push('<li><i class="wi-dot"></i>Nothing was played after this turn, so the lines are compared with each other</li>');
                     // What you really did that turn, as a row like the lines: the move, and how it ends with the search after.
                     const realTurn = (g.turns.find(t => t.id === l.nodeId) || {}).real;
                     const node = this.bookmarks.find(b => b.id === l.nodeId);
@@ -7458,7 +7458,6 @@
                         : w.why === 'error' ? 'The rules engine stopped with an error.'
                         : w.why === 'stopped' ? 'Stopped.'
                         : w.why === 'won' ? `Stopped at the first turn back with ${unfinished ? 'a better lore race' : 'a win'}.`
-                        : w.why === 'drift' ? (w.levels.length === 1 ? 'Replayed from this turn, the game doesn’t end as it did, so What-if can’t follow it.' : 'From here back the replay no longer follows the real game, so What-if stops.')
                         : `No ${unfinished ? 'better lore race' : 'winning line'} ${w.levels.length} turn${w.levels.length > 1 ? 's' : ''} back.`;
                     const go = !w.why ? 'Look for a win' : w.why === 'won' || w.why === 'none' ? 'Keep going' : w.why === 'stopped' ? 'Carry on' : '';
                     const losing = w.levels.reduce((n, l) => n + l.lines.filter(x => !x.good && x.first && this.bookmarks.some(b => b.id === x.first)).length, 0);

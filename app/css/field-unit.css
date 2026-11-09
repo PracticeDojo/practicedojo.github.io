@@ -11312,12 +11312,6 @@ body:not(.rules-on) .whatif-key {
     color: var(--wi-trace-text);
 }
 
-.wi-badge.is-drift {
-    background: var(--key-graphite);
-    box-shadow: inset 0 0 0 1px var(--key-graphite-line);
-    color: var(--key-graphite-ink);
-}
-
 .wi-checks {
     list-style: none;
     margin: 0 0 8px;
@@ -11508,10 +11502,6 @@ body:not(.rules-on) .whatif-key {
 .wi-seg.is-none i,
 .wi-seg.is-stopped i {
     background: var(--text-dim);
-}
-
-.wi-seg.is-drift i {
-    background: var(--key-graphite);
 }
 
 .wi-meter-cap {
