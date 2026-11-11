@@ -386,6 +386,40 @@ Tiers 2 and 3 only need the read side of tier 1 (hydrate and project) plus the e
 
 Measured results, newest first. Built on `feat/68-rules-engine`; on `main` as a beta since v3.22.0 (AGENTS.md, *Rules engine (Feature 68, beta)*).
 
+### 2026-11-11 · Reviewing a game turn by turn: does the score point at the turn that lost it?
+
+**Asked (the owner):** score each turn the player played against the search's best lines, to find the turns where a better line was there, then branch from them (play it yourself, or What-if from there) instead of What-if going back blindly one turn at a time. Measure it first.
+
+**Built:** a worker op, `review`. From a turn's start board it plays the real moves (`realTurn`) and scores where they end with `lineScore`, the same score a Plays line gets (the board, then their reply). Then it runs the search from the same board (300 nodes, 4 lines) and marks the line that is the real move's plan (`same`, the comparison What-if uses). The **gap** is the best line's score minus the real move's.
+
+**Measured** on the owner's 4 lost games: game A (`01a15b0a…`, samples), `01a1cbb6…`, `01a1c0a4…` (both now in samples) and `01a1b6f7…` (samples). For each of the loser's turns:
+- the review;
+- the truth: the What-if playouts, *What you did* plus lines 1–4, to the end.
+
+A turn is **decisive** when *What you did* loses there and another line wins. Game A ran on v3.23.0; the other three on v3.23.1.
+
+| Game | Your turns | Off the search's top line | Decisive turns: gap, top line? | Review | Playouts |
+|---|---|---|---|---|---|
+| A (v Thomas Remmer) | 12 | 6 | 7: 0.86, no · 19: 0.24, no | 27 s | 816 s (60) |
+| `01a1cbb6…` | 11 | 8 | 3: 0, **yes** (line 4 wins) · 9: 1.64, no | 27 s | 837 s (55) |
+| `01a1c0a4…` | 10 | 7 | none | 43 s | 1009 s (50) |
+| `01a1b6f7…` | 9 | 4 | 12: 1.80, no | 40 s | 1168 s (45) |
+
+The review times cover both players' turns.
+
+- **How big the gap is doesn't point at the decisive turn.** Game A's turn 19 (quest with Vixey instead of challenging Angela: the win What-if finds) has a gap of 0.24. The biggest gaps across the games (5.90, 3.84, 3.36, 3.34) are all turns with no win. Near 20 lore the score barely separates +1 lore from banishing a character, and that's what decides a close race. "Points you left" would point at the wrong turns, so it can't be the headline.
+- **"Didn't play the search's top line" works as a filter.** It flags 25 of the 42 turns and catches 4 of the 5 decisive ones. The miss (`01a1cbb6…` turn 3) is a win by the 4th line from a turn where the player did play the top line.
+- **What-if gets there with fewer turns tried.** It goes back from the loss and stops at the first win. Skipping the turns where you played the top line:
+  - game A: found at the 1st turn tried (now the 3rd);
+  - `01a1cbb6…`: the 5th (now the 7th, past the 5 a run tries);
+  - `01a1b6f7…`: the 2nd (now the 4th).
+
+  Each turn tried is 5–6 playouts (about 1–2 min). The review costs about 1–2 s a turn.
+- **One playout is one sample.** *What you did* flips between turns (game A: wins from 5, loses from 7, wins from 13). Your later turns are the search's, at 120 nodes, so which turn "lost" partly depends on the engine's own play. Read a decisive turn as "the engine wins from here with another line", not proof.
+- **A gap can be negative.** On their turn 20 in game A it was −6.5: their real choices for an ability beat the bot's choices for the same moves (`same` was true).
+
+**Next (proposed):** use the review as What-if's filter. Review your turns first (seconds). What-if then tries only the turns where you left the search's top line, walking back from the loss as now. The review's list is where you branch: the search's line as a branch, or play from that turn yourself. Separately, make the score see the finish (scoring §8.1), A/B'd with `engine-tune.mjs`.
+
 ### 2026-11-07 · What-if keeps going where the replay can't follow (v3.23.1)
 
 **Asked (the owner):** two new replays (`01a1b6f7…`, `01a1b69d…`, now in `docs/samples/`) gave nothing from What-if. Find another way when the replay can't follow, rather than stopping (perhaps start further back).

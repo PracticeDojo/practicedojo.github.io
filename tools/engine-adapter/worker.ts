@@ -1357,7 +1357,30 @@ function whatIf(args: SearchOpts & { board: Board; me: 0 | 1; first: number | "r
   };
 }
 
-const ops: Record<string, (args: never) => unknown> = { init, names, analyze, explore, botStart, botStep, botChoose, botPass, score, whatIf, selfPlay, botGame, roundTrip, searchCost };
+// Review: one turn from its start board, the real moves against the search's best lines, on the same score
+// (a line's: the board where it ends, then their reply). `same`: the line is the real move's plan.
+function review(args: SearchOpts & { board: Board; real?: RealTurn }) {
+  const t0 = now();
+  const { match } = hydrate(args.board);
+  const server = bareServer(match);
+  const W = { ...WEIGHTS, ...args.weights };
+  const who = PIDS[args.board.active], other = PIDS[1 - args.board.active];
+  const prefer: Prefer = { choices: [...(args.real?.choices ?? [])] };
+  drain(server, prefer);
+  const s0 = structuredClone(server.getState());
+  const g = realTurn(server, who, args.real, prefer);
+  const real = lineScore(server, who, other, W);
+  freshLoad(server, s0);
+  const r = search(server, who, other, { ...args, lines: args.lines ?? 4 });
+  const plan = realPlan(args.real);
+  return {
+    real, root: r.root.score, matched: g.matched, missed: g.missed, acts: g.acts, nodes: r.nodes,
+    lines: r.best.map((l) => ({ score: l.score, acts: l.acts, same: planOf(l.acts) === plan })),
+    ms: Math.round(now() - t0),
+  };
+}
+
+const ops: Record<string, (args: never) => unknown> = { init, names, analyze, explore, botStart, botStep, botChoose, botPass, score, whatIf, review, selfPlay, botGame, roundTrip, searchCost };
 (globalThis as Record<string, unknown>).DojoEngine = ops;
 
 const scope = globalThis as unknown as { WorkerGlobalScope?: unknown; onmessage: unknown; postMessage(m: unknown): void };
