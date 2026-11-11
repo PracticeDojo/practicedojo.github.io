@@ -318,6 +318,10 @@ export default async (page) => {
         const wiControl = await DojoRules.whatIf(wiAt(21), id => App.cardKey(id), { ...wiOpts, first: 'real', horizon: 28 });
         check('what-if: your real move, then the search, loses as the game did', `${wiControl.winner} ${wiControl.lore.join('-')} t${wiControl.turns[wiControl.turns.length - 1].turn}`, '1 19-20 t24');
         check('what-if: the real game replays, and a line from turn 19 wins', `${wiExact.winner} ${wiExact.lore.join('-')} | ${wiLine.winner} ${wiLine.lore.join('-')} t${wiLine.turns[wiLine.turns.length - 1].turn}`, '1 19-20 | 0 21-9 t21');
+        // The review (study §12, 2026-11-11): on turn 21 the real move is the search's top line, so What-if skips it;
+        // on turn 19 it isn't (the top line quests with Vixey).
+        const wiTopLine = async (turn) => { const r = await DojoRules.review(wiAt(turn), id => App.cardKey(id), { real: wiReal[turn], nodes: 300 }); return r.lines[0].same || r.real >= r.lines[0].score; };
+        check('what-if: the review skips a turn played as the search\'s top line', `${await wiTopLine(21)} ${await wiTopLine(19)}`, 'true false');
         // Its ink turns face down when its turn begins, and stays so through its moves: on your turn 4, only
         // what it inked on its turn 3 is face up, none of the ink it had before.
         settle();

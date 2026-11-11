@@ -1,6 +1,8 @@
 // Feature 68 (experimental): What-if. A game played out again from one of your turns, to find a line that
 // would have won it (a lost game) or ended with a better lore race (an unfinished one: your lore minus theirs,
-// OPEN turns past its last turn). It goes back one of your turns at a time, up to five. At each:
+// OPEN turns past its last turn). It goes back one of your turns at a time, skipping those where your move was
+// the search's own top line (the worker's review op, about a second; a start you picked is never skipped),
+// and plays out up to five others. At each:
 //   1. the real game, replayed from there with both players' real moves, should still end as it did; where it
 //      doesn't (a hidden card, a move the engine can't make), the turn is still tried: the lines are then
 //      compared with the control as the engine plays it, not with the real game;
@@ -248,12 +250,24 @@ window.DojoWhatIf = (() => {
         const zone = (z) => Object.fromEntries(turns.map(t => [t.turn, t.state.players.map(p => p[z].map(c => keyOf(c.cardId) || '?'))])); // ?: a hidden card
         const decks = zone('deck'), hands = zone('hand');
         const play = (board, opts) => DojoRules.whatIf(board, keyOf, { me, real, decks, hands, nodes: 300, laterNodes: 120, margin: 1, ...opts });
-        const last = Math.min(from + BACK - 1, mine.length);
-        for (let back = from; back <= last; back++) {
+        let back = from, tried = 0;
+        for (; back <= mine.length && tried < BACK; back++) {
             const at = mine[back - 1], t = turns[at], after = turns[at + 1];
             const recorded = turns.slice(at).every(x => x.real); // the real game can be replayed from here
             const level = { back, turn: t.turn, nodeId: t.id, start: filled(turns, at, known), steps: (recorded ? 1 : 0) + (t.real || after ? 1 : 0) + LINES,
                 done: 0, recorded, step: recorded ? 'Replaying the real game' : 'Your real move, then the search', state: 'running', lines: [] };
+            // Your move was the search's top line (or scores as well): not played out, and not one of the BACK.
+            // On 4 lost games such turns held 1 of the 5 that a line turned into a win (study §12, 2026-11-11).
+            if (t.real && !(game.picked && back === 1)) {
+                const r = await DojoRules.review(level.start, keyOf, { real: t.real, nodes: 300 });
+                if (stop()) return { done: false, why: 'stopped', next: back };
+                if (!r.error && r.lines.length && (r.lines[0].same || r.real >= r.lines[0].score)) {
+                    level.state = 'top';
+                    on.level(level);
+                    continue;
+                }
+            }
+            tried++;
             on.level(level);
             const halt = () => {
                 level.state = 'stopped';
@@ -299,7 +313,7 @@ window.DojoWhatIf = (() => {
             on.change();
             if (level.won) return { done: back >= mine.length, why: 'won', next: back + 1 };
         }
-        return { done: last >= mine.length, why: 'none', next: last + 1 };
+        return { done: back > mine.length, why: 'none', next: back };
     }
 
     return { BACK, LINES, OPEN, movesFromReplay, movesFromLog, realOf, lineOf, filled, run };

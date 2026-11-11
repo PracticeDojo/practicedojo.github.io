@@ -386,6 +386,26 @@ Tiers 2 and 3 only need the read side of tier 1 (hydrate and project) plus the e
 
 Measured results, newest first. Built on `feat/68-rules-engine`; on `main` as a beta since v3.22.0 (AGENTS.md, *Rules engine (Feature 68, beta)*).
 
+### 2026-11-11 · What-if skips the turns where you played the search's top line (v3.24.0)
+
+**Asked (the owner):** carry on from the measurement below.
+
+**Built:** before playing a turn out, `DojoWhatIf.run` reviews it (`DojoRules.review`, the worker's `review` op, about a second). If the real move is the search's top line (`same`), or scores as well as it, the turn is skipped. It gets a **Search’s line** badge and its moves under *What you did*, and doesn't count toward the 5 a run plays out. Exceptions:
+- a start the player picked is always played out;
+- so is a turn without a record of its moves (a game played here).
+
+`app-checks` (58/58, one new) checks the review on game A: turn 21 is the top line, turn 19 isn't.
+
+**Measured** (full runs in the browser, before = `6d658e8` without the skip, after = this):
+
+| Game | Before | After | Same win |
+|---|---|---|---|
+| A (`01a15b0a…`) | 3 turns played out, 152 s | 1 (23 and 21 skipped), 94 s | turn 19, lines 1–3 |
+| `01a1b6f7…` | 4, 398 s | 2 (18 and 16 skipped), 332 s | turn 12, line 1 |
+| `01a1cbb6…` | 7, 415 s, needs **Keep going** | 5 (21 and 13 skipped), 352 s, one run | turn 9, line 4 |
+
+Runs were 2–3 at a time on 4 cores, so the times are rough; each before/after pair ran side by side, except game A's. The miss from the measurement below (`01a1cbb6…` turn 3) stays a miss: it's skipped now. It's further back than the win at turn 9, so this run didn't reach it either way.
+
 ### 2026-11-11 · Reviewing a game turn by turn: does the score point at the turn that lost it?
 
 **Asked (the owner):** score each turn the player played against the search's best lines, to find the turns where a better line was there, then branch from them (play it yourself, or What-if from there) instead of What-if going back blindly one turn at a time. Measure it first.

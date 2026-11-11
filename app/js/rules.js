@@ -22,6 +22,8 @@
 //                                   { score, parts, raw, weights, defaults, cards: { [instanceId]: [{ k, v, x }] }, terms }
 //                                   defaults: the engine's own weights. terms: your own (DojoLab), each { value, hits: [instanceId] }.
 //                                   cards: each card in play's share (part k, value v, the measure x weighted).
+//   review(state, keyOf, opts)    → Promise of one turn from this board, opts { real, nodes }: { real, root, lines:
+//                                   [{ score, acts, same }] } (same: the real move's plan). What-if skips a turn whose top line is it.
 //   whatIf(state, keyOf, opts)    → Promise of the game played out from this board (What-if, DojoWhatIf):
 //                                   { winner, lore, lines, turns: [{ turn, who, how, acts, matched, missed, state }] }.
 //                                   Each turn's `state` is the Dojo board the next turn starts on (or the end).
@@ -150,6 +152,12 @@ window.DojoRules = (function () {
         for (const [p, shares] of Object.entries(r.cards)) if (place[p]) cards[place[p]] = shares;
         const found = r.terms.map(t => ({ value: t.value, hits: t.hits.map(p => place[p]).filter(Boolean) }));
         return { score: r.score, parts: r.parts, raw: r.raw, weights: r.weights, defaults: r.defaults, cards, terms: found };
+    }
+
+    // One turn from its start board: the real moves against the search's lines (the worker's review op).
+    async function review(state, keyOf, opts) {
+        await engine();
+        return call('review', { board: boardFromState(state, keyOf), ...opts });
     }
 
     async function whatIf(state, keyOf, opts) {
@@ -371,5 +379,5 @@ window.DojoRules = (function () {
         };
     }
 
-    return { UNKNOWN, VERBS, whyText, actText, groupActs, stepText, lineDiff, boardFromState, analyze, explore, botStart, botStep, botChoose, botPass, botRebase, score, whatIf, stateForLine, start, call };
+    return { UNKNOWN, VERBS, whyText, actText, groupActs, stepText, lineDiff, boardFromState, analyze, explore, botStart, botStep, botChoose, botPass, botRebase, score, review, whatIf, stateForLine, start, call };
 })();
