@@ -1,0 +1,5 @@
+/* Playground only: on the landing page these faces are already loaded. */
+@font-face { font-family: 'Inter'; font-weight: 100 900; src: url('./fonts/InterVariable.woff2') format('woff2'); }
+@font-face { font-family: 'Inter Display'; font-weight: 100 900; src: url('./fonts/InterDisplayVariable.woff2') format('woff2'); }
+@font-face { font-family: 'Liberation Mono'; font-weight: 400; src: url('./fonts/LiberationMono-Regular.woff2') format('woff2'); }
+
