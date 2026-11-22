@@ -200,6 +200,8 @@ Scoring follows the plan in the study's §8.1. Done 2026-10-28: their reply, the
 - **Results don't survive a reload** (branches do). Not asked for.
 - A manual article when Feature 68 ships.
 
+**Proving lines** (research, 2026-11-22: `docs/RSC-proving-better-lines.md`, study §12): a full search of one turn is affordable (median 108 positions, 2.6 s, on the demo), and the 300-node beam misses the best end of turn on 21 of 74 demo boards. Proposed next, owner to choose: a *lethal check* (an exact "no line wins this turn" or the line) and a *safe check* (can they reach 20 next turn from what's in play), after closing the five gaps in its §4.1. TLA+ is for the bot's and What-if's async protocols and library sync, not positions; Lean is not worth it.
+
 Other open work:
 - **Phones:** a tap opens the card drawer (`renderCardSheet`), which has no *Rules* section yet. *Suggest* is inside the ☰ drawer.
 - **Not passed to the engine yet:** cards played this turn (only the count of inked cards is). There is no mid-turn bag or pending state in the Dojo.

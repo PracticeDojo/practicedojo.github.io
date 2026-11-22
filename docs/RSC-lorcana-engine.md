@@ -386,6 +386,15 @@ Tiers 2 and 3 only need the read side of tier 1 (hydrate and project) plus the e
 
 Measured results, newest first. Built on `feat/68-rules-engine`; on `main` as a beta since v3.22.0 (AGENTS.md, *Rules engine (Feature 68, beta)*).
 
+### 2026-11-22 · Research: proving better lines, and the beam against a full search
+
+**Asked (the owner):** how TLA+ and/or Lean could prove there were, or weren't, better moves. The write-up is `docs/RSC-proving-better-lines.md`. In short: only results (a win this turn, their 20 next turn) can be proved, not "best by the score". TLA+ and Lean would need the rules written again. The engine, with the beam taken off, does what TLA+'s model checker does.
+
+**Measured** (Node, the 76 demo boards; `explore` with `beam` and `perNode` unbounded, `depth` 60, no reply, no finish, 20,000 nodes):
+- 74 boards finish: median 108 positions and 2.6 s, max 7,878 positions and 341 s. Boards 8 and 22 hit the cap.
+- The shipped 300-node beam found all 15 wins this turn. It ended below the full search's best by its own score on 21 of 74 boards (by more than 1 on 14, at most 9.1). Board 5's best is an 11-step free-play chain from Akood et Emuti that the beam drops.
+- Before it could prove anything, five gaps (inks capped at 2, the 8-target cap, moves the bot never lists, their choices made by the bot, and `positionKey` merging positions that differ in the turn's effects and records) need closing. Listed in the write-up, §4.1.
+
 ### 2026-11-07 · What-if keeps going where the replay can't follow (v3.23.1)
 
 **Asked (the owner):** two new replays (`01a1b6f7…`, `01a1b69d…`, now in `docs/samples/`) gave nothing from What-if. Find another way when the replay can't follow, rather than stopping (perhaps start further back).
