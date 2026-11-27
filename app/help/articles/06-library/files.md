@@ -10,20 +10,20 @@ order: 40
 verified: v3.11.0
 ---
 
-A session file holds a whole match: the board, every Multiverse node, the notes and the log. Export one to keep a backup outside this browser, or to send it to someone by hand.
+A session file holds a whole match, with the board, every Multiverse node, the notes and the log. Export one to keep a backup outside this browser, or to send it to someone by hand.
 
 ## Export a session
 
-- **The match on the board:** open the **Multiverse** and press **Export** at the top.
-- **Any session:** in the Library, open the session's **⋯** and choose **Export file (.dojo.json.gz)**.
+- **The match on the board.** Open the **Multiverse** and press **Export** at the top.
+- **Any session.** In the Library, open the session's **⋯** and choose **Export file (.dojo.json.gz)**.
 
 :::phone
-In the Multiverse the file tools show only their icons: **Export** is the file with an arrow pointing out.
+In the Multiverse the file tools show only their icons. **Export** is the file with an arrow pointing out.
 :::
 
 [Show me](show:tree-export)
 
-The file is named after the session, like `T8 study.dojo.json.gz` (characters a file name can't hold, such as `/`, are left out). It's compressed, so even a big Multiverse stays small. A browser that can't compress saves a plain `.dojo.json` instead.
+The file is named after the session, like `T8 study.dojo.json.gz`. The Dojo leaves out characters a file name can't hold, such as `/`. The file is compressed, so even a big Multiverse stays small. A browser that can't compress saves a plain `.dojo.json` instead.
 
 ## Open a session file
 

@@ -18,14 +18,14 @@
       "target": "example-log",
       "until": "importRead",
       "text": {
-        "desktop": "No game to hand? **Press A Duels.ink log** for an example.",
-        "phone": "No game to hand? **Tap A Duels.ink log** for an example."
+        "desktop": "To try it without a game of your own, **press A Duels.ink log** for an example.",
+        "phone": "To try it without a game of your own, **tap A Duels.ink log** for an example."
       }
     },
     {
       "id": "readout",
       "target": "readout",
-      "text": "The readout says what it found: a Duels.ink log and how many turns it has.",
+      "text": "The readout says what it found, a Duels.ink log and how many turns it has.",
       "learn": "import-log"
     },
     {

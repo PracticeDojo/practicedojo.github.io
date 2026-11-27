@@ -10,23 +10,23 @@ order: 80
 verified: v3.14.0
 ---
 
-Questing exerts a character and adds its lore to its player's score. The first to 20 lore wins.
+Questing exerts a character and adds its lore to its player's score. The first player to reach 20 lore wins.
 
 ## Quest with one character
 
 :::desktop
-Hover the character and press the quest button (the lore gem), or click it and choose **Quest (+2 Lore)**.
+Hover the character and press the quest button, which shows the lore gem. You can also click the character and choose **Quest (+2 Lore)**.
 :::
 
 :::touch
-Tap the character, then **Quest** in the card drawer.
+Tap the character, then press **Quest** in the card drawer.
 :::
 
-You can quest with a character of the player to play that's ready, not drying, and has lore.
+A character can quest when it belongs to the player to play, is ready, isn't drying and has lore.
 
 ## Quest with everyone
 
-Press **Quest**: every ready, dry character with lore quests at once. The number beside it says how many will. {key:Q} does the same on a keyboard.
+Press **Quest** and every ready, dry character with lore quests at once. The number beside the button says how many will quest. {key:Q} does the same on a keyboard.
 
 :::desktop
 **Quest** sits at the foot of the left rail, above **End turn**.
@@ -47,6 +47,6 @@ Press **−** or **+** beside a player's **Lore** to take one off or add one. Us
 ## Good to know
 
 - Quest uses the lore printed on the card plus any lore [modifiers](help:modifiers) on it. For other bonuses from abilities, add the lore with **+**.
-- The Dojo doesn't check quest restrictions on cards; it's up to you.
-- Hand changes to lore are noted in the log, and **Undo** takes any of it back.
-- At 20 lore the Dojo tells you who won. See [Winning a game](help:winning).
+- The Dojo doesn't check the quest restrictions printed on cards. You check them.
+- The log notes lore changed by hand, and **Undo** takes any of it back.
+- At 20 lore the Dojo names the winner. See [Winning a game](help:winning).

@@ -10,29 +10,29 @@ order: 90
 verified: v3.21.1
 ---
 
-In a challenge, your character and the opposing card deal their strength to each other as damage. The Dojo works out the damage, exerts your character and banishes anything that ends up with damage equal to its willpower. [Modifiers](help:modifiers) on either card (+strength, Challenger, Resist, willpower) are counted.
+In a challenge, your character and the opposing card deal their strength to each other as damage. The Dojo works out the damage, exerts your character and banishes any card whose damage reaches its willpower. It counts [modifiers](help:modifiers) on either card, such as +strength, Challenger, Resist and willpower.
 
 ## Challenge mode
 
-Press **Challenge** in the top bar (or {key:C}). A bar across the board reads **CHALLENGE MODE**. Then:
+Press **Challenge** in the top bar, or press {key:C}. A bar across the board reads **CHALLENGE MODE**.
 
 :::desktop
-Drag one of your characters onto an opposing card. Or click your character, then click the target. With a character picked, hovering a target shows the forecast.
+Drag one of your characters onto an opposing card. You can also click your character, then click the target. With a character picked, hovering a target shows the forecast.
 
-Or use the arrow keys, like the phone's thumb keys. The first arrow picks your first ready character; {key:←} {key:→} {key:↑} {key:↓} step through your characters. {key:↑} off your top row moves to the opponent's cards: the arrows now aim, the target is lit and a red arrow runs to it with the forecast. Press {key:Enter} to challenge. {key:↓} off their bottom row goes back to your characters.
+The arrow keys work like the phone's thumb keys. The first arrow picks your first ready character, and {key:←} {key:→} {key:↑} {key:↓} step through your characters. {key:↑} off your top row moves to the opponent's cards. The arrows then aim at a target, which lights up, and a red arrow runs to it with the forecast. Press {key:Enter} to challenge. {key:↓} off their bottom row goes back to your characters.
 :::
 
 :::touch
-Tap one of your characters, then tap an opposing card. Once you've picked, every opposing card shows a badge with the outcome. Dragging works too.
+Tap one of your characters, then tap an opposing card. Once you've picked, every opposing card shows a badge with the outcome. Dragging also works.
 :::
 
 :::phone
-Thumb keys sit at the bottom right of your side, like the Multiverse's. The mode starts on your first ready character. ◀ ▶ ▲ ▼ step through your characters. The swap key (or ▲ off your top row) moves to the opponent's cards: the arrows now aim, and a red arrow runs from your character to the target. Press the fist to challenge. Swap again to go back to your characters. Tapping works too: tap an opposing card to aim at it, tap it again to challenge.
+Thumb keys sit at the bottom right of your side, like the Multiverse's. The mode starts on your first ready character. ◀ ▶ ▲ ▼ step through your characters. The swap key, or ▲ off your top row, moves to the opponent's cards. The arrows then aim, and a red arrow runs from your character to the target. Press the fist to challenge. Press swap again to go back to your characters. Tapping also works. Tap an opposing card to aim at it, and tap it again to challenge.
 
 A tap on the bare battlefield leaves challenge mode.
 :::
 
-You stay in the mode to challenge again. Press **Done** to leave. {key:Esc} first drops the picked character, then leaves. Ending the turn leaves it too.
+You stay in the mode to challenge again. Press **Done** to leave. The first {key:Esc} drops the picked character, and the second leaves. Ending the turn also leaves the mode.
 
 [Show me](show:challenge-mode)
 
@@ -43,16 +43,16 @@ Hover your character and press its challenge button, or right-click it and choos
 :::
 
 :::touch
-Tap your character and press **Challenge** in the card drawer. Challenge mode opens with it picked; tap the target.
+Tap your character and press **Challenge** in the card drawer. Challenge mode opens with it picked. Tap the target.
 :::
 
 ## The forecast
 
-Before you commit, the Dojo shows what would happen: each card's damage after the challenge and whether it's banished (**✕ Banishes …**, **⇄ Trade**). Choose how much it shows with **Off**, **Light** or **Full** in the challenge bar. See [Challenge forecast](help:forecast).
+Before you commit, the Dojo shows each card's damage after the challenge and whether it's banished, with labels such as **✕ Banishes …** and **⇄ Trade**. Choose how much it shows with **Off**, **Light** or **Full** in the challenge bar. See [Challenge forecast](help:forecast).
 
 ## Good to know
 
-- Damage is strength, plus **Challenger +N** on the challenger, minus **Resist +N** on the card taking it. Only a card's own printed Challenger and Resist count. When an ability gives them to another character ("give chosen character Resist +2") or only under a condition ("while you have no cards in your hand"), add them as a [modifier](help:modifiers) when they apply. Other abilities aren't applied: fix damage by hand afterwards.
+- Damage is strength, plus **Challenger +N** on the challenger, minus **Resist +N** on the card taking it. Only a card's own printed Challenger and Resist count. An ability may give them to another character, as in "give chosen character Resist +2", or only under a condition, as in "while you have no cards in your hand". Add those as a [modifier](help:modifiers) when they apply. The Dojo doesn't apply other abilities. Fix damage by hand afterwards.
 - The Dojo doesn't stop an exerted or drying challenger, or a ready target. It allows them and notes it in the log.
-- Bodyguard, Evasive and the like aren't checked: you're the referee.
+- The Dojo doesn't check Bodyguard, Evasive and similar keywords. You're the referee.
 - One **Undo** takes back the whole challenge.

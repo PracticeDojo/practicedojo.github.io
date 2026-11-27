@@ -9,7 +9,7 @@
   "steps": [
     {
       "id": "welcome",
-      "text": "A practice copy of the Set 14 demo: a whole game, with the other ways it could have gone. Nothing you do here is saved."
+      "text": "This is a practice copy of the Set 14 demo. It holds a whole game, with the other ways it could have gone. Nothing you do here is saved."
     },
     {
       "id": "open",
@@ -17,15 +17,15 @@
       "until": "multiverseOpen",
       "focus": false,
       "text": {
-        "desktop": "**Open the Multiverse: press it, or M.**",
-        "phone": "**Open the Multiverse: tap it.**"
+        "desktop": "**Open the Multiverse. Press it, or press M.**",
+        "phone": "**Open the Multiverse. Tap it.**"
       },
       "learn": "multiverse"
     },
     {
       "id": "read",
       "target": "tree-canvas",
-      "text": "Every node is a saved turn: whose it was, the lore, what they played. Turns run left to right; where a line forks, the game went another way.",
+      "text": "Every node is a saved turn. It shows whose turn it was, the lore, and what they played. Turns run left to right. Where a line forks, the game went another way.",
       "learn": "nodes"
     },
     {
@@ -33,7 +33,7 @@
       "target": "tree-canvas",
       "until": "nodeSelected",
       "text": {
-        "desktop": "**Click a node** to select it. The arrow keys step through the tree too.",
+        "desktop": "**Click a node** to select it. The arrow keys also step through the tree.",
         "phone": "**Tap a node** to select it."
       },
       "learn": "multiverse-navigate"
@@ -44,14 +44,14 @@
       "until": "playedFromNode",
       "text": "The panel shows the selected node. **Press Play from here** to put that board back on the table.",
       "hint": {
-        "desktop": "Double-clicking a node, or Enter, does the same."
+        "desktop": "Double-clicking a node, or pressing Enter, does the same."
       },
       "learn": "multiverse-panel"
     },
     {
       "id": "branch",
       "target": "your-board",
-      "text": "**Now play it differently**: a new card, another challenge. When you end the turn, the Multiverse keeps both lines. That fork is a branch.",
+      "text": "**Now play it differently.** Try a new card or another challenge. When you end the turn, the Multiverse keeps both lines. That fork is a branch.",
       "learn": "branches"
     },
     {
@@ -63,7 +63,7 @@
       "until": "turnSaved",
       "focus": false,
       "text": {
-        "desktop": "To keep a turn before it's over, **press T** (or **Save current unfinished turn** in the Multiverse), **then Save node**.",
+        "desktop": "To keep a turn before it's over, **press T**, or **Save current unfinished turn** in the Multiverse, **then Save node**.",
         "phone": "To keep a turn before it's over, **open the Multiverse, tap Save current unfinished turn, then Save node**."
       },
       "learn": "save-unfinished-turn"
@@ -82,7 +82,7 @@
       "id": "thumb-keys",
       "device": "phone",
       "target": "tree-keys",
-      "text": "The thumb keys step through the tree: ◀ ▶ the turn before and after, ▲ ▼ the line above and below, the circle back to where you are.",
+      "text": "The thumb keys step through the tree. ◀ and ▶ go to the turn before and after. ▲ and ▼ go to the line above and below. The circle goes back to where you are.",
       "learn": "multiverse-navigate"
     },
     {
@@ -97,7 +97,7 @@
       "id": "mini-map",
       "device": "desktop",
       "target": "mini-multiverse",
-      "text": "On the board, the mini map keeps the tree in view: **click a dot** to go there, or **step with its keys**.",
+      "text": "On the board, the mini map keeps the tree in view. **Click a dot** to go there, or **step with its keys**.",
       "learn": "mini-multiverse"
     }
   ]

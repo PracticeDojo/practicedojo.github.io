@@ -10,27 +10,27 @@ order: 20
 verified: v3.22.0
 ---
 
-With **Rules engine** on **Assist** or **Lab** (see [The rules engine](help:rules-engine)), the Dojo marks what the rules allow the player whose turn it is.
+With **Rules engine** on **Assist** or **Lab**, the Dojo marks what the rules allow the player whose turn it is. See [The rules engine](help:rules-engine).
 
 ## The marks on cards
 
-A card with a legal move gets a ring and a row of small dots under it, one per kind of move:
+A card with a legal move gets a ring and a row of small dots under it, one dot per kind of move:
 
-- **Olive**: quest, or put it in the inkwell.
-- **Coral**: challenge.
-- **Bone** (pale): everything else, such as play it, sing a song with it, shift, move to a location or use an ability.
+- **Olive** means quest, or put the card in the inkwell.
+- **Coral** means challenge.
+- **Bone**, a pale dot, means any other move, such as playing the card, singing a song with it, shifting, moving to a location or using an ability.
 
-A card with no legal move has no marks. The marks follow the board: change anything and they're read again.
+A card with no legal move has no marks. The marks follow the board. When you change anything, the engine reads the board again.
 
 ## The Rules list in a card's menu
 
 :::desktop
-Open a card's menu (click or right-click it). With the engine on, the menu starts with **Rules**:
+Click or right-click a card to open its menu. With the engine on, the menu starts with **Rules**. It shows one of these:
 
-- each legal move, with how many targets it has (**Challenge · 1 target**);
-- or, for a card in hand that can't be played, why not (**Needs 4 ink, 1 ready**).
+- each legal move, with how many targets it has, like **Challenge · 1 target**.
+- for a card in hand that can't be played, the reason, like **Needs 4 ink, 1 ready**.
 
-The list only tells you. The menu's other items work as always, and nothing is blocked.
+The list only informs you. The menu's other items work as always, and nothing is blocked.
 :::
 
 :::phone
@@ -40,4 +40,4 @@ A tap on a card opens the card drawer, which doesn't have the Rules list yet. Th
 ## Good to know
 
 - The marks are for the player whose turn it is.
-- They're the engine's reading of the board. If a card does something the engine doesn't know, trust the card and play it by hand.
+- The marks are the engine's reading of the board. If a card does something the engine doesn't know, trust the card and play it by hand.

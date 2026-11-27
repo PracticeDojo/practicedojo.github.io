@@ -10,7 +10,7 @@ order: 30
 verified: v3.11.0
 ---
 
-Save the board as it is right now, in the middle of a turn, as a node you can come back to: before a risky challenge, say, or at a moment you want to study later.
+Save the board as it is now, in the middle of a turn, as a node you can come back to. Save before a risky challenge, for example, or at a moment you want to study later.
 
 ## Save current unfinished turn
 
@@ -27,7 +27,7 @@ Open the Multiverse and tap **Save current unfinished turn** at the top of the p
 The button opens a short form:
 
 1. **Name** starts as **Turn 7 - Player 1 (unfinished)**. Change it to say what the node is for.
-2. **Note** starts with your turn note and a recap of what you've done so far this turn (drew, inked, played…). Edit it freely; Markdown works.
+2. **Note** starts with your turn note and a recap of what you've drawn, inked and played so far this turn. Edit it as you like. Markdown works.
 3. **This node keeps** shows the cards the node will record, by section.
 4. Press **Save node**. **Cancel** closes the form without saving.
 
@@ -37,6 +37,6 @@ In the **Name** field, {key:Enter} saves. {key:Esc} closes the form.
 
 ## Good to know
 
-- Your board doesn't change: carry on playing. The new node hangs off the node you were on and becomes the one you're on, so the next auto-save hangs off it.
+- Your board doesn't change, so carry on playing. The new node hangs off the node you were on and becomes the one you're on, so the next auto-save hangs off it.
 - You can rename the node or change its note later in [the panel](help:multiverse-panel).
-- **Save as copy** in the top bar is something else: it copies the whole session.
+- **Save as copy** in the top bar does something else. It copies the whole session.

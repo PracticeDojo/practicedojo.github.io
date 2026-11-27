@@ -15,26 +15,26 @@ A Duels.ink text log lists every move of a game. Paste it into the Dojo and ever
 ## From the home screen
 
 1. Copy the whole log from Duels.ink.
-2. Paste it into the field on the home screen. You can paste anywhere on the page; it lands in the field.
-3. Check the readout: **Duels.ink log** and *A N-turn game*.
+2. Paste it into the field on the home screen. If you paste anywhere else on the page, the log still lands in the field.
+3. Check that the readout shows **Duels.ink log** and *A N-turn game*.
 4. Press **Study this game**.
 
 [Show me](show:intake)
 
-A log saved as a .txt or .md file works too: press **Choose a file**.
+A log saved as a .txt or .md file also works. Press **Choose a file**.
 
 ## From the Multiverse
 
-Open **Multiverse** and press **Log** in its header. Paste the log into **Import Duels.ink Log** (or choose a file). When the message under it says the log is valid, press **Import**. The game opens as a new session; the one you were in stays in your Library.
+Open **Multiverse** and press **Log** in its header. Paste the log into **Import Duels.ink Log**, or choose a file. When the message under it says the log is valid, press **Import**. The game opens as a new session, and the one you were in stays in your Library.
 
 [Show me](show:tree-log)
 
 ## Which logs work
 
-Both of Duels.ink's formats: the newer one that says *You* and *Opponent*, and the older one with *Player 1* and *Player 2*. The log needs its `--- Turn 1 ---` lines; without the starting hand lines it still imports, with a warning that fewer cards can be placed.
+Both of Duels.ink's formats work. The newer one says *You* and *Opponent*, and the older one says *Player 1* and *Player 2*. The log needs its `--- Turn 1 ---` lines. Without the starting hand lines it still imports, with a warning that the Dojo can place fewer cards.
 
 ## Good to know
 
-- In the Dojo, the log's owner (*You*) is Player 1.
+- In the Dojo, the log's owner, *You*, is Player 1.
 - The newer log hides the opponent's hand and draws. See [What an import knows and doesn't](help:hidden-information).
-- Cards the log never names come in as unknown cards: see [Unknown cards](help:unknown-cards).
+- Cards the log never names come in as unknown cards. See [Unknown cards](help:unknown-cards).

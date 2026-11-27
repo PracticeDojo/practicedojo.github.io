@@ -15,7 +15,7 @@ verified: v3.23.0
 ## Undo an action
 
 :::desktop
-Press **Undo** in the top bar, beside the turn chip. The rail's round-arrow button at the foot does the same.
+Press **Undo** in the top bar, beside the turn chip. The round-arrow button at the foot of the rail does the same.
 :::
 
 :::phone
@@ -26,13 +26,13 @@ Press the round-arrow button in the top bar, left of the turn chip.
 
 ## What it covers
 
-Everything you do on the board: playing, inking, moving and drawing cards, damage, exert and ready, quests and challenges, lore, ink, turn notes, the mulligan and ending the turn. The log steps back with it.
+Undo covers everything you do on the board. That includes playing, inking, moving and drawing cards, damage, exert and ready, quests and challenges, lore, ink, turn notes, the mulligan and ending the turn. The log steps back with it.
 
-It goes back up to 250 actions, and the history is kept with the session, so it still works after you leave and come back.
+Undo goes back up to 250 actions. The session keeps the history, so Undo still works after you leave and come back.
 
 ## Good to know
 
 - There's no redo. To try both versions of a turn, save the turn first and branch in the Multiverse. See [Branching](help:branches).
-- Undo doesn't touch the Multiverse: a node saved when you ended a turn stays. Ending the turn again saves a new node beside it.
+- Undo doesn't change the Multiverse. A node saved when you ended a turn stays. Ending the turn again saves a new node beside it.
 - **Play from here** in the Multiverse, or a jump on the mini multiverse, starts a fresh undo history.
-- {key:U} undoes too, while you're not typing in a field.
+- {key:U} also undoes, while you're not typing in a field.

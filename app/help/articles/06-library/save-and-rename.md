@@ -1,7 +1,7 @@
 ---
 id: save-and-rename
 title: Save, save as copy, rename
-summary: Name the session, save it now, or save a copy to try something without touching the original.
+summary: Name the session, save it now, or save a copy to try something without changing the original.
 devices: [desktop, phone]
 aliases: [rename session, session name, duplicate, copy session, save game]
 targets: [session-title, save, save-copy]
@@ -10,7 +10,7 @@ order: 20
 verified: v3.11.0
 ---
 
-Give the match on the board a name, save it on the spot, or split off a copy to try a different idea.
+Give the match on the board a name, save it at once, or split off a copy to try a different idea.
 
 ## Rename the session
 
@@ -21,14 +21,14 @@ Click the session title at the top left of the top bar, type a new name and pres
 :::
 
 :::phone
-The top bar has no title on a phone. Tap **⋯** › **Leave to the dojo** (the match stays saved), open **Library**, then the session's **⋯** › **Rename**.
+The top bar has no title on a phone. Tap **⋯** and choose **Leave to the dojo**. The match stays saved. Open **Library**, then open the session's **⋯** and choose **Rename**.
 :::
 
-You can rename any session the same way from the [Library](help:library): **⋯** › **Rename**.
+You can rename any session the same way from the [Library](help:library). Open its **⋯** and choose **Rename**.
 
 ## Save now
 
-The Dojo already saves as you play (see [Sessions save themselves](help:sessions)). **Save** writes it straight away and tells you so. If you're signed in, it also saves the session to your account: see [What goes to your account](help:account-sync).
+The Dojo already saves as you play. See [Sessions save themselves](help:sessions). **Save** writes the session at once and tells you so. If you're signed in, it also saves the session to your account. See [What goes to your account](help:account-sync).
 
 :::desktop
 Press the floppy-disk button next to the title.
@@ -42,7 +42,7 @@ Tap **⋯** in the top bar, then **Save**.
 
 ## Save as copy
 
-Use it before trying a risky line: the copy carries on, and the original stays as it was.
+Use it before trying a risky line. The copy carries on, and the original stays as it was.
 
 :::desktop
 Press the copy button next to **Save**.
@@ -56,6 +56,6 @@ Name the copy and press **Save copy**. The copy becomes the session on the board
 
 ## Good to know
 
-- A new copy is only on this device. Signed in, press **Save** to put it in your account too.
-- To copy a session without opening it, use **⋯** › **Duplicate** in the Library.
-- Viewing someone's shared link, **Save** saves your own copy of it. See [Open a link someone sent you](help:open-a-shared-link).
+- A new copy is only on this device. If you're signed in, press **Save** to put it in your account too.
+- To copy a session without opening it, open its **⋯** in the Library and choose **Duplicate**.
+- While you view someone's shared link, **Save** saves your own copy of it. See [Open a link someone sent you](help:open-a-shared-link).

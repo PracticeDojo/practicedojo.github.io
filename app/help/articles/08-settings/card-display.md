@@ -10,11 +10,11 @@ order: 30
 verified: v3.13.1
 ---
 
-Two settings in [Tweaks](help:tweaks) change how cards look: **Card size** and **Card display**.
+Two settings in [Tweaks](help:tweaks) change how cards look, **Card size** and **Card display**.
 
 ## Card size
 
-Drag the **Card size** slider. It goes from 0.70× to 1.40×, and the value shows beside the label. It starts at 1.00×, or 0.80× on a touch screen so the board fits a phone.
+Drag the **Card size** slider. It goes from 0.70× to 1.40×, and the value shows beside the label. It starts at 1.00×, or at 0.80× on a touch screen so the board fits a phone.
 
 [Show me](show:tweak-card-size)
 
@@ -25,13 +25,13 @@ When the play area fills up, cards in play still shrink to fit, whatever the set
 **Card display** has two choices:
 
 - **Art** shows the card pictures. A card whose picture can't be fetched shows as text instead.
-- **Text** shows every card as text: name, version, cost, stats and rules. No card pictures are loaded at all.
+- **Text** shows every card as text, with its name, version, cost, stats and rules. The Dojo loads no card pictures.
 
 [Show me](show:tweak-card-display)
 
-It applies everywhere at once: the board, your hand, the inkwell, the discard, every card grid and the card preview. On a text card, the cost sits in the game's own frame: a winged hexagon means inkable and a plain hexagon means not inkable. Strength, lore and willpower use the game's own symbols too.
+The setting applies everywhere at once, in the board, your hand, the inkwell, the discard, every card grid and the card preview. On a text card, the cost sits in the game's own frame. A winged hexagon means the card is inkable, and a plain hexagon means it isn't. Strength, lore and willpower also use the game's own symbols.
 
 ## Good to know
 
-- **Text** is handy on a slow or no connection, since it needs no pictures. See [Playing offline](help:offline).
-- Both settings are kept in this browser.
+- **Text** needs no pictures, so use it on a slow connection or with none. See [Playing offline](help:offline).
+- This browser keeps both settings.

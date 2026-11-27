@@ -16,23 +16,23 @@ Bring a game you played on Duels.ink into the Dojo to look at it turn by turn an
 
 1. Open the home screen.
 2. Paste the game's text log into the field, or press **Choose a file** for a replay file. You can also drop a file anywhere on the page.
-3. The readout says what it found: a **Duels.ink log** with its number of turns, or a **Duels.ink replay** with the players' names.
+3. The readout says what it found. It shows a **Duels.ink log** with its number of turns, or a **Duels.ink replay** with the players' names.
 4. Press **Study this game**.
 
 [Show me](show:readout)
 
-No game to hand? Press **A Duels.ink log** under the field to load an example.
+To try it without a game of your own, press **A Duels.ink log** under the field to load an example.
 
 ## What you get
 
 - A new session named after the date and the players or their inks, with *(Duels.ink)* at the end.
-- One Multiverse node per turn, with the turn's moves in its note and its card sections (played, inked, drawn and so on).
+- One Multiverse node per turn. Its note holds the turn's moves, and its card sections hold the cards played, inked, drawn and so on.
 - The board at the end of the game.
 
 Open **Multiverse**, pick a turn and press **Play from here** to load it, then play it differently. See [The Multiverse](help:multiverse).
 
 ## Good to know
 
-- A replay file rebuilds the game most exactly. A text log is fine too. Compare them in [Import a text log](help:import-log) and [Import a replay file](help:import-replay).
-- Some cards stay unknown: see [What an import knows and doesn't](help:hidden-information).
+- A replay file gives the most exact rebuild, and a text log also works. Compare them in [Import a text log](help:import-log) and [Import a replay file](help:import-replay).
+- Some cards stay unknown. See [What an import knows and doesn't](help:hidden-information).
 - The Dojo can't fetch games from Duels.ink by itself. Copy or download the game there first.

@@ -33,7 +33,7 @@
     {
       "id": "account",
       "dir": "07-account",
-      "title": "Your account (optional)"
+      "title": "Your account"
     },
     {
       "id": "settings",
@@ -43,7 +43,7 @@
     {
       "id": "rules",
       "dir": "11-rules",
-      "title": "Rules engine (beta)"
+      "title": "Rules engine, in beta"
     },
     {
       "id": "faq",

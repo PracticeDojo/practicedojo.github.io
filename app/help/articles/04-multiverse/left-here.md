@@ -10,11 +10,11 @@ order: 70
 verified: v3.11.0
 ---
 
-When you jump to another node from a board you haven't saved, the Dojo keeps that board as a "Left here" snapshot first. A jump never loses your work.
+When you jump to another node from a board you haven't saved, the Dojo first keeps that board as a "Left here" snapshot. A jump never loses your work.
 
-## When a snapshot is kept
+## When the Dojo keeps a snapshot
 
-Every jump checks the board you're leaving: **Play from here**, and on desktop a double-click, {key:Enter} or a click in the mini multiverse. If the board has changed since it was loaded or saved, it's kept as a snapshot. If it's exactly a node or snapshot that's still in the tree, nothing is added.
+Every jump checks the board you're leaving. A jump is **Play from here**, or on desktop a double-click, {key:Enter} or a click in the mini multiverse. If the board has changed since it was loaded or saved, the Dojo keeps it as a snapshot. If the board matches a node or snapshot that's still in the tree, the Dojo adds nothing.
 
 ## Find a snapshot
 
@@ -22,13 +22,13 @@ Every jump checks the board you're leaving: **Play from here**, and on desktop a
 
 A snapshot hangs off the node you were last on, on a dashed line:
 
-- in cards, a dashed card titled **Left here** and the time, like **Left here · 14:32**,
-- in the plot, a dashed ring,
-- in the mini multiverse, a dashed hollow dot.
+- In the cards view, it's a dashed card titled **Left here** with the time, like **Left here · 14:32**.
+- In the plot, it's a dashed ring.
+- In the mini multiverse, it's a dashed hollow dot.
 
 ## Use a snapshot
 
-Select it. The panel says **Where you jumped from** and offers:
+Select it. The panel says **Where you jumped from** and offers these:
 
 - **Play from here** loads that board again.
 - **Keep as node** turns it into a real node where it hangs, named like **Turn 9 - Player 1 (kept 14:32)**. Then you can rename it and write a note.
@@ -38,5 +38,5 @@ Select it. The panel says **Where you jumped from** and offers:
 
 ## Good to know
 
-- Only the last five snapshots are kept. A sixth pushes out the oldest, so keep the ones that matter as nodes.
-- A snapshot isn't a node until you keep it: it can't be renamed and has no note.
+- The Dojo keeps only the last five snapshots. A sixth pushes out the oldest, so keep the ones that matter as nodes.
+- A snapshot isn't a node until you keep it. You can't rename it, and it has no note.

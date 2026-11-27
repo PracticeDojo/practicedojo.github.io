@@ -15,14 +15,20 @@ The panel shows the node you select. Read it there first, then play from it, ren
 ## Select a node
 
 :::desktop
-Click a node, or a dot in the plot. The arrow keys move the selection (see [Moving around](help:multiverse-navigate)).
+Click a node, or a dot in the plot. The arrow keys move the selection. See [Moving around](help:multiverse-navigate).
 :::
 
 :::phone
-Tap a node or a dot, or move the cursor with the thumb keys. The panel is under the canvas: scroll down to read all of it.
+Tap a node or a dot, or move the cursor with the thumb keys. The panel is under the canvas, so scroll down to read all of it.
 :::
 
-Selecting doesn't touch your board. The panel shows **Selected** (with **· you are here** on the node you're on), the name, the turn, lore and time, the note, **Lore race · this line** (both players' lore turn by turn, from turn 1 to this node; P1 solid, P2 dashed, 20 wins) and the **Turn recap** as cards.
+Selecting doesn't change your board. The panel shows these parts:
+
+- **Selected**, with **· you are here** on the node you're on.
+- The name, the turn, the lore and the time.
+- The note.
+- **Lore race · this line**, which draws both players' lore turn by turn from turn 1 to this node. P1 is solid, P2 is dashed, and the line at 20 is the winning score.
+- The **Turn recap** as cards.
 
 [Show me](show:selected-node)
 
@@ -31,31 +37,31 @@ Selecting doesn't touch your board. The panel shows **Selected** (with **· you 
 Press **Play from here**. The board becomes that node's board and the Multiverse closes.
 
 :::desktop
-Or double-click the node, or press {key:Enter}.
+You can also double-click the node, or press {key:Enter}.
 :::
 
-If the board you left wasn't saved, it's kept as a ["Left here" snapshot](help:left-here).
+If the board you left wasn't saved, the Dojo keeps it as a ["Left here" snapshot](help:left-here).
 
 ## Rename a node
 
-Click its name in the panel, type, and press {key:Enter} (or click away). {key:Esc} cancels.
+Click its name in the panel, type, and press {key:Enter} or click away. {key:Esc} cancels.
 
 ## Edit the note
 
-Click the note, or **Add a note…** when it's empty. The whole text is yours to edit, turn recap included; Markdown works. Click away to save. {key:Esc} cancels.
+Click the note, or **Add a note…** when it's empty. You can edit the whole text, turn recap included, and Markdown works. Click away to save. {key:Esc} cancels.
 
 :::desktop
-{key:Ctrl+Enter} saves too. Clicking a note on a node opens it here.
+{key:Ctrl+Enter} also saves. Clicking a note on a node opens it here.
 :::
 
 ## Delete a node
 
-Press the bin, in the panel or on the node. Its later turns aren't lost: they move up to hang off the node before it. The toast offers **Undo**.
+Press the bin, in the panel or on the node. Its later turns stay, and move up to hang off the node before it. The toast offers **Undo**.
 
 ## Good to know
 
 :::desktop
-The panel docks on the right. The columns button in the Multiverse header moves it to the left (or back), and the Dojo remembers the side. [Show me](show:tree-dock)
+The panel docks on the right. The columns button in the Multiverse header moves it to the left and back, and the Dojo remembers the side. [Show me](show:tree-dock)
 :::
 
 - A "Left here" snapshot has **Keep as node** instead of a name and note to edit.

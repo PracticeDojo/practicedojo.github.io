@@ -1,7 +1,7 @@
 ---
 id: mulligan
 title: Mulligan and your opening hand
-summary: Each player's first turn opens on their mulligan: keep the seven, or mark cards to send to the bottom and draw again.
+summary: Each player's first turn opens on their mulligan. Keep the seven, or mark cards to send to the bottom and draw again.
 devices: [desktop, phone]
 aliases: [mulligan, opening hand, starting hand, keep hand, redraw, alter hand]
 targets: [mulligan-dialog, mulligan-hand, mulligan-readout, mulligan-odds, mulligan-confirm, mulligan-leave]
@@ -14,38 +14,42 @@ Each player's first turn opens on the mulligan. Player 1 chooses as the match st
 
 ## Keep or send cards back
 
-The dialog shows your seven, cheapest first. The head says whether you're **on the play** (no draw turn 1) or **on the draw** (you draw one once you've chosen).
+The dialog shows your seven, cheapest first. The head says whether you're **on the play** or **on the draw**. On the play, you don't draw on turn 1. On the draw, you draw one card once you've chosen.
 
 :::desktop
-Click a card to mark it to go to the bottom; click it again to unmark it. To read a card, click the magnifier in its corner: the card grows in place. Any click or {key:Esc} puts it back.
+Click a card to mark it to go to the bottom, and click it again to unmark it. To read a card, click the magnifier in its corner, and the card grows in place. Any click or {key:Esc} puts it back.
 :::
 
 :::phone
-Tap a card to mark it to go to the bottom; tap it again to unmark it. To read a card, {gesture:long-press} it: it shows large with its name, cost and type. Tap anywhere to close it; that tap marks nothing.
+Tap a card to mark it to go to the bottom, and tap it again to unmark it. To read a card, {gesture:long-press} it. It shows large with its name, cost and type. Tap anywhere to close it. That tap marks nothing.
 :::
 
 A marked card sinks and shows `↓ Bottom`. Then press the one button at the foot:
 
-- **Keep hand** when nothing is marked: the hand stays and the deck isn't touched.
-- **Mulligan N cards** otherwise: the marked cards go to the bottom of the deck, you draw as many from the top, then the deck is shuffled.
+- **Keep hand** shows when nothing is marked. The hand stays and the deck isn't touched.
+- **Mulligan N cards** shows otherwise. The marked cards go to the bottom of the deck, you draw as many from the top, and then the Dojo shuffles the deck.
 
 [Show me](show:mulligan-confirm)
 
 ## Read the hand before you choose
 
-Under the hand, the readout follows your marks: the **Curve** of the cards you'd keep (the ones going back show dashed), **Inkable** (how many you'd keep can be inked) and the plan (`5 kept + 2 redraw`).
+The readout under the hand follows your marks. It has three parts:
 
-**Draw odds** show your chance to find each card: **RD** among the redraws, then within the next turns' draws. Phones show the top three rows; press **All** for the rest.
+- **Curve** shows the cards you'd keep. The cards going back show dashed.
+- **Inkable** counts the cards you'd keep that can be inked.
+- The plan counts kept cards and redraws, for example `5 kept + 2 redraw`.
+
+**Draw odds** show your chance to find each card. **RD** is the chance among the redraws, and the next columns are the chances within the next turns' draws. Phones show the top three rows. Press **All** for the rest.
 
 [Show me](show:mulligan-readout)
 
 ## After a mulligan
 
-The dialog stays open on your new hand. The new cards carry a **NEW** tag and the readout says how many went back and were drawn. You can't mark cards again. Press **Start turn** (or **Draw and start turn** for Player 2) to play.
+The dialog stays open on your new hand. The new cards carry a **NEW** tag, and the readout says how many cards went back and how many you drew. You can't mark cards again. Press **Start turn**, or **Draw and start turn** for Player 2, to play.
 
 ## Good to know
 
-- Nothing else works until the hand is settled: no hotkeys, and the turn can't end.
-- **Build** and **Replay**, next to **Draw** at the top, make the hand another way: pick your seven, or copy an opening from a saved game. See [Build or replay an opening hand](help:craft-hand).
+- Nothing else works until the hand is settled. Hotkeys don't fire, and the turn can't end.
+- **Build** and **Replay**, next to **Draw** at the top, make the hand another way. **Build** lets you pick your seven, and **Replay** copies an opening from a saved game. See [Build or replay an opening hand](help:craft-hand).
 - **Undo** after the turn has started brings the mulligan back.
-- **×** at the top right (or {key:Esc}) leaves for the home screen. The match stays saved, still on its mulligan: **Back to match** or **Resume** brings the dialog back. [Show me](show:mulligan-leave)
+- **×** at the top right, or {key:Esc}, leaves for the home screen. The match stays saved, still on its mulligan. **Back to match** or **Resume** brings the dialog back. [Show me](show:mulligan-leave)

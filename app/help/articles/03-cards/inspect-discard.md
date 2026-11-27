@@ -10,16 +10,16 @@ order: 30
 verified: v3.11.0
 ---
 
-Every card that leaves play or is discarded goes to its owner's discard pile. You can read it at any time and take cards back out.
+Every card that leaves play or is discarded goes to its owner's discard pile. You can read the pile at any time and take cards back out.
 
 ## Read the discard
 
 :::desktop
-Each half of the board has a **Discard** column: the cards listed newest first, with cost / strength / lore on the right. Past eight cards, **+N more** shows the rest. Point at a row to see the card in the preview.
+Each half of the board has a **Discard** column. It lists the cards newest first, with cost, strength and lore on the right. Past eight cards, **+N more** shows the rest. Point at a row to see the card in the preview.
 :::
 
 :::phone
-The discard is the mini card on the player bar: it shows the top card and how many cards are in the pile.
+The discard is the mini card on the player bar. It shows the top card and how many cards are in the pile.
 :::
 
 [Show me](show:discard)
@@ -43,7 +43,7 @@ Click or right-click a card in the column or the grid. Choose **Play Card to Fie
 :::
 
 :::phone
-Tap a card in the grid, or the top card on the bar, and pick one of the same moves. **Preview Card** shows it big.
+Tap a card in the grid, or the top card on the bar, and pick one of the same moves. **Preview Card** shows it large.
 :::
 
 The grid stays open, so you can take out several cards.

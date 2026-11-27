@@ -10,23 +10,23 @@ order: 100
 verified: v3.11.1
 ---
 
-Locations sit in your play area with the characters at them above them. Shift and "put under" build a stack: one card on top, the rest underneath.
+Locations sit in your play area, with the characters at each location above it. Shift and "put under" build a stack, with one card on top and the rest underneath.
 
 ## Move a character to a location
 
-Drag the character onto the location. A character dragged from your hand is played straight to the location, and its cost is spent.
+Drag the character onto the location. A character dragged from your hand is played straight to the location, and the Dojo spends its cost.
 
-To leave, choose **Leave Location** in the card's menu (desktop) or **Leave location** in the card drawer (touch). Or drag the character back onto an empty part of your play area.
+To leave, choose **Leave Location** in the card's menu on desktop or **Leave location** in the card drawer on touch. You can also drag the character back onto an empty part of your play area.
 
 :::touch
-Dragging works on touch screens too: press the card, then move it.
+Dragging also works on touch screens. Press the card, then move it.
 :::
 
 ## Shift onto a character
 
-Drag the new card from your hand onto the character it shifts onto. It goes on top, keeps the card underneath's damage, exerted state and location, and the log says you shifted. The badge in the corner counts the cards under it.
+Drag the new card from your hand onto the character it shifts onto. It goes on top and keeps the lower card's damage, exerted state and location. The log records the shift. The badge in the corner counts the cards under it.
 
-You can drop any of your cards onto another of yours this way; only a matching name counts as a shift.
+You can drop any of your cards onto another of yours this way. Only a card with a matching name counts as a shift.
 
 ## Put a card under
 
@@ -46,8 +46,8 @@ Choose **Separate Stacked Cards** in the menu, or **Separate stack** in the draw
 
 ## Good to know
 
-- Dragging a character from your hand onto another character spends its Shift cost when it has an ink one (**Shift 5**, **Universal Shift 4**). If you don't have that much ready ink, none is spent. A Shift paid another way (**Shift: Discard a card**) spends no ink: pay it by hand. Any other card dragged from your hand spends its full cost.
-- Moving to a location costs nothing in the Dojo: spend the move cost with **−** on your ink bar.
-- A location's lore isn't added at the start of your turn. Add it with the lore **+**.
+- When you drag a character from your hand onto another character, the Dojo spends its Shift cost if that cost is in ink, as in **Shift 5** or **Universal Shift 4**. If you don't have that much ready ink, it spends none. A Shift paid another way, such as **Shift: Discard a card**, spends no ink, so pay it by hand. Any other card dragged from your hand spends its full cost.
+- Moving to a location costs nothing in the Dojo. Spend the move cost with **−** on your ink bar.
+- The Dojo doesn't add a location's lore at the start of your turn. Add it with the lore **+**.
 - When a card with cards under it leaves play, the cards under it go with it.
-- Banish a location and the characters at it stay in play.
+- If you banish a location, the characters at it stay in play.

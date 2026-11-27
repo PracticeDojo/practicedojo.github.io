@@ -1,7 +1,7 @@
 ---
 id: draw
 title: Drawing cards
-summary: You draw at the start of your turn automatically; draw more from the deck any time.
+summary: The player to play draws one card when their turn begins. Draw more from the deck at any time.
 devices: [desktop, phone]
 aliases: [draw a card, draw step, draw extra]
 targets: [deck]
@@ -10,7 +10,7 @@ order: 30
 verified: v3.11.0
 ---
 
-Each turn's draw happens on its own: when a turn begins, the player to play draws one card. Player 1 doesn't draw on their first turn.
+The player to play draws one card when their turn begins. Player 1 doesn't draw on their first turn.
 
 ## Draw another card
 
@@ -24,11 +24,11 @@ Tap the deck on that player's bar. The card goes to their hand.
 
 [Show me](show:deck)
 
-This works for either player's deck, so card effects that make the other player draw are one click away.
+This works for either player's deck. A card effect that makes the other player draw takes one click.
 
 ## Good to know
 
-- Extra draws are logged and counted in the turn's **Drawn** recap.
-- An empty deck just doesn't draw. The Dojo doesn't end the game for it.
+- The log records extra draws, and the turn's **Drawn** recap counts them.
+- An empty deck doesn't draw. The Dojo doesn't end the game for it.
 - To look through the deck or shuffle it, use the deck's other controls. See [Look through your deck](help:inspect-deck).
-- Made a mistake? **Undo** puts the card back.
+- **Undo** puts a drawn card back.

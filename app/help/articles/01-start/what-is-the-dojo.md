@@ -1,7 +1,7 @@
 ---
 id: what-is-the-dojo
 title: What the Dojo is
-summary: A Lorcana sandbox: play both sides, rewind any turn and try another line, or study a Duels.ink game.
+summary: A Lorcana sandbox where you play both sides, rewind any turn to try another line, or study a Duels.ink game.
 devices: [desktop, phone]
 aliases: [about, sandbox, practice, overview, introduction, app, what is this]
 targets: []
@@ -21,7 +21,7 @@ The Practice Dojo is a Lorcana sandbox. You put two decks on the table and play 
 
 ## You are the referee
 
-The Dojo keeps the board, counts ink, damage and lore, and saves every turn. It doesn't play for the other side and it doesn't stop you breaking a rule: you can play a card you can't afford, ink twice in a turn, or challenge with a character that's still drying. When a challenge breaks a rule, the log says so.
+The Dojo keeps the board, counts ink, damage and lore, and saves every turn. It doesn't play for the other side, and it doesn't stop you breaking a rule. For example, you can play a card you can't afford, ink twice in a turn, or challenge with a character that's still drying. When a challenge breaks a rule, the log says so.
 
 ## Good to know
 
